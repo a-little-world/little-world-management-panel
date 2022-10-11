@@ -1,3 +1,4 @@
+import * as utils from './utils'
 /* 
 The 'data' should prob be centralized in some env-file
 Be aware that using the loginSimulator will only work in combination with 'schroedingers-nginx.sh'
@@ -9,12 +10,13 @@ const data = {
 }
 
 export function simulatedAutoLogin(username=data.username, password=data.passoword) {
-  const formData = new FormData();
-  formData.append("username", username)
-  formData.append("password", password)
   return fetch(`${data.baseUrl}/api2/login_hack/`, {
     method: 'POST',
     credentials: 'include',
-    body: formData
+    body: utils.objectToFormData({
+      username,
+      password,
+      "dev_dataset" : "admin_area"
+    })
   })
 }
