@@ -47,6 +47,14 @@ http {
             proxy_cache_bypass \$http_upgrade;
 	    }
 
+        location /anAdminPathTh3yS4y/ {
+            proxy_pass http://SERVER_URL/anAdminPathTh3yS4y/;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade \$http_upgrade;
+            proxy_set_header Connection 'upgrade';
+            proxy_cache_bypass \$http_upgrade;
+	    }
+
         location /chat_ws {
             proxy_pass http://SERVER_URL/chat_ws;
             proxy_http_version 1.1;

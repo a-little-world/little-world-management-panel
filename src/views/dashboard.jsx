@@ -1,8 +1,9 @@
 import { useState } from 'react';
-
+import { simulateFilterUpdate } from '../loginSimulator';
 import Header from '../atoms/header';
 import Panel from '../atoms/panel';
 import Dropdown from '../atoms/dropdown';
+import { apiMakeMatch } from '../api';
 import {
   Button,
   CloseIcon,
@@ -22,7 +23,7 @@ import {
   User,
   UserList,
 } from './styles';
-import { DUMMY_FILTERS, ADDITIONAL_USER_FIELDS } from '../constants';
+import { USER_FILTERS, ADDITIONAL_USER_FIELDS } from '../constants';
 
 const UserItem = ({
   isSelected,
@@ -64,19 +65,38 @@ const UserPanel = ({ additionalFields = [], heading, user, fallback }) => (
   </Panel>
 );
 
-export const Dashboard = ({ availableFilters = DUMMY_FILTERS, users }) => {
+export const Dashboard = ({
+  availableFilters = USER_FILTERS,
+  initalFilters = localStorage.getItem('filterTags') || '[]',
+  users,
+}) => {
   const [selection1, setSelection1] = useState(null);
   const [selection2, setSelection2] = useState(null);
   const [viewUser, setViewUser] = useState(null);
-  const [filters, setFilters] = useState([]);
+  const [filters, setFilters] = useState(JSON.parse(initalFilters));
 
-  const handleMatchClick = () => {
-    // TODO API mutation to confirm match
-    // setMatch(selection1.user_h256_pk, selection2.user_h256_pk)
+  const updateFilters = updatedFilters => {
+    /*
+     * This causes a page reload ( as intended )
+     * Of course we could also add and api e.g.: `GET /admin/users/?filter=....`
+     * But untill we have that api we reload the page with the filter added as get param
+     */
+    const filterStrings = updatedFilters.map(
+      filter => availableFilters[filter].filters,
+    );
+    setFilters(filters => [...updatedFilters]);
+    // Store the current filterTags, so they can persist after reload. This can be removed if we replace the reload with an API
+    localStorage.setItem('filterTags', JSON.stringify(updatedFilters));
+    simulateFilterUpdate(filterStrings);
   };
 
-  const removeFilter = filter => {
-    setFilters(filters => filters.filter(item => item !== filter));
+  const handleMatchClick = () => {
+    apiMakeMatch(selection1.email, selection2.email).then(res => {
+      // TODO: handle response the right way, maybe request @tbscode to adopt the reponse format or the API
+      res.json().then(json => {
+        console.log(json);
+      });
+    });
   };
 
   return (
@@ -107,17 +127,20 @@ export const Dashboard = ({ availableFilters = DUMMY_FILTERS, users }) => {
             <Dropdown
               name="filters"
               id="filter-select"
-              onChange={e =>
-                setFilters(filters => [...filters, e.target.value])
-              }
+              onChange={e => updateFilters([...filters, e.target.value])}
             >
               <option value="">--Select a filter--</option>
-              {availableFilters.map(filter => (
-                <option value={filter}>{filter}</option>
+              {Object.keys(availableFilters).map(key => (
+                <option value={key}>{availableFilters[key].text}</option>
               ))}
             </Dropdown>
             {filters.map(filter => (
-              <Filter key={filter} onClick={() => removeFilter(filter)}>
+              <Filter
+                key={filter}
+                onClick={() =>
+                  updateFilters(filters.filter(item => item !== filter))
+                }
+              >
                 {filter}
                 <CloseIcon />
               </Filter>
