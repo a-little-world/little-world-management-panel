@@ -1,0 +1,33 @@
+name: Run CRE tests
+
+on:
+  push:
+    branches: ['main']
+  pull_request:
+    branches: ['main']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
+
+jobs:
+  make_docs:
+    runs-on: ubuntu-latest
+    name: Build & Run tests
+    steps:
+      - uses: actions/checkout@master
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 14
+      - name: Npm Install
+        run: npm install
+      - name: Run Tests
+        run: npm test --watch=all
+        env: # We should set CI=true so the app doesn't ask for user input
+          CI: true

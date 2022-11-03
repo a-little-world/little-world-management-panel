@@ -19,6 +19,8 @@ function curatedKeyPropList(obj) {
       let fullPath = addDelimiter(head, key);
       return isObject(value)
         ? product.concat(paths(value, fullPath))
+        : Array.isArray(value)
+        ? product.concat(fullPath, [value])
         : product.concat(fullPath, value);
     }, []);
   };
@@ -46,12 +48,15 @@ export const recursiveObjectToFormData = object => {
       .map((x, y) => (x + y) * 2)
       .reduce((a, i) => {
         const id = objL[i].indexOf(']');
+        const keyName =
+          id !== -1
+            ? objL[i].slice(0, id) + objL[i].slice(id + 1) + ']'
+            : objL[i];
         return {
           ...a,
           ...{
-            [id !== -1
-              ? objL[i].slice(0, id) + objL[i].slice(id + 1) + ']'
-              : objL[i]]: objL[i + 1],
+            [Array.isArray(objL[i + 1]) ? keyName + '[]' : keyName]:
+              objL[i + 1],
           },
         };
       }, []),
