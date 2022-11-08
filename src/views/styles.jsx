@@ -63,6 +63,15 @@ export const Option = styled.button`
   }
 `;
 
+export const FlexContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+`;
+
 export const CloseIcon = styled(Close)`
   height: 16px;
   width: 16px;
@@ -71,6 +80,7 @@ export const CloseIcon = styled(Close)`
 
 export const Name = styled.span`
   flex-shrink: 0;
+  font-weight: bold;
 `;
 
 export const OrderedList = styled.ol`

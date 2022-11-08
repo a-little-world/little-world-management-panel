@@ -8,9 +8,10 @@ import { simulatedAutoLogin } from './loginSimulator';
 const LOCAL_DEV = true; // TODO should also be moved to some central env file
 const renderApp = initData => {
   const root = ReactDOM.createRoot(document.getElementById('root'));
+  const filteredUsers = initData?.initData;
   root.render(
     <React.StrictMode>
-      <App initData={initData} />
+      <App filteredUsers={filteredUsers} />
     </React.StrictMode>,
   );
 };

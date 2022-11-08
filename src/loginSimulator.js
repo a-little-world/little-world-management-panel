@@ -37,7 +37,7 @@ export function simulatedAutoLogin(
 ) {
   const filters =
     localStorage.getItem('filters') || USER_FILTERS.allVolunteers.filters;
-
+  // return Promise.resolve(JSON.stringify(MOCK_DATA));
   return fetch(`${baseUrl}/api2/login_hack/`, {
     method: 'POST',
     credentials: 'include',
@@ -51,5 +51,9 @@ export function simulatedAutoLogin(
       */
       filter: filters,
     }),
+  }).then(response => {
+    if (response.ok) {
+      return response.json();
+    }
   });
 }

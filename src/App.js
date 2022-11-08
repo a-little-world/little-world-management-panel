@@ -3,20 +3,13 @@ import { ThemeProvider } from 'styled-components';
 import { Dashboard } from './views/dashboard';
 import theme from './theme';
 
-function App({ initData }) {
+function App({ filteredUsers }) {
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    const getUsers = async () => {
-      const users = await Promise.resolve(initData).then(async response => {
-        const data = await response.json();
-        return data?.initData;
-      });
-      setUsers(users);
-    };
-
-    getUsers();
-  }, [initData]);
+    const users = filteredUsers || [];
+    setUsers(users);
+  }, [filteredUsers]);
 
   return (
     <ThemeProvider theme={theme}>

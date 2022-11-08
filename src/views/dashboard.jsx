@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { simulateFilterUpdate } from '../loginSimulator';
 import Header from '../atoms/header';
 import Panel from '../atoms/panel';
+import UserImage from '../atoms/userImage';
+
 import Dropdown from '../atoms/dropdown';
 import { apiMakeMatch } from '../api';
 import {
@@ -10,6 +12,7 @@ import {
   Container,
   Filter,
   Filters,
+  FlexContainer,
   InteractionsContainer,
   Name,
   Option,
@@ -50,13 +53,20 @@ const UserPanel = ({ additionalFields = [], heading, user, fallback }) => (
   <Panel heading={heading}>
     {user ? (
       <>
-        <Name>
-          {user.profile.first_name} {user.profile.second_name}
-        </Name>
+        <FlexContainer>
+          <UserImage
+            alt={`${user.profile.first_name} avatar`}
+            user={user.profile}
+          />
+          <Name>
+            {user.profile.first_name} {user.profile.second_name}
+          </Name>
+        </FlexContainer>
+
         <Text>{user.profile.email}</Text>
         <Text>{user.user_h256_pk}</Text>
         {additionalFields.map(field => (
-          <Text>{`${field}: ${user.profile[field]}`}</Text>
+          <Text key={field}>{`${field}: ${user.profile[field]}`}</Text>
         ))}
       </>
     ) : (
@@ -123,7 +133,9 @@ export const Dashboard = ({
         </Button>
         <SearchSection>
           <Filters>
-            <Subheading for="filter-select">Add a Search Filter:</Subheading>
+            <Subheading htmlFor="filter-select">
+              Add a Search Filter:
+            </Subheading>
             <Dropdown
               name="filters"
               id="filter-select"
@@ -131,7 +143,9 @@ export const Dashboard = ({
             >
               <option value="">--Select a filter--</option>
               {Object.keys(availableFilters).map(key => (
-                <option value={key}>{availableFilters[key].text}</option>
+                <option key={key} value={key}>
+                  {availableFilters[key].text}
+                </option>
               ))}
             </Dropdown>
             {filters.map(filter => (
