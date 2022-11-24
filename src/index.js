@@ -4,9 +4,9 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { simulatedAutoLogin } from './loginSimulator';
+import { LOCAL_DEV } from './ENVIRONMENT';
 
-const LOCAL_DEV = true; // TODO should also be moved to some central env file
-const renderApp = initData => {
+const dispatchRenderApp = initData => {
   const root = ReactDOM.createRoot(document.getElementById('root'));
   const filteredUsers = initData?.initData;
   root.render(
@@ -18,11 +18,12 @@ const renderApp = initData => {
 
 if (LOCAL_DEV) {
   simulatedAutoLogin().then(initData => {
-    renderApp(initData);
+    dispatchRenderApp(initData);
   });
 } else {
   // Window function registered to be called from inside a django view
-  window.renderApp = renderApp;
+  console.log('Registered render function!');
+  window.renderApp = dispatchRenderApp;
 }
 
 // If you want to start measuring performance in your app, pass a function
