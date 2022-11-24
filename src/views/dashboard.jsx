@@ -64,7 +64,7 @@ const UserPanel = ({ additionalFields = [], heading, user, fallback }) => (
         </FlexContainer>
 
         <Text>{user.profile.email}</Text>
-        <Text>{user.user_h256_pk}</Text>
+        <Text>{user.hash}</Text>
         {additionalFields.map(field => (
           <Text key={field}>{`${field}: ${user.profile[field]}`}</Text>
         ))}
@@ -165,12 +165,12 @@ export const Dashboard = ({
               <OrderedList>
                 {users.map(user => (
                   <UserItem
-                    key={user.user_h256_pk}
+                    key={user.hash}
                     {...user}
                     isSelected={[
-                      selection1?.user_h256_pk,
-                      selection2?.user_h256_pk,
-                    ].includes(user.user_h256_pk)}
+                      selection1?.hash,
+                      selection2?.hash,
+                    ].includes(user.hash)}
                     setSelection1={() => setSelection1(user)}
                     setSelection2={() => setSelection2(user)}
                     setViewUser={() => setViewUser(user)}
