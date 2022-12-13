@@ -168,9 +168,9 @@ export const Dashboard = ({
                     key={user.hash}
                     {...user}
                     isSelected={[
-                      selection1?.hash,
-                      selection2?.hash,
-                    ].includes(user.hash)}
+                      selection1?.user.hash,
+                      selection2?.user.hash,
+                    ].includes(user.user.hash)}
                     setSelection1={() => setSelection1(user)}
                     setSelection2={() => setSelection2(user)}
                     setViewUser={() => setViewUser(user)}
