@@ -5,8 +5,9 @@ import Panel from '../atoms/panel';
 import UserImage from '../atoms/userImage';
 
 import Dropdown from '../atoms/dropdown';
-import { apiMakeMatch } from '../api';
+import { genericTwoUserApiCall } from '../api';
 import {
+  ActionsMenu,
   Button,
   CloseIcon,
   Container,
@@ -26,7 +27,11 @@ import {
   User,
   UserList,
 } from './styles';
-import { USER_FILTERS, ADDITIONAL_USER_FIELDS } from '../constants';
+import { 
+  USER_FILTERS, 
+  ADDITIONAL_USER_FIELDS,
+  ADMIN_ACTIONS,
+} from '../constants';
 
 const UserItem = ({
   isSelected,
@@ -84,6 +89,7 @@ export const Dashboard = ({
   const [selection2, setSelection2] = useState(null);
   const [viewUser, setViewUser] = useState(null);
   const [filters, setFilters] = useState(JSON.parse(initalFilters));
+  const [adminAction, setAdminAction] = useState(ADMIN_ACTIONS.makeMatch);
 
   const updateFilters = updatedFilters => {
     /*
@@ -101,9 +107,10 @@ export const Dashboard = ({
   };
 
   const handleMatchClick = () => {
-    apiMakeMatch(selection1.email, selection2.email).then(res => {
-      // TODO: handle response the right way, maybe request @tbscode to adopt the reponse format or the API
+
+    genericTwoUserApiCall(selection1.user.hash, selection2.user.hash).then(res => {
       res.json().then(json => {
+        setAdminAction({...adminAction, result: json})
         console.log(json);
       });
     });
@@ -125,16 +132,34 @@ export const Dashboard = ({
             fallback={'Select an available user from the list below'}
           />
         </Selections>
-        <Button
-          onClick={handleMatchClick}
-          disabled={!selection1 || !selection2}
-        >
-          Confirm Match
-        </Button>
+        <ActionsMenu>
+          <div>
+            {Object.hasOwn(adminAction, 'result') ? adminAction.result : ''}
+          </div>
+          <Button
+              onClick={handleMatchClick}
+              disabled={[selection1, selection2].includes(null)}
+            >
+            {adminAction.text}
+          </Button>
+          <Dropdown
+              name="filters"
+              id="filter-select"
+              onChange={e => setAdminAction(ADMIN_ACTIONS[e.target.value])}
+          >
+            <option value="">--sect an admin action--</option>
+              {Object.keys(ADMIN_ACTIONS).map(key => (
+                <option key={key} value={key}>
+                  {ADMIN_ACTIONS[key].text}
+                </option>
+              ))}
+          </Dropdown>
+
+        </ActionsMenu>
         <SearchSection>
           <Filters>
             <Subheading htmlFor="filter-select">
-              Add a Search Filter:
+              Add Search Filter ...
             </Subheading>
             <Dropdown
               name="filters"
