@@ -34,6 +34,17 @@ export const USER_FILTERS = {
   },
 };
 
+export const ADMIN_ACTIONS = {
+  notifyConnectedUserWebsocket: {
+    path: '/api/admin/notify_websocket/',
+    text: 'Notify connected user via websocket',
+  },
+  makeMatch: {
+    path: '/api/admin/make_match/',
+    text: 'Make match',
+  },
+};
+
 export const DUMMY_USER_FILTERS = ['Learners', 'Local Only', 'Telephone Only'];
 
 export const ADDITIONAL_USER_FIELDS = [
