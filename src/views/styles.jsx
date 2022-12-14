@@ -27,6 +27,13 @@ export const Text = styled.p`
 
 export const InteractionsContainer = styled.div``;
 
+export const ActionsMenu = styled.div`
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background: red;
+`
+
 export const UserList = styled(Box)`
   border-radius: 0px;
   overflow-y: scroll;
