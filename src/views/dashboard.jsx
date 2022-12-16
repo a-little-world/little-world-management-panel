@@ -1,13 +1,18 @@
+import Form from "@rjsf/core";
+import ReactJson from 'react-json-view'
 import { useState } from 'react';
 import { simulateFilterUpdate } from '../loginSimulator';
 import Header from '../atoms/header';
 import Panel from '../atoms/panel';
 import UserImage from '../atoms/userImage';
+import { getCookiesAsObject } from "../utils";
 
 import Dropdown from '../atoms/dropdown';
 import { genericTwoUserApiCall } from '../api';
 import {
+  ActionsMenuResultsContainer,
   ActionsMenu,
+  InputFormContainer,
   Button,
   CloseIcon,
   Container,
@@ -32,6 +37,9 @@ import {
   ADDITIONAL_USER_FIELDS,
   ADMIN_ACTIONS,
 } from '../constants';
+import { RJSFSchema } from "@rjsf/utils";
+import validator from "@rjsf/validator-ajv8";
+
 
 const UserItem = ({
   isSelected,
@@ -133,15 +141,6 @@ export const Dashboard = ({
           />
         </Selections>
         <ActionsMenu>
-          <div>
-            {Object.hasOwn(adminAction, 'result') ? adminAction.result : ''}
-          </div>
-          <Button
-              onClick={handleMatchClick}
-              disabled={[selection1, selection2].includes(null)}
-            >
-            {adminAction.text}
-          </Button>
           <Dropdown
               name="filters"
               id="filter-select"
@@ -149,12 +148,60 @@ export const Dashboard = ({
           >
             <option value="">--sect an admin action--</option>
               {Object.keys(ADMIN_ACTIONS).map(key => (
-                <option key={key} value={key}>
+                <option key={key} value={key} selected={key==='makeMatch'}>
                   {ADMIN_ACTIONS[key].text}
                 </option>
               ))}
           </Dropdown>
-
+          <ActionsMenuResultsContainer>
+            <ReactJson src={adminAction?.result} />
+          </ActionsMenuResultsContainer>
+          <Button
+              onClick={() => {
+                fetch(adminAction.path, {
+                  method: 'POST',
+                  redirect: 'manual',
+                  headers: {
+                    'X-CSRFToken': getCookiesAsObject().csrftoken,
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify(adminAction?.formData)
+                }).then(res => {
+                  /* TODO based on status code change result background or smth */
+                  res.json().then(json => {
+                    const finalRes = adminAction.parseRes(json, res.status!==200)
+                    setAdminAction({...adminAction, result: finalRes})
+                  });
+                })
+              }}
+              disabled={[selection1, selection2].includes(null)}
+            >
+            {adminAction.text}
+          </Button>
+          <InputFormContainer>
+            {/* We can coveniently use react-jsonschema-form 
+            this allowes us to copy our open api schemas 
+            and this will automaticly generate froms based on it
+            We can dynamicly input userdata to this form ( -> see constants.ADMIN_ACTIONS.schema )
+            but still allow admins to change the other form params! 
+            -> react-jsonschema-form.readthedocs.io  */}
+            <Form 
+              name="adminActionForm"
+              method="POST"
+              action={adminAction.path}
+              idPrefix={""}
+              idSeparator={""}
+              schema={adminAction.schema(selection1, selection2)}
+              validator={validator}
+              onChange={(e) => setAdminAction({...adminAction, formData: e.formData})}
+              onSubmit={console.log("submitted")}
+              onError={console.log("errors")} >
+                {/* We want to use our main big middle button for 
+                form submition so we create an invisible placeholder here */}
+                <input name="csrfmiddlewaretoken" value={getCookiesAsObject().csrftoken} hidden></input>
+                <button id="admin-form-submit" type="submit" style={{visibility: 'hidden' }} >Submit</button>
+            </Form>
+          </InputFormContainer>
         </ActionsMenu>
         <SearchSection>
           <Filters>
