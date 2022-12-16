@@ -31,7 +31,17 @@ export const ActionsMenu = styled.div`
   display: flex;
   align-items: center;
   width: 100%;
-  background: red;
+`
+
+export const ActionsMenuResultsContainer = styled.div`
+max-height: 300px;
+overflow-y: scroll;
+`
+
+export const InputFormContainer = styled.div`
+max-height: 300px;
+overflow-y: scroll;
+background: red;
 `
 
 export const UserList = styled(Box)`
