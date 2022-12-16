@@ -34,14 +34,71 @@ export const USER_FILTERS = {
   },
 };
 
+/*
+ * This allowes to register admin actions
+ * For 'schema' you may specify any open api schema
+ * -> it will be used to generate the admin form default inputs are always to users
+ * These defaults can be used to populate the schema default
+ * e.g.: allowing to dynamicly change the users selected for matching
+ *
+ * schema per default only uses 2 users as input ( for now )
+ * but the matcher may add more input params in the form
+ * -> the api schema can be downlaeded at `s1.littleworld-test.com/api/schema`
+ */
 export const ADMIN_ACTIONS = {
   notifyConnectedUserWebsocket: {
-    path: '/api/admin/notify_websocket/',
+    path: '/api/admin/user/notify_websocket/',
     text: 'Notify connected user via websocket',
+    schema: (u1, u2) => {
+      return {
+        type: 'object',
+        properties: {
+          usr_hash: {
+            type: 'string',
+            maxLength: 255,
+            default: u1?.user.hash,
+          },
+        },
+        required: ['partner_hash', 'usr_hash'],
+      };
+    },
   },
   makeMatch: {
-    path: '/api/admin/make_match/',
+    path: '/api/admin/user/match/',
     text: 'Make match',
+    schema: (u1, u2) => {
+      return {
+        type: 'object',
+        properties: {
+          user1: {
+            type: 'string',
+            default: u1?.user.hash,
+          },
+          user2: {
+            type: 'string',
+            default: u2?.user.hash,
+          },
+          lookup: {
+            type: 'string',
+            default: 'hash',
+          },
+          force: {
+            type: 'boolean',
+            default: false,
+          },
+        },
+        required: ['user1', 'user2'],
+      };
+    },
+    parseRes: (res, err) => {
+      return {
+        message: res.message,
+        viewScores: [res.user1_user2_msg.view, res.user2_user1_msg.view],
+      };
+    },
+  },
+  unmatch: {
+    path: '/api/admin/user/unmatch/',
   },
 };
 
