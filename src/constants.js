@@ -91,10 +91,7 @@ export const ADMIN_ACTIONS = {
       };
     },
     parseRes: (res, err) => {
-      return {
-        message: res.message,
-        viewScores: [res.user1_user2_msg.view, res.user2_user1_msg.view],
-      };
+      return res;
     },
   },
   unmatch: {
