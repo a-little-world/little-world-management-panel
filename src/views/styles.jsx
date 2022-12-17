@@ -25,23 +25,17 @@ export const Text = styled.p`
   margin-bottom: ${({ theme: { spacing } }) => spacing(1)};
 `;
 
-export const InteractionsContainer = styled.div``;
-
-export const ActionsMenu = styled.div`
-  display: flex;
-  align-items: center;
-  width: 100%;
-`
+export const InteractionsContainer = styled.div`
+`;
 
 export const ActionsMenuResultsContainer = styled.div`
-max-height: 300px;
-overflow-y: scroll;
+overflow-y: auto;
 `
 
 export const InputFormContainer = styled.div`
-max-height: 300px;
-overflow-y: scroll;
-background: red;
+max-width: 500px;
+overflow-y: auto;
+flex-grow: 1;
 `
 
 export const UserList = styled(Box)`
