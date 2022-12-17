@@ -16,21 +16,33 @@ export const baseLogin = {
       > e.g.: telephone, email, profile_image
 */
 export const USER_FILTERS = {
-  allUsersSearching: {
+  currentlySearching: {
     text: 'All searching',
-    filters: ['state.matching_state:is:1'],
+    filters: ['state.matching_state:is:searching'],
   },
-  allUsersSearchingThatAreLearners: {
-    text: 'All learners that are searching',
-    filters: ['state.matching_state:is:1', 'profile.learner:is:1'], // This is no-one user currently
+  authenticatedEmail: {
+    text: 'Has authenticated email',
+    filters: ['state.email_authenticated:is:True'],
   },
-  allLearners: {
-    text: 'All learners',
-    filters: ['profile.learner:is:1'],
+  userFormCompleted: {
+    text: 'Has completed user form',
+    filters: ['state.user_form_state:is:filled'],
   },
-  allVolunteers: {
-    text: 'All Volunteers',
-    filters: ['profile.learner:is:0'],
+  markedLegit: {
+    text: 'Was marked as legit',
+    filters: ['state.user_category:is:legit'],
+  },
+  isVolunteer: {
+    text: 'Is volunteer',
+    filters: ['profile.user_type:is:volunteer'],
+  },
+  isLearner: {
+    text: 'Is learner',
+    filters: ['profile.user_type:is:learner'],
+  },
+  usesAvatar: {
+    text: 'Uses avatar',
+    filters: ['profile.image_type:is:avatar'],
   },
 };
 
@@ -63,6 +75,17 @@ export const ADMIN_ACTIONS = {
       };
     },
   },
+  viewEmailTemplates: {
+    path: '/api/admin/email/templates/',
+    method: 'GET',
+    text: 'View email templates and inputs',
+    schema: (u1, u2) => {
+      return {
+        type: 'object',
+        properties: {},
+      };
+    },
+  },
   makeMatch: {
     path: '/api/admin/user/match/',
     text: 'Make match',
@@ -86,12 +109,21 @@ export const ADMIN_ACTIONS = {
             type: 'boolean',
             default: false,
           },
+          send_email: {
+            type: 'boolean',
+            default: true,
+          },
+          send_message: {
+            type: 'boolean',
+            default: true,
+          },
+          send_notification: {
+            type: 'boolean',
+            default: true,
+          },
         },
         required: ['user1', 'user2'],
       };
-    },
-    parseRes: (res, err) => {
-      return res;
     },
   },
   unmatch: {
