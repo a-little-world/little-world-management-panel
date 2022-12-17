@@ -9,6 +9,7 @@ import { LOCAL_DEV } from './ENVIRONMENT';
 const dispatchRenderApp = initData => {
   const root = ReactDOM.createRoot(document.getElementById('root'));
   const filteredUsers = initData?.initData;
+  console.log('initData', initData);
   root.render(
     <React.StrictMode>
       <App filteredUsers={filteredUsers} />
