@@ -127,7 +127,93 @@ export const ADMIN_ACTIONS = {
     },
   },
   unmatch: {
+    text: 'Unmatch users',
     path: '/api/admin/user/unmatch/',
+    schema: (u1, u2) => {
+      return {
+        type: 'object',
+        properties: {
+          user1: {
+            type: 'string',
+            default: u1?.user.hash,
+          },
+          user2: {
+            type: 'string',
+            default: u2?.user.hash,
+          },
+          lookup: {
+            type: 'string',
+            default: 'hash',
+          },
+          force: {
+            type: 'boolean',
+            default: false,
+          },
+        },
+      };
+    },
+  },
+  writeRawTemplateMail: {
+    path: '/api/admin/email/templates/encode/',
+    text: 'Write template mail',
+    transformData: data => {
+      console.log('TRANSFORMING DAAT', data);
+      return {
+        params: data,
+        template: 'raw',
+      };
+    },
+    schema: (u1, u2) => {
+      return {
+        type: 'object',
+        properties: {
+          subject_header_text: {
+            type: 'string',
+            default: '',
+          },
+          greeting: {
+            type: 'string',
+            default: '',
+          },
+          content_start_text: {
+            type: 'string',
+            default: '',
+          },
+          content_body_text: {
+            type: 'string',
+            default: '',
+          },
+          link_box_text: {
+            type: 'string',
+            default: '',
+          },
+          button_text: {
+            type: 'string',
+            default: '',
+          },
+          button_link: {
+            type: 'string',
+            default: '',
+          },
+          below_link_text: {
+            type: 'string',
+            default: '',
+          },
+          footer_text: {
+            type: 'string',
+            default: '',
+          },
+          goodbye: {
+            type: 'string',
+            default: '',
+          },
+          goodbye_name: {
+            type: 'string',
+            default: '',
+          },
+        },
+      };
+    },
   },
 };
 

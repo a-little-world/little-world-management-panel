@@ -176,7 +176,7 @@ export const Dashboard = ({
                     'X-CSRFToken': getCookiesAsObject().csrftoken,
                     'Content-Type': 'application/json',
                   },
-                  body: JSON.stringify(e.formData)
+                  body: JSON.stringify('transformData' in adminAction ? adminAction.transformData(e.formData) : e.formData )
                 }).then(res => {
                   /* TODO based on status code change result background or smth */
                   res.json().then(json => {
