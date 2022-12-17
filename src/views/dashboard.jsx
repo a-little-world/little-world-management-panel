@@ -167,7 +167,9 @@ export const Dashboard = ({
               name="adminForm"
               schema={adminAction.schema(selection1, selection2)}
               onSubmit={(e) => {
-                fetch(adminAction.path, {
+                fetch(adminAction.path, adminAction?.method === 'GET' ? {
+                  method: 'GET',
+                } :{
                   method: 'POST',
                   redirect: 'manual',
                   headers: {
@@ -178,18 +180,14 @@ export const Dashboard = ({
                 }).then(res => {
                   /* TODO based on status code change result background or smth */
                   res.json().then(json => {
-                    const finalRes = adminAction.parseRes(json, res.status!==200)
-                    updateRequestResponse(finalRes)
+                    updateRequestResponse(json);
                   });
                 })
               }}
               validator={validator}>
                 {/* We want to use our main big middle button for 
                 form submition so we create an invisible placeholder here */}
-            <Button
-                disabled={[selection1, selection2].includes(null)}
-                type='submit'
-              >
+            <Button type='submit'>
               {adminAction.text}
             </Button>
             </Form>
@@ -224,7 +222,18 @@ export const Dashboard = ({
               </Filter>
             ))}
           </Filters>
-          <SearchPanels>
+          <Selections>
+            <ActionsMenuResultsContainer>
+              <ReactJson src={typeof requestResponse === 'string' ? {"msg" : requestResponse } : requestResponse} />
+            </ActionsMenuResultsContainer>
+            <UserPanel
+              additionalFields={ADDITIONAL_USER_FIELDS}
+              heading="Detailed User View"
+              fallback={
+                'Click "View" User list to see a detailed view of that user.'
+              }
+              user={viewUser}
+            />
             <Panel heading="Users searching for a match" Wrapper={UserList}>
               <OrderedList>
                 {users.map(user => (
@@ -242,18 +251,7 @@ export const Dashboard = ({
                 ))}
               </OrderedList>
             </Panel>
-            <UserPanel
-              additionalFields={ADDITIONAL_USER_FIELDS}
-              heading="Detailed User View"
-              fallback={
-                'Click "View" User list to see a detailed view of that user.'
-              }
-              user={viewUser}
-            />
-            <ActionsMenuResultsContainer>
-              <ReactJson src={requestResponse} />
-            </ActionsMenuResultsContainer>
-          </SearchPanels>
+          </Selections>
         </SearchSection>
       </InteractionsContainer>
     </Container>
