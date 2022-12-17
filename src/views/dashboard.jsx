@@ -43,14 +43,14 @@ import validator from "@rjsf/validator-ajv8";
 
 const UserItem = ({
   isSelected,
-  profile,
+  user,
   setSelection1,
   setSelection2,
   setViewUser,
 }) => (
   <User>
     <Name>
-      {profile.first_name} {profile.second_name}
+      {user.profile.first_name} {user.profile.second_name} ({user.user.email})
     </Name>
     <Option onClick={setViewUser}>View</Option>
     <Option disabled={isSelected} onClick={setSelection1}>
@@ -72,7 +72,7 @@ const UserPanel = ({ additionalFields = [], heading, user, fallback }) => (
             user={user.profile}
           />
           <Name>
-            {user.profile.first_name} {user.profile.second_name}
+            {user.profile.first_name} {user.profile.second_name} ({user.user.email})
           </Name>
         </FlexContainer>
 
@@ -230,7 +230,7 @@ export const Dashboard = ({
                 {users.map(user => (
                   <UserItem
                     key={user.hash}
-                    {...user}
+                    user={user}
                     isSelected={[
                       selection1?.user.hash,
                       selection2?.user.hash,
