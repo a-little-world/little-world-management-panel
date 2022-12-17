@@ -11,8 +11,8 @@ export const Selections = styled.div`
   width: 100%;
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
+  justify-content: top;
+  align-items: top;
 
   ${({ theme: { spacing } }) => css`
     padding: ${spacing(8)} ${spacing(4)} ${spacing(4)};
@@ -29,7 +29,7 @@ export const InteractionsContainer = styled.div`
 `;
 
 export const ActionsMenuResultsContainer = styled.div`
-overflow-y: auto;
+min-width: 500px;
 `
 
 export const InputFormContainer = styled.div`
@@ -41,7 +41,8 @@ flex-grow: 1;
 export const UserList = styled(Box)`
   border-radius: 0px;
   overflow-y: scroll;
-  height: 500px;
+  max-height: 800px;
+  min-width: 600px;
 `;
 
 export const User = styled.li`
@@ -117,9 +118,10 @@ export const PanelFallbackText = styled.p`
 
 export const SearchSection = styled.div`
   display: flex;
-  flex-direction: column;
-  padding: ${({ theme: { spacing } }) => spacing(4)};
-  gap: ${({ theme: { spacing } }) => spacing(4)}; ;
+  flex-direction: row;
+  flex-wrap: wrap;
+  padding: ${({ theme: { spacing } }) => spacing(1)};
+  gap: ${({ theme: { spacing } }) => spacing(1)}; ;
 `;
 
 export const SearchPanels = styled.div`
@@ -133,6 +135,7 @@ export const Subheading = styled.label`
 
 export const Filters = styled.div`
   display: flex;
+  background: #f2f2f2;
   align-items: center;
   gap: ${({ theme: { spacing } }) => spacing(1)}; ;
 `;
