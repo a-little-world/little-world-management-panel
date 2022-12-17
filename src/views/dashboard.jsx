@@ -1,4 +1,5 @@
-import Form from "@rjsf/core";
+import Form from "@rjsf/material-ui";
+//import Form from "@rjsf/core";
 import ReactJson from 'react-json-view'
 import { useState } from 'react';
 import { simulateFilterUpdate } from '../loginSimulator';
@@ -11,7 +12,6 @@ import Dropdown from '../atoms/dropdown';
 import { genericTwoUserApiCall } from '../api';
 import {
   ActionsMenuResultsContainer,
-  ActionsMenu,
   InputFormContainer,
   Button,
   CloseIcon,
@@ -81,6 +81,7 @@ const UserPanel = ({ additionalFields = [], heading, user, fallback }) => (
         {additionalFields.map(field => (
           <Text key={field}>{`${field}: ${user.profile[field]}`}</Text>
         ))}
+        <ReactJson src={user} collapsed={true} />
       </>
     ) : (
       <PanelFallbackText>{fallback}</PanelFallbackText>
@@ -98,6 +99,8 @@ export const Dashboard = ({
   const [viewUser, setViewUser] = useState(null);
   const [filters, setFilters] = useState(JSON.parse(initalFilters));
   const [adminAction, setAdminAction] = useState(ADMIN_ACTIONS.makeMatch);
+  const [adminFormData, setAdminFormData] = useState({formData: {}});
+  const [requestResponse, updateRequestResponse] = useState({});
 
   const updateFilters = updatedFilters => {
     /*
@@ -138,47 +141,22 @@ export const Dashboard = ({
             heading="Selection 2"
             user={selection2}
             fallback={'Select an available user from the list below'}
-          />
-        </Selections>
-        <ActionsMenu>
-          <Dropdown
-              name="filters"
-              id="filter-select"
-              onChange={e => setAdminAction(ADMIN_ACTIONS[e.target.value])}
           >
-            <option value="">--sect an admin action--</option>
-              {Object.keys(ADMIN_ACTIONS).map(key => (
-                <option key={key} value={key} selected={key==='makeMatch'}>
-                  {ADMIN_ACTIONS[key].text}
-                </option>
-              ))}
-          </Dropdown>
-          <ActionsMenuResultsContainer>
             <ReactJson src={adminAction?.result} />
-          </ActionsMenuResultsContainer>
-          <Button
-              onClick={() => {
-                fetch(adminAction.path, {
-                  method: 'POST',
-                  redirect: 'manual',
-                  headers: {
-                    'X-CSRFToken': getCookiesAsObject().csrftoken,
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify(adminAction?.formData)
-                }).then(res => {
-                  /* TODO based on status code change result background or smth */
-                  res.json().then(json => {
-                    const finalRes = adminAction.parseRes(json, res.status!==200)
-                    setAdminAction({...adminAction, result: finalRes})
-                  });
-                })
-              }}
-              disabled={[selection1, selection2].includes(null)}
-            >
-            {adminAction.text}
-          </Button>
+          </UserPanel>
           <InputFormContainer>
+            <Dropdown
+                name="filters"
+                id="filter-select"
+                onChange={e => setAdminAction(ADMIN_ACTIONS[e.target.value])}
+            >
+              <option value="">--sect an admin action--</option>
+                {Object.keys(ADMIN_ACTIONS).map(key => (
+                  <option key={key} value={key} selected={key==='makeMatch'}>
+                    {ADMIN_ACTIONS[key].text}
+                  </option>
+                ))}
+            </Dropdown>
             {/* We can coveniently use react-jsonschema-form 
             this allowes us to copy our open api schemas 
             and this will automaticly generate froms based on it
@@ -186,23 +164,37 @@ export const Dashboard = ({
             but still allow admins to change the other form params! 
             -> react-jsonschema-form.readthedocs.io  */}
             <Form 
-              name="adminActionForm"
-              method="POST"
-              action={adminAction.path}
-              idPrefix={""}
-              idSeparator={""}
+              name="adminForm"
               schema={adminAction.schema(selection1, selection2)}
-              validator={validator}
-              onChange={(e) => setAdminAction({...adminAction, formData: e.formData})}
-              onSubmit={console.log("submitted")}
-              onError={console.log("errors")} >
+              onSubmit={(e) => {
+                fetch(adminAction.path, {
+                  method: 'POST',
+                  redirect: 'manual',
+                  headers: {
+                    'X-CSRFToken': getCookiesAsObject().csrftoken,
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify(e.formData)
+                }).then(res => {
+                  /* TODO based on status code change result background or smth */
+                  res.json().then(json => {
+                    const finalRes = adminAction.parseRes(json, res.status!==200)
+                    updateRequestResponse(finalRes)
+                  });
+                })
+              }}
+              validator={validator}>
                 {/* We want to use our main big middle button for 
                 form submition so we create an invisible placeholder here */}
-                <input name="csrfmiddlewaretoken" value={getCookiesAsObject().csrftoken} hidden></input>
-                <button id="admin-form-submit" type="submit" style={{visibility: 'hidden' }} >Submit</button>
+            <Button
+                disabled={[selection1, selection2].includes(null)}
+                type='submit'
+              >
+              {adminAction.text}
+            </Button>
             </Form>
           </InputFormContainer>
-        </ActionsMenu>
+        </Selections>
         <SearchSection>
           <Filters>
             <Subheading htmlFor="filter-select">
@@ -258,6 +250,9 @@ export const Dashboard = ({
               }
               user={viewUser}
             />
+            <ActionsMenuResultsContainer>
+              <ReactJson src={requestResponse} />
+            </ActionsMenuResultsContainer>
           </SearchPanels>
         </SearchSection>
       </InteractionsContainer>
