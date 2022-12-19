@@ -126,6 +126,25 @@ export const ADMIN_ACTIONS = {
       };
     },
   },
+  updateMatchingScore: {
+    text: 'Request Score Update',
+    path: '/api/admin/user/update_score/',
+    schema: (u1, u2) => {
+      return {
+        type: 'object',
+        properties: {
+          user: {
+            type: 'string',
+            default: u1?.user.hash,
+          },
+          lookup: {
+            type: 'string',
+            default: 'hash',
+          },
+        },
+      };
+    },
+  },
   unmatch: {
     text: 'Unmatch users',
     path: '/api/admin/user/unmatch/',
