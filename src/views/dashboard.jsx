@@ -1,7 +1,7 @@
 import Form from "@rjsf/material-ui";
 //import Form from "@rjsf/core";
 import ReactJson from 'react-json-view'
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { simulateFilterUpdate } from '../loginSimulator';
 import Header from '../atoms/header';
 import Panel from '../atoms/panel';
@@ -93,6 +93,7 @@ export const Dashboard = ({
   availableFilters = USER_FILTERS,
   initalFilters = localStorage.getItem('filterTags') || '[]',
   users,
+  stateInfo
 }) => {
   const [selection1, setSelection1] = useState(null);
   const [selection2, setSelection2] = useState(null);
@@ -100,7 +101,19 @@ export const Dashboard = ({
   const [filters, setFilters] = useState(JSON.parse(initalFilters));
   const [adminAction, setAdminAction] = useState(ADMIN_ACTIONS.makeMatch);
   const [adminFormData, setAdminFormData] = useState({formData: {}});
+  console.log("INFO",stateInfo);
   const [requestResponse, updateRequestResponse] = useState({});
+
+  useEffect(() => {
+    updateRequestResponse(stateInfo);
+
+    if (stateInfo?.s1)
+      setSelection1(users.filter(u => u.user.hash === stateInfo.s1)[0]);
+
+    if (stateInfo?.s2)
+      setSelection2(users.filter(u => u.user.hash === stateInfo.s2)[0]);
+
+  }, [stateInfo]);
 
   const updateFilters = updatedFilters => {
     /*
@@ -185,11 +198,9 @@ export const Dashboard = ({
                 })
               }}
               validator={validator}>
-                {/* We want to use our main big middle button for 
-                form submition so we create an invisible placeholder here */}
-            <Button type='submit'>
-              {adminAction.text}
-            </Button>
+              <Button type='submit'>
+                {adminAction.text}
+              </Button>
             </Form>
           </InputFormContainer>
         </Selections>
@@ -222,6 +233,18 @@ export const Dashboard = ({
               </Filter>
             ))}
           </Filters>
+          <div>
+            {/* Temporary page selectors for pagination */}
+            {[...Array(stateInfo?.num_pages).keys()].map((x) => x + 1).map(page => {
+              return (<><button id={page} onClick={(e) => {
+                    // Switch to that page by reloading, with url param
+                    const url = window.location.href;
+                    const parser = new URL(url || window.location);
+                    parser.searchParams.set("page", e.target.id);
+                    window.location = parser.href;
+              } }>{page}</button><span>  </span></>)
+            })}
+          </div>
           <Selections>
             <ActionsMenuResultsContainer>
               <ReactJson src={typeof requestResponse === 'string' ? {"msg" : requestResponse } : requestResponse} />
