@@ -56,6 +56,17 @@ export const User = styled.li`
   padding: ${({ theme: { spacing } }) => spacing(1)} 0px;
 `;
 
+export const UserTags = styled.li`
+  width: 100;
+  border-bottom: 1px solid black;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  column-gap: ${({ theme: { spacing } }) => spacing(0)};
+  align-items: center;
+  justify-content: space-between;
+  padding: ${({ theme: { spacing } }) => spacing(0)} 0px;
+`;
+
 export const Option = styled.button`
   width: 100%;
   background: white;
@@ -67,6 +78,10 @@ export const Option = styled.button`
 
   &:hover:enabled {
     opacity: 0.6;
+  }
+
+  &:selected {
+    background: lightgreen;
   }
 
   &:disabled {
@@ -86,29 +101,30 @@ export const FlexContainer = styled.div`
 
 export const OverlaySelector = styled.div`
   position: absolute;
-  background: green;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(3px);
   right: 0;
   top:0;
-  height: auto;
-  width: 60%;
+  height: 100%;
+  width: 75%;
 `
 
 export const OverlaySelectorTopMenu = styled.div`
-  background: blue;
   height: 100px;
 `
 
 export const OverlaySelectorListContainer = styled.div`
   padding: 20px;
-  padding-top: 100px;
-  background: yellow;
+  margin-top: 50px;
+  overflow-y: scroll;
+  max-height: 80%;
 `
 
 export const OverlaySelectorToggle = styled.div`
   z-index: 10;
-  background: red;
   width: 40px;
   height: 40px;
+  background: black;
   position: absolute;
   right: 0;
   top:0;

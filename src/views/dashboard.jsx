@@ -16,6 +16,7 @@ import {
   OverlaySelectorToggle,
   ActionsMenuResultsContainer,
   InputFormContainer,
+  UserTags,
   Button,
   CloseIcon,
   Container,
@@ -72,8 +73,14 @@ const UserListItemDetailed = ({
   setSelection1,
   setSelection2,
   setViewUser,
-}) => (
-  <User>
+  stateInfo,
+  userTags,
+  updateUserTags
+}) => {
+  const curUserTags = userTags.filter((u) => u.userHash === user.user.hash)[0]
+  
+  return (
+  <><User>
     <Name>
       {user.profile.first_name} {user.profile.second_name} ({user.user.email})
     </Name>
@@ -84,9 +91,36 @@ const UserListItemDetailed = ({
     <Option disabled={isSelected} onClick={setSelection2}>
       Select (2)
     </Option>
-    {}
   </User>
-)
+  <UserTags>
+      {stateInfo?.filter_options.state.tags.map((tag) => (
+        <Option style={{
+          'font-size': '10px',
+          'padding': '0px',
+          'background': curUserTags.tags.includes(tag.value) ? 'green' : 'white'
+        }} onClick={(e)=> {
+          fetch(`/api/admin/user/tags/${tag}/toggle`, {
+            method: 'POST',
+            headers: {
+              'X-CSRFToken': getCookiesAsObject().csrftoken,
+              'Content-Type': 'application/json',
+            },
+          }).then((res) => {
+            if(res.status === 200)
+              res.json().then(json => {
+                updateUserTags([...userTags.filter((u) => u.userHash !== user.user.hash), {
+                  tags: curUserTags.tags,
+                  userHash: curUserTags.hash
+                }])
+              });
+          })
+        }}>
+          {tag.tag}
+        </Option>
+      ))}
+    </UserTags>
+  </>
+)}
 
 const UserPanel = ({ additionalFields = [], heading, user, fallback }) => (
   <Panel heading={heading}>
@@ -128,7 +162,27 @@ export const Dashboard = ({
   const [adminAction, setAdminAction] = useState(ADMIN_ACTIONS.makeMatch);
   //const [adminFormData, setAdminFormData] = useState({formData: {}});
   const [requestResponse, updateRequestResponse] = useState({});
-  const [overlaySelectorState, setOverlaySelectorState] = useState({visible: false})
+  const [overlaySelectorState, setOverlaySelectorState] = useState({
+    visible: false, 
+    /* This should be handled by a some sort of global state instead */
+    userTags: users.map((u) => {
+      console.log("USER", u);
+      return {
+        tags: u.state.tags,
+        userHash: u.user.hash
+      }
+    })
+  })
+  const [userTags, setUserTags] = useState(null)
+
+  useEffect(() => {
+    setUserTags(users.map((u) => {
+      return {
+        tags: u.state.tags,
+        userHash: u.user.hash
+      }
+    }));
+  }, [users])
 
   useEffect(() => {
     updateRequestResponse(stateInfo);
@@ -311,6 +365,9 @@ export const Dashboard = ({
                   setSelection1={() => setSelection1(user)}
                   setSelection2={() => setSelection2(user)}
                   setViewUser={() => setViewUser(user)}
+                  stateInfo={stateInfo}
+                  userTags={userTags}
+                  updateUserTags={setUserTags}
                 />
               ))}
             </OrderedList>
@@ -318,7 +375,7 @@ export const Dashboard = ({
         </OverlaySelector>
       }
       <OverlaySelectorToggle onClick={(e) => {
-        setOverlaySelectorState({...overlaySelectorState, visible: !overlaySelectorState.visible})
+        setOverlaySelectorState({userTags: [...overlaySelectorState.userTags], visible: !overlaySelectorState.visible})
       }}>
         YO YO
       </OverlaySelectorToggle>
