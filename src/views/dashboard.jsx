@@ -11,6 +11,9 @@ import { getCookiesAsObject } from "../utils";
 import Dropdown from '../atoms/dropdown';
 import { genericTwoUserApiCall } from '../api';
 import {
+  OverlaySelectorListContainer,
+  OverlaySelectorTopMenu,
+  OverlaySelectorToggle,
   ActionsMenuResultsContainer,
   InputFormContainer,
   Button,
@@ -31,6 +34,7 @@ import {
   Text,
   User,
   UserList,
+  OverlaySelector,
 } from './styles';
 import { 
   USER_FILTERS, 
@@ -61,6 +65,28 @@ const UserItem = ({
     </Option>
   </User>
 );
+
+const UserListItemDetailed = ({
+  isSelected,
+  user,
+  setSelection1,
+  setSelection2,
+  setViewUser,
+}) => (
+  <User>
+    <Name>
+      {user.profile.first_name} {user.profile.second_name} ({user.user.email})
+    </Name>
+    <Option onClick={setViewUser}>View</Option>
+    <Option disabled={isSelected} onClick={setSelection1}>
+      Select (1)
+    </Option>
+    <Option disabled={isSelected} onClick={setSelection2}>
+      Select (2)
+    </Option>
+    {}
+  </User>
+)
 
 const UserPanel = ({ additionalFields = [], heading, user, fallback }) => (
   <Panel heading={heading}>
@@ -100,9 +126,9 @@ export const Dashboard = ({
   const [viewUser, setViewUser] = useState(null);
   const [filters, setFilters] = useState(JSON.parse(initalFilters));
   const [adminAction, setAdminAction] = useState(ADMIN_ACTIONS.makeMatch);
-  const [adminFormData, setAdminFormData] = useState({formData: {}});
-  console.log("INFO",stateInfo);
+  //const [adminFormData, setAdminFormData] = useState({formData: {}});
   const [requestResponse, updateRequestResponse] = useState({});
+  const [overlaySelectorState, setOverlaySelectorState] = useState({visible: false})
 
   useEffect(() => {
     updateRequestResponse(stateInfo);
@@ -113,7 +139,7 @@ export const Dashboard = ({
     if (stateInfo?.s2)
       setSelection2(users.filter(u => u.user.hash === stateInfo.s2)[0]);
 
-  }, [stateInfo]);
+  }, [stateInfo, users]);
 
   const updateFilters = updatedFilters => {
     /*
@@ -128,16 +154,6 @@ export const Dashboard = ({
     // Store the current filterTags, so they can persist after reload. This can be removed if we replace the reload with an API
     localStorage.setItem('filterTags', JSON.stringify(updatedFilters));
     simulateFilterUpdate(filterStrings);
-  };
-
-  const handleMatchClick = () => {
-
-    genericTwoUserApiCall(selection1.user.hash, selection2.user.hash).then(res => {
-      res.json().then(json => {
-        setAdminAction({...adminAction, result: json})
-        console.log(json);
-      });
-    });
   };
 
   return (
@@ -277,6 +293,35 @@ export const Dashboard = ({
           </Selections>
         </SearchSection>
       </InteractionsContainer>
+      ...{overlaySelectorState?.visible && 
+        <OverlaySelector>
+          <OverlaySelectorTopMenu>
+            TEST
+          </OverlaySelectorTopMenu>
+          <OverlaySelectorListContainer>
+            <OrderedList>
+              {users.map(user => (
+                <UserListItemDetailed
+                  key={user.hash}
+                  user={user}
+                  isSelected={[
+                    selection1?.user.hash,
+                    selection2?.user.hash,
+                  ].includes(user.user.hash)}
+                  setSelection1={() => setSelection1(user)}
+                  setSelection2={() => setSelection2(user)}
+                  setViewUser={() => setViewUser(user)}
+                />
+              ))}
+            </OrderedList>
+          </OverlaySelectorListContainer>
+        </OverlaySelector>
+      }
+      <OverlaySelectorToggle onClick={(e) => {
+        setOverlaySelectorState({...overlaySelectorState, visible: !overlaySelectorState.visible})
+      }}>
+        YO YO
+      </OverlaySelectorToggle>
     </Container>
   );
 };

@@ -84,11 +84,42 @@ export const FlexContainer = styled.div`
   margin-bottom: 8px;
 `;
 
+export const OverlaySelector = styled.div`
+  position: absolute;
+  background: green;
+  right: 0;
+  top:0;
+  height: auto;
+  width: 60%;
+`
+
+export const OverlaySelectorTopMenu = styled.div`
+  background: blue;
+  height: 100px;
+`
+
+export const OverlaySelectorListContainer = styled.div`
+  padding: 20px;
+  padding-top: 100px;
+  background: yellow;
+`
+
+export const OverlaySelectorToggle = styled.div`
+  z-index: 10;
+  background: red;
+  width: 40px;
+  height: 40px;
+  position: absolute;
+  right: 0;
+  top:0;
+`
+
 export const CloseIcon = styled(Close)`
   height: 16px;
   width: 16px;
   margin-left: ${({ theme: { spacing } }) => spacing(1)};
 `;
+
 
 export const Name = styled.span`
   flex-shrink: 0;

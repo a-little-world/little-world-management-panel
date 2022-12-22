@@ -137,9 +137,26 @@ export const ADMIN_ACTIONS = {
             type: 'string',
             default: u1?.user.hash,
           },
+          filters: {
+            type: 'array',
+            default: [
+              'state.matching_state:is:searching',
+              'state.email_authenticated:is:True',
+              'state.user_form_state:is:filled',
+              'state.user_category:in:legit,undefined',
+            ],
+            items: {
+              type: 'string',
+            },
+            //'state.matching_state:is:searching&state.email_authenticated:is:True&state.user_form_state:is:filled&state.user_category:in:legit,undefined',
+          },
           lookup: {
             type: 'string',
             default: 'hash',
+          },
+          invalidate_all_old_scores: {
+            type: 'boolean',
+            default: true,
           },
         },
       };
@@ -246,3 +263,5 @@ export const ADDITIONAL_USER_FIELDS = [
   'partner_location',
   'conversation_medium',
 ];
+
+export const USER_TAGS = [''];
