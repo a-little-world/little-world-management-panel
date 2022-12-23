@@ -76,7 +76,8 @@ const UserListItemDetailed = ({
   setViewUser,
   stateInfo,
   userTags,
-  updateUserTags
+  updateUserTags,
+  mode = 'regular' // or suggestions
 }) => {
   const curUserTags = userTags.filter((u) => u.userHash === user.user.hash)[0]
   
@@ -85,16 +86,27 @@ const UserListItemDetailed = ({
     <Name>
       {user.profile.first_name} {user.profile.second_name} ({user.user.email})
     </Name>
-    <Option onClick={setViewUser}>View</Option>
-    <Option disabled={isSelected} onClick={setSelection1}>
+  {mode === 'regular' && 
+    <Option onClick={setViewUser}>View</Option>}
+    {mode === 'regular' && <Option disabled={isSelected} onClick={setSelection1}>
       Select (1)
-    </Option>
+    </Option>}
     <Option disabled={isSelected} onClick={setSelection2}>
       Select (2)
     </Option>
-    <Option>
+    {mode === 'regular' && <Option onClick={(e) => {
+          const parser = new URL(window.location);
+          parser.searchParams.set("suggest", user.user.hash);
+          window.location = parser.href;
+    }}>
       Focus for maching
-    </Option>
+    </Option>}
+    {mode === 'suggestion' && <Option>
+      Score: {user.score.score}
+      </Option>}
+    {mode === 'suggestion' && <Option>
+      View Scoring Table
+      </Option>}
   </UserDetailed>
   <UserTags>
       {stateInfo?.filter_options.state.tags.map((tag) => (
@@ -355,17 +367,39 @@ export const Dashboard = ({
           <OverlaySelectorTopMenu>
             <Option style={{
               'background': overlaySelectorState.tab === 'users' ? 'green' : 'white'
+            }} onClick={(e) => {
+              setOverlaySelectorState({
+                ...overlaySelectorState,
+                tab: 'users'
+              })
             }}>
               Users
             </Option>
             <Option style={{
-              'background': overlaySelectorState.tab === 'scores' ? 'green' : 'white'
+              'background': overlaySelectorState.tab === 'suggestions' ? 'green' : 'white'
+            }} onClick={(e) => {
+              setOverlaySelectorState({
+                ...overlaySelectorState,
+                tab: 'suggestions'
+              })
             }}>
               Suggestions
             </Option>
+            <Option disabled={true}>
+              Pages:
+            </Option>
+            {[...Array(stateInfo?.num_pages).keys()].map((x) => x + 1).map(page => {
+              return (<><Option id={page} onClick={(e) => {
+                    // Switch to that page by reloading, with url param
+                    const url = window.location.href;
+                    const parser = new URL(url || window.location);
+                    parser.searchParams.set("page", e.target.id);
+                    window.location = parser.href;
+              } }>{page}</Option><span>  </span></>)
+            })}
           </OverlaySelectorTopMenu>
           <OverlaySelectorListContainer>
-            <OrderedList>
+            <OrderedList style={{display: overlaySelectorState.tab === 'users' ? 'block' : 'none'}}>
               {users.map(user => (
                 <UserListItemDetailed
                   key={user.hash}
@@ -380,6 +414,25 @@ export const Dashboard = ({
                   stateInfo={stateInfo}
                   userTags={userTags}
                   updateUserTags={setUserTags}
+                />
+              ))}
+            </OrderedList>
+            <OrderedList style={{display: overlaySelectorState.tab === 'suggestions' ? 'block' : 'none'}}>
+              {stateInfo.suggested_users?.map(user => (
+                <UserListItemDetailed
+                  key={user.hash}
+                  user={user}
+                  isSelected={[
+                    selection1?.user.hash,
+                    selection2?.user.hash,
+                  ].includes(user.user.hash)}
+                  setSelection1={() => setSelection1(user)}
+                  setSelection2={() => setSelection2(user)}
+                  setViewUser={() => setViewUser(user)}
+                  stateInfo={stateInfo}
+                  userTags={userTags}
+                  updateUserTags={setUserTags}
+                  mode="suggestion"
                 />
               ))}
             </OrderedList>
