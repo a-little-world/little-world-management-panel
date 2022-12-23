@@ -1,4 +1,5 @@
 import Form from "@rjsf/material-ui";
+import ReactMarkdown from 'react-markdown'
 //import Form from "@rjsf/core";
 import ReactJson from 'react-json-view'
 import { useEffect, useState } from 'react';
@@ -7,6 +8,7 @@ import Header from '../atoms/header';
 import Panel from '../atoms/panel';
 import UserImage from '../atoms/userImage';
 import { getCookiesAsObject } from "../utils";
+import remarkGfm from 'remark-gfm';
 
 import Dropdown from '../atoms/dropdown';
 import { genericTwoUserApiCall } from '../api';
@@ -46,6 +48,11 @@ import {
 import { RJSFSchema } from "@rjsf/utils";
 import validator from "@rjsf/validator-ajv8";
 
+const markdown = `A paragraph with *emphasis* and **strong importance**.
+
+| a | b |
+| - | - |
+`
 
 const UserItem = ({
   isSelected,
@@ -188,6 +195,7 @@ export const Dashboard = ({
     tab: 'users'
   })
   const [userTags, setUserTags] = useState(null)
+  const [suggestionTable, setSuggestionTable] = useState(null);
 
   useEffect(() => {
     /* This should be handled by a some sort of global state instead */
@@ -385,6 +393,16 @@ export const Dashboard = ({
             }}>
               Suggestions
             </Option>
+            <Option style={{
+              'background': overlaySelectorState.tab === 'table' ? 'green' : 'white'
+            }} onClick={(e) => {
+              setOverlaySelectorState({
+                ...overlaySelectorState,
+                tab: 'table'
+              })
+            }}>
+              Table
+            </Option>
             <Option disabled={true}>
               Pages:
             </Option>
@@ -436,6 +454,9 @@ export const Dashboard = ({
                 />
               ))}
             </OrderedList>
+            {overlaySelectorState.tab === "table"  && 
+            <div style={{ background: 'white'}}><ReactMarkdown 
+              children={selection2?.score.rendered_results_md_table} remarkPlugins={[remarkGfm]} /></div>}
           </OverlaySelectorListContainer>
         </OverlaySelector>
       }
