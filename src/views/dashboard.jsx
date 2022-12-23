@@ -16,6 +16,7 @@ import {
   OverlaySelectorToggle,
   ActionsMenuResultsContainer,
   InputFormContainer,
+  UserDetailed,
   UserTags,
   Button,
   CloseIcon,
@@ -80,7 +81,7 @@ const UserListItemDetailed = ({
   const curUserTags = userTags.filter((u) => u.userHash === user.user.hash)[0]
   
   return (
-  <><User>
+  <><UserDetailed>
     <Name>
       {user.profile.first_name} {user.profile.second_name} ({user.user.email})
     </Name>
@@ -91,26 +92,34 @@ const UserListItemDetailed = ({
     <Option disabled={isSelected} onClick={setSelection2}>
       Select (2)
     </Option>
-  </User>
+    <Option>
+      Focus for maching
+    </Option>
+  </UserDetailed>
   <UserTags>
       {stateInfo?.filter_options.state.tags.map((tag) => (
         <Option style={{
           'font-size': '10px',
           'padding': '0px',
-          'background': curUserTags.tags.includes(tag.value) ? 'green' : 'white'
+          'background': curUserTags?.tags.includes(tag.value) ? 'green' : 'white'
         }} onClick={(e)=> {
-          fetch(`/api/admin/user/tags/${tag}/toggle`, {
+          fetch(`/api/admin/user/tag/toggle/`, {
             method: 'POST',
             headers: {
               'X-CSRFToken': getCookiesAsObject().csrftoken,
               'Content-Type': 'application/json',
             },
+            body: JSON.stringify({
+              tag: tag.value,
+              user: user.user.hash,
+              lookup: 'hash'
+            }),
           }).then((res) => {
             if(res.status === 200)
               res.json().then(json => {
-                updateUserTags([...userTags.filter((u) => u.userHash !== user.user.hash), {
-                  tags: curUserTags.tags,
-                  userHash: curUserTags.hash
+                updateUserTags(prevState => [...prevState.filter((u) => u.userHash !== user.user.hash), {
+                  tags: json.tags,
+                  userHash: curUserTags.userHash
                 }])
               });
           })
@@ -163,19 +172,13 @@ export const Dashboard = ({
   //const [adminFormData, setAdminFormData] = useState({formData: {}});
   const [requestResponse, updateRequestResponse] = useState({});
   const [overlaySelectorState, setOverlaySelectorState] = useState({
-    visible: false, 
-    /* This should be handled by a some sort of global state instead */
-    userTags: users.map((u) => {
-      console.log("USER", u);
-      return {
-        tags: u.state.tags,
-        userHash: u.user.hash
-      }
-    })
+    visible: false,
+    tab: 'users'
   })
   const [userTags, setUserTags] = useState(null)
 
   useEffect(() => {
+    /* This should be handled by a some sort of global state instead */
     setUserTags(users.map((u) => {
       return {
         tags: u.state.tags,
@@ -350,7 +353,16 @@ export const Dashboard = ({
       ...{overlaySelectorState?.visible && 
         <OverlaySelector>
           <OverlaySelectorTopMenu>
-            TEST
+            <Option style={{
+              'background': overlaySelectorState.tab === 'users' ? 'green' : 'white'
+            }}>
+              Users
+            </Option>
+            <Option style={{
+              'background': overlaySelectorState.tab === 'scores' ? 'green' : 'white'
+            }}>
+              Suggestions
+            </Option>
           </OverlaySelectorTopMenu>
           <OverlaySelectorListContainer>
             <OrderedList>
@@ -375,7 +387,7 @@ export const Dashboard = ({
         </OverlaySelector>
       }
       <OverlaySelectorToggle onClick={(e) => {
-        setOverlaySelectorState({userTags: [...overlaySelectorState.userTags], visible: !overlaySelectorState.visible})
+        setOverlaySelectorState({...overlaySelectorState, visible: !overlaySelectorState.visible})
       }}>
         YO YO
       </OverlaySelectorToggle>

@@ -56,6 +56,17 @@ export const User = styled.li`
   padding: ${({ theme: { spacing } }) => spacing(1)} 0px;
 `;
 
+export const UserDetailed = styled.li`
+  width: 100;
+  border-bottom: 1px solid black;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+  column-gap: ${({ theme: { spacing } }) => spacing(1)};
+  align-items: center;
+  justify-content: space-between;
+  padding: ${({ theme: { spacing } }) => spacing(1)} 0px;
+`;
+
 export const UserTags = styled.li`
   width: 100;
   border-bottom: 1px solid black;
