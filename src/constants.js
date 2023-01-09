@@ -181,9 +181,13 @@ export const ADMIN_ACTIONS = {
             type: 'string',
             default: 'hash',
           },
-          force: {
+          delete_video_room: {
             type: 'boolean',
-            default: false,
+            default: true,
+          },
+          delete_dialog: {
+            type: 'boolean',
+            default: true,
           },
         },
       };
