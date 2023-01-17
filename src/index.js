@@ -21,10 +21,13 @@ const dispatchRenderApp = initData => {
 
 const dispatchRenderStatsApp = initData => {
   const root = ReactDOM.createRoot(document.getElementById('root'));
-  const statsData = initData?.statsData;
+  console.log('INIT', initData);
   root.render(
     <React.StrictMode>
-      <StatsApp inputStats={statsData} />
+      <StatsApp
+        inputSeries={initData?.initData?.time_series}
+        inputStaticStats={initData?.initData?.static_stats}
+      />
     </React.StrictMode>,
   );
 };
