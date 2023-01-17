@@ -104,7 +104,7 @@ const UserListItemDetailed = ({
     {mode === 'regular' && <Option onClick={(e) => {
           const parser = new URL(window.location);
           parser.searchParams.set("suggest", user.user.hash);
-          window.location = parser.href;
+          window.open(parser.href, '_blank');
     }}>
       Focus for maching
     </Option>}
