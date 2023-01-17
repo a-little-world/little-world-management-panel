@@ -56,6 +56,17 @@ export const User = styled.li`
   padding: ${({ theme: { spacing } }) => spacing(1)} 0px;
 `;
 
+export const Table = styled.table.attrs(props => ({
+  className: "styled-table"
+}))`
+  border-collapse: collapse;
+  margin: 25px 0;
+  font-size: 0.9em;
+  font-family: sans-serif;
+  min-width: 400px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+`;
+
 export const UserDetailed = styled.li`
   width: 100;
   border-bottom: 1px solid black;
