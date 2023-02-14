@@ -26,6 +26,7 @@ const dispatchRenderStatsApp = initData => {
     <React.StrictMode>
       <StatsApp
         inputSeries={initData?.initData?.time_series}
+        inputCombinedGraphs={initData?.initData?.combined}
         inputStaticStats={initData?.initData?.static_stats}
       />
     </React.StrictMode>,
