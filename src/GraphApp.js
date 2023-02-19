@@ -6,6 +6,8 @@ import theme from './theme';
 function GraphApp({ inputGraph }) {
   const [graph, setGraph] = useState({});
 
+  console.log('Input graph: ', inputGraph);
+
   useEffect(() => {
     const newGraph = inputGraph || {};
     setGraph(newGraph);

@@ -39,7 +39,7 @@ const dispatchRenderGraphApp = initData => {
   console.log('INIT', initData);
   root.render(
     <React.StrictMode>
-      <GraphApp inputGraph={initData?.initData?.graph} />
+      <GraphApp inputGraph={initData?.initData} />
     </React.StrictMode>,
   );
 };
