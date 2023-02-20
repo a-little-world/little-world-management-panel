@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ThemeProvider } from 'styled-components';
 import { GraphDashboard } from './GraphDashboard';
 import theme from './theme';
+import './withTailwind.css';
 
 function GraphApp({ inputGraph }) {
   const [graph, setGraph] = useState({});
@@ -13,11 +14,7 @@ function GraphApp({ inputGraph }) {
     setGraph(newGraph);
   }, [inputGraph]);
 
-  return (
-    <ThemeProvider theme={theme}>
-      <GraphDashboard graph={graph} />
-    </ThemeProvider>
-  );
+  return <GraphDashboard inGraph={graph} />;
 }
 
 export default GraphApp;
