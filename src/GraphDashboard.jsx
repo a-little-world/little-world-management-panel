@@ -120,10 +120,16 @@ const ReproduceHashs = ({repOv}) => {
     return <div className="stats shadow">
   <div className="stat">
     <div className="stat-title">Reproduce this overview? </div>
-    <div className="stat-desc">Frozen in time <button className='btn btn-xs btn-ghost'>copy</button></div>
+    <div className="stat-desc">Frozen in time <button className='btn btn-xs btn-ghost' 
+    onClick={() => {
+        navigator.clipboard.writeText(repOv?.frozen);
+    }}>copy</button></div>
     <div className="stat-desc max-w-xs overflow-x-hidden">{repOv?.frozen}</div>
     <div className="stat-desc max-w-xs overflow-x-hidden">...</div>
-    <div className="stat-desc">Newest time <button className='btn btn-xs btn-ghost'>copy</button></div>
+    <div className="stat-desc">Newest time <button className='btn btn-xs btn-ghost'
+    onClick={() => {
+        navigator.clipboard.writeText(repOv?.newest);
+    }}>copy</button></div>
     <div className="stat-desc max-w-xs overflow-x-hidden">{repOv?.newest}</div>
     <div className="stat-desc max-w-xs overflow-x-hidden">...</div>
   </div>
@@ -151,7 +157,7 @@ const PlotContainer = ({ graph, mode }) => {
 </div>
 }
 
-export const GraphDashboard = ({ inGraph }) => {
+export const GraphDashboard = ({ inGraph, inFetched }) => {
     const [curDate, setCurDate] = useState(null);
     const [dateRanges, setDateRanges] = useState(null);
     const [graph, setGraph] = useState({});
@@ -160,19 +166,26 @@ export const GraphDashboard = ({ inGraph }) => {
 
     const [repOv, setRepOv] = useState({frozen: "", newest: ""});
 
-    useEffect(() => {
-    }, [graph])
+    console.log("IN GRAPH", inGraph);
+    console.log("IN fetched", inFetched);
 
     useEffect(() => {
         const newGraph = inGraph || {};
         setGraph(newGraph);
 
-        setFetchedGraphs([newGraph])
-
-        setRepOv({
-            frozen: "by-hash:" + newGraph?.hash,
-            newest: "by-slug:" + newGraph?.slug,
-        })
+        if(inFetched){
+            setFetchedGraphs(inFetched)
+            setRepOv({
+                frozen: "hash:" + inFetched.map((g) => g?.hash).join(","),
+                newest: "slug:" + inFetched.map((g) => g?.slug).join(",")
+            })
+        }else{
+            setFetchedGraphs([newGraph])
+            setRepOv({
+                frozen: "hash:" + newGraph?.hash,
+                newest: "slug:" + newGraph?.slug,
+            })
+        }
 
         if(Object.keys(inGraph).length !== 0){
             setCurDate(new Date(inGraph?.time))
@@ -186,11 +199,11 @@ export const GraphDashboard = ({ inGraph }) => {
 
     const updateGraphs = (newGraph) => {
         setGraph(newGraph);
-        const allGraphsNew = [newGraph, ...fetchedGraphs]
+        const allGraphsNew = [newGraph, ...fetchedGraphs.filter((g) => g?.slug !== newGraph?.slug)]
         setFetchedGraphs(allGraphsNew)
         setRepOv({
-            frozen: "by-hash:" + allGraphsNew.map((g) => g?.hash).join(","),
-            newest: "by-slug:" + allGraphsNew.map((g) => g?.slug).join(","),
+            frozen: "hash:" + allGraphsNew.map((g) => g?.hash).join(","),
+            newest: "slug:" + allGraphsNew.map((g) => g?.slug).join(","),
         })
     }
 
