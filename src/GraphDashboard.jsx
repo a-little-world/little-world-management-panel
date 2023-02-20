@@ -1,5 +1,6 @@
 import Plot from 'react-plotly.js';
 import { useEffect, useState } from 'react';
+import { getCookiesAsObject } from './utils';
 
 const asInputSelctorString = (date) => {
     console.log("Date", date)
@@ -59,45 +60,93 @@ const VersionAmountIndicator = ({ amount }) => {
 </div>
 }
 
-const GraphSelector = ({graph}) => {
+const GraphSelector = ({graph, updateGraphs}) => {
+    const [slectedSlug, setSlectedSlug] = useState(graph?.slug)
+
     return <div className="stats shadow">
   <div className="stat">
     <div className="stat-title">View another graph</div>
     <div className="stat-value">
-        <select className="select select-bordered w-full max-w-xs">
-            {graph?.slug_options?.map((slug) => {
-                return <option>{slug}</option>
+        <select className="select select-bordered w-full max-w-xs"
+        onChange={(e) => {
+            console.log("e.target.value", e.target.value)
+            setSlectedSlug(e.target.value)
+        }}>
+            {graph?.slug_options?.map((slug, i) => {
+                return <option key={i} value={slug}>{slug}</option>
             })}
         </select>
     </div>
-    <div className="stat-desc">(by slug)</div>
-  </div>
-</div>
-}
+    <div className="stat-desc">
+            <button className="btn btn-xs"
+                onClick={(e) => {
+            fetch(`/api/admin/graph/get/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookiesAsObject().csrftoken,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({slug: slectedSlug})
+                }).then((res) => {
+                    if(res.ok){
+                        res.json().then((data => {
+                            updateGraphs(data);
+                        }))
+                    }else{
 
-const SlugSearch = () => {
-    return <div className="stats shadow">
-  <div className="stat">
-    <div className="stat-title">search for slug</div>
-    <div className="stat-value">
-        <input type="text" placeholder="Type here" className="input w-full max-w-xs" />
+                    }
+                })
+            }}>fetch</button>
     </div>
-    <div className="stat-desc">(for slug)</div>
   </div>
 </div>
 }
 
-const PlotContainer = ({ graph }) => {
+const CompareTrigger = ({setView}) => {
     return <div className="stats shadow">
   <div className="stat">
-    <div className="stat-title">Graph for slug '{graph?.slug}'</div>
+    <div className="stat-title">Compare all?</div>
     <div className="stat-value">
+        <button class="btn" onClick={(e) => {
+            setView("compare");
+        }}>overview</button>
+    </div>
+    <div className="stat-desc">(opens a big overview)</div>
+  </div>
+</div>
+}
+
+const ReproduceHashs = ({repOv}) => {
+    return <div className="stats shadow">
+  <div className="stat">
+    <div className="stat-title">Reproduce this overview? </div>
+    <div className="stat-desc">Frozen in time <button className='btn btn-xs btn-ghost'>copy</button></div>
+    <div className="stat-desc max-w-xs overflow-x-hidden">{repOv?.frozen}</div>
+    <div className="stat-desc max-w-xs overflow-x-hidden">...</div>
+    <div className="stat-desc">Newest time <button className='btn btn-xs btn-ghost'>copy</button></div>
+    <div className="stat-desc max-w-xs overflow-x-hidden">{repOv?.newest}</div>
+    <div className="stat-desc max-w-xs overflow-x-hidden">...</div>
+  </div>
+</div>
+}
+
+const PlotContainer = ({ graph, mode }) => {
+    return <div className="stats shadow">
+  <div className="stat">
+    {mode === "single" && <div className="stat-title">Graph for slug '{graph?.slug}'</div>}
+    {mode === "single" && <div className="stat-value">
                                     <Plot
                                         data={graph?.data?.data}
                                         layout={ {width: 600, height: 400, ...graph?.data?.layout} }
                                         />
-    </div>
-    <div className="stat-desc">hash: {graph?.hash}</div>
+    </div>}
+    {mode === "compare" && 
+                                    <Plot
+                                        data={graph?.data?.data}
+                                        layout={ {width: 500, height: 350, ...graph?.data?.layout} }
+                                        />
+    }
+    {mode === "single" && <div className="stat-desc">hash: {graph?.hash}</div>}
   </div>
 </div>
 }
@@ -107,6 +156,9 @@ export const GraphDashboard = ({ inGraph }) => {
     const [dateRanges, setDateRanges] = useState(null);
     const [graph, setGraph] = useState({});
     const [fetchedGraphs, setFetchedGraphs] = useState([]);
+    const [view, setView] = useState("single");
+
+    const [repOv, setRepOv] = useState({frozen: "", newest: ""});
 
     useEffect(() => {
     }, [graph])
@@ -115,7 +167,12 @@ export const GraphDashboard = ({ inGraph }) => {
         const newGraph = inGraph || {};
         setGraph(newGraph);
 
-        setFetchedGraphs([newGraph, ...fetchedGraphs])
+        setFetchedGraphs([newGraph])
+
+        setRepOv({
+            frozen: "by-hash:" + newGraph?.hash,
+            newest: "by-slug:" + newGraph?.slug,
+        })
 
         if(Object.keys(inGraph).length !== 0){
             setCurDate(new Date(inGraph?.time))
@@ -127,33 +184,60 @@ export const GraphDashboard = ({ inGraph }) => {
         }
     }, [inGraph])
 
+    const updateGraphs = (newGraph) => {
+        setGraph(newGraph);
+        const allGraphsNew = [newGraph, ...fetchedGraphs]
+        setFetchedGraphs(allGraphsNew)
+        setRepOv({
+            frozen: "by-hash:" + allGraphsNew.map((g) => g?.hash).join(","),
+            newest: "by-slug:" + allGraphsNew.map((g) => g?.slug).join(","),
+        })
+    }
+
     if(Object.keys(graph).length === 0 || !dateRanges) {
         return <h1>loading...</h1>
     }
 
 
     return (
-        <>
+        <>{view === "single" &&
                     <div class="grid h-screen place-items-center">
                         <div className='flex justify-around relative'>
                             <div className='h-full flex flex-col justify-around mr-10'>
-                                <div className='mb-5'><GraphSelector graph={graph}></GraphSelector></div>
-                                <div className='mb-5'><SlugSearch></SlugSearch></div>
+                                <div className='mb-5'><GraphSelector graph={graph} updateGraphs={updateGraphs}></GraphSelector></div>
+                                <div className='mb-5'><CompareTrigger setView={setView}></CompareTrigger></div>
+                                <div className='mb-5'><ReproduceHashs repOv={repOv}></ReproduceHashs></div>
                             </div>
                             <div className='h-full flex flex-col justify-around mr-10'>
-                                <div className="tabs ml-10">
+                                <div className="tabs ml-10 max-w-xl	overflow-x-auto">
                                     {fetchedGraphs.map((g) => {
-                                        return <a className="tab tab-lifted">{g?.slug}</a> 
+                                        return <button className={g?.slug !== graph?.slug ? "tab tab-lifted" : "tab tab-lifted tab-active"}
+                                        onClick={(e) => {
+                                            setGraph(g);
+                                        }}
+                                        >{g?.slug}</button> 
                                     })}
                                 </div>
-                                <PlotContainer graph={graph}></PlotContainer>
+                                <PlotContainer graph={graph} mode={view}></PlotContainer>
                             </div>
                             <div className='h-full flex flex-col justify-around ml-10'>
                                 <div className='mb-5'><VersionAmountIndicator amount={graph?.amount_versions}></VersionAmountIndicator></div>
                                 <div className='mb-5'><DatePicker curDate={curDate} setCurDate={setCurDate} dateRanges={dateRanges}></DatePicker></div>
                             </div>
                         </div>
-                    </div>
+                    </div>}
+            {view === "compare" && <>
+           <div className='absolute t-0'><button className='btn'
+                    onClick={(e) => {
+                        setView("single");
+                    }}>BACK</button></div> 
+            <div className='flex flex-wrap pt-20'>
+                {fetchedGraphs.map((g) => {
+                    return <PlotContainer graph={g} mode={view}></PlotContainer>
+                })}
+            </div> 
+            </>
+            }
         </>
     )
 }
