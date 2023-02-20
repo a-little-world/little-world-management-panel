@@ -7,21 +7,37 @@ const asInputSelctorString = (date) => {
     return date.toISOString().split('T')[0] + 'T' + date.toTimeString().split(' ')[0]
 }
 
-const BottomNav = () => {
-    return <div className="btm-nav">
-  <button className="bg-pink-200 text-pink-600">
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
-    <span className="btm-nav-label">Home</span>
-  </button>
-  <button className="active bg-neutral text-neutral-content">
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-    <span className="btm-nav-label">Warnings</span>
-  </button>
-  <button className="bg-teal-200 text-teal-600">
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-    <span className="btm-nav-label">Statics</span>
-  </button>
-</div>
+const overviews = [
+    {
+        "title" : "User influx",
+        "description" : "User groth over time, also comparison new volunteers vs new learners",
+        "lookup" : ""
+    },
+    {
+        "title" : "User matching choices",
+        "description" : "Overview of overall matching choinces in e.g.: interests, availability time, learner or volunteer...",
+        "lookup" : ""
+    },
+    {
+        "title" : "Match activity",
+        "description" : "Activity of matches. Show amount of active matches currently. And actions by active matches.",
+        "lookup" : ""
+    },
+    {
+        "title" : "Plattform activity",
+        "description" : "Total interactions overtime. Amount of logins, messages send, etc...",
+        "lookup" : ""
+    },
+]
+
+const ActionMenu = () => {
+    return <div className="stats shadow">
+        <div className="stat">
+            <div className="stat-title">Actions</div>
+                <button className="btn btn-xs" onClick={(e) => {
+                }} >remove from selection</button>
+        </div>
+    </div>
 }
 
 const DatePicker = ({ curDate, setCurDate ,dateRanges }) => {
@@ -38,14 +54,12 @@ const DatePicker = ({ curDate, setCurDate ,dateRanges }) => {
             min={asInputSelctorString(dateRanges?.minTime)}
             max={asInputSelctorString(dateRanges?.maxTime)}
             ></input> 
-    <button className="btn btn-xs"
-    onClick={(e) => {
+    <button className="btn btn-xs" onClick={(e) => {
             var url = new URL(window.location.href);
             const urlParams = new URLSearchParams(window.location.search);
             url.searchParams.set('date', encodeURIComponent());
             window.location.reload();
-    }}
-    >reload</button>
+    }} >reload</button>
   </div>
 </div>
 }
@@ -60,7 +74,7 @@ const VersionAmountIndicator = ({ amount }) => {
 </div>
 }
 
-const GraphSelector = ({graph, updateGraphs}) => {
+const GraphSelector = ({graph, updateGraphs, makeToast}) => {
     const [slectedSlug, setSlectedSlug] = useState(graph?.slug)
 
     return <div className="stats shadow">
@@ -90,10 +104,11 @@ const GraphSelector = ({graph, updateGraphs}) => {
                 }).then((res) => {
                     if(res.ok){
                         res.json().then((data => {
+                            makeToast({text: `sucessfully fechted '${slectedSlug}' graph`, type: 'success'})
                             updateGraphs(data);
                         }))
                     }else{
-
+                        makeToast({text: `failed fetching '${slectedSlug}' graph`, type: 'warning'})
                     }
                 })
             }}>fetch</button>
@@ -136,6 +151,27 @@ const ReproduceHashs = ({repOv}) => {
 </div>
 }
 
+const PredefinedOverviews = ({repOv}) => {
+    return <div className="stats shadow">
+  <div className="stat">
+    <div className="stat-title">Predefined overviews</div>
+    <label htmlFor="my-modal-3" className="btn">show options</label>
+  </div>
+</div>
+}
+
+const PredefinedOverviewItem = ({overview}) => {
+    return <div className="stats shadow mb-5 mr-5">
+  <div className="stat">
+    <div className="stat-title">{overview?.title}</div>
+    <div className="stat-desc w-40" style={{whiteSpace: 'pre-wrap'}}>{overview?.description}</div>
+    <label htmlFor="my-modal-3" className="btn btn-xs btn-ghost" onClick={() => {
+        window.location.href = "/stats/graph/" + overview?.lookup;
+    }}>open</label>
+  </div>
+</div>
+}
+
 const PlotContainer = ({ graph, mode }) => {
     return <div className="stats shadow">
   <div className="stat">
@@ -157,17 +193,38 @@ const PlotContainer = ({ graph, mode }) => {
 </div>
 }
 
+const ToastContainer = ({ toasts }) => {
+    return <div className="toast">{toasts.map((toast, i) => {
+        return <div className={`alert alert-${toast?.type}`}>
+            <div>
+                {toast?.type === 'success' && <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+                {toast?.type === 'warning' && <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+                <span>{toast?.text}</span>
+            </div>
+        </div>})}
+    </div>
+}
+
 export const GraphDashboard = ({ inGraph, inFetched }) => {
     const [curDate, setCurDate] = useState(null);
     const [dateRanges, setDateRanges] = useState(null);
     const [graph, setGraph] = useState({});
     const [fetchedGraphs, setFetchedGraphs] = useState([]);
     const [view, setView] = useState("single");
-
     const [repOv, setRepOv] = useState({frozen: "", newest: ""});
+
+    const [toasts, setToasts] = useState([]);
 
     console.log("IN GRAPH", inGraph);
     console.log("IN fetched", inFetched);
+
+    const triggerToast = (toast) => {
+        const id = crypto.randomUUID();
+        setToasts([...toasts, {id , ...toast}]);
+        setTimeout(() => {
+            setToasts(to => to.filter((t) => t.id !== id));
+        }, 3000);
+    }
 
     useEffect(() => {
         const newGraph = inGraph || {};
@@ -217,9 +274,13 @@ export const GraphDashboard = ({ inGraph, inFetched }) => {
                     <div class="grid h-screen place-items-center">
                         <div className='flex justify-around relative'>
                             <div className='h-full flex flex-col justify-around mr-10'>
-                                <div className='mb-5'><GraphSelector graph={graph} updateGraphs={updateGraphs}></GraphSelector></div>
+                                <div className='mb-5'><GraphSelector 
+                                    graph={graph} 
+                                    updateGraphs={updateGraphs}
+                                    makeToast={triggerToast}></GraphSelector></div>
                                 <div className='mb-5'><CompareTrigger setView={setView}></CompareTrigger></div>
                                 <div className='mb-5'><ReproduceHashs repOv={repOv}></ReproduceHashs></div>
+                                <div className='mb-5'><PredefinedOverviews></PredefinedOverviews></div>
                             </div>
                             <div className='h-full flex flex-col justify-around mr-10'>
                                 <div className="tabs ml-10 max-w-xl	overflow-x-auto">
@@ -236,6 +297,7 @@ export const GraphDashboard = ({ inGraph, inFetched }) => {
                             <div className='h-full flex flex-col justify-around ml-10'>
                                 <div className='mb-5'><VersionAmountIndicator amount={graph?.amount_versions}></VersionAmountIndicator></div>
                                 <div className='mb-5'><DatePicker curDate={curDate} setCurDate={setCurDate} dateRanges={dateRanges}></DatePicker></div>
+                                <div className='mb-5'><ActionMenu></ActionMenu></div>
                             </div>
                         </div>
                     </div>}
@@ -251,6 +313,19 @@ export const GraphDashboard = ({ inGraph, inFetched }) => {
             </div> 
             </>
             }
+            <input type="checkbox" id="my-modal-3" className="modal-toggle" />
+            <div className="modal">
+            <div className="modal-box relative">
+                <label htmlFor="my-modal-3" className="btn btn-sm btn-circle absolute right-2 top-2">✕</label>
+                <h3 className="text-lg font-bold">Predefined overviews</h3>
+                <div className='flex flex-wrap'>
+                    {overviews.map((o) => {
+                        return <PredefinedOverviewItem overview={o}></PredefinedOverviewItem>
+                    })}
+                </div>
+            </div>
+            </div>
+            <ToastContainer toasts={toasts}></ToastContainer>
         </>
     )
 }
