@@ -242,7 +242,7 @@ const ToastContainer = ({ toasts }) => {
             </div>
 }
 
-const TableContainer = () => {
+const TableContainer = ({table}) => {
     const headers = ["slug", "hash", "date", "actions"]
     const rows = [
         [ "slug", "hash", "date", "actions" ],
@@ -256,13 +256,13 @@ const TableContainer = () => {
     <thead>
       <tr>
         <th></th>
-        {headers.map((header, i) => {
+        {table?.data?.headers?.map((header, i) => {
             return <th>{header}</th>
         })}
       </tr>
     </thead>
     <tbody>
-        {rows.map((row, i) => {
+        {table?.data?.rows?.map((row, i) => {
             return <tr>
                 <th>{i}</th>
                 {row.map((cell, i) => {
@@ -377,6 +377,7 @@ export const GraphDashboard = ({ inGraph, inFetched, themeControl }) => {
                                     })}
                                 </div>
                                 {graph?.type === "plot" && <PlotContainer graph={graph} mode={view}></PlotContainer>}
+                                {graph?.type === "table" && <TableContainer table={graph}></TableContainer>}
                             </div>
                             <div className='h-full flex flex-col justify-around ml-10'>
                                 <div className='mb-5'><VersionAmountIndicator amount={graph?.amount_versions}></VersionAmountIndicator></div>
@@ -397,7 +398,10 @@ export const GraphDashboard = ({ inGraph, inFetched, themeControl }) => {
             <div className='h-screen overflow-y-scroll'>
                 <div className='flex flex-wrap justify-around pt-20'>
                     {fetchedGraphs.map((g) => {
-                        return <PlotContainer graph={g} mode={view}></PlotContainer>
+                        if(g?.type === "plot")
+                            return <PlotContainer graph={g} mode={view}></PlotContainer>
+                        else
+                            return <TableContainer table={g}></TableContainer>
                     })}
                 </div> 
             </div> 
