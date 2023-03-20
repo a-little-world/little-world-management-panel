@@ -15,22 +15,22 @@ const overviews = [
     {
         "title" : "User influx",
         "description" : "User groth over time, also comparison new volunteers vs new learners",
-        "lookup" : ""
+        "lookup" : "list:user_influx"
     },
     {
-        "title" : "User matching choices",
-        "description" : "Overview of overall matching choinces in e.g.: interests, availability time, learner or volunteer...",
-        "lookup" : ""
+        "title" : "App Activity",
+        "description" : "General daily activity on the platform.",
+        "lookup" : "list:app_activity"
     },
     {
-        "title" : "Match activity",
-        "description" : "Activity of matches. Show amount of active matches currently. And actions by active matches.",
-        "lookup" : ""
+        "title" : "Match Quality",
+        "description" : "Overall amount of good and active matches, and quality measure for individual matches.",
+        "lookup" : "list:match_quality"
     },
     {
-        "title" : "Plattform activity",
-        "description" : "Total interactions overtime. Amount of logins, messages send, etc...",
-        "lookup" : ""
+        "title" : "User Profile",
+        "description" : "General averages and calcluations across all user profiles.",
+        "lookup" : "list:user_profiles"
     },
 ]
 
