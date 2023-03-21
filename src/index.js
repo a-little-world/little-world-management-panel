@@ -4,6 +4,7 @@ import './index.css';
 import App from './App';
 import StatsApp from './StatsApp';
 import GraphApp from './GraphApp';
+import UserListApp from './UserListApp';
 import reportWebVitals from './reportWebVitals';
 import { simulatedAutoLogin } from './loginSimulator';
 import { LOCAL_DEV } from './ENVIRONMENT';
@@ -44,7 +45,15 @@ const dispatchRenderGraphApp = initData => {
   );
 };
 
-const dispatchMetrics = initData => {};
+const dispatchRenderUserListApp = initData => {
+  const root = ReactDOM.createRoot(document.getElementById('root'));
+  console.log('INIT', initData);
+  root.render(
+    <React.StrictMode>
+      <UserListApp inputData={initData?.initData} />
+    </React.StrictMode>,
+  );
+};
 
 if (LOCAL_DEV) {
   simulatedAutoLogin().then(initData => {
@@ -56,6 +65,7 @@ if (LOCAL_DEV) {
   window.renderApp = dispatchRenderApp;
   window.renderStatsApp = dispatchRenderStatsApp;
   window.renderGraphApp = dispatchRenderGraphApp;
+  window.renderUserListApp = dispatchRenderUserListApp;
 }
 
 // If you want to start measuring performance in your app, pass a function
