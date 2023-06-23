@@ -1,7 +1,7 @@
-import Form from "@rjsf/material-ui";
+import Form from "@rjsf/mui";
 import ReactMarkdown from 'react-markdown'
 //import Form from "@rjsf/core";
-import ReactJson from 'react-json-view'
+import { JsonViewer } from '@textea/json-viewer'
 import { useEffect, useState } from 'react';
 import { simulateFilterUpdate } from '../loginSimulator';
 import Header from '../atoms/header';
@@ -169,7 +169,7 @@ const UserPanel = ({ additionalFields = [], heading, user, fallback }) => (
         {additionalFields.map(field => (
           <Text key={field}>{`${field}: ${user.profile[field]}`}</Text>
         ))}
-        <ReactJson src={user} collapsed={true} />
+        <JsonViewer value={user} collapsed={true} />
       </>
     ) : (
       <PanelFallbackText>{fallback}</PanelFallbackText>
@@ -248,7 +248,7 @@ export const Dashboard = ({
             user={selection2}
             fallback={'Select an available user from the list below'}
           >
-            <ReactJson src={adminAction?.result} />
+            <JsonViewer value={adminAction?.result} />
           </UserPanel>
           <InputFormContainer>
             <Dropdown
@@ -340,7 +340,7 @@ export const Dashboard = ({
           </div>
           <Selections>
             <ActionsMenuResultsContainer>
-              <ReactJson src={typeof requestResponse === 'string' ? {"msg" : requestResponse } : requestResponse} />
+              <JsonViewer src={typeof requestResponse === 'string' ? {"msg" : requestResponse } : requestResponse} />
             </ActionsMenuResultsContainer>
             <UserPanel
               additionalFields={ADDITIONAL_USER_FIELDS}
