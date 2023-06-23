@@ -14,22 +14,15 @@ const Avatar = styled(ReactAvatar)`
 `;
 
 const UserImage = ({ alt, user }) => {
-  const { profile_image, profile_avatar, profile_image_type } = user;
-  const isAvatar = profile_image_type === 0;
-  let avatarConfig;
+  const { image, avatar_config, image_type } = user;
+  const usesAvatar = image_type === 'avatar';
+  console.log("avatar_config", avatar_config, image, image_type, usesAvatar, user)
+  let avatarConfig = avatar_config
 
-  if (isAvatar) {
-    try {
-      avatarConfig = JSON.parse(profile_avatar);
-    } catch {
-      avatarConfig = null;
-    }
-  }
-
-  return avatarConfig ? (
+  return usesAvatar ? (
     <Avatar {...avatarConfig} />
   ) : (
-    <Image alt={alt} src={profile_image} />
+    <Image alt={alt} src={image} />
   );
 };
 

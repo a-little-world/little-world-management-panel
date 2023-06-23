@@ -27,19 +27,12 @@ export function apiAdminAction(action, params) {
   );
 }
 
-export function apiMakeMatch(u1, u2) {
-  // Makes a match ( this api might soon be merged in to the more general admin actions above )
-  return fetch(
-    `${baseUrl}/anAdminPathTh3yS4y/user_management/matchingtab/make_match/`,
-    {
-      method: 'POST',
-      headers: {
-        'X-CSRFToken': utils.getCookiesAsObject().csrftoken,
-      },
-      body: utils.recursiveObjectToFormData({
-        u1,
-        u2,
-      }),
+export function genericTwoUserApiCall(path, u1, u2) {
+  return fetch(path, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': utils.getCookiesAsObject().csrftoken,
     },
-  );
+    body: JSON.stringify([u1, u2]),
+  });
 }
