@@ -85,7 +85,7 @@ function DetailedTable({ users }) {
                   </div>
                 </td>
                 <td>
-                  Kind
+                  {user.user_type}
                   <br />
                   <span className="badge badge-ghost badge-sm">TAG</span>
                 </td>
