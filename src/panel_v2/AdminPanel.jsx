@@ -39,64 +39,77 @@ function fetchFromObject(obj, prop){
     return obj[prop];
 }
 
-/**
- * 
-                  <table className="table table-zebra">
-                    <thead className='sticky top-0 bg-base-300'>
-                      <tr>
-                        <th></th>
-                        <th>Name</th>
-                        <th>Job</th>
-                        <th>Favorite Color</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                    {users.map((user,i) => {
-                        return <tr key={i} className='h-2 p-0'>
-                            <th>{i}</th>
-                            {fields.map((field, j) => {
-                                return getTableComponentUser(user, field)
-                            })}
-                        </tr>
-                    })}
-                    </tbody>
-                  </table>
-              <table className="table table-zebra leading-3 w-full z-50 bg-base-100">
-                <thead className='bg-base-300'>
-                  <tr>
-                    <th></th>
-                    <th>Name</th>
-                    <th>Job</th>
-                    <th>Favorite Color</th>
-                  </tr>
-                </thead>
-                <tbody>
-                {users.map((user,i) => {
-                    return <tr key={i} className='p-0 hover:bg-accent hover:text-base-200'>
-                        <th className='w-20'>
-                            <input type="checkbox" checked="checked" className="checkbox ml-2" />
-                        </th>
-                        {fields.map((field, j) => {
-                            return getTableComponentUser(user, field)
-                        })}
-                    </tr>
+const Table = ({users, fields}) => {
+      return <table className="table table-zebra leading-3 w-full z-50 bg-base-100">
+        <thead className='bg-base-300'>
+          <tr>
+            <th></th>
+            <th>Name</th>
+            <th>Job</th>
+            <th>Favorite Color</th>
+          </tr>
+        </thead>
+        <tbody>
+        {users.map((user,i) => {
+            return <tr key={i} className='p-0 hover:bg-accent hover:text-base-200'>
+                <th className='w-20'>
+                    <input type="checkbox" checked="checked" className="checkbox ml-2" />
+                </th>
+                {fields.map((field, j) => {
+                    return getTableComponentUser(user, field)
                 })}
-                </tbody>
-              </table>
- */
-
-const BaseContent = ({users, fields}) => {
-    return <div className='bg-error h-full pt-15 relative'>
-        <div className='w-full h-full bg-info min-h-full max-h-full'>
-            <div className='h-screen bg-accent'>ey</div>
-        </div>
-    </div>
+            </tr>
+        })}
+        </tbody>
+      </table>
 }
 
 const getTableComponentUser = (user, field) => {
     const value = fetchFromObject(user, field)
     return FIELDS[field](value)
 }
+
+const UserSelectionDrawer = ({selectedUsers, fields, children}) => {
+    return <div className='w-full h-full bg-error min-h-full max-h-full flex flex-row'>
+        <div className='w-3/4 h-full bg-info min-h-full max-h-full'>
+            {children}
+        </div>
+        <div className='w-1/4 h-full bg-accent min-h-full max-h-full'>
+            SIDE
+        </div>
+    </div>
+}
+
+const DynamicDisplay = ({querySets,selectedList, children}) => {
+
+    return <div className="drawer lg:drawer-open">
+      <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
+      <div className="drawer-content">
+        <UserSelectionDrawer>
+            {children}
+        </UserSelectionDrawer>
+        <label htmlFor="my-drawer-2" className="btn btn-primary drawer-button lg:hidden">Open drawer</label>
+      
+      </div> 
+      <div className="drawer-side">
+        <label htmlFor="my-drawer-2" className="drawer-overlay"></label> 
+        <ul className="menu p-4 w-80 h-full bg-base-200 text-base-content text-left">
+            {Object.keys(querySets).map((key, i) => {
+                return <li key={i} className='p-2'>
+                    <a onClick={() => {
+
+                    }} className={`rounded-btn flex flex-col items-start ${selectedList === key ? 'bg-base-100' : ''}`}>
+                        <div className='text-xl'>{key}</div>
+                        <div className='text-xs'>{querySets[key]}</div>
+                    </a>
+                </li> 
+            })}
+        </ul>
+      
+      </div>
+</div>
+}
+
 
 export const AdminPanel = ({
     _querySets,
@@ -108,11 +121,7 @@ export const AdminPanel = ({
     const [fields, setFields] = useState(Object.keys(FIELDS))
     
     console.log("DATA", _querySets, _userLists)
-
-    return <div className='relative w-full h-full flex flex-col'>
-        <NavBar />
-        <div className='bg-error h-auto flex flex-grow relative'>
-            </div>
-        <BaseContent users={userLists[list]} fields={fields} />
-    </div>
+    return <DynamicDisplay querySets={_querySets} selectedList={list}>
+        <Table users={userLists[list]} fields={fields} />
+    </DynamicDisplay>
 }
