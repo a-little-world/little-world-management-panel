@@ -1,3 +1,15 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+    --date-picker-background: hsl(var(--b1));
+    --date-picker-foreground: hsl(var(--bc));
+    --sdt-primary: hsl(var(--pf));
+    --sdt-clear-color: hsl(var(--s));
+    --sdt-today-bg: hsl(var(--p));
+    --sdt-btn-bg-hover: hsl(var(--nf));
+    --sdt-bg-main: hsl(var(--b1));
+    --sdt-btn-header-bg-hover: hsl(var(--nf));
+    --sdt-color: hsl(var(--nc));
+}
