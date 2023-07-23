@@ -119,16 +119,21 @@ const EMAIL_FIELDS = [
     "receiver",
     "template",
     "time",
-    "params"
+    "retrieve"
 ]
 
 const EMAIL_FIELD_GETTERS = {
-  "time": (email, field, _key) => {
+  "retrieve": (email, field, _key, _onclick=null) => {
+    return <td key={_key}>
+        <button className='btn btn-xs' onClick={_onclick}>View</button>
+    </td> 
+  },
+  "time": (email, field, _key, _onclick=null) => {
     const timeConverted = datetimeAsIsoString(email[field])
     return <td key={_key}><input type="datetime-local" id="datetime" value={timeConverted}/></td>
 
   },
-  "sender": (email, field, _key) => {
+  "sender": (email, field, _key,  _onclick=null) => {
     return <td key={_key}>
         <UserImage user={email[field].profile} dimensions={{
             height: 20,
@@ -137,7 +142,7 @@ const EMAIL_FIELD_GETTERS = {
         <span>{`${email[field].profile.first_name} ${email[field].profile.second_name} (${email[field].email})`}</span>
     </td>
   },
-  "receiver": (email, field, _key) => {
+  "receiver": (email, field, _key,  _onclick=null) => {
     return <td key={_key}>
         <UserImage user={email[field].profile} dimensions={{
             height: 20,
@@ -157,7 +162,12 @@ const datetimeAsIsoString = (datetime) => {
   return shiftedDate.toISOString().slice(0,16);
 }
 
-const EmailsTable = ({emails}) => {
+const EmailsTable = ({
+    emails, 
+    setEmailHTML
+  }) => {
+  console.log("EMAILS", emails)
+  // 
   return <><table className="table table-zebra leading-3 w-full z-50 bg-base-100">
         <thead className='bg-base-300'>
           <tr>
@@ -175,6 +185,18 @@ const EmailsTable = ({emails}) => {
                     </th>
                     {EMAIL_FIELDS.map((field, j) => {
                       if(field in EMAIL_FIELD_GETTERS) {
+                        if(field === "retrieve") {
+                          return EMAIL_FIELD_GETTERS[field](email, field, j, () => {
+                            console.log("FETCHING", email[field])
+                            fetch(email[field]).then((response) => response.text()).then((html) => {
+                              var parser = new DOMParser();
+                              var doc = parser.parseFromString(html, "text/html");
+                              setEmailHTML(html)
+                              console.log("HTML", doc)
+                              window.my_modal_1.showModal() 
+                            })
+                          })
+                        }
                         return EMAIL_FIELD_GETTERS[field](email, field, j)
                       } else {
                         return <td key={j}>{email[field]}</td>
@@ -345,7 +367,7 @@ const UserSelectionDrawer = ({
         <div className='w-3/4 h-screen min-h-full max-h-full overflow-y-scroll'>
             {children}
         </div>
-        <div className='w-1/4 h-screen bg-accent min-h-full max-h-full p-1 gap-1 overflow-y-auto'>
+        <div className='w-1/4 h-screen min-h-full max-h-full p-1 gap-1 overflow-y-auto'>
             {selectedUsers.map((user, i) => {
                 return <UserDetailsCard 
                         user={user} 
@@ -537,7 +559,7 @@ const SwitchPane = ({panes, pane}) => {
   return <>{panes.filter((_pane) => _pane.id === pane)[0].component}</>
 }
 
-const AdvancedUserDetails = ({user, closeUserDetails}) => {
+const AdvancedUserDetails = ({user, closeUserDetails, setEmailHTML}) => {
   
   console.log("Rendering advanced user details", user)
   
@@ -576,8 +598,14 @@ const AdvancedUserDetails = ({user, closeUserDetails}) => {
   },{
     title: "Emails",
     id: "emails",
-    component: <><EmailsTable emails={data["email_logs"]}/></>
-  }]
+    component: <><EmailsTable emails={data["email_logs"]} setEmailHTML={setEmailHTML}/></>
+  },{
+    title: "Matching",
+    id: "matching",
+    component: <>Matching Tab</>
+  },
+
+]
   
 
     return <div className='w-full h-full flex flex-col'>
@@ -611,30 +639,33 @@ export const AdminPanel = ({
     _querySets,
     _userLists
 }) => {
+  
+  // If there is an email being viewed
+  const [emailHTML, setEmailHTML] = useState(null)
     
-    // A dict {list_name: <paginated-user-listing>}.results = [] ...
-    const [userLists, setUserLists] = useState(_userLists)
-    // Just a string reference to the current list
-    const [list, setList] = useState("all")
-    // Contains a list of selected users hashes from the current list
-    const [usersListsSelections, setUsersListsSelections] = useState({
-        "all": []
-    });
-    // The fields that should be currently displayed
-    const [fields, setFields] = useState(DEFAULT_FIELDS)
-    
-    // Updates the users selection for the current selected list
-    const setSelectedUsers = (list, users) => {
-        setUsersListsSelections({
-            ...usersListsSelections,
-            [list]: users
-        }) 
-    }
-    // The user that is selected into a details view
-    const [detailUser, setDetailUser] = useState(null)
-    
-    // Filters the users for the current selected users list
-    const selectedUsers = userLists[list].results.filter((user) => usersListsSelections[list].indexOf(user.hash) != -1)
+  // A dict {list_name: <paginated-user-listing>}.results = [] ...
+  const [userLists, setUserLists] = useState(_userLists)
+  // Just a string reference to the current list
+  const [list, setList] = useState("all")
+  // Contains a list of selected users hashes from the current list
+  const [usersListsSelections, setUsersListsSelections] = useState({
+      "all": []
+  });
+  // The fields that should be currently displayed
+  const [fields, setFields] = useState(DEFAULT_FIELDS)
+  
+  // Updates the users selection for the current selected list
+  const setSelectedUsers = (list, users) => {
+      setUsersListsSelections({
+          ...usersListsSelections,
+          [list]: users
+      }) 
+  }
+  // The user that is selected into a details view
+  const [detailUser, setDetailUser] = useState(null)
+  
+  // Filters the users for the current selected users list
+  const selectedUsers = userLists[list].results.filter((user) => usersListsSelections[list].indexOf(user.hash) != -1)
     
     return <DynamicDisplay 
             querySets={_querySets} 
@@ -650,7 +681,16 @@ export const AdminPanel = ({
             <AdvancedUserDetails user={detailUser} closeUserDetails={() => {
               updateQueryParams({param: "user_details", value: null});
               setDetailUser(null);
-            }}/> : 
+            }} setEmailHTML={setEmailHTML}/> : 
             <Table users={userLists[list]} fields={fields} selectedUsers={usersListsSelections[list]} setSelectedUsers={(users) => setSelectedUsers(list, users)}/>}
+            <dialog id="my_modal_1" className="modal">
+              <form method="dialog" className="modal-box max-w-full w-fit">
+                <p className="py-4">Press ESC key or click the button below to close</p>
+                <div className="modal-action">
+                  {emailHTML && <div dangerouslySetInnerHTML={{ __html: emailHTML }} />}
+                  <button className="btn">Close</button>
+                </div>
+              </form>
+            </dialog>
     </DynamicDisplay>
 }
