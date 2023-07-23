@@ -241,6 +241,14 @@ const Table = ({users, selectedList, fields, selectedUsers, setSelectedUsers}) =
         </tbody>
       </table>
         <div className='w-full flex flex-row content-center items-center justify-center h-24 sticky bottom-0 z-50'>
+            <div className="stats shadow">
+      
+              <div className="stat">
+                <div className="stat-value">{users.count}</div>
+                <div className="stat-desc">Objects in {selectedList} </div>
+              </div>
+              
+            </div>
             <div className="form-control w-full max-w-xs mr-8">
               <label className="label">
                 <span className="label-text-alt">Entries per page</span>
@@ -252,18 +260,14 @@ const Table = ({users, selectedList, fields, selectedUsers, setSelectedUsers}) =
                 window.location.reload();
               }}>Refresh</button>
             </div>
+    
             <div className="join">
-              {users.page !== users.first_page ? <>
-                  <button className="join-item btn" onClick={() => onClickPage(users.first_page)}>{users.first_page}</button>
-                  <button className="join-item btn btn-disabled">...</button>
-                  <button className="join-item btn btn-accent" onClick={() => onClickPage(users.page)}>{users.page}</button>
-                  <button className="join-item btn" onClick={() => onClickPage(users.next_page)}>{users.next_page}</button>
-              </> : <>
-                  <button className="join-item btn btn-accent" onClick={() => onClickPage(users.first_page)}>{users.first_page}</button>
-                  <button className="join-item btn" onClick={() => onClickPage(users.next_page)}>{users.next_page}</button>
+              {users.page !== users.first_page && <>
+                <button className="join-item btn">1</button>
+                <button className="join-item btn" onClick={() => onClickPage(users.page - 1)}>«</button>
               </>}
-              <button className="join-item btn btn-disabled">...</button>
-              <button className="join-item btn" onClick={() => onClickPage(users.last_page)}>{users.last_page}</button>
+              <button className="join-item btn">Page {users.page}</button>
+              {users.next_page && <button className="join-item btn" onClick={() => onClickPage(users.next_page)}>»</button>}
             </div>
         </div>
     </>
@@ -418,7 +422,8 @@ const DynamicDisplay = ({
         setSelectedUsers, 
         fields,
         setFields,
-        selectUserForDetails
+        selectUserForDetails,
+        setData
     }) => {
 
     return <div className="drawer lg:drawer-open">
@@ -443,6 +448,9 @@ const DynamicDisplay = ({
                 return <li key={i} className='p-2'>
                     <a onClick={() => {
                         selectUserForDetails(null)
+                        updateQueryParams({param: "list", value: key})
+                         // this will trigger useSWR in the root component to fetch the new data
+                        setData(null);
                     }} className={`rounded-btn flex flex-col items-start ${selectedList === key ? 'bg-base-100' : ''}`}>
                         <div className='text-xl'>{key}</div>
                         <div className='text-xs'>{querySets[key]}</div>
@@ -637,7 +645,9 @@ const AdvancedUserDetails = ({user, closeUserDetails, setEmailHTML}) => {
 
 export const AdminPanel = ({
     _querySets,
-    _userLists
+    _userLists,
+    setData,
+    initialList
 }) => {
   
   // If there is an email being viewed
@@ -646,10 +656,11 @@ export const AdminPanel = ({
   // A dict {list_name: <paginated-user-listing>}.results = [] ...
   const [userLists, setUserLists] = useState(_userLists)
   // Just a string reference to the current list
-  const [list, setList] = useState("all")
+  const [list, setList] = useState(initialList)
   // Contains a list of selected users hashes from the current list
   const [usersListsSelections, setUsersListsSelections] = useState({
-      "all": []
+      "all": [],
+      ...{[initialList]: []}
   });
   // The fields that should be currently displayed
   const [fields, setFields] = useState(DEFAULT_FIELDS)
@@ -676,13 +687,19 @@ export const AdminPanel = ({
             fields={fields}
             setFields={setFields}
             selectUserForDetails={(user) => setDetailUser(user)}
+            setData={setData}
             >
         {detailUser ? 
             <AdvancedUserDetails user={detailUser} closeUserDetails={() => {
               updateQueryParams({param: "user_details", value: null});
               setDetailUser(null);
             }} setEmailHTML={setEmailHTML}/> : 
-            <Table users={userLists[list]} fields={fields} selectedUsers={usersListsSelections[list]} setSelectedUsers={(users) => setSelectedUsers(list, users)}/>}
+            <Table 
+              users={userLists[list]} 
+              fields={fields} 
+              selectedList={list}
+              selectedUsers={usersListsSelections[list]} 
+              setSelectedUsers={(users) => setSelectedUsers(list, users)}/>}
             <dialog id="my_modal_1" className="modal">
               <form method="dialog" className="modal-box max-w-full w-fit">
                 <p className="py-4">Press ESC key or click the button below to close</p>
