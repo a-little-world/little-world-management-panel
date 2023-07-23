@@ -593,7 +593,17 @@ const AdvancedUserDetails = ({user, closeUserDetails, setEmailHTML}) => {
         <div className='border border-base-300'></div>
         <div className='w-1/2 flex-grow p-2'>
           <span className='text-2xl'>Actions</span>
-          He
+          <ul className="steps steps-vertical">
+            <li className="step step-primary">Register {(new Date(user.date_joined)).toDateString()}</li>
+            {user.state.email_authenticated ? <li className="step step-primary">Email Authenticated</li>: <li className="step">Email Authenticated</li>}
+            {user.matches.confirmed.items.length > 0 ? <>
+                <li className="step step-primary">First Match</li>
+                {user.matches.unconfirmed.items.length > 0 ? <li className="step">View New Match to Confirm</li> : <></>}
+              </>: <>
+                {user.matches.unconfirmed.items.length > 0 ? <li className="step">View New Match to Confirm</li> : <></>}
+                <li className="step">First Match</li>
+              </>}
+          </ul>
         </div>
       </div>
     ),
