@@ -106,7 +106,11 @@ function fetchFromObject(obj, prop){
 
 const updateQueryParams = ({param, value}) => {
     var queryParams = new URLSearchParams(window.location.search);
-    queryParams.set(param, value);
+    if(value === null && queryParams.has(param)) {
+      queryParams.delete(param)
+    } else if(value !== null) {
+      queryParams.set(param, value);
+    }
     history.replaceState(null, null, "?"+queryParams.toString());
 }
 
@@ -265,7 +269,8 @@ const UserDetailsCard = ({
         deselectUser,
         selectUserForDetails,
         partial=true,
-        tiny=false
+        tiny=false,
+        horizontal=false
     }) => {
     if(tiny)
       console.log("RENDERING TINY", user)
@@ -291,9 +296,12 @@ const UserDetailsCard = ({
 
     return <div 
         key={_key} 
-        className={`w-full flex flex-col bg-base-200 h-fit items-center content-center justify-center rounded-xl p-2 gap-2 mb-1 ${!tiny ? 'hover:border-2 hover:border-error hover:bg-base-100' : '' }`}
+        className={`w-full flex ${horizontal ? 'flex-row': 'flex-col'} bg-base-200 h-fit items-center content-center justify-center rounded-xl p-2 gap-2 mb-1 ${!tiny ? 'hover:border-2 hover:border-error hover:bg-base-100' : '' }`}
         onClick={() => {
-            selectUserForDetails(user)
+            if(partial && !tiny){
+              updateQueryParams({param: "user_details", value: user.id})
+              selectUserForDetails(user)
+            }
         }}>
         {(partial && !tiny) && <div className='w-full h-fit flex flex-row items-end justify-end'>
             <button className="btn btn-circle" onClick={deselectUser}>
@@ -302,11 +310,11 @@ const UserDetailsCard = ({
         </div>}
         <div className='w-full h-fit flex flex-row items-center content-center justify-center'>
            <UserImage user={user.profile} dimensions={{
-                height: partial ? (tiny ? 80: 120) : 180, 
-                width: partial ? (tiny? 80: 120) : 180
+                height: partial ? (tiny ? 50: 120) : 180, 
+                width: partial ? (tiny? 50: 120) : 180
            }}/>
         </div>
-        <div className='w-full h-fit text-2xl'>
+        <div className={`w-full h-fit ${tiny ? 'text-xs': 'text-2xl'}`}>
             {user.profile.first_name} {user.profile.second_name}
         </div>
         <div className='w-full h-fit text-xs'>
@@ -412,7 +420,7 @@ const DynamicDisplay = ({
             {Object.keys(querySets).map((key, i) => {
                 return <li key={i} className='p-2'>
                     <a onClick={() => {
-
+                        selectUserForDetails(null)
                     }} className={`rounded-btn flex flex-col items-start ${selectedList === key ? 'bg-base-100' : ''}`}>
                         <div className='text-xl'>{key}</div>
                         <div className='text-xs'>{querySets[key]}</div>
@@ -444,60 +452,76 @@ const DynamicDisplay = ({
 </div>
 }
 
-const ChatNavbar = ({chat}) => {
+const ChatNavbarContent = ({user1, user2}) => {
+  return <>
+    <UserDetailsCard user={user1} _key={0} selectUserForDetails={() => {}} deselectUser={() => {}} partial={true} tiny={true} horizontal={true}/>
+    <UserDetailsCard user={user2} _key={0} selectUserForDetails={() => {}} deselectUser={() => {}} partial={true} tiny={true} horizontal={true}/>
+  </>
+}
+
+const ChatNavbar = ({user, chat, unFocousChat}) => {
   return <div className="navbar bg-base-100">
   <div className="navbar-start">
-    <div className="dropdown">
-      <label tabIndex={0} className="btn btn-ghost lg:hidden">
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h8m-8 6h16" /></svg>
-      </label>
-      <ul tabIndex={0} className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
-        <li><a>Item 1</a></li>
-        <li>
-          <a>Parent</a>
-          <ul className="p-2">
-            <li><a>Submenu 1</a></li>
-            <li><a>Submenu 2</a></li>
-          </ul>
-        </li>
-        <li><a>Item 3</a></li>
-      </ul>
+    <div tabIndex={0} className="flex flex-row">
+      <ChatNavbarContent user1={user} user2={chat.match}/>
     </div>
-    <a className="btn btn-ghost normal-case text-xl">Chat: </a>
-  </div>
-  <div className="navbar-center hidden lg:flex">
-    <ul className="menu menu-horizontal px-1">
-      <li><a>Item 1</a></li>
-      <li tabIndex={0}>
-        <details>
-          <summary>Parent</summary>
-          <ul className="p-2">
-            <li><a>Submenu 1</a></li>
-            <li><a>Submenu 2</a></li>
-          </ul>
-        </details>
-      </li>
-      <li><a>Item 3</a></li>
-    </ul>
   </div>
   <div className="navbar-end">
-    <a className="btn">Back to chat overview</a>
+    <a className="btn" onClick={() => {
+      unFocousChat()
+    }}>Back to chat overview</a>
   </div>
 </div>
+}
+
+const AdminChatMessagesDisplay = ({ user, chatMessages }) => {
+  console.log("MESSAGES", chatMessages, user);
+  return <div className='w-full'>
+    {chatMessages.items.toReversed().map((message, i) => {
+      const isSelf = message.sender_hash === user.hash;
+      const date = new Date(message.sent * 1000)
+
+      return <div className={`chat ${isSelf ? 'chat-end':'chat-start'}`}>
+      <div className="chat-image avatar">
+        <div className="w-10 rounded-full">
+          <UserImage user={isSelf ? user.profile : chatMessages.match.profile} dimensions={{
+            height: 32,
+            width: 32
+          }}/>
+        </div>
+      </div>
+      <div className="chat-header">
+        {isSelf ? user.profile.first_name : chatMessages.match.profile.first_name}
+        <time className="text-xs opacity-50">{date.toDateString()}</time>
+      </div>
+      <div className="chat-bubble">{message.text}</div>
+      <div className="chat-footer opacity-50">
+        {message.read ? 'read' : 'unread'}
+      </div>
+    </div>
+    })}
+  </div>
 }
 
 const AdminChat = ({ user, messages }) => {
   const [chat, setChat] = useState(null)
 
-  return chat ? <div className='w-full h-full flex flex-col'>
-    <ChatNavbar chat={chat} />
-    </div> : <div className='w-full h-full flex flex-col gap-2 p-2'>
+  return chat ? <>
+    <ChatNavbar user={user} chat={chat} unFocousChat={() => setChat(null)}/>
+    <div className='w-full h-full flex flex-col'>
+      <AdminChatMessagesDisplay user={user} chatMessages={chat} />
+    </div></>: <div className='w-full flex flex-grow items-start content-start justify-start'>
+    <div className='w-full h-full flex flex-col gap-2 p-2'>
       {Object.keys(messages).map((message_chat, i) => {
-        return <div className='w-full h-fit flex flex-row rounded-xl text-2xl p-3 gap-2 hover:bg-error'>
+        return <div className='w-full h-fit flex flex-row rounded-xl text-2xl p-3 gap-2 hover:bg-error' onClick={() => {
+          setChat(messages[message_chat])
+          updateQueryParams({param: "chat", value: messages[message_chat].match.profile.id})
+        }}>
           <UserDetailsCard user={messages[message_chat].match} _key={2*i + 1} selectUserForDetails={() => {}} deselectUser={() => {}} partial={true} tiny={true}/>
           <UserDetailsCard user={user} _key={2 * i} selectUserForDetails={() => {}} deselectUser={() => {}} partial={true} tiny={true}/>
         </div>
       })}
+      </div>
     </div>
 }
 
@@ -547,9 +571,7 @@ const AdvancedUserDetails = ({user, closeUserDetails}) => {
     title: "Chat",
     id: "chat",
     component: <>
-      <div className='w-full flex flex-grow items-start content-start justify-start'>
         {data?.messages && <AdminChat messages={data.messages} user={data} />}
-      </div>
     </>
   },{
     title: "Emails",
@@ -625,7 +647,10 @@ export const AdminPanel = ({
             selectUserForDetails={(user) => setDetailUser(user)}
             >
         {detailUser ? 
-            <AdvancedUserDetails user={detailUser} closeUserDetails={() => setDetailUser(null)}/> : 
+            <AdvancedUserDetails user={detailUser} closeUserDetails={() => {
+              updateQueryParams({param: "user_details", value: null});
+              setDetailUser(null);
+            }}/> : 
             <Table users={userLists[list]} fields={fields} selectedUsers={usersListsSelections[list]} setSelectedUsers={(users) => setSelectedUsers(list, users)}/>}
     </DynamicDisplay>
 }
