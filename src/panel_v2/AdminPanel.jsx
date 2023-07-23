@@ -110,6 +110,78 @@ const updateQueryParams = ({param, value}) => {
     history.replaceState(null, null, "?"+queryParams.toString());
 }
 
+const EMAIL_FIELDS = [
+    //"sender",
+    "receiver",
+    "template",
+    "time",
+    "params"
+]
+
+const EMAIL_FIELD_GETTERS = {
+  "time": (email, field, _key) => {
+    const timeConverted = datetimeAsIsoString(email[field])
+    return <td key={_key}><input type="datetime-local" id="datetime" value={timeConverted}/></td>
+
+  },
+  "sender": (email, field, _key) => {
+    return <td key={_key}>
+        <UserImage user={email[field].profile} dimensions={{
+            height: 20,
+            width: 20
+        }}/>
+        <span>{`${email[field].profile.first_name} ${email[field].profile.second_name} (${email[field].email})`}</span>
+    </td>
+  },
+  "receiver": (email, field, _key) => {
+    return <td key={_key}>
+        <UserImage user={email[field].profile} dimensions={{
+            height: 20,
+            width: 20
+        }}/>
+        <span>{`${email[field].profile.first_name} ${email[field].profile.second_name} (${email[field].email})`}</span>
+    </td>
+  }
+}
+
+const datetimeAsIsoString = (datetime) => {
+  
+  // Deparse value and change it to locale string (difference is due to time zone)
+  var date = new Date(datetime);
+  var shiftedDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+
+  return shiftedDate.toISOString().slice(0,16);
+}
+
+const EmailsTable = ({emails}) => {
+  return <><table className="table table-zebra leading-3 w-full z-50 bg-base-100">
+        <thead className='bg-base-300'>
+          <tr>
+            <th></th>
+            {EMAIL_FIELDS.map((field, i) => {
+                return <th key={i}>{field}</th> 
+            })}
+          </tr>
+        </thead>
+        <tbody>
+            {emails.items.map((email,i) => {
+                return <tr key={i} className='p-0 hover:bg-100 hover:text-success hover:border hover:border-accent'>
+                    <th className='w-20'>
+                        {i}
+                    </th>
+                    {EMAIL_FIELDS.map((field, j) => {
+                      if(field in EMAIL_FIELD_GETTERS) {
+                        return EMAIL_FIELD_GETTERS[field](email, field, j)
+                      } else {
+                        return <td key={j}>{email[field]}</td>
+                      }
+                    })}
+                </tr>
+            })}
+        </tbody>
+      </table></>
+}
+
 const Table = ({users, selectedList, fields, selectedUsers, setSelectedUsers}) => {
     const onClickPage = (page) => {
         updateQueryParams({param: "page", value: page})
@@ -192,35 +264,17 @@ const UserDetailsCard = ({
         _key, 
         deselectUser,
         selectUserForDetails,
-        partial=true
+        partial=true,
+        tiny=false
     }) => {
+    if(tiny)
+      console.log("RENDERING TINY", user)
     const UserType = getTableComponentUser(user, "profile.user_type", 0, false)
-    const ConfirmedMatches = getTableComponentUser(user, "matches.confirmed", 0, false)
-    const UnconfirmedMatches = getTableComponentUser(user, "matches.unconfirmed", 0, false)
-
-    return <div 
-        key={_key} 
-        className='w-full flex flex-col bg-base-200 h-fit items-center content-center justify-center rounded-xl p-2 gap-2 mb-1 hover:border-2 hover:border-error hover:bg-base-100'
-        onClick={() => {
-            selectUserForDetails(user)
-        }}>
-        {partial && <div className='w-full h-fit flex flex-row items-end justify-end'>
-            <button className="btn btn-circle" onClick={deselectUser}>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
-        </div>}
-        <div className='w-full h-fit flex flex-row items-center content-center justify-center'>
-           <UserImage user={user.profile} dimensions={{
-                height: partial ? 120 : 180, 
-                width: partial ? 120 : 180
-           }}/>
-        </div>
-        <div className='w-full h-fit text-2xl'>
-            {user.profile.first_name} {user.profile.second_name}
-        </div>
-        <div className='w-full h-fit text-xs'>
-            {UserType}
-        </div>
+    let Content = <></>
+    if(!tiny){
+      const ConfirmedMatches = getTableComponentUser(user, "matches.confirmed", 0, false)
+      const UnconfirmedMatches = getTableComponentUser(user, "matches.unconfirmed", 0, false)
+      Content = <>
         <div className='w-full h-fit text-xs text-center'>
             {"matches.confirmed"}
         </div>
@@ -232,8 +286,34 @@ const UserDetailsCard = ({
         </div>
         <div className='w-full h-fit flex flex-row items-center content-center justify-center'>
             {UnconfirmedMatches}
+        </div></>
+    }
+
+    return <div 
+        key={_key} 
+        className={`w-full flex flex-col bg-base-200 h-fit items-center content-center justify-center rounded-xl p-2 gap-2 mb-1 ${!tiny ? 'hover:border-2 hover:border-error hover:bg-base-100' : '' }`}
+        onClick={() => {
+            selectUserForDetails(user)
+        }}>
+        {(partial && !tiny) && <div className='w-full h-fit flex flex-row items-end justify-end'>
+            <button className="btn btn-circle" onClick={deselectUser}>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+        </div>}
+        <div className='w-full h-fit flex flex-row items-center content-center justify-center'>
+           <UserImage user={user.profile} dimensions={{
+                height: partial ? (tiny ? 80: 120) : 180, 
+                width: partial ? (tiny? 80: 120) : 180
+           }}/>
         </div>
-        {partial && <ActionsButtons />}
+        <div className='w-full h-fit text-2xl'>
+            {user.profile.first_name} {user.profile.second_name}
+        </div>
+        <div className='w-full h-fit text-xs'>
+            {UserType}
+        </div>
+        {Content}
+        {(partial && !tiny) && <ActionsButtons />}
         {!partial && <>
             <div className='w-full h-fit text-xs text-center'>
                 {"matches."}
@@ -364,6 +444,63 @@ const DynamicDisplay = ({
 </div>
 }
 
+const ChatNavbar = ({chat}) => {
+  return <div className="navbar bg-base-100">
+  <div className="navbar-start">
+    <div className="dropdown">
+      <label tabIndex={0} className="btn btn-ghost lg:hidden">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h8m-8 6h16" /></svg>
+      </label>
+      <ul tabIndex={0} className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+        <li><a>Item 1</a></li>
+        <li>
+          <a>Parent</a>
+          <ul className="p-2">
+            <li><a>Submenu 1</a></li>
+            <li><a>Submenu 2</a></li>
+          </ul>
+        </li>
+        <li><a>Item 3</a></li>
+      </ul>
+    </div>
+    <a className="btn btn-ghost normal-case text-xl">Chat: </a>
+  </div>
+  <div className="navbar-center hidden lg:flex">
+    <ul className="menu menu-horizontal px-1">
+      <li><a>Item 1</a></li>
+      <li tabIndex={0}>
+        <details>
+          <summary>Parent</summary>
+          <ul className="p-2">
+            <li><a>Submenu 1</a></li>
+            <li><a>Submenu 2</a></li>
+          </ul>
+        </details>
+      </li>
+      <li><a>Item 3</a></li>
+    </ul>
+  </div>
+  <div className="navbar-end">
+    <a className="btn">Back to chat overview</a>
+  </div>
+</div>
+}
+
+const AdminChat = ({ user, messages }) => {
+  const [chat, setChat] = useState(null)
+
+  return chat ? <div className='w-full h-full flex flex-col'>
+    <ChatNavbar chat={chat} />
+    </div> : <div className='w-full h-full flex flex-col gap-2 p-2'>
+      {Object.keys(messages).map((message_chat, i) => {
+        return <div className='w-full h-fit flex flex-row rounded-xl text-2xl p-3 gap-2 hover:bg-error'>
+          <UserDetailsCard user={messages[message_chat].match} _key={2*i + 1} selectUserForDetails={() => {}} deselectUser={() => {}} partial={true} tiny={true}/>
+          <UserDetailsCard user={user} _key={2 * i} selectUserForDetails={() => {}} deselectUser={() => {}} partial={true} tiny={true}/>
+        </div>
+      })}
+    </div>
+}
+
 const AdvancedUserDetailPageSelect = ({panes, selectedPane, setPane}) => {
   return <>{panes.map((pane, i) => {
         return <li key={i}><a className={`${selectedPane === pane.id ? 'bg-base-300' : ''}`} onClick={() => {
@@ -409,11 +546,15 @@ const AdvancedUserDetails = ({user, closeUserDetails}) => {
   },{
     title: "Chat",
     id: "chat",
-    component: <></>
+    component: <>
+      <div className='w-full flex flex-grow items-start content-start justify-start'>
+        {data?.messages && <AdminChat messages={data.messages} user={data} />}
+      </div>
+    </>
   },{
     title: "Emails",
     id: "emails",
-    component: <>{JSON.stringify(data["email_logs"])}</>
+    component: <><EmailsTable emails={data["email_logs"]}/></>
   }]
   
 
