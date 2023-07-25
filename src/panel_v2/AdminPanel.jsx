@@ -1,4 +1,4 @@
-import { Children, useState } from 'react'
+import { Children, useState, useEffect } from 'react'
 import '../withTailwind.css';
 import UserImage from '../atoms/userImage.jsx'
 import { withTheme } from "@rjsf/core";
@@ -6,6 +6,9 @@ const ThemedForm = withTheme(rjsfDaisyUiTheme);
 import validator from "@rjsf/validator-ajv8";
 import { rjsfDaisyUiTheme } from "../rjsf-daisyui-theme/rjsfDaisyUiTheme"
 import useSWR from 'swr'
+import useSWRImmutable from 'swr/immutable'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 
 const NavBar = () => {
@@ -206,6 +209,115 @@ const EmailsTable = ({
             })}
         </tbody>
       </table></>
+}
+
+
+const MATCHING_FIELDS = [
+  "score",
+  "created_at",
+  "matchable"
+]
+const MATCHING_FIELD_GETTERS = {
+  "rendered_results_md_table": (matchingScore, field, _key, _onclick=null) => {
+    return <td key={_key}>
+        <button className='btn btn-xs' onClick={_onclick}>View Scoring Table</button>
+    </td> 
+  },
+  "matchable": (matchingScore, field, _key, _onclick=null) => {
+    const className = matchingScore[field] ? "bg-success" : "bg-error"
+    const span = <div className={`badge badge-md ${className}`}>{matchingScore[field] ? "Matchable!" : "X unmatchable"}</div>
+
+    return <td key={_key}>{span}</td> 
+  }
+}
+
+const MatchingScoreTable = ({data}) => {
+  return <>
+  <table className="table table-zebra leading-3 w-full z-50 bg-base-100">
+        <thead className='bg-base-300'>
+          <tr>
+            <th></th>
+            {MATCHING_FIELDS.map((field, i) => {
+                return <th key={i}>{field}</th> 
+            })}
+          </tr>
+        </thead>
+        <tbody>
+            {data.results.map((matching_score, i) => {
+                return <tr key={i} className='p-0 hover:bg-100 hover:text-success hover:border hover:border-accent'>
+                    <th className='w-20'>
+                        {i}
+                    </th>
+                    {MATCHING_FIELDS.map((field, j) => {
+                      if(field in MATCHING_FIELD_GETTERS) {
+                        return MATCHING_FIELD_GETTERS[field](matching_score, field, j, () => {})
+                      } else {
+                        return <td key={j}>{matching_score[field]}</td>
+                      }
+                    })}
+                </tr>
+            })}
+        </tbody>
+      </table>
+    </>
+};
+
+const TaskMonitorComponent = ({task_id}) => {
+ 
+  const fetcher = (...args) => fetch(...args).then(res => res.json());
+  const { data, error, mutate, isLoading } = useSWR(`/api/admin/tasks/${task_id}/status/`, fetcher, { refreshInterval: 1000 })
+  
+  if (error) return <div>failed to load</div>
+  if (isLoading) return <div>loading...</div>
+  return <div>{JSON.stringify(data)}</div>
+}
+
+const MatchingTable = ({ user }) => {
+
+  const fetcher = (...args) => fetch(...args).then(res => res.json());
+  const [monitorTask, setMonitorTask] = useState(null)
+  const { data, error, isLoading } = useSWR(`/api/admin/user_advanced/${user.id}/scores/`, fetcher)
+
+
+  if (error) return <div>failed to load</div>
+  if (isLoading) return <div>loading...</div>
+    
+  return <div className='flex flex-grow w-full flex-col content-center justify-start items-start'>
+    <div className='flex flex-row w-full h-fit bg-info items-end content-end justify-end'>
+      {monitorTask && <TaskMonitorComponent task_id={monitorTask}/>}
+      <button className='btn' onClick={() => {
+        fetcher(`/api/admin/user_advanced/${user.id}/request_score_update/`).then((res) => {
+          console.log("RES: ", res)
+          setMonitorTask(res.task_id)
+        })
+      }}>Request Calculation</button>
+    </div>
+    <MatchingScoreTable data={data} />
+  </div>
+
+    /**
+  return <><table className="table table-zebra leading-3 w-full z-50 bg-base-100">
+        <thead className='bg-base-300'>
+          <tr>
+            <th></th>
+            {MATCHING_FIELDS.map((field, i) => {
+                return <th key={i}>{field}</th> 
+            })}
+          </tr>
+        </thead>
+        <tbody>
+            {emails.items.map((email,i) => {
+                return <tr key={i} className='p-0 hover:bg-100 hover:text-success hover:border hover:border-accent'>
+                    <th className='w-20'>
+                        {i}
+                    </th>
+                    {MATCHING_FIELDS.map((field, j) => {
+                        return <td key={j}>{data[field]}</td>
+                    })}
+                </tr>
+            })}
+        </tbody>
+      </table></>  */
 }
 
 const Table = ({users, selectedList, fields, selectedUsers, setSelectedUsers}) => {
@@ -620,7 +732,10 @@ const AdvancedUserDetails = ({user, closeUserDetails, setEmailHTML}) => {
   },{
     title: "Matching",
     id: "matching",
-    component: <>Matching Tab</>
+    component: <>
+      <h1>Matching Tab</h1>
+      <MatchingTable user={data} />
+    </>
   },
 
 ]
