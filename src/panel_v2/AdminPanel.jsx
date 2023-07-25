@@ -75,6 +75,10 @@ const FIELDS = {
         const matchesListing = matchingBubbleList(field.items)
         return <Base tableView={tableView} _key={key}>{matchesListing}</Base>
     },
+    "matches.proposed": (field, user, key, tableView) => {
+        const matchesListing = matchingBubbleList(field.items)
+        return <Base tableView={tableView} _key={key}>{matchesListing}</Base>
+    },
     "matches.support": (field, user, key, tableView) => {
         const matchesListing = matchingBubbleList(field.items)
         return <Base tableView={tableView} _key={key}>{matchesListing}</Base>
@@ -269,7 +273,25 @@ const TaskMonitorComponent = ({task_id}) => {
   
   if (error) return <div>failed to load</div>
   if (isLoading) return <div>loading...</div>
-  return <div>{JSON.stringify(data)}</div>
+    
+    
+  let progressInfo = null
+  console.log("INFO", data.info)
+  if(data && data?.info && data.info.progress && data.info.progress.startsWith("json:")) {
+    progressInfo = JSON.parse(data.info.progress.substring(5))
+    console.log("MANGED TO PARSE", progressInfo);
+  }
+
+  return <div className='flex flex-row flex-grow rounded-xl content-center justify-center'>
+      {data?.state && <div className='bg-info p-4 rounded-xl'>{data.state}</div>}
+      {progressInfo && <div className='flex h-full flex-col items-start content-start justify-start w-52'>
+          <div className='text-xs'>{progressInfo.progress}/{progressInfo.amnt_users}</div>
+          <progress className="progress progress-primary w-full" value={progressInfo.progress} max={progressInfo.amnt_users}></progress>
+        </div>}
+      {progressInfo && <div className='p-4 bg-success p-4'>
+          {progressInfo.state}
+        </div>}
+  </div>
 }
 
 const MatchingTable = ({ user }) => {
@@ -283,7 +305,7 @@ const MatchingTable = ({ user }) => {
   if (isLoading) return <div>loading...</div>
     
   return <div className='flex flex-grow w-full flex-col content-center justify-start items-start'>
-    <div className='flex flex-row w-full h-fit bg-info items-end content-end justify-end'>
+    <div className='flex flex-row w-full h-fit items-end content-end justify-end'>
       {monitorTask && <TaskMonitorComponent task_id={monitorTask}/>}
       <button className='btn' onClick={() => {
         fetcher(`/api/admin/user_advanced/${user.id}/request_score_update/`).then((res) => {
@@ -417,6 +439,7 @@ const UserDetailsCard = ({
     if(!tiny){
       const ConfirmedMatches = getTableComponentUser(user, "matches.confirmed", 0, false)
       const UnconfirmedMatches = getTableComponentUser(user, "matches.unconfirmed", 0, false)
+
       Content = <>
         <div className='w-full h-fit text-xs text-center'>
             {"matches.confirmed"}
@@ -431,6 +454,57 @@ const UserDetailsCard = ({
             {UnconfirmedMatches}
         </div></>
     }
+      
+    let End = <></>
+    if(!partial){
+      
+      const ProposedMatches = getTableComponentUser(user, "matches.proposed", 0, false)
+      
+      const filterShemaInterests = {
+        type: "array",
+        uniqueItems: true,
+        items: {
+          type: "string",
+          enum: user.profile.options.interests.map((op) => op.value)
+        },
+      };
+      console.log("INTERESTS", typeof user.profile.interests, user.profile)
+      
+      End = <>
+            <div className='w-full h-fit text-xs text-center'>
+                {"matches.proposed"}
+            </div>
+            <div className='w-full h-fit text-xs text-center'>
+               {ProposedMatches} 
+            </div>
+            <div class="w-full flex flex-col content-start justify-start items-start gap-4">
+              <div className='text-xl'>Interests</div>
+              <ThemedForm
+                  className='text-xs w-full'
+                  schema={filterShemaInterests}
+                  extraErrors={{}}
+                  showErrorList="bottom"
+                  uiSchema={{
+                    "ui:submitButtonOptions": {
+                      norender: true,
+                    },
+                  }}
+                  formData={user.profile.interests}
+                  validator={validator}
+                  onChange={({formData}) => {
+                    setFields(formData)
+                  }}
+                />
+              <div className='text-xl'>About</div>
+              <div>{user.profile.description}</div>
+              <div className='text-xl'>Other Topics</div>
+              <div>{user.profile.additional_interests}</div>
+              <div className='text-xl'>Which languages do you speak and how well?</div>
+              <div>{user.profile.language_skill_description}</div>
+            </div>
+        </>
+    }
+
 
     return <div 
         key={_key} 
@@ -460,14 +534,7 @@ const UserDetailsCard = ({
         </div>
         {Content}
         {(partial && !tiny) && <ActionsButtons />}
-        {!partial && <>
-            <div className='w-full h-fit text-xs text-center'>
-                {"matches."}
-            </div>
-            <div className='w-full h-fit text-xs text-center'>
-                
-            </div>
-        </>}
+        {End}
     </div>
 }
 
@@ -636,7 +703,7 @@ const AdminChatMessagesDisplay = ({ user, chatMessages }) => {
         {isSelf ? user.profile.first_name : chatMessages.match.profile.first_name}
         <time className="text-xs opacity-50">{date.toDateString()}</time>
       </div>
-      <div className="chat-bubble">{message.text}</div>
+      <div className={`chat-bubble ${message.read ? '': 'border-2 border-error'}`}>{message.text}</div>
       <div className="chat-footer opacity-50">
         {message.read ? 'read' : 'unread'}
       </div>
@@ -686,6 +753,8 @@ const AdvancedUserDetails = ({user, closeUserDetails, setEmailHTML}) => {
   const fetcher = (...args) => fetch(...args).then(res => res.json());
   const { data, error, isLoading } = useSWR(`/api/admin/user_advanced/${user.id}/`, fetcher)
   
+  console.log("ADVANCED USER FETCHED", data);
+  
   
   const [pane, setPane] = useState("user-details")
   
@@ -700,19 +769,19 @@ const AdvancedUserDetails = ({user, closeUserDetails, setEmailHTML}) => {
       <div className='w-full flex flex-grow'>
         <div className='w-1/2 flex-grow p-2'>
           <span className='text-2xl'>Profile</span>
-          <UserDetailsCard user={user} _key={0} selectUserForDetails={() => {}} deselectUser={() => {}} partial={false}/>
+          <UserDetailsCard user={data} _key={0} selectUserForDetails={() => {}} deselectUser={() => {}} partial={false}/>
         </div>
         <div className='border border-base-300'></div>
         <div className='w-1/2 flex-grow p-2'>
           <span className='text-2xl'>Actions</span>
           <ul className="steps steps-vertical">
-            <li className="step step-primary">Register {(new Date(user.date_joined)).toDateString()}</li>
-            {user.state.email_authenticated ? <li className="step step-primary">Email Authenticated</li>: <li className="step">Email Authenticated</li>}
-            {user.matches.confirmed.items.length > 0 ? <>
+            <li className="step step-primary">Register {(new Date(data.date_joined)).toDateString()}</li>
+            {data.state.email_authenticated ? <li className="step step-primary">Email Authenticated</li>: <li className="step">Email Authenticated</li>}
+            {data.matches.confirmed.items.length > 0 ? <>
                 <li className="step step-primary">First Match</li>
-                {user.matches.unconfirmed.items.length > 0 ? <li className="step">View New Match to Confirm</li> : <></>}
+                {data.matches.unconfirmed.items.length > 0 ? <li className="step">View New Match to Confirm</li> : <></>}
               </>: <>
-                {user.matches.unconfirmed.items.length > 0 ? <li className="step">View New Match to Confirm</li> : <></>}
+                {data.matches.unconfirmed.items.length > 0 ? <li className="step">View New Match to Confirm</li> : <></>}
                 <li className="step">First Match</li>
               </>}
           </ul>
