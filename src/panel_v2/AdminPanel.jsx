@@ -36,6 +36,21 @@ const matchingBubbleList = (matches) => {
     </div>
 }
 
+const MatchingSuggestionView = (matchingUser, setQuickViewUser) => {
+    return <div className='h-fit flex flex-col items-center content-center justify-center'>
+            <div className="flex flex-row hover:bg-info p-4 rounded-xl" onClick={() => {
+              setQuickViewUser(matchingUser);
+            }}>
+              <UserImage user={matchingUser.profile} dimensions={{
+                height: 20,
+                width: 20
+              }}/>
+              <div>{matchingUser.profile.first_name}, {matchingUser.profile.second_name}</div>
+          </div>
+          <button className='btn btn-xs'>add to selections</button>
+    </div>
+}
+
 const Base = ({children, tableView, _key}) => {
     return tableView ? (
             <td key={_key} className={`${baseTableStyles}`}>{children}</td>
@@ -219,23 +234,31 @@ const EmailsTable = ({
 const MATCHING_FIELDS = [
   "score",
   "created_at",
-  "matchable"
+  "matchable",
+  "to_usr"
 ]
 const MATCHING_FIELD_GETTERS = {
-  "rendered_results_md_table": (matchingScore, field, _key, _onclick=null) => {
+  "rendered_results_md_table": (matchingScore, field, _key, _onclick=null, _extras=null) => {
     return <td key={_key}>
         <button className='btn btn-xs' onClick={_onclick}>View Scoring Table</button>
     </td> 
   },
-  "matchable": (matchingScore, field, _key, _onclick=null) => {
+  "matchable": (matchingScore, field, _key, _onclick=null, _extras=null) => {
     const className = matchingScore[field] ? "bg-success" : "bg-error"
     const span = <div className={`badge badge-md ${className}`}>{matchingScore[field] ? "Matchable!" : "X unmatchable"}</div>
 
     return <td key={_key}>{span}</td> 
+  },
+  "to_usr": (matchingScore, field, _key, _onclick=null, _extras=null) => {
+    const matchesListing = MatchingSuggestionView(matchingScore[field], _extras.setQuickViewUser)
+
+    return <td _key={_key}>{matchesListing}</td>
   }
 }
 
 const MatchingScoreTable = ({data}) => {
+  const [quickViewUser, updateQuickViewUser] = useState(null)
+
   return <>
   <table className="table table-zebra leading-3 w-full z-50 bg-base-100">
         <thead className='bg-base-300'>
@@ -254,7 +277,15 @@ const MatchingScoreTable = ({data}) => {
                     </th>
                     {MATCHING_FIELDS.map((field, j) => {
                       if(field in MATCHING_FIELD_GETTERS) {
-                        return MATCHING_FIELD_GETTERS[field](matching_score, field, j, () => {})
+                        let extras = null
+                        if(field === "to_usr")
+                          extras = {
+                            setQuickViewUser: (user) => {
+                              updateQuickViewUser(matching_score[field])
+                              window.matching_quick_user_details.showModal()
+                            }
+                          }
+                        return MATCHING_FIELD_GETTERS[field](matching_score, field, j, () => {}, extras)
                       } else {
                         return <td key={j}>{matching_score[field]}</td>
                       }
@@ -263,6 +294,26 @@ const MatchingScoreTable = ({data}) => {
             })}
         </tbody>
       </table>
+      <dialog id="matching_quick_user_details" className="modal">
+        <form method="dialog" className="modal-box">
+          <h3 className="font-bold text-lg">Hello!</h3>
+          <p className="py-4">Press ESC key or click the button below to close</p>
+            {quickViewUser && <UserDetailsCard 
+                user={quickViewUser} 
+                _key={102131} 
+                key={212312} 
+                selectUserForDetails={() => {}}
+                deselectUser={() => {}}
+                partial={false}
+                tiny={false}
+            />}
+          <div className="modal-action">
+            <button className="btn" onClick={(e) => {
+              updateQuickViewUser(null);
+            }}>Close</button>
+          </div>
+        </form>
+      </dialog>
     </>
 };
 
@@ -342,7 +393,7 @@ const MatchingTable = ({ user }) => {
       </table></>  */
 }
 
-const Table = ({users, selectedList, fields, selectedUsers, setSelectedUsers}) => {
+const Table = ({users, selectedList, fields, selectedUsersHashes, setSelectedUsers}) => {
     const onClickPage = (page) => {
         updateQueryParams({param: "page", value: page})
     }
@@ -359,11 +410,11 @@ const Table = ({users, selectedList, fields, selectedUsers, setSelectedUsers}) =
             {users.results.map((user,i) => {
                 return <tr key={i} className='p-0 hover:bg-100 hover:text-success hover:border hover:border-accent'>
                     <th className='w-20'>
-                        <input type="checkbox" checked={selectedUsers.indexOf(user.hash) != -1} className="checkbox ml-2" onChange={() => {
-                            if(selectedUsers.indexOf(user.hash) != -1) {
-                                setSelectedUsers(selectedUsers.filter((hash) => hash !== user.hash))
+                        <input type="checkbox" checked={selectedUsersHashes.indexOf(user.hash) != -1} className="checkbox ml-2" onChange={() => {
+                            if(selectedUsersHashes.indexOf(user.hash) != -1) {
+                                setSelectedUsers(selectedUsersHashes.filter((hash) => hash !== user.hash))
                             } else {
-                                setSelectedUsers([...selectedUsers, user.hash])
+                                setSelectedUsers([...selectedUsersHashes, user.hash])
                             }
                         }}/>
                     </th>
@@ -516,7 +567,10 @@ const UserDetailsCard = ({
             }
         }}>
         {(partial && !tiny) && <div className='w-full h-fit flex flex-row items-end justify-end'>
-            <button className="btn btn-circle" onClick={deselectUser}>
+            <button className="btn btn-circle pointer-events-auto" onClick={(e) => {
+              deselectUser();
+              e.stopPropagation();
+            }}>
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
         </div>}
@@ -841,6 +895,8 @@ export const AdminPanel = ({
     _querySets,
     _userLists,
     setData,
+    selectedUsers,
+    setSelectedUsers,
     initialList
 }) => {
   
@@ -851,33 +907,24 @@ export const AdminPanel = ({
   const [userLists, setUserLists] = useState(_userLists)
   // Just a string reference to the current list
   const [list, setList] = useState(initialList)
-  // Contains a list of selected users hashes from the current list
-  const [usersListsSelections, setUsersListsSelections] = useState({
-      "all": [],
-      ...{[initialList]: []}
-  });
+
   // The fields that should be currently displayed
   const [fields, setFields] = useState(DEFAULT_FIELDS)
   
-  // Updates the users selection for the current selected list
-  const setSelectedUsers = (list, users) => {
-      setUsersListsSelections({
-          ...usersListsSelections,
-          [list]: users
-      }) 
-  }
   // The user that is selected into a details view
   const [detailUser, setDetailUser] = useState(null)
   
-  // Filters the users for the current selected users list
-  const selectedUsers = userLists[list].results.filter((user) => usersListsSelections[list].indexOf(user.hash) != -1)
-    
+  const setSelectedUsersByHash = (usersHashes) => {
+    const users = usersHashes.map((hash) => userLists[list].results.filter((user) => user.hash === hash)[0])
+    setSelectedUsers(users)
+  }
+  
     return <DynamicDisplay 
             querySets={_querySets} 
             selectedList={list} 
-            selectedUsersHashes={usersListsSelections[list]} 
+            selectedUsersHashes={selectedUsers.map((user) => user.hash)} 
             selectedUsers={selectedUsers} 
-            setSelectedUsers={(users) => setSelectedUsers(list, users)}
+            setSelectedUsers={setSelectedUsersByHash}
             fields={fields}
             setFields={setFields}
             selectUserForDetails={(user) => setDetailUser(user)}
@@ -892,8 +939,8 @@ export const AdminPanel = ({
               users={userLists[list]} 
               fields={fields} 
               selectedList={list}
-              selectedUsers={usersListsSelections[list]} 
-              setSelectedUsers={(users) => setSelectedUsers(list, users)}/>}
+              selectedUsersHashes={selectedUsers.map((user) => user.hash)} 
+              setSelectedUsers={setSelectedUsersByHash}/>}
             <dialog id="my_modal_1" className="modal">
               <form method="dialog" className="modal-box max-w-full w-fit">
                 <p className="py-4">Press ESC key or click the button below to close</p>
