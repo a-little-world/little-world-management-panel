@@ -7,6 +7,7 @@ import useSWR from 'swr'
 function AdminPanelV2(props) {
   const initData = props.data;
   const [data, setData] = useState(initData);
+  const [selectedUsers, setSelectedUsers] = useState(initData?.selected_users ? initData.selected_users : []);
   
   /**
    *  The admin pannel with gereally render with data,
@@ -33,7 +34,13 @@ function AdminPanelV2(props) {
   }, [_data]);
 
   return (
-    data ? <AdminPanel _querySets={data?.query_sets} _userLists={data?.user_lists} setData={setData} initialList={list}/> : <div>Loading...</div>
+    data ? <AdminPanel 
+      _querySets={data?.query_sets} 
+      _userLists={data?.user_lists} 
+      setData={setData} 
+      selectedUsers={selectedUsers}
+      setSelectedUsers={setSelectedUsers}
+      initialList={list}/> : <div>Loading...</div>
   );
 }
 
