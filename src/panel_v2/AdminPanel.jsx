@@ -36,7 +36,7 @@ const matchingBubbleList = (matches) => {
     </div>
 }
 
-const MatchingSuggestionView = (matchingUser, setQuickViewUser) => {
+const MatchingSuggestionView = (matchingUser, setQuickViewUser, addUserToSelection) => {
     return <div className='h-fit flex flex-col items-center content-center justify-center'>
             <div className="flex flex-row hover:bg-info p-4 rounded-xl" onClick={() => {
               setQuickViewUser(matchingUser);
@@ -47,7 +47,9 @@ const MatchingSuggestionView = (matchingUser, setQuickViewUser) => {
               }}/>
               <div>{matchingUser.profile.first_name}, {matchingUser.profile.second_name}</div>
           </div>
-          <button className='btn btn-xs'>add to selections</button>
+          <button className='btn btn-xs' onClick={() => {
+            addUserToSelection(matchingUser);
+          }}>add to selections</button>
     </div>
 }
 
@@ -235,7 +237,8 @@ const MATCHING_FIELDS = [
   "score",
   "created_at",
   "matchable",
-  "to_usr"
+  "to_usr",
+  "rendered_results_md_table"
 ]
 const MATCHING_FIELD_GETTERS = {
   "rendered_results_md_table": (matchingScore, field, _key, _onclick=null, _extras=null) => {
@@ -250,14 +253,15 @@ const MATCHING_FIELD_GETTERS = {
     return <td key={_key}>{span}</td> 
   },
   "to_usr": (matchingScore, field, _key, _onclick=null, _extras=null) => {
-    const matchesListing = MatchingSuggestionView(matchingScore[field], _extras.setQuickViewUser)
+    const matchesListing = MatchingSuggestionView(matchingScore[field], _extras.setQuickViewUser, _extras.addUserToSelection)
 
     return <td _key={_key}>{matchesListing}</td>
-  }
+  },
 }
 
-const MatchingScoreTable = ({data}) => {
+const MatchingScoreTable = ({data, addUserToSelection}) => {
   const [quickViewUser, updateQuickViewUser] = useState(null)
+  const [resultsMardown, setResultsMarkdown] = useState(null)
 
   return <>
   <table className="table table-zebra leading-3 w-full z-50 bg-base-100">
@@ -283,7 +287,12 @@ const MatchingScoreTable = ({data}) => {
                             setQuickViewUser: (user) => {
                               updateQuickViewUser(matching_score[field])
                               window.matching_quick_user_details.showModal()
-                            }
+                            },
+                            addUserToSelection: addUserToSelection
+                          }
+                        else if(field === "rendered_results_md_table")
+                          extras = {
+                            setResultsMarkdown: setResultsMarkdown
                           }
                         return MATCHING_FIELD_GETTERS[field](matching_score, field, j, () => {}, extras)
                       } else {
@@ -310,6 +319,18 @@ const MatchingScoreTable = ({data}) => {
           <div className="modal-action">
             <button className="btn" onClick={(e) => {
               updateQuickViewUser(null);
+            }}>Close</button>
+          </div>
+        </form>
+      </dialog>
+      <dialog id="matching_score_results_table" className="modal">
+        <form method="dialog" className="modal-box">
+          <h3 className="font-bold text-lg">Hello!</h3>
+          <p className="py-4">Press ESC key or click the button below to close</p>
+            {resultsMardown && <ReactMarkdown remarkPlugins={[remarkGfm]} children={resultsMardown}/>}
+          <div className="modal-action">
+            <button className="btn" onClick={(e) => {
+
             }}>Close</button>
           </div>
         </form>
@@ -345,7 +366,10 @@ const TaskMonitorComponent = ({task_id}) => {
   </div>
 }
 
-const MatchingTable = ({ user }) => {
+const MatchingTable = ({ 
+  user,
+  addUserToSelection
+}) => {
 
   const fetcher = (...args) => fetch(...args).then(res => res.json());
   const [monitorTask, setMonitorTask] = useState(null)
@@ -365,7 +389,7 @@ const MatchingTable = ({ user }) => {
         })
       }}>Request Calculation</button>
     </div>
-    <MatchingScoreTable data={data} />
+    <MatchingScoreTable data={data} addUserToSelection={addUserToSelection}/>
   </div>
 
     /**
@@ -483,6 +507,9 @@ const UserDetailsCard = ({
         tiny=false,
         horizontal=false
     }) => {
+      
+    if(!user)
+      return <div>Undefined User</div>
     if(tiny)
       console.log("RENDERING TINY", user)
     const UserType = getTableComponentUser(user, "profile.user_type", 0, false)
@@ -568,7 +595,7 @@ const UserDetailsCard = ({
         }}>
         {(partial && !tiny) && <div className='w-full h-fit flex flex-row items-end justify-end'>
             <button className="btn btn-circle pointer-events-auto" onClick={(e) => {
-              deselectUser();
+              deselectUser(user);
               e.stopPropagation();
             }}>
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -611,8 +638,8 @@ const UserSelectionDrawer = ({
                         _key={i} 
                         key={i} 
                         selectUserForDetails={selectUserForDetails}
-                        deselectUser={() => {
-                            setSelectedUsers(selectedUsersHashes.filter((hash) => hash !== user.hash))
+                        deselectUser={(_user) => {
+                            setSelectedUsers(selectedUsersHashes.filter((hash) => hash !== _user.hash))
                         }}/>
             })}
         </div>
@@ -800,7 +827,10 @@ const SwitchPane = ({panes, pane}) => {
   return <>{panes.filter((_pane) => _pane.id === pane)[0].component}</>
 }
 
-const AdvancedUserDetails = ({user, closeUserDetails, setEmailHTML}) => {
+const AdvancedUserDetails = ({
+  user, closeUserDetails, setEmailHTML, 
+  addUserToSelection
+}) => {
   
   console.log("Rendering advanced user details", user)
   
@@ -857,7 +887,7 @@ const AdvancedUserDetails = ({user, closeUserDetails, setEmailHTML}) => {
     id: "matching",
     component: <>
       <h1>Matching Tab</h1>
-      <MatchingTable user={data} />
+      <MatchingTable user={data}  addUserToSelection={addUserToSelection}/>
     </>
   },
 
@@ -914,15 +944,18 @@ export const AdminPanel = ({
   // The user that is selected into a details view
   const [detailUser, setDetailUser] = useState(null)
   
+  const selectedUsersHashes = selectedUsers.map((user) => user ? user.hash : null).filter((hash) => hash !== null)
+
   const setSelectedUsersByHash = (usersHashes) => {
     const users = usersHashes.map((hash) => userLists[list].results.filter((user) => user.hash === hash)[0])
     setSelectedUsers(users)
   }
   
+  
     return <DynamicDisplay 
             querySets={_querySets} 
             selectedList={list} 
-            selectedUsersHashes={selectedUsers.map((user) => user.hash)} 
+            selectedUsersHashes={selectedUsersHashes}
             selectedUsers={selectedUsers} 
             setSelectedUsers={setSelectedUsersByHash}
             fields={fields}
@@ -931,7 +964,13 @@ export const AdminPanel = ({
             setData={setData}
             >
         {detailUser ? 
-            <AdvancedUserDetails user={detailUser} closeUserDetails={() => {
+            <AdvancedUserDetails user={detailUser} 
+              addUserToSelection={(user) => {
+                if(selectedUsersHashes.indexOf(user.hash) === -1) {
+                  setSelectedUsers([...selectedUsers, user])
+                }
+              }}
+            closeUserDetails={() => {
               updateQueryParams({param: "user_details", value: null});
               setDetailUser(null);
             }} setEmailHTML={setEmailHTML}/> : 
@@ -939,7 +978,7 @@ export const AdminPanel = ({
               users={userLists[list]} 
               fields={fields} 
               selectedList={list}
-              selectedUsersHashes={selectedUsers.map((user) => user.hash)} 
+              selectedUsersHashes={selectedUsersHashes}
               setSelectedUsers={setSelectedUsersByHash}/>}
             <dialog id="my_modal_1" className="modal">
               <form method="dialog" className="modal-box max-w-full w-fit">
