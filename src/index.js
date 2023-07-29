@@ -9,6 +9,7 @@ import reportWebVitals from './reportWebVitals';
 import { simulatedAutoLogin } from './loginSimulator';
 import { LOCAL_DEV } from './ENVIRONMENT';
 import AdminPanelV2 from './AdminPanelV2';
+import AdminPanelV2Login from './AdminPanelV2Login';
 
 const dispatchRenderApp = initData => {
   const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -32,6 +33,16 @@ const dispatchRenderStatsApp = initData => {
         inputCombinedGraphs={initData?.initData?.combined}
         inputStaticStats={initData?.initData?.static_stats}
       />
+    </React.StrictMode>,
+  );
+};
+
+const dispatchRenderAdminPanelV2LoginScreen = initData => {
+  const root = ReactDOM.createRoot(document.getElementById('root'));
+  console.log('INIT', initData);
+  root.render(
+    <React.StrictMode>
+      <AdminPanelV2Login data={initData}/>
     </React.StrictMode>,
   );
 };
@@ -78,6 +89,7 @@ if (LOCAL_DEV) {
   window.renderGraphApp = dispatchRenderGraphApp;
   window.renderUserListApp = dispatchRenderUserListApp;
   window.renderAdminPanelV2 = dispatchRenderAdminPanelV2;
+  window.renderAdminPanelV2LoginScreen = dispatchRenderAdminPanelV2LoginScreen;
 }
 
 // If you want to start measuring performance in your app, pass a function
