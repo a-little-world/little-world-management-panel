@@ -1,4 +1,5 @@
 import { Children, useState, useEffect } from 'react'
+import style from './markdown-styles.module.css';
 import '../withTailwind.css';
 import UserImage from '../atoms/userImage.jsx'
 import { withTheme } from "@rjsf/core";
@@ -243,7 +244,9 @@ const MATCHING_FIELDS = [
 const MATCHING_FIELD_GETTERS = {
   "rendered_results_md_table": (matchingScore, field, _key, _onclick=null, _extras=null) => {
     return <td key={_key}>
-        <button className='btn btn-xs' onClick={_onclick}>View Scoring Table</button>
+        <button className='btn btn-xs' onClick={() => {
+          _extras.setResultsMarkdown(matchingScore[field])
+        }}>View Scoring Table</button>
     </td> 
   },
   "matchable": (matchingScore, field, _key, _onclick=null, _extras=null) => {
@@ -292,7 +295,10 @@ const MatchingScoreTable = ({data, addUserToSelection}) => {
                           }
                         else if(field === "rendered_results_md_table")
                           extras = {
-                            setResultsMarkdown: setResultsMarkdown
+                            setResultsMarkdown: (content) => {
+                              setResultsMarkdown(content)
+                              window.matching_score_results_table.showModal()
+                            }
                           }
                         return MATCHING_FIELD_GETTERS[field](matching_score, field, j, () => {}, extras)
                       } else {
@@ -323,11 +329,11 @@ const MatchingScoreTable = ({data, addUserToSelection}) => {
           </div>
         </form>
       </dialog>
-      <dialog id="matching_score_results_table" className="modal">
-        <form method="dialog" className="modal-box">
+      <dialog id="matching_score_results_table" className="modal w-full">
+        <form method="dialog" className="modal-box w-full max-w-none">
           <h3 className="font-bold text-lg">Hello!</h3>
           <p className="py-4">Press ESC key or click the button below to close</p>
-            {resultsMardown && <ReactMarkdown remarkPlugins={[remarkGfm]} children={resultsMardown}/>}
+            {resultsMardown && <ReactMarkdown remarkPlugins={[remarkGfm]} children={resultsMardown} className={style.reactMarkDown}/>}
           <div className="modal-action">
             <button className="btn" onClick={(e) => {
 
