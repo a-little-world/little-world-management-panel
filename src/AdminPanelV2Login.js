@@ -74,7 +74,6 @@ function AdminPanelV2Login(props) {
               loginApi(loginData.email, loginData.password).then((res) => {
                   if (res.status === 200) {
                     window.location.href = '/admin_panel_v2/';
-                    window.location.reload();
                   }else{
                     res.text().then((text) => {
                       setError(`${res.status} ${res.statusText} ${text}`);
