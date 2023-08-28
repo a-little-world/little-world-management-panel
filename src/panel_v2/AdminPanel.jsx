@@ -10,6 +10,8 @@ import useSWR from 'swr'
 import useSWRImmutable from 'swr/immutable'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import MDEditor from '@uiw/react-md-editor';
+
 
 
 const NavBar = () => {
@@ -833,6 +835,20 @@ const SwitchPane = ({panes, pane}) => {
   return <>{panes.filter((_pane) => _pane.id === pane)[0].component}</>
 }
 
+const NotesPane = ({user}) => {
+  
+  const fetcher = (...args) => fetch(...args).then(res => res.json());
+  const { data: _user_notes, error, isLoading } = useSWR(`/api/admin/user_advanced/${user.id}/notes/`, fetcher)
+  
+  return <div className="container">
+    <MDEditor
+      value={_user_notes}
+      onChange={() => {}}
+    />
+    <MDEditor.Markdown source={_user_notes} style={{ whiteSpace: 'pre-wrap' }} />
+  </div>
+};
+
 const AdvancedUserDetails = ({
   user, closeUserDetails, setEmailHTML, 
   addUserToSelection
@@ -884,11 +900,18 @@ const AdvancedUserDetails = ({
     component: <>
         {data?.messages && <AdminChat messages={data.messages} user={data} />}
     </>
-  },{
+  },
+  {
     title: "Emails",
     id: "emails",
     component: <><EmailsTable emails={data["email_logs"]} setEmailHTML={setEmailHTML}/></>
-  },{
+  },
+  {
+    title: "Notes",
+    id: "notes",
+    component:  <NotesPane user={data}/>
+  },
+  {
     title: "Matching",
     id: "matching",
     component: <>
