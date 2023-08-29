@@ -388,8 +388,10 @@ const MatchingTable = ({
   const [confirmationModalState, setConfirmationModalState] = useState({
     visible: false,
     title: "Are you sure you want to make this match?", 
-    text: "We will confirm first that the user are matchable and then make the match. If this fails you can 'force' a match if you want."
+    text: "We will confirm first that the user are matchable and then make the match. If this fails you can 'force' a match if you want.",
+    error: null
   });
+
   const updateConfirmationModalState = (newState) => {
     if(newState.visible)
       window.match_confirmation_modal.showModal()
@@ -420,9 +422,31 @@ const MatchingTable = ({
         setMatchingSelectionState({...matchingSelectionState, inProgress: false})
       }}>Abbort</button> 
       <div className='btn btn-success' onClick={() => {
-
+        fetch(`/api/admin/user/match/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookiesAsObject().csrftoken
+          },
+          body: JSON.stringify({
+            user1: user.id,
+            user2: matchingSelectionState.user.id,
+            lookup: "pk"
+          })
+        }).then((res) => {
+          if(res.ok){
+            res.text().then((text) => {
+              console.log(text)
+            })
+          }else{
+            res.text().then((text) => {
+              updateConfirmationModalState({error: text})
+            })
+          }
+        })
       }}>Make Match!</div> 
     </div>
+    {confirmationModalState.error && <div className='text-error'>{confirmationModalState.error}</div>}
   </>
 
 
