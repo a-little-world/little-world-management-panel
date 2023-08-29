@@ -409,19 +409,18 @@ const MatchingTable = ({
 
   const { data, error, isLoading } = useSWR(`/api/admin/user_advanced/${user.id}/scores/`, fetcher)
   
-  const makeMatchingApi = () => {
-      let postData = {
+  const makeMatchingApi = (matchingType) => {
+      let postData = (matchingType === "proposal") ? {
+          user1: user.id,
+          user2: matchingSelectionState.user.id,
+          lookup: "pk",
+          proposal_only: true
+      } : {
           user1: user.id,
           user2: matchingSelectionState.user.id,
           lookup: "pk",
       }
-      
-      if(matchingOverlayState.type === "proposal"){
-        let postData = {
-          ...postData,
-          proposal_only: true
-        }
-      }
+      console.log("MAKING MATCHING","proposal" === matchingType ,matchingType, matchingOverlayState.type, postData);
 
       fetch(`/api/admin/user/match/`, {
         method: 'POST',
@@ -457,7 +456,7 @@ const MatchingTable = ({
         setMatchingSelectionState({...matchingSelectionState, inProgress: false})
       }}>Abbort</button> 
       <div className='btn btn-success' onClick={() => {
-        makeMatchingApi();
+        makeMatchingApi(matchingOverlayState.type);
       }}>Make Match!</div> 
     </div>
     {confirmationModalState.error && <div className='text-error'>{confirmationModalState.error}</div>}
@@ -473,7 +472,7 @@ const MatchingTable = ({
       <div className='text-xl'>Matching Menu</div>
       <button onClick={() => {
         if(matchingOverlayState.visible){
-          setMatchingOverlayState({...matchingOverlayState, visible: false})
+          setMatchingOverlayState({...matchingOverlayState, visible: false, tyoe: "proposal"})
           setMatchingSelectionState({...matchingSelectionState, inProgress: false})
         } else {
           setMatchingOverlayState({...matchingOverlayState, visible: true, title: "Make Matching Proposal", type: "proposal"})
