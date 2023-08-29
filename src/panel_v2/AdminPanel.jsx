@@ -11,6 +11,7 @@ import useSWRImmutable from 'swr/immutable'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import MDEditor from '@uiw/react-md-editor';
+import { getCookiesAsObject } from '../utils';
 
 
 
@@ -837,15 +838,46 @@ const SwitchPane = ({panes, pane}) => {
 
 const NotesPane = ({user}) => {
   
+  const [value, setValue] = useState(null);
+  
+  const createNote = (newNote) => {
+    fetch(`/api/admin/user_advanced/${user.id}/notes/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookiesAsObject().csrftoken,
+      },
+      body: JSON.stringify({ notes: newNote }),
+    })
+      .then((response) => {
+        if (response.ok) {
+          mutate(); // If successful, mutate the data to re-fetch
+        } else {
+          throw new Error('Failed to create note'); // If not successful, throw an error
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+  
   const fetcher = (...args) => fetch(...args).then(res => res.json());
-  const { data: _user_notes, error, isLoading } = useSWR(`/api/admin/user_advanced/${user.id}/notes/`, fetcher)
+  const { data: _user_notes, mutate, error, isLoading } = useSWR(`/api/admin/user_advanced/${user.id}/notes/`, fetcher)
+  
+  useEffect(() => {
+    if(_user_notes)
+      setValue(_user_notes)
+  }, [_user_notes])
+
   
   return <div className="container">
     <MDEditor
-      value={_user_notes}
-      onChange={() => {}}
+      value={value}
+      onChange={(value) => {
+        setValue(value)
+        createNote(value)
+      }}
     />
-    <MDEditor.Markdown source={_user_notes} style={{ whiteSpace: 'pre-wrap' }} />
   </div>
 };
 
