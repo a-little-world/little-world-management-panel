@@ -387,6 +387,7 @@ const MatchingTable = ({
 
   const [matchingOverlayState, setMatchingOverlayState] = useState({
     visible: false,
+    type: "proposal",
     title: "Make Match" // or "Make Matching Proposal"
   });
 
@@ -404,10 +405,19 @@ const MatchingTable = ({
           setMatchingOverlayState({...matchingOverlayState, visible: false})
           setMatchingSelectionState({...matchingSelectionState, inProgress: false})
         } else {
-          setMatchingOverlayState({...matchingOverlayState, visible: true, title: "Make Matching Proposal"})
+          setMatchingOverlayState({...matchingOverlayState, visible: true, title: "Make Matching Proposal", type: "proposal"})
           setMatchingSelectionState({...matchingSelectionState, inProgress: true})
         }
-      }} className='btn btn-xs'>Make Matching Proposal</button>
+      }} className='btn btn btn-accent'>Make Matching Proposal</button>
+      <button onClick={() => {
+        if(matchingOverlayState.visible){
+          setMatchingOverlayState({...matchingOverlayState, visible: false})
+          setMatchingSelectionState({...matchingSelectionState, inProgress: false})
+        } else {
+          setMatchingOverlayState({...matchingOverlayState, visible: true, title: "Make Matching", type: "matching"})
+          setMatchingSelectionState({...matchingSelectionState, inProgress: true})
+        }
+      }} className='btn btn btn-info'>Make Matching </button>
     </div>
     <div className='flex flex-row w-full h-fit items-end content-end justify-end'>
       {monitorTask && <TaskMonitorComponent task_id={monitorTask}/>}
@@ -421,13 +431,25 @@ const MatchingTable = ({
     <MatchingScoreTable data={data} addUserToSelection={addUserToSelection}/>
   </div>
     {matchingOverlayState.visible && <div className='w-240 h-full bg-base-200 z-80 absolute'>
-      <div className='text-7xl'>{matchingOverlayState.title}</div>
+      <div className='text-6xl'>{matchingOverlayState.title}</div>
+      <button className='btn btn-xs btn-error' onClick={() => {
+        setMatchingOverlayState({...matchingOverlayState, visible: false})
+        setMatchingSelectionState({...matchingSelectionState, inProgress: false})
+      }}>Close</button>
       <div className='flex flex-col'>
         <UserDetailsCard user={user} _key={0} selectUserForDetails={() => {}} deselectUser={() => {}} partial={true} tiny={false} horizontal={false}/>
         <div className='text-2xl bg-error'>With</div>
         {matchingSelectionState?.user ? 
-          <UserDetailsCard user={matchingSelectionState.user} _key={1} selectUserForDetails={() => {}} deselectUser={() => {}} partial={true} tiny={false} horizontal={false}/> : 
-            <div className='text-2xl bg-error'>No User Selected</div>}
+          <>
+            <UserDetailsCard user={matchingSelectionState.user} _key={1} selectUserForDetails={() => {}} deselectUser={() => {}} partial={true} tiny={false} horizontal={false}/>
+            <div className='flex flex-row'>
+              <button className='btn btn-success' onClick={() => {
+                // TODO: api call to make matching
+                
+              }}>Confirm</button>
+            </div>
+          </> : 
+            <div className='text-2xl bg-info rounded-xl'>No User Selected</div>}
       </div>
     </div>}
   </>
