@@ -389,13 +389,14 @@ const MatchingTable = ({
     visible: false,
     title: "Are you sure you want to make this match?", 
     text: "We will confirm first that the user are matchable and then make the match. If this fails you can 'force' a match if you want.",
-    error: null
+    error: null,
+    success: null
   });
 
   const updateConfirmationModalState = (newState) => {
-    if(newState.visible)
+    if(newState.visible){
       window.match_confirmation_modal.showModal()
-    else
+    }else
       window.match_confirmation_modal.close()
     setConfirmationModalState({...confirmationModalState, ...newState})
   }
@@ -407,6 +408,40 @@ const MatchingTable = ({
   });
 
   const { data, error, isLoading } = useSWR(`/api/admin/user_advanced/${user.id}/scores/`, fetcher)
+  
+  const makeMatchingApi = () => {
+      let postData = {
+          user1: user.id,
+          user2: matchingSelectionState.user.id,
+          lookup: "pk",
+      }
+      
+      if(matchingOverlayState.type === "proposal"){
+        let postData = {
+          ...postData,
+          proposal_only: true
+        }
+      }
+
+      fetch(`/api/admin/user/match/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookiesAsObject().csrftoken
+        },
+        body: JSON.stringify(postData)
+      }).then((res) => {
+        if(res.ok){
+          res.text().then((text) => {
+            updateConfirmationModalState({success: text})
+          })
+        }else{
+          res.text().then((text) => {
+            updateConfirmationModalState({error: text})
+          })
+        }
+      })
+  }
   
   const MatchDialogContent = <>
     <div className='text-6xl'>{confirmationModalState.title}</div>
@@ -422,31 +457,11 @@ const MatchingTable = ({
         setMatchingSelectionState({...matchingSelectionState, inProgress: false})
       }}>Abbort</button> 
       <div className='btn btn-success' onClick={() => {
-        fetch(`/api/admin/user/match/`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCookiesAsObject().csrftoken
-          },
-          body: JSON.stringify({
-            user1: user.id,
-            user2: matchingSelectionState.user.id,
-            lookup: "pk"
-          })
-        }).then((res) => {
-          if(res.ok){
-            res.text().then((text) => {
-              console.log(text)
-            })
-          }else{
-            res.text().then((text) => {
-              updateConfirmationModalState({error: text})
-            })
-          }
-        })
+        makeMatchingApi();
       }}>Make Match!</div> 
     </div>
     {confirmationModalState.error && <div className='text-error'>{confirmationModalState.error}</div>}
+    {confirmationModalState.success && <div className='text-success'>{confirmationModalState.success}</div>}
   </>
 
 
@@ -501,7 +516,11 @@ const MatchingTable = ({
             <div className='flex flex-row'>
               <button className='btn btn-success' onClick={() => {
                 // TODO: api call to make matching
-                updateConfirmationModalState({visible: true}) 
+                updateConfirmationModalState({
+                  visible: true,
+                  title: matchingOverlayState.type === "matching" ? "Are you sure you want to make this MATCH?" : "Are you sure you want to make this MATCHING PROPOSAL?",
+                  text: "We will confirm first that the user are matchable and then make the match. If this fails you can 'force' a match if you want.",
+                }) 
               }}>Confirm</button>
             </div>
           </> : 
