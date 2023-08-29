@@ -432,11 +432,11 @@ const MatchingTable = ({
       }).then((res) => {
         if(res.ok){
           res.text().then((text) => {
-            updateConfirmationModalState({success: text})
+            updateConfirmationModalState({success: text, visible: true})
           })
         }else{
           res.text().then((text) => {
-            updateConfirmationModalState({error: text})
+            updateConfirmationModalState({error: text, visible: true})
           })
         }
       })
