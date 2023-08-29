@@ -384,6 +384,19 @@ const MatchingTable = ({
 
   const fetcher = (...args) => fetch(...args).then(res => res.json());
   const [monitorTask, setMonitorTask] = useState(null)
+  
+  const [confirmationModalState, setConfirmationModalState] = useState({
+    visible: false,
+    title: "Are you sure you want to make this match?", 
+    text: "We will confirm first that the user are matchable and then make the match. If this fails you can 'force' a match if you want."
+  });
+  const updateConfirmationModalState = (newState) => {
+    if(newState.visible)
+      window.match_confirmation_modal.showModal()
+    else
+      window.match_confirmation_modal.close()
+    setConfirmationModalState({...confirmationModalState, ...newState})
+  }
 
   const [matchingOverlayState, setMatchingOverlayState] = useState({
     visible: false,
@@ -392,6 +405,25 @@ const MatchingTable = ({
   });
 
   const { data, error, isLoading } = useSWR(`/api/admin/user_advanced/${user.id}/scores/`, fetcher)
+  
+  const MatchDialogContent = <>
+    <div className='text-6xl'>{confirmationModalState.title}</div>
+    <div className='text-2xl'>{confirmationModalState.text}</div>
+    <div className='flex flex-col'>
+      <UserDetailsCard user={user} _key={0} selectUserForDetails={() => {}} deselectUser={() => {}} partial={true} tiny={true} horizontal={true}/>
+      <div className='text-2xl bg-error'>With</div>
+      <UserDetailsCard user={matchingSelectionState.user} _key={0} selectUserForDetails={() => {}} deselectUser={() => {}} partial={true} tiny={true} horizontal={true}/>
+    </div>
+    <div className='flex flex-row'>
+      <button className='btn btn-error' onClick={() => {
+        setMatchingOverlayState({...matchingOverlayState, visible: false})
+        setMatchingSelectionState({...matchingSelectionState, inProgress: false})
+      }}>Abbort</button> 
+      <div className='btn btn-success' onClick={() => {
+
+      }}>Make Match!</div> 
+    </div>
+  </>
 
 
   if (error) return <div>failed to load</div>
@@ -445,13 +477,22 @@ const MatchingTable = ({
             <div className='flex flex-row'>
               <button className='btn btn-success' onClick={() => {
                 // TODO: api call to make matching
-                
+                updateConfirmationModalState({visible: true}) 
               }}>Confirm</button>
             </div>
           </> : 
             <div className='text-2xl bg-info rounded-xl'>No User Selected</div>}
       </div>
     </div>}
+  <dialog id="match_confirmation_modal" className="modal">
+    <form method="dialog" className="modal-box">
+     {MatchDialogContent}
+      <div className="modal-action">
+        {/* if there is a button in form, it will close the modal */}
+        <button className="btn">Close</button>
+      </div>
+    </form>
+  </dialog>
   </>
 
     /**
