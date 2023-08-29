@@ -377,18 +377,38 @@ const TaskMonitorComponent = ({task_id}) => {
 
 const MatchingTable = ({ 
   user,
-  addUserToSelection
+  addUserToSelection,
+  matchingSelectionState,
+  setMatchingSelectionState
 }) => {
 
   const fetcher = (...args) => fetch(...args).then(res => res.json());
   const [monitorTask, setMonitorTask] = useState(null)
+
+  const [matchingOverlayState, setMatchingOverlayState] = useState({
+    visible: false,
+    title: "Make Match" // or "Make Matching Proposal"
+  });
+
   const { data, error, isLoading } = useSWR(`/api/admin/user_advanced/${user.id}/scores/`, fetcher)
 
 
   if (error) return <div>failed to load</div>
   if (isLoading) return <div>loading...</div>
     
-  return <div className='flex flex-grow w-full flex-col content-center justify-start items-start'>
+  return <><div className='flex flex-grow w-full flex-col content-center justify-start items-start'>
+    <div className='flex flex-row w-full h-fit content-start justify-start items-start'>
+      <div className='text-xl'>Matching Menu</div>
+      <button onClick={() => {
+        if(matchingOverlayState.visible){
+          setMatchingOverlayState({...matchingOverlayState, visible: false})
+          setMatchingSelectionState({...matchingSelectionState, inProgress: false})
+        } else {
+          setMatchingOverlayState({...matchingOverlayState, visible: true, title: "Make Matching Proposal"})
+          setMatchingSelectionState({...matchingSelectionState, inProgress: true})
+        }
+      }} className='btn btn-xs'>Make Matching Proposal</button>
+    </div>
     <div className='flex flex-row w-full h-fit items-end content-end justify-end'>
       {monitorTask && <TaskMonitorComponent task_id={monitorTask}/>}
       <button className='btn' onClick={() => {
@@ -400,6 +420,17 @@ const MatchingTable = ({
     </div>
     <MatchingScoreTable data={data} addUserToSelection={addUserToSelection}/>
   </div>
+    {matchingOverlayState.visible && <div className='w-240 h-full bg-base-200 z-80 absolute'>
+      <div className='text-7xl'>{matchingOverlayState.title}</div>
+      <div className='flex flex-col'>
+        <UserDetailsCard user={user} _key={0} selectUserForDetails={() => {}} deselectUser={() => {}} partial={true} tiny={false} horizontal={false}/>
+        <div className='text-2xl bg-error'>With</div>
+        {matchingSelectionState?.user ? 
+          <UserDetailsCard user={matchingSelectionState.user} _key={1} selectUserForDetails={() => {}} deselectUser={() => {}} partial={true} tiny={false} horizontal={false}/> : 
+            <div className='text-2xl bg-error'>No User Selected</div>}
+      </div>
+    </div>}
+  </>
 
     /**
   return <><table className="table table-zebra leading-3 w-full z-50 bg-base-100">
@@ -883,7 +914,9 @@ const NotesPane = ({user}) => {
 
 const AdvancedUserDetails = ({
   user, closeUserDetails, setEmailHTML, 
-  addUserToSelection
+  addUserToSelection,
+  matchingSelectionState,
+  setMatchingSelectionState
 }) => {
   
   console.log("Rendering advanced user details", user)
@@ -948,7 +981,12 @@ const AdvancedUserDetails = ({
     id: "matching",
     component: <>
       <h1>Matching Tab</h1>
-      <MatchingTable user={data}  addUserToSelection={addUserToSelection}/>
+      <MatchingTable 
+        user={data}  
+        addUserToSelection={addUserToSelection} 
+        matchingSelectionState={matchingSelectionState}
+        setMatchingSelectionState={setMatchingSelectionState}
+      />
     </>
   },
 
@@ -991,6 +1029,12 @@ export const AdminPanel = ({
     initialList
 }) => {
   
+  // If a matching selection is being performed ( then the user details are not openend)
+  const [matchingSelectionState, setMatchingSelectionState] = useState({
+    inProgress: false,
+    user: null,
+  })
+  
   // If there is an email being viewed
   const [emailHTML, setEmailHTML] = useState(null)
     
@@ -1021,7 +1065,16 @@ export const AdminPanel = ({
             setSelectedUsers={setSelectedUsersByHash}
             fields={fields}
             setFields={setFields}
-            selectUserForDetails={(user) => setDetailUser(user)}
+            selectUserForDetails={(user) => {
+              
+              if(matchingSelectionState.inProgress){
+                setMatchingSelectionState({...matchingSelectionState, user: user})
+                console.log("Updated Matching Selection", matchingSelectionState)
+              }else{
+                setDetailUser(user)
+              }
+            
+            }}
             setData={setData}
             >
         {detailUser ? 
@@ -1031,10 +1084,14 @@ export const AdminPanel = ({
                   setSelectedUsers([...selectedUsers, user])
                 }
               }}
-            closeUserDetails={() => {
-              updateQueryParams({param: "user_details", value: null});
-              setDetailUser(null);
-            }} setEmailHTML={setEmailHTML}/> : 
+              closeUserDetails={() => {
+                updateQueryParams({param: "user_details", value: null});
+                setDetailUser(null);
+              }} 
+              setEmailHTML={setEmailHTML}
+              matchingSelectionState={matchingSelectionState}
+              setMatchingSelectionState={setMatchingSelectionState}
+            /> : 
             <Table 
               users={userLists[list]} 
               fields={fields} 
