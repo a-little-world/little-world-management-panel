@@ -1135,6 +1135,8 @@ export const AdminPanel = ({
     initialList
 }) => {
   
+  
+  
   // If a matching selection is being performed ( then the user details are not openend)
   const [matchingSelectionState, setMatchingSelectionState] = useState({
     inProgress: false,
@@ -1154,6 +1156,20 @@ export const AdminPanel = ({
   
   // The user that is selected into a details view
   const [detailUser, setDetailUser] = useState(null)
+  
+
+  var queryParams = new URLSearchParams(window.location.search);
+  let user_details = queryParams.get('user_details')
+  user_details = user_details ? user_details : null
+  const fetcher = (...args) => fetch(...args).then(res => res.json());
+  const { data: _pre_loaded_user, error, isLoading } = useSWR((!detailUser && user_details) ? `/api/admin/user_advanced/${user_details}/` : null, fetcher)
+  
+  useEffect(() => {
+    if(_pre_loaded_user){
+      console.log("PRE LOADED USER", _pre_loaded_user)
+      setDetailUser(_pre_loaded_user)
+    }
+  }, [_pre_loaded_user])
   
   const selectedUsersHashes = selectedUsers.map((user) => user ? user.hash : null).filter((hash) => hash !== null)
 
