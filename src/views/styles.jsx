@@ -219,7 +219,6 @@ export const Filter = styled.button`
   padding: 0 ${({ theme: { spacing } }) => spacing(2)};
   height: 32px;
   line-height: 1;
-  text-transform: capitalize;
 
   &:hover {
     opacity: 0.6;
