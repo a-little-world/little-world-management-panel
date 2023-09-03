@@ -375,6 +375,96 @@ const TaskMonitorComponent = ({task_id}) => {
   </div>
 }
 
+const UserTasksTab = ({
+  user
+}) => {
+  
+  const fetcher = (...args) => fetch(...args).then(res => res.json());
+  const { data: tasks, error, mutate, isLoading } = useSWR(`/api/admin/user_advanced/${user.id}/tasks/`, fetcher)
+  const [tasksInput, setTaskInput] = useState({
+    description: "",
+  })
+  
+  
+  return <div className='flex flex-col w-full h-full'>
+    <div className='flex flex-row w-full h-fit content-start justify-start items-start'>
+      <div className='text-xl'>Tasks</div>
+    </div>
+    <div className='flex flex-row w-full h-fit items-end content-end justify-end'>
+      {tasks && <table className="table table-zebra leading-3 w-full z-50 bg-base-100">
+        <thead className='bg-base-300'>
+          <tr>
+            <th></th>
+            <th>description</th>
+            <th>state</th>
+            <th>created_at</th>
+            <th>updated_at</th>
+          </tr>
+        </thead>
+        <tbody>
+            {tasks.map((task,i) => {
+                return <tr key={i} className='p-0 hover:bg-100 hover:text-success hover:border hover:border-accent'>
+                    <th className='w-20'>
+                      <input type="checkbox" className="checkbox ml-2" onChange={() => {
+                        fetch(`/api/admin/user_advanced/${user.id}/tasks/complete/`, {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookiesAsObject().csrftoken
+                          },
+                          body: JSON.stringify({
+                            'task_id': task.id,
+                          })
+                        }).then((res) => {
+                          if(res.ok){
+                            mutate(tasks.filter((t) => t.id !== task.id))
+                          }else{
+                            res.text().then((text) => {
+                              console.error("ERROR", text)
+                            })
+                          }
+                        })
+                      }}/>
+                    </th>
+                    <td>{task.description}</td>
+                    <td>{task.state}</td>
+                    <td>{task.created_at}</td>
+                    <td>{task.updated_at}</td>
+                </tr>
+            })}
+        </tbody>
+      </table>}
+    </div>
+    {/** Now a simple input with a 'create' button at the end, with an onClick that mutates the api above */}
+    <div className='flex flex-row w-full h-fit items-end content-end justify-end'>
+      {/** description */}
+      <input type="text" placeholder="Type here" className="input input-bordered w-full max-w-xs" value={tasksInput.description} onChange={(e) => {
+        setTaskInput({...tasksInput, description: e.target.value})
+      }}/>
+      <button className='btn btn-success' onClick={() => {
+        fetch(`/api/admin/user_advanced/${user.id}/tasks/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookiesAsObject().csrftoken
+          },
+          body: JSON.stringify(tasksInput)
+        }).then((res) => {
+          if(res.ok){
+            res.text().then((text) => {
+              mutate([...tasks, text])
+            })
+          }else{
+            res.text().then((text) => {
+              console.error("ERROR", text)
+            })
+          }
+        })
+      }}>Create Task</button>
+    </div>
+  </div> 
+}
+
 const MatchingTable = ({ 
   user,
   addUserToSelection,
@@ -1094,6 +1184,11 @@ const AdvancedUserDetails = ({
       />
     </>
   },
+  {
+    title: "Tasks",
+    id: "tasks",
+    component: <UserTasksTab user={data}/>
+  }
 
 ]
   
