@@ -14,6 +14,14 @@ import MDEditor from '@uiw/react-md-editor';
 import { getCookiesAsObject } from '../utils';
 
 
+function readableFormatDate(dateString) {
+  var date = new Date();
+  var dateToCompare = new Date(dateString);
+  var diffTime = Math.abs(date - dateToCompare);
+  var diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+
+  return diffDays + ' days ago';
+}
 
 const NavBar = () => {
     return <div className='h-fit w-full flex flex-row bg-base-300'>
@@ -104,6 +112,9 @@ const FIELDS = {
         const matchesListing = matchingBubbleList(field.items)
         return <Base tableView={tableView} _key={key}>{matchesListing}</Base>
     },
+    "date_joined": (field, user, key, tableView) => {
+      return <Base tableView={tableView} _key={key}>{readableFormatDate(field)}</Base>
+    }
 }
 
 const DEFAULT_FIELDS = [
@@ -733,6 +744,7 @@ const ActionsButtons = () => {
    </div> 
 }
 
+
 const UserDetailsCard = ({
         user, 
         _key, 
@@ -788,9 +800,18 @@ const UserDetailsCard = ({
                 {"matches.proposed"}
             </div>
             <div className='w-full h-fit text-xs text-center'>
-               {ProposedMatches} 
+               {ProposedMatches}
             </div>
-            <div class="w-full flex flex-col content-start justify-start items-start gap-4">
+            <div class="w-full flex flex-col content-start justify-start items-start gap-2">
+              <div className='flex flex-row content-center items-start justify-start'>
+                <b className='text-l'>Id</b>: {user.id}
+              </div>
+              <div className='flex flex-row content-center items-start justify-start'>
+                <b className='text-l'>Date Joined</b>: {user.date_joined}  ({readableFormatDate(user.date_joined)})
+              </div>
+              <div className='flex flex-row content-center items-start justify-start'>
+                <b className='text-l'>Email</b>: {user.email}
+              </div>
               <div className='text-xl'>Interests</div>
               <ThemedForm
                   className='text-xs w-full'
@@ -1003,6 +1024,7 @@ const AdminChatMessagesDisplay = ({ user, chatMessages }) => {
   console.log("MESSAGES", chatMessages, user);
   return <div className='w-full'>
     {chatMessages.items.toReversed().map((message, i) => {
+      // TODO: little fucked-up isSelf is the opposite of what I thought?
       const isSelf = message.sender_hash === user.hash;
       const date = new Date(message.sent * 1000)
 
@@ -1019,7 +1041,15 @@ const AdminChatMessagesDisplay = ({ user, chatMessages }) => {
         {isSelf ? user.profile.first_name : chatMessages.match.profile.first_name}
         <time className="text-xs opacity-50">{date.toDateString()}</time>
       </div>
-      <div className={`chat-bubble ${message.read ? '': 'border-2 border-error'}`}>{message.text}</div>
+      {<div className="dropdown">
+        <label tabIndex={0} className={`chat-bubble ${message.read ? '': 'border-2 border-error'}`}>{message.text}</label>
+          <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+            {(!isSelf) && <>
+              <li><a>Delete Message</a></li>
+            </>}
+            <li><a>Mark as read</a></li>
+          </ul>
+      </div>}
       <div className="chat-footer opacity-50">
         {message.read ? 'read' : 'unread'}
       </div>
@@ -1030,11 +1060,16 @@ const AdminChatMessagesDisplay = ({ user, chatMessages }) => {
 
 const AdminChat = ({ user, messages }) => {
   const [chat, setChat] = useState(null)
-
+  
   return chat ? <>
     <ChatNavbar user={user} chat={chat} unFocousChat={() => setChat(null)}/>
     <div className='w-full h-full flex flex-col'>
       <AdminChatMessagesDisplay user={user} chatMessages={chat} />
+      {/** A simple footer with a text field and a send button */}
+      <div className="flex flex-row">
+        <input type="text" placeholder="Type a message" className="input input-primary input-bordered w-full" />
+        <button className="btn btn-primary">Send</button>
+      </div>
     </div></>: <div className='w-full flex flex-grow items-start content-start justify-start'>
     <div className='w-full h-full flex flex-col gap-2 p-2'>
       {Object.keys(messages).map((message_chat, i) => {
