@@ -1047,7 +1047,28 @@ const AdminChatMessagesDisplay = ({ user, chatMessages }) => {
             {(!isSelf) && <>
               <li><a>Delete Message</a></li>
             </>}
-            <li><a>Mark as read</a></li>
+            <li><a onClick={() => {
+                fetch(`/api/admin/user_advanced/${user.id}/message_read/`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookiesAsObject().csrftoken
+                  },
+                  body: JSON.stringify({
+                    message_id: message.id,
+                  })
+                }).then((res) => {
+                  if(res.ok){
+                    res.text().then((text) => {
+                      console.log("MESSAGE SENT", text)
+                    })
+                  }else{
+                    res.text().then((text) => {
+                      console.error("ERROR", text)
+                    })
+                  }
+                })
+            }}>Mark as read</a></li>
           </ul>
       </div>}
       <div className="chat-footer opacity-50">
@@ -1060,16 +1081,41 @@ const AdminChatMessagesDisplay = ({ user, chatMessages }) => {
 
 const AdminChat = ({ user, messages }) => {
   const [chat, setChat] = useState(null)
+  const [messageText, setMessageText] = useState("")
   
   return chat ? <>
     <ChatNavbar user={user} chat={chat} unFocousChat={() => setChat(null)}/>
     <div className='w-full h-full flex flex-col'>
       <AdminChatMessagesDisplay user={user} chatMessages={chat} />
       {/** A simple footer with a text field and a send button */}
-      <div className="flex flex-row">
-        <input type="text" placeholder="Type a message" className="input input-primary input-bordered w-full" />
-        <button className="btn btn-primary">Send</button>
-      </div>
+      {chat.match.with_management && <div className="flex flex-row">
+        <input type="text" placeholder="Type a message" className="input input-primary input-bordered w-full" value={messageText} onChange={(e) => {
+          setMessageText(e.target.value);
+        }}/>
+        <button className="btn btn-primary" onClick={() => {
+          fetch(`/api/admin/user_advanced/${user.id}/message_reply/`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCookiesAsObject().csrftoken
+            },
+            body: JSON.stringify({
+              message: messageText,
+            })
+          }).then((res) => {
+            if(res.ok){
+              res.text().then((text) => {
+                console.log("MESSAGE SENT", text)
+              })
+            }else{
+              res.text().then((text) => {
+                console.error("ERROR", text)
+              })
+            }
+          })
+
+        }}>Send</button>
+      </div>}
     </div></>: <div className='w-full flex flex-grow items-start content-start justify-start'>
     <div className='w-full h-full flex flex-col gap-2 p-2'>
       {Object.keys(messages).map((message_chat, i) => {
