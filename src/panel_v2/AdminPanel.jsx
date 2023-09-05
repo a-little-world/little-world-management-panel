@@ -912,12 +912,12 @@ const filterShema = {
   },
 };
 
-const Accordion = ({elements}) => {
+const Accordion = ({elements, accordion_id }) => {
     const [expanded, setExpanded] = useState(0)
 
     return <>{elements.map((element, i) => {
         return <div key={i} className="collapse collapse-arrow bg-base-200">
-          <input type="radio" name="my-accordion-2" checked={expanded === i} /> 
+          <input type="radio" name={accordion_id} checked={expanded === i} /> 
           <div className="collapse-title text-xl font-medium" onClick={() => {
               setExpanded(i)
           }}>
@@ -957,7 +957,9 @@ const DynamicDisplay = ({
       </div> 
       <div className="drawer-side">
         <label htmlFor="my-drawer-2" className="drawer-overlay"></label> 
-        <Accordion elements={[{
+        <Accordion 
+          accordion_id={"accordion-1"}
+          elements={[{
             title: "User List Selection", 
             content: (<ul className="menu p-4 w-80 bg-base-200 text-base-content text-left">
             {Object.keys(querySets).map((key, i) => {
@@ -1191,6 +1193,7 @@ const NotesPane = ({user}) => {
 const ActionsPane = ({user}) => {
   
   const [schemaStates, setSchemaStates] = useState({})
+  const [schemaResponseStates, setSchemaResponseStates] = useState({})
 
   const fetcher = (...args) => fetch(...args).then(res => res.json());
   const { data: actions, error, isLoading } = useSWR(`/api/admin/quick_actions/`, fetcher)
@@ -1198,18 +1201,127 @@ const ActionsPane = ({user}) => {
   useEffect(() => {
     if(actions){
       const _schemaStates = {}
+      const _resStates = {}
       Object.keys(actions).map((action, i) => {
         _schemaStates[action] = {}
         Object.keys(actions[action].schema.properties).map((property, j) => {
-          _schemaStates[action][property] = actions[action].schema.properties[property].default || null
+          _schemaStates[action][property] = actions[action].schema.properties[property].default
+          if(property === "user_id")
+            _schemaStates[action][property] = user.id
+          
+          _resStates[action] = {
+            "error": null,
+            "success": null,
+          }
         })
       })
       setSchemaStates(_schemaStates)
+      setSchemaResponseStates(_resStates)
     }
   }, [actions])
           
   
-  return actions ? <>{Object.keys(actions).map((action, i) => {
+  return actions ? <><Accordion 
+    accordion_id={"accordion-2"}
+    elements={Object.keys(actions).map((action, i) => {
+    return {
+      title: action,
+      content: <><div className='w-full h-fit flex flex-col gap-2 p-2'>
+        <div className='text-xl'>{action}</div>
+        <ThemedForm
+
+                  className='w-full'
+                  schema={actions[action].schema}
+                  extraErrors={{}}
+                  showErrorList="bottom"
+                  uiSchema={{...{
+                    "ui:submitButtonOptions": {
+                      norender: true,
+                    },
+                  }, ...actions[action].ui_schema}}
+                  formData={schemaStates[action]}
+                  validator={validator}
+                  onChange={({formData}) => {
+                    setSchemaStates({...schemaStates, [action]: {...schemaStates[action], ...formData}})
+                  }}
+                />
+          {(action in schemaResponseStates) && <>
+          {schemaResponseStates[action].success && <div className="alert alert-success">
+            <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <span>{schemaResponseStates[action].success}</span>
+            </div>}
+          {schemaResponseStates[action].error && <div className="alert alert-error">
+            <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <span>{schemaResponseStates[action].error}</span>
+            </div>}
+          </>}
+        <div className='w-full h-fit flex flex-row content-center items-center justify-center'>
+          <button className="btn btn-primary" onClick={() => {
+            window.actions_confirm_modal.showModal();
+          }}>Confirm</button>
+        </div>
+      </div>
+          <dialog id="actions_confirm_modal" className="modal">
+            <form method="dialog" className="modal-box max-w-full w-fit">
+              <div className="flex flex-col gap-2">
+                <div className='text-2xl'>Perform ({action}) with:</div>
+                {(action in schemaStates) ? Object.keys(schemaStates[action]).map((property, j) => {
+                  return <div className='flex flex-row gap-2'>
+                    <div className='text-xl'>{property}</div>
+                    <div className='text-xl'>{(() => {
+                      // convert schemaStates[action][property] to a readable format depending on type
+                      if(typeof schemaStates[action][property] === "boolean")
+                        return schemaStates[action][property] ? "True" : "False"
+                      
+                      // check if 'null'
+                      if(schemaStates[action][property] === null)
+                        return "NULL"
+                      
+                      return schemaStates[action][property]
+                    })()}</div>
+                  </div>
+                  }): <></>}
+                <div className="flex flex-row gap-2">
+                  <button className="btn btn-primary" onClick={() => {
+                    fetch(`/api/admin/quick_actions/${action}/`, {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          'X-CSRFToken': getCookiesAsObject().csrftoken
+                        },
+                        body: JSON.stringify(schemaStates[action])
+                      }).then((res) => {
+                        if(res.ok){
+                          res.text().then((text) => {
+                            console.log("MESSAGE SENT", text)
+                            setSchemaResponseStates({...schemaResponseStates, [action]: {success: text, error: null}})
+                          })
+                        }else{
+                          res.text().then((text) => {
+                            console.error("ERROR", text)
+                            setSchemaResponseStates({...schemaResponseStates, [action]: {success: null, error: text}})
+                          })
+                        }
+                      }
+                      )
+                  }}>Confirm</button>
+                  <button className="btn btn-error" onClick={() => {
+                    window.actions_confirm_modal.close();
+                  }}>Cancel</button>
+                </div>
+              </div>
+            </form>
+          </dialog>
+      </>
+    }
+  })}/>
+  </> : <></>
+}
+/**
+  
+  
+  
+  <>{Object.keys(actions).map((action, i) => {
     return <>
     <div className='w-full h-fit flex flex-col gap-2 p-2'>
       <div className='text-xl'>{action}</div>
@@ -1256,7 +1368,7 @@ const ActionsPane = ({user}) => {
           </div>
         </form>
       </dialog>
-  </>})}</> : <></>
+  </>})}</> : <></>  */
 
   /*return <>
   <div className='w-full h-full flex flex-col'>
@@ -1306,7 +1418,6 @@ const ActionsPane = ({user}) => {
             </form>
           </dialog>
   </>*/
-}
 
 const AdvancedUserDetails = ({
   user, closeUserDetails, setEmailHTML, 
