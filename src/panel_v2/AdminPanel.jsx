@@ -1188,6 +1188,126 @@ const NotesPane = ({user}) => {
   </div>
 };
 
+const ActionsPane = ({user}) => {
+  
+  const [schemaStates, setSchemaStates] = useState({})
+
+  const fetcher = (...args) => fetch(...args).then(res => res.json());
+  const { data: actions, error, isLoading } = useSWR(`/api/admin/quick_actions/`, fetcher)
+  
+  useEffect(() => {
+    if(actions){
+      const _schemaStates = {}
+      Object.keys(actions).map((action, i) => {
+        _schemaStates[action] = {}
+        Object.keys(actions[action].schema.properties).map((property, j) => {
+          _schemaStates[action][property] = actions[action].schema.properties[property].default || null
+        })
+      })
+      setSchemaStates(_schemaStates)
+    }
+  }, [actions])
+          
+  
+  return actions ? <>{Object.keys(actions).map((action, i) => {
+    return <>
+    <div className='w-full h-fit flex flex-col gap-2 p-2'>
+      <div className='text-xl'>{action}</div>
+      <ThemedForm
+                  className='w-full'
+                  schema={actions[action].schema}
+                  extraErrors={{}}
+                  showErrorList="bottom"
+                  uiSchema={{
+                    "ui:submitButtonOptions": {
+                      norender: true,
+                    },
+                  }}
+                  formData={schemaStates[action]}
+                  validator={validator}
+                  onChange={({formData}) => {
+                    setSchemaStates({...schemaStates, [action]: {...schemaStates[action], ...formData}})
+                  }}
+                />
+      <div className='w-full h-fit flex flex-row content-center items-center justify-center'>
+        <button className="btn btn-primary" onClick={() => {
+          window.actions_confirm_modal.showModal();
+        }}>Confirm</button>
+      </div>
+    </div>
+      <dialog id="actions_confirm_modal" className="modal">
+        <form method="dialog" className="modal-box max-w-full w-fit">
+          <div className="flex flex-col gap-2">
+            <div className='text-2xl'>Perform ({action}) with:</div>
+            {(action in schemaStates) ? Object.keys(schemaStates[action]).map((property, j) => {
+              return <div className='flex flex-row gap-2'>
+                <div className='text-xl'>{property}</div>
+                <div className='text-xl'>{schemaStates[action][property]}</div>
+              </div>
+              }): <></>}
+            <div className="flex flex-row gap-2">
+              <button className="btn btn-primary" onClick={() => {
+                // later
+              }}>Confirm</button>
+              <button className="btn btn-error" onClick={() => {
+                window.actions_confirm_modal.close();
+              }}>Cancel</button>
+            </div>
+          </div>
+        </form>
+      </dialog>
+  </>})}</> : <></>
+
+  /*return <>
+  <div className='w-full h-full flex flex-col'>
+        <div className='text-xl'>Actions</div>
+        <div className='text-2xl'>Make Tim Management</div>
+        <div className='text-xl'>Replaces the current management user with tim</div>
+        <div className='w-full h-fit flex flex-row content-center items-center justify-center'>
+          <button className="btn btn-primary" onClick={() => {
+              window.actions_confirm_modal.showModal();
+            }
+          }>Make Tim Management</button>
+        </div>
+        <textarea className='w-full h-64' value={JSON.stringify(user, null, 2)}></textarea>
+      </div>
+          <dialog id="actions_confirm_modal" className="modal">
+            <form method="dialog" className="modal-box max-w-full w-fit">
+              <div className="flex flex-col gap-2">
+                <div className="flex flex-row gap-2">
+                  <button className="btn btn-primary" onClick={() => {
+                    fetch(`/api/admin/action/make_tim_management_for_user/`, {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          'X-CSRFToken': getCookiesAsObject().csrftoken
+                        },
+                        body: JSON.stringify({
+                          user_id: user.id,
+                        })
+                      }).then((res) => {
+                        if(res.ok){
+                          res.text().then((text) => {
+                            console.log("MESSAGE SENT", text)
+                          })
+                        }else{
+                          res.text().then((text) => {
+                            console.error("ERROR", text)
+                          })
+                        }
+                      }
+                      )
+                }}>Confirm</button>
+                  <button className="btn btn-error" onClick={() => {
+                    window.actions_confirm_modal.close();
+                  }}>Cancel</button>
+                </div>
+              </div>
+            </form>
+          </dialog>
+  </>*/
+}
+
 const AdvancedUserDetails = ({
   user, closeUserDetails, setEmailHTML, 
   addUserToSelection,
@@ -1269,8 +1389,12 @@ const AdvancedUserDetails = ({
     title: "Tasks",
     id: "tasks",
     component: <UserTasksTab user={data}/>
-  }
-
+  },
+  {
+    title: "Actions",
+    id: "actions",
+    component: <ActionsPane user={data}/>
+  },
 ]
   
 
