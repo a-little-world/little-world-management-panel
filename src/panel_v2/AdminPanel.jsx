@@ -159,6 +159,7 @@ const EMAIL_FIELDS = [
     //"sender",
     "receiver",
     "template",
+    "sucess",
     "time",
     "retrieve"
 ]
@@ -173,6 +174,15 @@ const EMAIL_FIELD_GETTERS = {
     const timeConverted = datetimeAsIsoString(email[field])
     return <td key={_key}><input type="datetime-local" id="datetime" value={timeConverted}/></td>
 
+  },
+  "sucess" : (email, field, _key, _onclick=null) => {
+      const className = email[field] ? "bg-success" : "bg-error"
+      const span = <div className={`badge badge-md ${className}`}>{email[field] ? "sucess": "failure"}</div>
+      
+      return email[field] ? <td key={_key}>{span}</td> : <td key={_key}>
+        {span}
+        <button className='btn btn-xs' onClick={_onclick}>Retry</button>        
+      </td>
   },
   "sender": (email, field, _key,  _onclick=null) => {
     return <td key={_key}>
@@ -204,11 +214,16 @@ const datetimeAsIsoString = (datetime) => {
 }
 
 const EmailsTable = ({
+    user,
     emails, 
     setEmailHTML
   }) => {
   console.log("EMAILS", emails)
-  // 
+    
+  const [selectedEmail, setSelectedEmail] = useState(null);
+  const [emailInput, setEmailInput] = useState({subject: null})
+  const [emailConfrimHTML, setEmailConfirmHTML] = useState(null);
+
   return <><table className="table table-zebra leading-3 w-full z-50 bg-base-100">
         <thead className='bg-base-300'>
           <tr>
@@ -237,6 +252,18 @@ const EmailsTable = ({
                               window.my_modal_1.showModal() 
                             })
                           })
+                        } else if (field === "sucess"){
+                          return EMAIL_FIELD_GETTERS[field](email, field, j, () => {
+                              console.log("Getting email field")
+
+                              fetch(email["retrieve"]).then((response) => response.text()).then((html) => {
+                                var parser = new DOMParser();
+                                var doc = parser.parseFromString(html, "text/html");
+                                setSelectedEmail(email)
+                                setEmailConfirmHTML(html)
+                                window.email_resend_confirm_modal.showModal()
+                              })
+                            });
                         }
                         return EMAIL_FIELD_GETTERS[field](email, field, j)
                       } else {
@@ -246,7 +273,49 @@ const EmailsTable = ({
                 </tr>
             })}
         </tbody>
-      </table></>
+      </table>
+      <dialog id="email_resend_confirm_modal" className="modal">
+        <form method="dialog" className="modal-box">
+          <h3 className="font-bold text-lg">Hello Do you really want to re-send this email?!</h3>
+          <p className="py-4">Subject</p>
+          <input type="text" className="input input-bordered w-full max-w-xs" value={emailInput.subject} onChange={(e) => {
+            setEmailInput({...emailInput, subject: e.target.value})
+          }} />
+          <div dangerouslySetInnerHTML={{ __html: emailConfrimHTML }} />
+          <div className="modal-action">
+            <span className="btn btn-success" onClick={(e) => {
+              console.log("CLICKED")
+                fetch(`/api/admin/user_advanced/${user.id}/resend_email/`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookiesAsObject().csrftoken
+                  },
+                  body: JSON.stringify((emailInput.subject === null) ? {
+                    'email_id': selectedEmail.id,
+                  }: {
+                    'email_id': selectedEmail.id,
+                    'subject': emailInput.subject
+                  })
+                }).then((res) => {
+                  if(res.ok){
+                    res.text().then((text) => {
+                      window.email_resend_confirm_modal.close()
+                    })
+                  }else{
+                    res.text().then((text) => {
+                      console.error("ERROR", text)
+                    })
+                  }
+                });
+            }}>SEND</span>
+            <button className="btn btn-error" onClick={(e) => {
+              window.email_resend_confirm_modal.close()
+            }}>Close</button>
+          </div>
+        </form>
+      </dialog>
+      </>
 }
 
 
@@ -1499,7 +1568,7 @@ const AdvancedUserDetails = ({
   {
     title: "Emails",
     id: "emails",
-    component: <><EmailsTable emails={data["email_logs"]} setEmailHTML={setEmailHTML}/></>
+    component: <><EmailsTable user={user} emails={data["email_logs"]} setEmailHTML={setEmailHTML}/></>
   },
   {
     title: "Notes",
