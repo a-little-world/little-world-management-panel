@@ -6,12 +6,14 @@ import { withTheme } from "@rjsf/core";
 const ThemedForm = withTheme(rjsfDaisyUiTheme);
 import validator from "@rjsf/validator-ajv8";
 import { rjsfDaisyUiTheme } from "../rjsf-daisyui-theme/rjsfDaisyUiTheme"
-import useSWR from 'swr'
+import useSWR from 'swr';
 import useSWRImmutable from 'swr/immutable'
+import { mutate as gMutate } from 'swr'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import MDEditor from '@uiw/react-md-editor';
 import { getCookiesAsObject } from '../utils';
+
 
 
 function readableFormatDate(dateString) {
@@ -1022,7 +1024,11 @@ const ChatNavbar = ({user, chat, unFocousChat}) => {
 </div>
 }
 
-const AdminChatMessagesDisplay = ({ user, chatMessages }) => {
+const AdminChatMessagesDisplay = ({ 
+    user, 
+    chatMessages,
+    mutateMessages
+  }) => {
   console.log("MESSAGES", chatMessages, user);
   return <div className='w-full'>
     {chatMessages.items.toReversed().map((message, i) => {
@@ -1061,7 +1067,7 @@ const AdminChatMessagesDisplay = ({ user, chatMessages }) => {
                   })
                 }).then((res) => {
                   if(res.ok){
-                    res.text().then((text) => {
+                    res.json().then((text) => {
                       console.log("MESSAGE SENT", text)
                     })
                   }else{
@@ -1081,14 +1087,28 @@ const AdminChatMessagesDisplay = ({ user, chatMessages }) => {
   </div>
 }
 
-const AdminChat = ({ user, messages }) => {
+const AdminChat = ({ user, _messages }) => {
   const [chat, setChat] = useState(null)
+  const [chatId, setChatId] = useState(null)
   const [messageText, setMessageText] = useState("")
+
+  const [reloader, setReloader] = useState(0)
+  
+  const fetcher = (...args) => fetch(...args).then(res => res.json());
+  const { data: messages, mutate, error, isLoading } = useSWR(`/api/admin/user_advanced/${user.id}/messages/`, fetcher)
+
+  const reloadComponent = () => {
+    setReloader(reloader + 1)
+  }
+  
+  if(!messages)
+    return <></>
+  
   
   return chat ? <>
     <ChatNavbar user={user} chat={chat} unFocousChat={() => setChat(null)}/>
     <div className='w-full h-full flex flex-col'>
-      <AdminChatMessagesDisplay user={user} chatMessages={chat} />
+      <AdminChatMessagesDisplay user={user} chatMessages={chat} mutateMessages={reloadComponent}/>
       {/** A simple footer with a text field and a send button */}
       {chat.match.with_management && <div className="flex flex-row">
         <input type="text" placeholder="Type a message" className="input input-primary input-bordered w-full" value={messageText} onChange={(e) => {
@@ -1106,8 +1126,10 @@ const AdminChat = ({ user, messages }) => {
             })
           }).then((res) => {
             if(res.ok){
-              res.text().then((text) => {
-                console.log("MESSAGE SENT", text)
+              res.json().then((message) => {
+                mutate({...messages, [chatId]: {...messages[chatId], items: [message, ...messages[chatId].items]}})
+                setChat({...chat, items: [message, ...chat.items]})
+                setMessageText("")
               })
             }else{
               res.text().then((text) => {
@@ -1123,6 +1145,7 @@ const AdminChat = ({ user, messages }) => {
       {Object.keys(messages).map((message_chat, i) => {
         return <div className='w-full h-fit flex flex-row rounded-xl text-2xl p-3 gap-2 hover:bg-error' onClick={() => {
           setChat(messages[message_chat])
+          setChatId(message_chat)
           updateQueryParams({param: "chat", value: messages[message_chat].match.profile.id})
         }}>
           <UserDetailsCard user={messages[message_chat].match} _key={2*i + 1} selectUserForDetails={() => {}} deselectUser={() => {}} partial={true} tiny={true}/>
