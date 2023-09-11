@@ -1,4 +1,4 @@
-import { Children, useState, useEffect } from 'react'
+import { Children, useState, useEffect, useCallback } from 'react'
 import style from './markdown-styles.module.css';
 import '../withTailwind.css';
 import UserImage from '../atoms/userImage.jsx'
@@ -13,8 +13,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import MDEditor from '@uiw/react-md-editor';
 import { getCookiesAsObject } from '../utils';
-
-
+import debounce from 'lodash.debounce';
 
 function readableFormatDate(dateString) {
   var date = new Date();
@@ -983,13 +982,14 @@ const filterShema = {
   },
 };
 
-const Accordion = ({elements, accordion_id }) => {
+const Accordion = ({elements, accordion_id, updateExpanded = (i) => {} }) => {
     const [expanded, setExpanded] = useState(0)
 
     return <>{elements.map((element, i) => {
         return <div key={i} className="collapse collapse-arrow bg-base-200">
           <input type="radio" name={accordion_id} checked={expanded === i} /> 
           <div className="collapse-title text-xl font-medium" onClick={() => {
+              updateExpanded(i)
               setExpanded(i)
           }}>
             <span>{element.title}</span>
@@ -1238,29 +1238,31 @@ const SwitchPane = ({panes, pane}) => {
 }
 
 const NotesPane = ({user}) => {
-  
   const [value, setValue] = useState(null);
-  
-  const createNote = (newNote) => {
-    fetch(`/api/admin/user_advanced/${user.id}/notes/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCookiesAsObject().csrftoken,
-      },
-      body: JSON.stringify({ notes: newNote }),
-    })
-      .then((response) => {
-        if (response.ok) {
-          mutate(); // If successful, mutate the data to re-fetch
-        } else {
-          throw new Error('Failed to create note'); // If not successful, throw an error
-        }
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  };
+
+  // Create Note
+  const createNote = useCallback(
+    debounce((newNote) => { // A debounced function that waits 500 ms after the last call to run
+      fetch(`/api/admin/user_advanced/${user.id}/notes/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookiesAsObject().csrftoken,
+        },
+        body: JSON.stringify({ notes: newNote }),
+      }).then((response) => {
+          if (response.ok) {
+            mutate(); // If successful, mutate the data to re-fetch
+          } else {
+            throw new Error('Failed to create note'); // If not successful, throw an error
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    }, 500), // Here 500 is the delay time in milliseconds. You can adjust this value as per your need.
+    [mutate, user.id] // dependencies
+  );
   
   const fetcher = (...args) => fetch(...args).then(res => res.json());
   const { data: _user_notes, mutate, error, isLoading } = useSWR(`/api/admin/user_advanced/${user.id}/notes/`, fetcher)
@@ -1270,7 +1272,6 @@ const NotesPane = ({user}) => {
       setValue(_user_notes)
   }, [_user_notes])
 
-  
   return <div className="container">
     <MDEditor
       value={value}
@@ -1282,78 +1283,13 @@ const NotesPane = ({user}) => {
   </div>
 };
 
-const ActionsPane = ({user}) => {
-  
-  const [schemaStates, setSchemaStates] = useState({})
-  const [schemaResponseStates, setSchemaResponseStates] = useState({})
-
-  const fetcher = (...args) => fetch(...args).then(res => res.json());
-  const { data: actions, error, isLoading } = useSWR(`/api/admin/quick_actions/`, fetcher)
-  
-  useEffect(() => {
-    if(actions){
-      const _schemaStates = {}
-      const _resStates = {}
-      Object.keys(actions).map((action, i) => {
-        _schemaStates[action] = {}
-        Object.keys(actions[action].schema.properties).map((property, j) => {
-          _schemaStates[action][property] = actions[action].schema.properties[property].default
-          if(property === "user_id")
-            _schemaStates[action][property] = user.id
-          
-          _resStates[action] = {
-            "error": null,
-            "success": null,
-          }
-        })
-      })
-      setSchemaStates(_schemaStates)
-      setSchemaResponseStates(_resStates)
-    }
-  }, [actions])
-          
-  
-  return actions ? <><Accordion 
-    accordion_id={"accordion-2"}
-    elements={Object.keys(actions).map((action, i) => {
-    return {
-      title: action,
-      content: <><div className='w-full h-fit flex flex-col gap-2 p-2'>
-        <div className='text-xl'>{action}</div>
-        <ThemedForm
-
-                  className='w-full'
-                  schema={actions[action].schema}
-                  extraErrors={{}}
-                  showErrorList="bottom"
-                  uiSchema={{...{
-                    "ui:submitButtonOptions": {
-                      norender: true,
-                    },
-                  }, ...actions[action].ui_schema}}
-                  formData={schemaStates[action]}
-                  validator={validator}
-                  onChange={({formData}) => {
-                    setSchemaStates({...schemaStates, [action]: {...schemaStates[action], ...formData}})
-                  }}
-                />
-          {(action in schemaResponseStates) && <>
-          {schemaResponseStates[action].success && <div className="alert alert-success">
-            <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            <span>{schemaResponseStates[action].success}</span>
-            </div>}
-          {schemaResponseStates[action].error && <div className="alert alert-error">
-            <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            <span>{schemaResponseStates[action].error}</span>
-            </div>}
-          </>}
-        <div className='w-full h-fit flex flex-row content-center items-center justify-center'>
-          <button className="btn btn-primary" onClick={() => {
-            window.actions_confirm_modal.showModal();
-          }}>Confirm</button>
-        </div>
-      </div>
-          <dialog id="actions_confirm_modal" className="modal">
+const ActionsConfirmModal = ({
+  action,
+  schemaStates,
+  schemaResponseStates,
+  setSchemaResponseStates,
+}) => {
+  return <dialog id="actions_confirm_modal" className="modal">
             <form method="dialog" className="modal-box max-w-full w-fit">
               <div className="flex flex-col gap-2">
                 <div className='text-2xl'>Perform ({action}) with:</div>
@@ -1404,7 +1340,95 @@ const ActionsPane = ({user}) => {
               </div>
             </form>
           </dialog>
-      </>
+   
+}
+
+const ActionsPane = ({user}) => {
+  
+  const [schemaStates, setSchemaStates] = useState({})
+  const [schemaResponseStates, setSchemaResponseStates] = useState({})
+  const [selectedAction, setSelectedAction] = useState(null)
+
+  const fetcher = (...args) => fetch(...args).then(res => res.json());
+  const { data: actions, error, isLoading } = useSWR(`/api/admin/quick_actions/`, fetcher)
+  
+  useEffect(() => {
+    if(actions){
+      const _schemaStates = {}
+      const _resStates = {}
+      Object.keys(actions).map((action, i) => {
+        _schemaStates[action] = {}
+        Object.keys(actions[action].schema.properties).map((property, j) => {
+          _schemaStates[action][property] = actions[action].schema.properties[property].default
+          if(property === "user_id")
+            _schemaStates[action][property] = user.id
+          
+          _resStates[action] = {
+            "error": null,
+            "success": null,
+          }
+        })
+      })
+      setSchemaStates(_schemaStates)
+      setSchemaResponseStates(_resStates)
+      setSelectedAction(Object.keys(actions)[0])
+    }
+  }, [actions])
+          
+  
+  return actions ? <>
+      {selectedAction && <ActionsConfirmModal
+        mId={`actions_confirm_modal`}
+        action={selectedAction}
+        schemaStates={schemaStates}
+        schemaResponseStates={schemaResponseStates}
+        setSchemaResponseStates={setSchemaResponseStates}
+      />}
+  <Accordion 
+    accordion_id={"accordion-2"}
+    updateExpanded={(i) => {
+      setSelectedAction(Object.keys(actions)[i])
+    }}
+    elements={Object.keys(actions).map((action, i) => {
+    return {
+      title: action,
+      content: <>
+      <div className='w-full h-fit flex flex-col gap-2 p-2'>
+        <div className='text-xl'>{action}</div>
+        <ThemedForm
+
+                  className='w-full'
+                  schema={actions[action].schema}
+                  extraErrors={{}}
+                  showErrorList="bottom"
+                  uiSchema={{...{
+                    "ui:submitButtonOptions": {
+                      norender: true,
+                    },
+                  }, ...actions[action].ui_schema}}
+                  formData={schemaStates[action]}
+                  validator={validator}
+                  onChange={({formData}) => {
+                    setSchemaStates({...schemaStates, [action]: {...schemaStates[action], ...formData}})
+                  }}
+                />
+          {(action in schemaResponseStates) && <>
+          {schemaResponseStates[action].success && <div className="alert alert-success">
+            <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <span>{schemaResponseStates[action].success}</span>
+            </div>}
+          {schemaResponseStates[action].error && <div className="alert alert-error">
+            <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <span>{schemaResponseStates[action].error}</span>
+            </div>}
+          </>}
+        <div className='w-full h-fit flex flex-row content-center items-center justify-center'>
+          <button className="btn btn-primary" onClick={() => {
+            window.actions_confirm_modal.showModal();
+          }}>Confirm</button>
+        </div>
+      </div>
+     </>
     }
   })}/>
   </> : <></>
