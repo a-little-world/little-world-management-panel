@@ -456,6 +456,80 @@ const TaskMonitorComponent = ({task_id}) => {
   </div>
 }
 
+
+const UserSmsTab = ({
+  user
+}) => {
+  
+  const fetcher = (...args) => fetch(...args).then(res => res.json());
+  const { data: sms, error, mutate, isLoading } = useSWR(`/api/admin/user_advanced/${user.id}/sms/`, fetcher)
+  const [smsInput, setSmsInput] = useState({
+    message: "",
+  })
+  
+  
+  return <div className='flex flex-col w-full h-full'>
+    <div className='flex flex-row w-full h-fit content-start justify-start items-start'>
+      <div className='text-xl'>Tasks</div>
+    </div>
+    <div className='flex flex-row w-full h-fit items-end content-end justify-end'>
+      {sms && <table className="table table-zebra leading-3 w-full z-50 bg-base-100">
+        <thead className='bg-base-300'>
+          <tr>
+            <th></th>
+            <th>message</th>
+            <td>recipient</td>
+            <th>created_at</th>
+          </tr>
+        </thead>
+        <tbody>
+            {sms.map((task,i) => {
+                return <tr key={i} className='p-0 hover:bg-100 hover:text-success hover:border hover:border-accent'>
+                    <th className='w-20'>
+                      {i}
+                    </th>
+                    <td>{sms.message}</td>
+                    <td>{sms.recipient}</td>
+                    <td>{sms.created_at}</td>
+                </tr>
+            })}
+        </tbody>
+      </table>}
+    </div>
+    {/** Now a simple input with a 'create' button at the end, with an onClick that mutates the api above */}
+    <div className='flex flex-row w-full h-fit items-end content-end justify-end'>
+      {/** description */}
+      <input type="text" placeholder="Type here" className="input input-bordered w-full max-w-xs" value={smsInput.message} onChange={(e) => {
+        setSmsInput({...smsInput, message: e.target.value})
+      }}/>
+      <button className='btn btn-success' onClick={() => {
+            fetch(`/api/admin/quick_actions/send_sms_to_user/`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookiesAsObject().csrftoken
+              },
+              body: JSON.stringify({
+                'user_id': user.id,
+                'message': smsInput.message,
+              })
+            }).then((res) => {
+              if(res.ok){
+                // TODO: update sms table
+                res.json().then((newMessage) => {
+                  mutate([...sms, newMessage])
+                })
+              }else{
+                res.text().then((text) => {
+                  console.error("ERROR", text)
+                })
+              }
+            })
+      }}>Send Sms</button>
+    </div>
+  </div> 
+}
+
 const UserTasksTab = ({
   user
 }) => {
@@ -1616,6 +1690,11 @@ const AdvancedUserDetails = ({
     title: "Tasks",
     id: "tasks",
     component: <UserTasksTab user={data}/>
+  },
+  {
+    title: "Sms",
+    id: "sms",
+    component: <UserSmsTab user={data}/>
   },
   {
     title: "Actions",
