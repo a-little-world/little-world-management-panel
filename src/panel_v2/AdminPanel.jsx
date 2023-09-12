@@ -957,7 +957,7 @@ const UserDetailsCard = ({
                 <b className='text-l'>Email</b>: {user.email}
               </div>
               <div className='flex flex-row content-center items-start justify-start'>
-                <b className='text-l'>Phone Number</b>: {user.phone_mobile} (Nofify via {user.profile.notify_channel})
+                <b className='text-l'>Phone Number</b>: {user.profile.phone_mobile} (Nofify via {user.profile.notify_channel})
               </div>
               <div className='text-xl'>Interests</div>
               <ThemedForm
