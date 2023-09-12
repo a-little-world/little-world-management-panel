@@ -956,6 +956,9 @@ const UserDetailsCard = ({
               <div className='flex flex-row content-center items-start justify-start'>
                 <b className='text-l'>Email</b>: {user.email}
               </div>
+              <div className='flex flex-row content-center items-start justify-start'>
+                <b className='text-l'>Phone Number</b>: {user.phone_mobile} (Nofify via {user.profile.notify_channel})
+              </div>
               <div className='text-xl'>Interests</div>
               <ThemedForm
                   className='text-xs w-full'
@@ -1111,6 +1114,7 @@ const DynamicDisplay = ({
                 return <li key={i} className='p-2'>
                     <a onClick={() => {
                         selectUserForDetails(null)
+                        updateQueryParams({param: "user_details", value: null})
                         updateQueryParams({param: "list", value: key})
                          // this will trigger useSWR in the root component to fetch the new data
                         setData(null);
