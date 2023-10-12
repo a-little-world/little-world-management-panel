@@ -1783,7 +1783,7 @@ export const AdminPanel = ({
   const selectedUsersHashes = selectedUsers.map((user) => user ? user.hash : null).filter((hash) => hash !== null)
 
   const setSelectedUsersByHash = (usersHashes) => {
-    const users = usersHashes.map((hash) => userLists[list].results.filter((user) => user.hash === hash)[0])
+    const users = usersHashes.map((hash, i) => userLists[list].results.filter((user) => user.hash === hash).length > 0 ? userLists[list].results.filter((user) => user.hash === hash)[0] : selectedUsers[i])
     setSelectedUsers(users)
   }
   
