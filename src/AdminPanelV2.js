@@ -8,6 +8,7 @@ function AdminPanelV2(props) {
   const initData = props.data;
   const [data, setData] = useState(initData);
   const [selectedUsers, setSelectedUsers] = useState(initData?.selected_users ? initData.selected_users : []);
+  console.log("User selection updated", selectedUsers)
   
   /**
    *  The admin pannel with gereally render with data,
