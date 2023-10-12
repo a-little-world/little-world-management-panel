@@ -701,7 +701,11 @@ const MatchingTable = ({
         setMatchingSelectionState({...matchingSelectionState, inProgress: false})
       }}>Abbort</button> 
       <div className='btn btn-success' onClick={() => {
-        makeMatchingApi(matchingOverlayState.type);
+        if(matchingOverlayState.type === "score"){
+          // TODO: api call to get or calculate score
+        }else{
+          makeMatchingApi(matchingOverlayState.type);
+        }
       }}>Make Match!</div> 
     </div>
     {confirmationModalState.error && <div className='text-error'>{confirmationModalState.error}</div>}
@@ -734,6 +738,15 @@ const MatchingTable = ({
         }
       }} className='btn btn btn-info'>Make Matching </button>
     </div>
+      <button onClick={() => {
+        if(matchingOverlayState.visible){
+          setMatchingOverlayState({...matchingOverlayState, visible: false, tyoe: "score"})
+          setMatchingSelectionState({...matchingSelectionState, inProgress: false})
+        } else {
+          setMatchingOverlayState({...matchingOverlayState, visible: true, title: "Get Or Caclulate Score Between", type: "score"})
+          setMatchingSelectionState({...matchingSelectionState, inProgress: true})
+        }
+      }} className='btn btn btn-accent'>Get Score Between</button>
     <div className='flex flex-row w-full h-fit items-end content-end justify-end'>
       {monitorTask && <TaskMonitorComponent task_id={monitorTask}/>}
       <button className='btn' onClick={() => {
@@ -760,10 +773,17 @@ const MatchingTable = ({
             <div className='flex flex-row'>
               <button className='btn btn-success' onClick={() => {
                 // TODO: api call to make matching
+                let title = ""
+                if(matchingOverlayState.type === "proposal")
+                  title = "Are you sure you want to make this MATCHING PROPOSAL?"
+                else if(matchingOverlayState.type === "matching")
+                  title = "Are you sure you want to make this MATCH?"
+                else if(matchingOverlayState.type === "score")
+                  title = "Are you sure you want to get the score between these users?"
                 updateConfirmationModalState({
                   visible: true,
-                  title: matchingOverlayState.type === "matching" ? "Are you sure you want to make this MATCH?" : "Are you sure you want to make this MATCHING PROPOSAL?",
-                  text: "We will confirm first that the user are matchable and then make the match. If this fails you can 'force' a match if you want.",
+                  title: title,
+                  text: matchingOverlayState.type === "score" ? "" : "We will confirm first that the user are matchable and then make the match. If this fails you can 'force' a match if you want.",
                 }) 
               }}>Confirm</button>
             </div>
