@@ -1028,8 +1028,12 @@ const UserSelectionDrawer = ({
         fields, 
         children, 
         setSelectedUsers,
+        setSelectedUsersByHash,
         selectUserForDetails
     }) => {
+      
+    const [extraLoadUserId, setExtraLoadUserId] = useState(null)
+
     return <div className='w-full h-full min-h-full max-h-full flex flex-row relative'>
         <div className='w-3/4 h-screen min-h-full max-h-full overflow-y-scroll'>
             {children}
@@ -1042,9 +1046,30 @@ const UserSelectionDrawer = ({
                         key={i} 
                         selectUserForDetails={selectUserForDetails}
                         deselectUser={(_user) => {
-                            setSelectedUsers(selectedUsersHashes.filter((hash) => hash !== _user.hash))
+                            setSelectedUsersByHash(selectedUsersHashes.filter((hash) => hash !== _user.hash))
                         }}/>
             })}
+            <div className='absolute bottom-0 flex flex-row'>
+              <input type="text" placeholder="UserId" className="input input-bordered w-full max-w-xs" onChange={(e) => {
+                setExtraLoadUserId(e.target.value)
+              }}/>
+              <button className='btn btn-success max-w-xs' onClick={() => {
+                if(extraLoadUserId){
+                  fetch(`/api/admin/user_info/${extraLoadUserId}/`).then((res) => {
+                    if(res.ok){
+                      res.json().then((user) => {
+                        console.log("RES", user)
+                        setSelectedUsers([...selectedUsers, user])
+                      })
+                    }else{
+                      res.text().then((text) => {
+                        console.error("ERROR", text)
+                      })
+                    }
+                  })
+                }
+              }}>Add</button>
+            </div>
         </div>
     </div>
 }
@@ -1083,7 +1108,8 @@ const DynamicDisplay = ({
         children, 
         selectedUsersHashes, 
         selectedUsers, 
-        setSelectedUsers, 
+        setSelectedUsersByHash, 
+        setSelectedUsers,
         fields,
         setFields,
         selectUserForDetails,
@@ -1096,7 +1122,8 @@ const DynamicDisplay = ({
         <UserSelectionDrawer 
             selectedUsers={selectedUsers} 
             selectedUsersHashes={selectedUsersHashes} 
-            setSelectedUsers={setSelectedUsers} 
+            setSelectedUsersByHash={setSelectedUsersByHash} 
+            setSelectedUsers={setSelectedUsers}
             selectUserForDetails={selectUserForDetails}>
             {children}
         </UserSelectionDrawer>
@@ -1793,7 +1820,8 @@ export const AdminPanel = ({
             selectedList={list} 
             selectedUsersHashes={selectedUsersHashes}
             selectedUsers={selectedUsers} 
-            setSelectedUsers={setSelectedUsersByHash}
+            setSelectedUsers={setSelectedUsers}
+            setSelectedUsersByHash={setSelectedUsersByHash}
             fields={fields}
             setFields={setFields}
             selectUserForDetails={(user) => {
