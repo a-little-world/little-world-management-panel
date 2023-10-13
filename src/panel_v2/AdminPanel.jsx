@@ -445,12 +445,12 @@ const TaskMonitorComponent = ({task_id}) => {
   }
 
   return <div className='flex flex-row flex-grow rounded-xl content-center justify-center'>
-      {data?.state && <div className='bg-info p-4 rounded-xl'>{data.state}</div>}
+      {data?.state && <div className='bg-info p-1 rounded-xl'>{data.state}</div>}
       {progressInfo && <div className='flex h-full flex-col items-start content-start justify-start w-52'>
           <div className='text-xs'>{progressInfo.progress}/{progressInfo.amnt_users}</div>
           <progress className="progress progress-primary w-full" value={progressInfo.progress} max={progressInfo.amnt_users}></progress>
         </div>}
-      {progressInfo && <div className='p-4 bg-success p-4'>
+      {progressInfo && <div className='p-1 bg-success'>
           {progressInfo.state}
         </div>}
   </div>
@@ -629,6 +629,7 @@ const MatchingTable = ({
 
   const fetcher = (...args) => fetch(...args).then(res => res.json());
   const [monitorTask, setMonitorTask] = useState(null)
+  const [listingSelection, setListingSelection] = useState("listing") // or "selection"
   
   const [confirmationModalState, setConfirmationModalState] = useState({
     visible: false,
@@ -717,7 +718,7 @@ const MatchingTable = ({
   if (isLoading) return <div>loading...</div>
     
   return <><div className='flex flex-grow w-full flex-col content-center justify-start items-start'>
-    <div className='flex flex-row w-full h-fit content-start justify-start items-start'>
+    <div className='flex flex-row w-full h-fit content-start justify-start items-start gap-2'>
       <div className='text-xl'>Matching Menu</div>
       <button onClick={() => {
         if(matchingOverlayState.visible){
@@ -727,7 +728,7 @@ const MatchingTable = ({
           setMatchingOverlayState({...matchingOverlayState, visible: true, title: "Make Matching Proposal", type: "proposal"})
           setMatchingSelectionState({...matchingSelectionState, inProgress: true})
         }
-      }} className='btn btn btn-accent'>Make Matching Proposal</button>
+      }} className='btn btn btn-accent btn-xs'>Make Matching Proposal</button>
       <button onClick={() => {
         if(matchingOverlayState.visible){
           setMatchingOverlayState({...matchingOverlayState, visible: false})
@@ -736,8 +737,7 @@ const MatchingTable = ({
           setMatchingOverlayState({...matchingOverlayState, visible: true, title: "Make Matching", type: "matching"})
           setMatchingSelectionState({...matchingSelectionState, inProgress: true})
         }
-      }} className='btn btn btn-info'>Make Matching </button>
-    </div>
+      }} className='btn btn btn-info btn-xs'>Make Matching </button>
       <button onClick={() => {
         if(matchingOverlayState.visible){
           setMatchingOverlayState({...matchingOverlayState, visible: false, tyoe: "score"})
@@ -746,10 +746,16 @@ const MatchingTable = ({
           setMatchingOverlayState({...matchingOverlayState, visible: true, title: "Get Or Caclulate Score Between", type: "score"})
           setMatchingSelectionState({...matchingSelectionState, inProgress: true})
         }
-      }} className='btn btn btn-accent'>Get Score Between</button>
+      }} className='btn btn btn-accent btn-xs'>Get Score Between</button>
+    </div>
+    <div className="divider m-0"></div> 
     <div className='flex flex-row w-full h-fit items-end content-end justify-end'>
+    <div className="tabs tabs-boxed">
+      <a className={`tab ${listingSelection === "listing" ? 'tab-active' : ''}`}>Score Listing</a> 
+      <a className={`tab ${listingSelection === "selection" ? 'tab-active' : ''}`}>Custom selection</a> 
+    </div>
       {monitorTask && <TaskMonitorComponent task_id={monitorTask}/>}
-      <button className='btn' onClick={() => {
+      <button className='btn btn-xs' onClick={() => {
         fetcher(`/api/admin/user_advanced/${user.id}/request_score_update/`).then((res) => {
           console.log("RES: ", res)
           setMonitorTask(res.task_id)
@@ -802,29 +808,6 @@ const MatchingTable = ({
   </dialog>
   </>
 
-    /**
-  return <><table className="table table-zebra leading-3 w-full z-50 bg-base-100">
-        <thead className='bg-base-300'>
-          <tr>
-            <th></th>
-            {MATCHING_FIELDS.map((field, i) => {
-                return <th key={i}>{field}</th> 
-            })}
-          </tr>
-        </thead>
-        <tbody>
-            {emails.items.map((email,i) => {
-                return <tr key={i} className='p-0 hover:bg-100 hover:text-success hover:border hover:border-accent'>
-                    <th className='w-20'>
-                        {i}
-                    </th>
-                    {MATCHING_FIELDS.map((field, j) => {
-                        return <td key={j}>{data[field]}</td>
-                    })}
-                </tr>
-            })}
-        </tbody>
-      </table></>  */
 }
 
 const Table = ({users, selectedList, fields, selectedUsersHashes, setSelectedUsers}) => {
