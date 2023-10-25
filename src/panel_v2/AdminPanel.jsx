@@ -84,6 +84,8 @@ const FIELDS = {
     "state.matching_state": (field, user, key, tableView) => {
         const className = user.state.matching_state === "searching" ? "bg-error" : "bg-success"
         const span = <div className={`badge badge-md ${className}`}>{field}</div>
+        // 
+
         return <Base tableView={tableView} _key={key}>{span}</Base>
     },
     "profile.user_type": (field, user, key, tableView) => {
@@ -961,6 +963,9 @@ const UserDetailsCard = ({
               </div>
               <div className='flex flex-row content-center items-start justify-start'>
                 <b className='text-l'>Phone Number</b>: {user.profile.phone_mobile} (Nofify via {user.profile.notify_channel})
+              </div>
+              <div className='flex flex-row content-center items-start justify-start'>
+                <b className='text-l'>Matching State</b>: <div className={`badge badge-md ${user.state.matching_state === "searching" ? "bg-error" : "bg-success"}`}>{user.state.matching_state}</div>
               </div>
               <div className='text-xl'>Interests</div>
               <ThemedForm
