@@ -997,7 +997,7 @@ const UserDetailsCard = ({
 
     return <div 
         key={_key} 
-        className={`w-full flex ${horizontal ? 'flex-row': 'flex-col'} bg-base-200 h-fit items-center content-center justify-center rounded-xl p-2 gap-2 mb-1 ${!tiny ? 'hover:border-2 hover:border-error hover:bg-base-100' : '' }`}
+        className={`w-full flex ${horizontal ? 'flex-row': 'flex-col'} bg-base-200 h-fit items-center content-center justify-center rounded-xl p-2 gap-2 mb-1 relativ ${!tiny ? 'hover:border-2 hover:border-error hover:bg-base-100' : '' }`}
         onClick={() => {
             if(partial && !tiny){
               updateQueryParams({param: "user_details", value: user.id})
@@ -1018,6 +1018,9 @@ const UserDetailsCard = ({
                 width: partial ? (tiny? 50: 120) : 180
            }}/>
         </div>
+        {user.state.unresponsive && <div className='w-96 max-w-ful h-10 bg-error text-3xl'>
+          Marked as unresponsive
+        </div>}
         <div className={`w-full h-fit ${tiny ? 'text-xs': 'text-2xl'}`}>
             {user.profile.first_name} {user.profile.second_name}
         </div>
