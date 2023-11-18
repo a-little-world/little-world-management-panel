@@ -1328,7 +1328,7 @@ const AdminChat = ({ user, _messages }) => {
     </div></>: <div className='w-full flex flex-grow items-start content-start justify-start'>
     <div className='w-full h-full flex flex-col gap-2 p-2'>
       {Object.keys(messages).map((message_chat, i) => {
-        return <div className='w-full h-fit flex flex-row rounded-xl text-2xl p-3 gap-2 hover:bg-error' onClick={() => {
+        return <div key={i} className='w-full h-fit flex flex-row rounded-xl text-2xl p-3 gap-2 hover:bg-error' onClick={() => {
           setChat(messages[message_chat])
           setChatId(message_chat)
           updateQueryParams({param: "chat", value: messages[message_chat].match.profile.id})
@@ -1410,7 +1410,7 @@ const ActionsConfirmModal = ({
               <div className="flex flex-col gap-2">
                 <div className='text-2xl'>Perform ({action}) with:</div>
                 {(action in schemaStates) ? Object.keys(schemaStates[action]).map((property, j) => {
-                  return <div className='flex flex-row gap-2'>
+                  return <div className='flex flex-row gap-2' key={j}>
                     <div className='text-xl'>{property}</div>
                     <div className='text-xl'>{(() => {
                       // convert schemaStates[action][property] to a readable format depending on type
