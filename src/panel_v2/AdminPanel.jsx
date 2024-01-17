@@ -15,6 +15,51 @@ import MDEditor from '@uiw/react-md-editor';
 import { getCookiesAsObject } from '../utils';
 import debounce from 'lodash.debounce';
 
+async function processAiRequest(updateValue) {
+  const response = await fetch('/api/ai/prompt/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookiesAsObject().csrftoken
+    },
+    body: JSON.stringify({
+      "messages": [
+          {
+              "role": "system",
+              "content": "You are a helpful assistant."
+          },
+          {
+              "role": "user",
+              "content": "Please list the top 10 guitar players in the world"
+          }
+      ]
+    })
+  });
+  
+  const task = await response.json();
+  
+  const fetchResults = async () => {
+    const resultsResponse = await fetch(`/api/admin/tasks/${task.task_id}/status/`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookiesAsObject().csrftoken
+      },
+    });
+    return await resultsResponse.json();
+  }
+  
+  // now continously fetch the results url
+  while(true) {
+    const results = await fetchResults();
+    if(results.state === "SUCCESS") break;
+    updateValue(results.info.progress);
+    await new Promise(r => setTimeout(r, 100));
+  }
+  
+
+}
+
 function readableFormatDate(dateString) {
   var date = new Date();
   var dateToCompare = new Date(dateString);
@@ -1272,10 +1317,36 @@ const AdminChatMessagesDisplay = ({
   </div>
 }
 
+const AiOptions = () => {
+  const [aiResponse, setAiReponse] = useState("")
+  return <div className='w-full h-full flex flex-col p-4 rounded-xl'>
+   These are pre-release AI feature use with caution!
+    <div className='w-full h-fit flex flex-row'>
+      <button className='btn btn-xs btn-sucess' onClick={() => {
+        processAiRequest((value) => {
+          console.log("V", value);
+          setAiReponse(value) 
+        });
+      }}>generate response</button>
+    </div>
+    <div className='w-full h-fit flex flex-row'>
+      <textarea className="textarea flex flex-grow" value={aiResponse} disabled></textarea>
+      <div className='h-full flex flex-col w-40'>
+      <select className="select select-bordered w-full max-w-xs">
+        <option>Normal Apple</option>
+        <option>Normal Orange</option>
+        <option>Normal Tomato</option>
+      </select>
+      </div>
+    </div>
+  </div>
+}
+
 const AdminChat = ({ user, _messages }) => {
   const [chat, setChat] = useState(null)
   const [chatId, setChatId] = useState(null)
   const [messageText, setMessageText] = useState("")
+  const [aiOptionsVisible, setAiOptionsVisible] = useState(false)
 
   const [reloader, setReloader] = useState(0)
   
@@ -1295,7 +1366,10 @@ const AdminChat = ({ user, _messages }) => {
     <div className='w-full h-full flex flex-col'>
       <AdminChatMessagesDisplay user={user} chatMessages={chat} mutateMessages={reloadComponent}/>
       {/** A simple footer with a text field and a send button */}
-      {chat.match.with_management && <div className="flex flex-row">
+      {chat.match.with_management && <><div className="flex flex-row">
+        <button className='btn btn-info' onClick={() => {
+          setAiOptionsVisible(!aiOptionsVisible)
+        }}>AI</button>
         <input type="text" placeholder="Type a message" className="input input-primary input-bordered w-full" value={messageText} onChange={(e) => {
           setMessageText(e.target.value);
         }}/>
@@ -1324,7 +1398,9 @@ const AdminChat = ({ user, _messages }) => {
           })
 
         }}>Send</button>
-      </div>}
+      </div>
+        {aiOptionsVisible && <AiOptions />}
+      </>}
     </div></>: <div className='w-full flex flex-grow items-start content-start justify-start'>
     <div className='w-full h-full flex flex-col gap-2 p-2'>
       {Object.keys(messages).map((message_chat, i) => {
