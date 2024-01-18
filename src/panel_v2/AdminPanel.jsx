@@ -15,7 +15,7 @@ import MDEditor from '@uiw/react-md-editor';
 import { getCookiesAsObject } from '../utils';
 import debounce from 'lodash.debounce';
 
-async function processAiRequest(updateValue) {
+async function processAiRequest(messages, updateValue) {
   const response = await fetch('/api/ai/prompt/', {
     method: 'POST',
     headers: {
@@ -23,16 +23,7 @@ async function processAiRequest(updateValue) {
       'X-CSRFToken': getCookiesAsObject().csrftoken
     },
     body: JSON.stringify({
-      "messages": [
-          {
-              "role": "system",
-              "content": "You are a helpful assistant."
-          },
-          {
-              "role": "user",
-              "content": "Please list the top 10 guitar players in the world"
-          }
-      ]
+      "messages": messages    
     })
   });
   
@@ -1317,20 +1308,48 @@ const AdminChatMessagesDisplay = ({
   </div>
 }
 
-const AiOptions = () => {
+function convertMessagesToInlineFormat(userId, messages) {
+  let result = ""
+  for(let i = 0; i < messages.length; i++){
+    let message = messages[i]
+    let notIsSelf = message.sender_hash === userId
+    
+    result += `${notIsSelf ? "Support" : "Them"}: ${message.text}\n\n`
+  }
+  return result
+
+}
+
+const AiOptions = ({user, chatMessages}) => {
+  
+  console.log("CHAT", chatMessages, user)
   const [aiResponse, setAiReponse] = useState("")
   return <div className='w-full h-full flex flex-col p-4 rounded-xl'>
    These are pre-release AI feature use with caution!
-    <div className='w-full h-fit flex flex-row'>
-      <button className='btn btn-xs btn-sucess' onClick={() => {
-        processAiRequest((value) => {
+    <div className='w-full h-fit flex flex-row p-2'>
+      <button className='btn btn-sm btn-success' onClick={() => {
+        
+      }}>Insert Response</button>
+      <button className='btn btn-sm' onClick={() => {
+        const promptMessages = [{
+          role: "system",
+          content: `\n\n${convertMessagesToInlineFormat(user.hash, chatMessages.items)}`
+        },{
+          role: "user",
+          content: 'Basierend auf diensen nachrichten, generiere eine antwort dich ich senden würde.'
+        }]
+        console.log("P", promptMessages)
+        processAiRequest(promptMessages, (value) => {
           console.log("V", value);
           setAiReponse(value) 
         });
       }}>generate response</button>
+      <button className='btn btn-sm' onClick={() => {
+
+      }}>correct spelling</button>
     </div>
     <div className='w-full h-fit flex flex-row'>
-      <textarea className="textarea flex flex-grow" value={aiResponse} disabled></textarea>
+      <textarea className="textarea flex flex-grow h-fit" value={aiResponse} disabled></textarea>
       <div className='h-full flex flex-col w-40'>
       <select className="select select-bordered w-full max-w-xs">
         <option>Normal Apple</option>
@@ -1399,7 +1418,7 @@ const AdminChat = ({ user, _messages }) => {
 
         }}>Send</button>
       </div>
-        {aiOptionsVisible && <AiOptions />}
+        {aiOptionsVisible && <AiOptions user={user} chatMessages={chat} />}
       </>}
     </div></>: <div className='w-full flex flex-grow items-start content-start justify-start'>
     <div className='w-full h-full flex flex-col gap-2 p-2'>
