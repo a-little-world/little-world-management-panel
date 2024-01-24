@@ -1,4 +1,4 @@
-import { Children, useState, useEffect, useCallback } from 'react'
+import { Children, useState, useEffect, useCallback, useRef } from 'react'
 import style from './markdown-styles.module.css';
 import '../withTailwind.css';
 import UserImage from '../atoms/userImage.jsx'
@@ -14,6 +14,44 @@ import remarkGfm from 'remark-gfm'
 import MDEditor from '@uiw/react-md-editor';
 import { getCookiesAsObject } from '../utils';
 import debounce from 'lodash.debounce';
+
+async function processAiRequest(model, messages, updateValue) {
+  const response = await fetch('/api/ai/prompt/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookiesAsObject().csrftoken
+    },
+    body: JSON.stringify({
+      "messages": messages,
+      "model_config" : model
+    })
+  });
+  
+  const task = await response.json();
+  
+  const fetchResults = async () => {
+    const resultsResponse = await fetch(`/api/admin/tasks/${task.task_id}/status/`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookiesAsObject().csrftoken
+      },
+    });
+    return await resultsResponse.json();
+  }
+  
+  // now continously fetch the results url
+  while(true) {
+    const results = await fetchResults();
+    if(results.state === "SUCCESS") break;
+    if(results.state === "FAILURE") break;
+    updateValue(results.info.progress);
+    await new Promise(r => setTimeout(r, 100));
+  }
+  
+
+}
 
 function readableFormatDate(dateString) {
   var date = new Date();
@@ -1272,10 +1310,83 @@ const AdminChatMessagesDisplay = ({
   </div>
 }
 
+function convertMessagesToInlineFormat(userId, messages) {
+  let result = ""
+  for(let i = 0; i < messages.length; i++){
+    let message = messages[i]
+    let notIsSelf = message.sender_hash === userId
+    
+    result += `${notIsSelf ? "Support" : "Them"}: ${message.text}\n\n`
+  }
+  return result
+
+}
+
+const AiOptions = ({user, chatMessages, messageText, setMessageText}) => {
+  
+  const modelSelectionRef = useRef(null);
+  const fetcher = (...args) => fetch(...args).then(res => res.json());
+  const { data: modelOptions, error, mutate, isLoading } = useSWR(`/api/ai/models/`, fetcher, { refreshInterval: 10000 })
+  
+  console.log("MODEL OPTIONS", modelOptions)
+  
+  const managementUserProfile = chatMessages.match.profile
+  
+  console.log("CHAT", chatMessages, user)
+  const [aiResponse, setAiReponse] = useState("")
+  return <div className='w-full h-full flex flex-col p-4 rounded-xl'>
+   These are pre-release AI feature use with caution!
+    <div className='w-full h-fit flex flex-row p-2'>
+      <button className='btn btn-sm btn-success' onClick={() => {
+        setMessageText(aiResponse) 
+      }}>insert response</button>
+      <button className='btn btn-sm' onClick={() => {
+        const promptMessages = [{
+          role: "system",
+          content: `I am the 'Support', my name is ${managementUserProfile.first_name} ${managementUserProfile.second_name}\nThis is my description: ${managementUserProfile.description}\nThis is the chat history:\n\n${convertMessagesToInlineFormat(user.hash, chatMessages.items)}`
+        },{
+          role: "user",
+          content: 'Basierend auf diensen nachrichten, generiere eine antwort dich ich senden würde.'
+        }]
+        console.log("P", promptMessages)
+        processAiRequest(modelSelectionRef.current.value, promptMessages, (value) => {
+          console.log("V", value);
+          setAiReponse(value) 
+        });
+      }}>generate response</button>
+      <button className='btn btn-sm' onClick={() => {
+        const promptMessages = [{
+          role: "system",
+          content: messageText
+        },{
+          role: "user",
+          content: "Bitte die Rechschreibung korregieren, aber die formulierung bei behalten."
+        }]
+        console.log("P", promptMessages)
+        processAiRequest(modelSelectionRef.current.value, promptMessages, (value) => {
+          console.log("V", value);
+          setAiReponse(value) 
+        });
+      }}>correct spelling</button>
+    </div>
+    <div className='w-full h-fit flex flex-row'>
+      <textarea className="textarea leading-tight flex flex-grow textarea-primary h-80" value={aiResponse} placeholder="Bio"></textarea>
+      <div className='h-full flex flex-col w-40'>
+      <select className="select select-bordered w-full max-w-xs" ref={modelSelectionRef}>
+        {modelOptions && modelOptions.map((modelName, i) => {
+          return <option key={i}>{modelName}</option>
+        })}
+      </select>
+      </div>
+    </div>
+  </div>
+}
+
 const AdminChat = ({ user, _messages }) => {
   const [chat, setChat] = useState(null)
   const [chatId, setChatId] = useState(null)
-  const [messageText, setMessageText] = useState("")
+  const messageInputRef = useRef(null)
+  const [aiOptionsVisible, setAiOptionsVisible] = useState(false)
 
   const [reloader, setReloader] = useState(0)
   
@@ -1295,10 +1406,11 @@ const AdminChat = ({ user, _messages }) => {
     <div className='w-full h-full flex flex-col'>
       <AdminChatMessagesDisplay user={user} chatMessages={chat} mutateMessages={reloadComponent}/>
       {/** A simple footer with a text field and a send button */}
-      {chat.match.with_management && <div className="flex flex-row">
-        <input type="text" placeholder="Type a message" className="input input-primary input-bordered w-full" value={messageText} onChange={(e) => {
-          setMessageText(e.target.value);
-        }}/>
+      {chat.match.with_management && <><div className="flex flex-row">
+        <button className='btn btn-info' onClick={() => {
+          setAiOptionsVisible(!aiOptionsVisible)
+        }}>AI</button>
+        <input type="text" ref={messageInputRef} placeholder="Type a message" className="input input-primary input-bordered w-full"/>
         <button className="btn btn-primary" onClick={() => {
           fetch(`/api/admin/user_advanced/${user.id}/message_reply/`, {
             method: 'POST',
@@ -1307,14 +1419,14 @@ const AdminChat = ({ user, _messages }) => {
               'X-CSRFToken': getCookiesAsObject().csrftoken
             },
             body: JSON.stringify({
-              message: messageText,
+              message: messageInputRef.current.value,
             })
           }).then((res) => {
             if(res.ok){
               res.json().then((message) => {
                 mutate({...messages, [chatId]: {...messages[chatId], items: [message, ...messages[chatId].items]}})
                 setChat({...chat, items: [message, ...chat.items]})
-                setMessageText("")
+                messageInputRef.current.value = ""
               })
             }else{
               res.text().then((text) => {
@@ -1324,7 +1436,11 @@ const AdminChat = ({ user, _messages }) => {
           })
 
         }}>Send</button>
-      </div>}
+      </div>
+        {aiOptionsVisible && <AiOptions user={user} chatMessages={chat} messageText={messageInputRef.current.value} setMessageText={(messageText) => {
+          messageInputRef.current.value = messageText
+        }}/>}
+      </>}
     </div></>: <div className='w-full flex flex-grow items-start content-start justify-start'>
     <div className='w-full h-full flex flex-col gap-2 p-2'>
       {Object.keys(messages).map((message_chat, i) => {
