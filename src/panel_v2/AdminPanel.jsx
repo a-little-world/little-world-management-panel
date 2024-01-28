@@ -360,7 +360,7 @@ const EmailsTable = ({
 
 const MATCHING_FIELDS = [
   "score",
-  "created_at",
+  "latest_update",
   "matchable",
   "to_usr",
   "rendered_results_md_table"

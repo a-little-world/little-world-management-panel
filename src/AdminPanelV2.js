@@ -15,7 +15,7 @@ import { UserGroupIcon, ChartBarIcon, UserIcon } from '@heroicons/react/20/solid
  * stats/ <- stats
  */
 
-const BACKEND_PATH = '/admin_panel_v2'
+const BACKEND_PATH = '/matching'
 
 
 function Root() {
@@ -100,7 +100,7 @@ function AdminPanelV2(props) {
           ],
         },
       ],
-      { basename: `/admin_panel_v2/` }
+      { basename: `/matching/` }
     );
   }, [])
 
