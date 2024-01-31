@@ -468,7 +468,7 @@ const MatchingScoreTable = ({data, addUserToSelection}) => {
     </>
 };
 
-const TaskMonitorComponent = ({task_id}) => {
+const TaskMonitorComponent = ({task_id, finishedCallback }) => {
  
   const fetcher = (...args) => fetch(...args).then(res => res.json());
   const { data, error, mutate, isLoading } = useSWR(`/api/admin/tasks/${task_id}/status/`, fetcher, { refreshInterval: 1000 })
@@ -479,16 +479,21 @@ const TaskMonitorComponent = ({task_id}) => {
     
   let progressInfo = null
   console.log("INFO", data.info)
-  if(data && data?.info && data.info.progress && data.info.progress.startsWith("json:")) {
-    progressInfo = JSON.parse(data.info.progress.substring(5))
+  if(data && data?.info && data.info.progress) {
+    progressInfo = JSON.parse(data.info.progress)
     console.log("MANGED TO PARSE", progressInfo);
+  }
+  
+  if(data && data?.state && data.state === "SUCCESS") {
+    console.log("FINISHED")
+    finishedCallback();
   }
 
   return <div className='flex flex-row flex-grow rounded-xl content-center justify-center'>
-      {data?.state && <div className='bg-info p-1 rounded-xl'>{data.state}</div>}
+      {data?.state && <div className='bg-base-300 p-1 rounded-xl'>{data.state}</div>}
       {progressInfo && <div className='flex h-full flex-col items-start content-start justify-start w-52'>
-          <div className='text-xs'>{progressInfo.progress}/{progressInfo.amnt_users}</div>
-          <progress className="progress progress-primary w-full" value={progressInfo.progress} max={progressInfo.amnt_users}></progress>
+          <div className='text-xs'>{progressInfo.progress}/{progressInfo.total_considered_users}</div>
+          <progress className="progress progress-primary w-full" value={progressInfo.progress} max={progressInfo.total_considered_users}></progress>
         </div>}
       {progressInfo && <div className='p-1 bg-success'>
           {progressInfo.state}
@@ -693,7 +698,7 @@ const MatchingTable = ({
     title: "Make Match" // or "Make Matching Proposal"
   });
 
-  const { data, error, isLoading } = useSWR(`/api/admin/user_advanced/${user.id}/scores/`, fetcher)
+  const { data, error, isLoading, mutate } = useSWR(`/api/admin/user_advanced/${user.id}/scores/`, fetcher)
   
   const makeMatchingApi = (matchingType) => {
       let postData = (matchingType === "proposal") ? {
@@ -794,7 +799,10 @@ const MatchingTable = ({
       <a className={`tab ${listingSelection === "listing" ? 'tab-active' : ''}`}>Score Listing</a> 
       <a className={`tab ${listingSelection === "selection" ? 'tab-active' : ''}`}>Custom selection</a> 
     </div>
-      {monitorTask && <TaskMonitorComponent task_id={monitorTask}/>}
+      {monitorTask && <TaskMonitorComponent task_id={monitorTask} finishedCallback={() => {
+        setMonitorTask(null);
+        mutate();
+      }}/>}
       <button className='btn btn-xs' onClick={() => {
         fetcher(`/api/admin/user_advanced/${user.id}/request_score_update/`).then((res) => {
           console.log("RES: ", res)
