@@ -363,10 +363,10 @@ const MATCHING_FIELDS = [
   "latest_update",
   "matchable",
   "to_usr",
-  "rendered_results_md_table"
+  "markdown_info"
 ]
 const MATCHING_FIELD_GETTERS = {
-  "rendered_results_md_table": (matchingScore, field, _key, _onclick=null, _extras=null) => {
+  "markdown_info": (matchingScore, field, _key, _onclick=null, _extras=null) => {
     return <td key={_key}>
         <button className='btn btn-xs' onClick={() => {
           _extras.setResultsMarkdown(matchingScore[field])
@@ -417,7 +417,7 @@ const MatchingScoreTable = ({data, addUserToSelection}) => {
                             },
                             addUserToSelection: addUserToSelection
                           }
-                        else if(field === "rendered_results_md_table")
+                        else if(field === "markdown_info")
                           extras = {
                             setResultsMarkdown: (content) => {
                               setResultsMarkdown(content)
