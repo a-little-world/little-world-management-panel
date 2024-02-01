@@ -665,6 +665,34 @@ const UserTasksTab = ({
   </div> 
 }
 
+function MatchCaculationOptions({ user, mutateScores }){
+  const [optionsOpen, setOptionsOpen] = useState(false);
+  const [monitorTask, setMonitorTask] = useState(null)
+  const daysSearchingInput = useRef(null);
+  const fetcher = (...args) => fetch(...args).then(res => res.json());
+
+  return <div className='relative flex flex-col'>
+    <button className='btn btn-sm' onClick={() => {
+      setOptionsOpen(!optionsOpen)
+    }}>Update options</button>
+    {optionsOpen && <div className='relative'>
+      <div className={`w-96 bg-info fixed z-60 p-4 rounded-xl flex flex-col gap-2`}>
+      <h3 className="font-bold text-lg">Consider maximum dasy searching</h3>
+      <input type="number" ref={daysSearchingInput} placeholder="Days searching" defaultValue={40} className="input input-bordered w-full max-w-xs" />
+      <button className='btn' onClick={() => {
+        fetcher(`/api/admin/user_advanced/${user.id}/request_score_update/?days_searching=${daysSearchingInput.current.value}`).then((res) => {
+          setMonitorTask(res.task_id)
+        })
+      }}>Calculate Score</button>
+      {monitorTask && <TaskMonitorComponent task_id={monitorTask} finishedCallback={() => {
+        setMonitorTask(null);
+        mutateScores();
+      }}/>}
+      </div>
+    </div>}
+  </div>
+}
+
 const MatchingTable = ({ 
   user,
   addUserToSelection,
@@ -673,7 +701,6 @@ const MatchingTable = ({
 }) => {
 
   const fetcher = (...args) => fetch(...args).then(res => res.json());
-  const [monitorTask, setMonitorTask] = useState(null)
   const [listingSelection, setListingSelection] = useState("listing") // or "selection"
   
   const [confirmationModalState, setConfirmationModalState] = useState({
@@ -732,6 +759,7 @@ const MatchingTable = ({
         }
       })
   }
+  
   
   const MatchDialogContent = <>
     <div className='text-6xl'>{confirmationModalState.title}</div>
@@ -799,16 +827,7 @@ const MatchingTable = ({
       <a className={`tab ${listingSelection === "listing" ? 'tab-active' : ''}`}>Score Listing</a> 
       <a className={`tab ${listingSelection === "selection" ? 'tab-active' : ''}`}>Custom selection</a> 
     </div>
-      {monitorTask && <TaskMonitorComponent task_id={monitorTask} finishedCallback={() => {
-        setMonitorTask(null);
-        mutate();
-      }}/>}
-      <button className='btn btn-xs' onClick={() => {
-        fetcher(`/api/admin/user_advanced/${user.id}/request_score_update/`).then((res) => {
-          console.log("RES: ", res)
-          setMonitorTask(res.task_id)
-        })
-      }}>Request Calculation</button>
+      <MatchCaculationOptions user={user} mutateScores={mutate}/>
     </div>
     <MatchingScoreTable data={data} addUserToSelection={addUserToSelection}/>
   </div>
