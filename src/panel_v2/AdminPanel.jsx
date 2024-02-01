@@ -14,6 +14,7 @@ import remarkGfm from 'remark-gfm'
 import MDEditor from '@uiw/react-md-editor';
 import { getCookiesAsObject } from '../utils';
 import debounce from 'lodash.debounce';
+import { set } from 'lodash';
 
 async function processAiRequest(model, messages, updateValue) {
   const response = await fetch('/api/ai/prompt/', {
@@ -1319,6 +1320,7 @@ const AdminChatMessagesDisplay = ({
                   if(res.ok){
                     res.json().then((text) => {
                       console.log("MESSAGE SENT", text)
+                      mutateMessages();
                     })
                   }else{
                     res.text().then((text) => {
@@ -1415,15 +1417,15 @@ const AdminChat = ({ user, _messages }) => {
   const messageInputRef = useRef(null)
   const [aiOptionsVisible, setAiOptionsVisible] = useState(false)
 
-  const [reloader, setReloader] = useState(0)
-  
   const fetcher = (...args) => fetch(...args).then(res => res.json());
   const { data: messages, mutate, error, isLoading } = useSWR(`/api/admin/user_advanced/${user.id}/messages/`, fetcher)
-
-  const reloadComponent = () => {
-    setReloader(reloader + 1)
-  }
   
+  useEffect(() => {
+    if(chatId){
+      setChat(messages[chatId])
+    }
+  }, [messages, chat, chatId])
+
   if(!messages)
     return <></>
   
@@ -1431,7 +1433,7 @@ const AdminChat = ({ user, _messages }) => {
   return chat ? <>
     <ChatNavbar user={user} chat={chat} unFocousChat={() => setChat(null)}/>
     <div className='w-full h-full flex flex-col'>
-      <AdminChatMessagesDisplay user={user} chatMessages={chat} mutateMessages={reloadComponent}/>
+      <AdminChatMessagesDisplay user={user} chatMessages={chat} mutateMessages={mutate}/>
       {/** A simple footer with a text field and a send button */}
       {chat.match.with_management && <><div className="flex flex-row">
         <button className='btn btn-info' onClick={() => {
@@ -1452,7 +1454,6 @@ const AdminChat = ({ user, _messages }) => {
             if(res.ok){
               res.json().then((message) => {
                 mutate({...messages, [chatId]: {...messages[chatId], items: [message, ...messages[chatId].items]}})
-                setChat({...chat, items: [message, ...chat.items]})
                 messageInputRef.current.value = ""
               })
             }else{
@@ -1692,111 +1693,11 @@ const ActionsPane = ({user}) => {
   })}/>
   </> : <></>
 }
-/**
-  
-  
-  
-  <>{Object.keys(actions).map((action, i) => {
-    return <>
-    <div className='w-full h-fit flex flex-col gap-2 p-2'>
-      <div className='text-xl'>{action}</div>
-      <ThemedForm
-                  className='w-full'
-                  schema={actions[action].schema}
-                  extraErrors={{}}
-                  showErrorList="bottom"
-                  uiSchema={{
-                    "ui:submitButtonOptions": {
-                      norender: true,
-                    },
-                  }}
-                  formData={schemaStates[action]}
-                  validator={validator}
-                  onChange={({formData}) => {
-                    setSchemaStates({...schemaStates, [action]: {...schemaStates[action], ...formData}})
-                  }}
-                />
-      <div className='w-full h-fit flex flex-row content-center items-center justify-center'>
-        <button className="btn btn-primary" onClick={() => {
-          window.actions_confirm_modal.showModal();
-        }}>Confirm</button>
-      </div>
-    </div>
-      <dialog id="actions_confirm_modal" className="modal">
-        <form method="dialog" className="modal-box max-w-full w-fit">
-          <div className="flex flex-col gap-2">
-            <div className='text-2xl'>Perform ({action}) with:</div>
-            {(action in schemaStates) ? Object.keys(schemaStates[action]).map((property, j) => {
-              return <div className='flex flex-row gap-2'>
-                <div className='text-xl'>{property}</div>
-                <div className='text-xl'>{schemaStates[action][property]}</div>
-              </div>
-              }): <></>}
-            <div className="flex flex-row gap-2">
-              <button className="btn btn-primary" onClick={() => {
-                // later
-              }}>Confirm</button>
-              <button className="btn btn-error" onClick={() => {
-                window.actions_confirm_modal.close();
-              }}>Cancel</button>
-            </div>
-          </div>
-        </form>
-      </dialog>
-  </>})}</> : <></>  */
-
-  /*return <>
-  <div className='w-full h-full flex flex-col'>
-        <div className='text-xl'>Actions</div>
-        <div className='text-2xl'>Make Tim Management</div>
-        <div className='text-xl'>Replaces the current management user with tim</div>
-        <div className='w-full h-fit flex flex-row content-center items-center justify-center'>
-          <button className="btn btn-primary" onClick={() => {
-              window.actions_confirm_modal.showModal();
-            }
-          }>Make Tim Management</button>
-        </div>
-        <textarea className='w-full h-64' value={JSON.stringify(user, null, 2)}></textarea>
-      </div>
-          <dialog id="actions_confirm_modal" className="modal">
-            <form method="dialog" className="modal-box max-w-full w-fit">
-              <div className="flex flex-col gap-2">
-                <div className="flex flex-row gap-2">
-                  <button className="btn btn-primary" onClick={() => {
-                    fetch(`/api/admin/action/make_tim_management_for_user/`, {
-                        method: 'POST',
-                        headers: {
-                          'Content-Type': 'application/json',
-                          'X-CSRFToken': getCookiesAsObject().csrftoken
-                        },
-                        body: JSON.stringify({
-                          user_id: user.id,
-                        })
-                      }).then((res) => {
-                        if(res.ok){
-                          res.text().then((text) => {
-                            console.log("MESSAGE SENT", text)
-                          })
-                        }else{
-                          res.text().then((text) => {
-                            console.error("ERROR", text)
-                          })
-                        }
-                      }
-                      )
-                }}>Confirm</button>
-                  <button className="btn btn-error" onClick={() => {
-                    window.actions_confirm_modal.close();
-                  }}>Cancel</button>
-                </div>
-              </div>
-            </form>
-          </dialog>
-  </>*/
 
 const AdvancedUserDetails = ({
   user, closeUserDetails, setEmailHTML, 
   addUserToSelection,
+  reloadUserList,
   matchingSelectionState,
   setMatchingSelectionState
 }) => {
@@ -1908,7 +1809,10 @@ const AdvancedUserDetails = ({
           </ul>
         </div>
         <div className="navbar-end">
-          <button className="btn" onClick={closeUserDetails}>close</button>
+          <button className="btn" onClick={() => {
+            reloadUserList();
+            closeUserDetails();
+          }}>close</button>
         </div>
       </div>
       <SwitchPane panes={panes} pane={pane} />
@@ -1922,8 +1826,10 @@ export const AdminPanel = ({
     setData,
     selectedUsers,
     setSelectedUsers,
-    initialList
+    initialList,
+    reloadUserList
 }) => {
+  
   
   
   
@@ -1940,6 +1846,13 @@ export const AdminPanel = ({
   const [userLists, setUserLists] = useState(_userLists)
   // Just a string reference to the current list
   const [list, setList] = useState(initialList)
+  
+  useEffect(() => {
+    setUserLists(_userLists)
+  }, [_userLists])
+  
+  
+  console.log("UPDATE USERS_LIST", _userLists, initialList, userLists)
 
   // The fields that should be currently displayed
   const [fields, setFields] = useState(DEFAULT_FIELDS)
@@ -1992,6 +1905,7 @@ export const AdminPanel = ({
             >
         {detailUser ? 
             <AdvancedUserDetails user={detailUser} 
+              reloadUserList={reloadUserList}
               addUserToSelection={(user) => {
                 if(selectedUsersHashes.indexOf(user.hash) === -1) {
                   setSelectedUsers([...selectedUsers, user])

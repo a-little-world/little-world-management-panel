@@ -40,7 +40,7 @@ function Root() {
 
 function AdminPanelV2_Users(props) {
   const initData = props.data;
-  const [data, setData] = useState(initData);
+  const [data, setData] = useState(null);
   const [selectedUsers, setSelectedUsers] = useState(initData?.selected_users ? initData.selected_users : []);
   console.log("User selection updated", selectedUsers)
   
@@ -53,12 +53,15 @@ function AdminPanelV2_Users(props) {
   let list = queryParams.get('list')
   list = list ? list : 'all'
   const fetcher = (...args) => fetch(...args).then(res => res.json());
-  const { data: _data, error, isLoading } = useSWR(data ? null : `/api/admin/user_listing_advanced/${list}/`, fetcher)
+  const { data: _data, error, mutate,  isLoading } = useSWR(`/api/admin/user_listing_advanced/${list}/`, fetcher, {
+    initData: initData,
+    revalidateOnMount: true
+  })
+  
+  console.log("DATATAATA", data, _data)
   
   useEffect(() => {
-    if (data) {
-      return
-    }
+    console.log("useEffect called", _data, isLoading, error)
     if (isLoading) {
       return
     }
@@ -72,6 +75,10 @@ function AdminPanelV2_Users(props) {
     data ? <AdminPanel 
       _querySets={data?.query_sets} 
       _userLists={data?.user_lists} 
+      reloadUserList={() => {
+        console.log("Mutation called");
+        mutate();
+      }}
       setData={setData} 
       selectedUsers={selectedUsers}
       setSelectedUsers={setSelectedUsers}
