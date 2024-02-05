@@ -1,4 +1,5 @@
 import { Children, useState, useEffect, useCallback, useRef } from 'react'
+import { useNavigate } from "react-router-dom";
 import style from './markdown-styles.module.css';
 import '../withTailwind.css';
 import UserImage from '../atoms/userImage.jsx'
@@ -732,14 +733,11 @@ const MatchingTable = ({
       let postData = (matchingType === "proposal") ? {
           user1: user.id,
           user2: matchingSelectionState.user.id,
-          lookup: "pk",
-          proposal_only: true
+          proposal: true
       } : {
           user1: user.id,
           user2: matchingSelectionState.user.id,
-          lookup: "pk",
       }
-      console.log("MAKING MATCHING","proposal" === matchingType ,matchingType, matchingOverlayState.type, postData);
 
       fetch(`/api/admin/user/match/`, {
         method: 'POST',
@@ -1190,6 +1188,8 @@ const DynamicDisplay = ({
         selectUserForDetails,
         setData
     }) => {
+      
+      const navigate = useNavigate();
 
     return <div className="drawer lg:drawer-open">
       <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
@@ -1207,6 +1207,9 @@ const DynamicDisplay = ({
       </div> 
       <div className="drawer-side">
         <label htmlFor="my-drawer-2" className="drawer-overlay"></label> 
+        <button className="btn btn-ghost drawer-button" onClick={() => {
+          navigate("/") 
+        }}>back to menu</button>
         <Accordion 
           accordion_id={"accordion-1"}
           elements={[{
