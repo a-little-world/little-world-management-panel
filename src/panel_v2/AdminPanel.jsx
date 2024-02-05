@@ -960,7 +960,7 @@ const ActionsButtons = () => {
 }
 
 
-const UserDetailsCard = ({
+export const UserDetailsCard = ({
         user, 
         _key, 
         deselectUser,
@@ -972,8 +972,6 @@ const UserDetailsCard = ({
       
     if(!user)
       return <div>Undefined User</div>
-    if(tiny)
-      console.log("RENDERING TINY", user)
     const UserType = getTableComponentUser(user, "profile.user_type", 0, false)
     let Content = <></>
     if(!tiny){
