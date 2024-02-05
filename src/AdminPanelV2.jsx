@@ -6,6 +6,7 @@ import useSWR from 'swr'
 import { RouterProvider } from "react-router-dom";
 import { createBrowserRouter, Outlet } from "react-router-dom";
 import { UserGroupIcon, ChartBarIcon, UserIcon } from '@heroicons/react/20/solid'
+import { AdminPanelV2_Matches } from './panel_v2/AdminPanelMatches';
 
 
 /**
@@ -103,6 +104,10 @@ function AdminPanelV2(props) {
             {
               path: "users",
               element: <AdminPanelV2_Users {...props} />,
+            },
+            {
+              path: "matches",
+              element: <AdminPanelV2_Matches {...props} />,
             },
           ],
         },
