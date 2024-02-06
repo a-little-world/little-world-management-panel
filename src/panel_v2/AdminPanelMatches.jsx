@@ -40,6 +40,8 @@ function StatsCard({scoringFunction}) {
 function ConfirmMatchSuggestion({user1, user2, matchingType}) {
   const [res, setRes] = useState(null)
   const [visible, setVisible] = useState(false)
+  
+  const dialogId = `my_modal_3_${user1.id}_${user2.id}`
 
   const makeMatchingApi = () => {
       let postData = (matchingType === "proposal") ? {
@@ -73,10 +75,10 @@ function ConfirmMatchSuggestion({user1, user2, matchingType}) {
 
   return <>
     <button className="btn btn-sm" onClick={() => {
-          document.getElementById('my_modal_3').showModal()
+          document.getElementById(dialogId).showModal()
           setVisible(true)
     }}>Make Matching Suggestion</button>
-      <dialog id="my_modal_3" className="modal">
+      <dialog id={dialogId} className="modal">
             <div className="w-1/2 max-h-full overflow-y-scroll border-2 rounded-xl bg-base-200">
               <div className='flex flex-row gap-10 p-3 items-center content-center justify-center'>
                 <button className="btn btn-sm btn-success" onClick={() => {
@@ -85,7 +87,7 @@ function ConfirmMatchSuggestion({user1, user2, matchingType}) {
                 <h3 className="font-bold text-lg">You sure you want to confirm this matching suggestion?</h3>
                 <button className="btn btn-sm btn-error" onClick={() => {
                   setVisible(false)
-                  document.getElementById('my_modal_3').close()
+                  document.getElementById(dialogId).close()
                   setRes(null)
                 }}>Cancel</button>
               </div>
@@ -203,6 +205,29 @@ function MatchOptimizationModal({}) {
           </dialog>
 }
 
+function CleanupOptionsModal({}) {
+  const fetcher = (...args) => fetch(...args).then(res => res.json());
+  const [res, setRes] = useState(null)
+
+  return <dialog id="cleanup_modal" className="modal">
+            <div className="modal-box">
+            <StatsCard scoringFunction="total_matching_score_count" />
+            <button className="btn btn-error" onClick={() => {
+              fetcher(`/api/admin/delte_all_matching_scores/`).then((data) => {
+                data.json().then((text) => {
+                  console.log("Deleted all matching scores", data)
+                  setRes(data)
+                })
+              });
+            }}>
+              Delete all matching scores at once
+            </button>
+            {res && <div className="alert alert-success">{res?.msg}</div>}
+        </div>
+      </dialog>
+}
+
+
 function MatchingScoreNavigation({ tab, setTab}) {
   return <div className='w-full flex flex-row justify-center content-center items-center gap-2 p-2 bg-base-100'>
       <div role="tablist" className="tabs tabs-boxed">
@@ -213,7 +238,11 @@ function MatchingScoreNavigation({ tab, setTab}) {
         <button className="btn btn-xl" onClick={() => {
           document.getElementById('my_modal_2').showModal()
         } }>Burst Update Matching Scores</button>
+        <button className="btn btn-xl" onClick={() => {
+          document.getElementById('cleanup_modal').showModal()
+        } }>Cleanup options</button>
       <MatchOptimizationModal />
+    <CleanupOptionsModal />
       </div>
 }
 
