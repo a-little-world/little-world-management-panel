@@ -213,7 +213,7 @@ function CleanupOptionsModal({}) {
             <div className="modal-box">
             <StatsCard scoringFunction="total_matching_score_count" />
             <button className="btn btn-error" onClick={() => {
-              fetcher(`/api/admin/delte_all_matching_scores/`).then((data) => {
+              fetcher(`/api/admin/delete_all_matching_scores/`).then((data) => {
                 data.json().then((text) => {
                   console.log("Deleted all matching scores", data)
                   setRes(data)
