@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import useSWR from 'swr';
 import { useParams } from 'react-router-dom';
 import { UserDetailsCard } from './AdminPanel.jsx';
+import { getCookiesAsObject } from '../utils';
+
 
 export function AdminPanelV2_Emails(props){
     
@@ -69,17 +71,70 @@ function EmailDetailsSendEmail(){
   const fetcher = (...args) => fetch(...args).then(res => res.json());
     const { data: emailParams, isLoading } = useSWR(`/api/admin/list_emails/${emailTemplateName}/params/`, fetcher);
     
+    const [renderedEmail, setRenderedEmail] = useState(null);
+    
+    const [emailForm, setEmailForm] = useState({});
+    
     const AUTO_FILLED = ["unsubscribe_url1"]
     
-    console.log("Email params", emailParams);
+    useEffect(() => {
+        // emails form [fieldName] = value
+        const initalEmailForm = {
+            email: '',
+            subject: ''
+        };
+        if(emailParams){
+            Object.keys(emailParams).map((param, index) => {
+                if(AUTO_FILLED.includes(param)){
+                    initalEmailForm[param] = ""
+                }else{
+                    initalEmailForm[param] = emailParams[param].default;
+                }
+            });
+            setEmailForm(initalEmailForm);
+        }
+        console.log("Initial email form", initalEmailForm);
+    }, [emailParams]);
+    
+    const fetchRenderedEmail = async (emailFormFields) => {
+        
+        let emailFormCopy = {...emailFormFields};
+        
+        delete emailFormCopy.email;
+
+        const data = await fetcher(`/api/admin/list_emails/${emailTemplateName}/render/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookiesAsObject().csrftoken
+            },
+            body: JSON.stringify({
+                ...emailFormCopy,
+                receiver: emailFormFields.email
+        })})
+        
+        setRenderedEmail(data);
+        
+        console.log("MAIL data")
+    };
     
     return <>
     <div className="p-4 bg-base-300 flex flex-col justify-center content-center items-start p-4 rounded-xl w-fit border-2 border-base-300 hover:border-secondary gap-2">
         <h1 className="text-3xl text-bold">Send Email</h1>
         <span>Send email to:</span>
-        <input type="text" className="input input-primary" placeholder="Email" />
+        <input type="text" className="input input-primary" placeholder="Email" onChange={(e) => {
+            setEmailForm({
+                ...emailForm,
+                email: e.target.value
+            })
+        }} />
         <span>Subject:</span>
-        <input type="text" className="input input-primary" placeholder="Subject" />
+        <input type="text" className="input input-primary" placeholder="Subject" onChange={(e) => {
+            setEmailForm({
+                ...emailForm,
+                subject: e.target.value
+            })
+        }}/>
         <h1 className="text-xl text-bold">Email Template Parameters</h1>
         {emailParams && Object.keys(emailParams).map((param, index) => {
             if(AUTO_FILLED.includes(param)){
@@ -87,12 +142,26 @@ function EmailDetailsSendEmail(){
                     auto filled field
                     </span><input type="text" className="input input-primary bg-error disabled" placeholder={param} key={index}/></>
             }
-            return <input type="text" className="input input-primary" placeholder={param} key={index} defaultValue={emailParams[param].default} />
+            return <input type="text" className="input input-primary" placeholder={param} key={index} defaultValue={emailParams[param].default} onChange={(e) => {
+                setEmailForm({
+                    ...emailForm,
+                    [param]: e.target.value
+                })
+            }} />
         })}
-        <button className="btn btn-primary">View Email</button>
+        <button className="btn btn-primary" onClick={() => {
+            fetchRenderedEmail(emailForm);
+        }}>View Email</button>
     </div>
-    <div className="p-4 bg-base-300 flex flex-col justify-center content-center items-start p-4 rounded-xl w-fit border-2 border-base-300 hover:border-secondary gap-2">
-        View
+    <div className="p-4 bg-base-300 flex flex-col justify-center content-center items-start p-4 rounded-xl w-fit border-2 border-base-300 hover:border-secondary gap-2 scale-75">
+        {renderedEmail && <div className="flex flex-col">
+            <h1 className="text-2xl">to {renderedEmail.receiver}</h1>
+            <h1 className="text-2xl">subject: {renderedEmail.subject}</h1>
+            <div dangerouslySetInnerHTML={{ __html: renderedEmail.html }} />
+            <button className="btn btn-primary" onClick={() => {
+
+            }}>Send Email</button>
+            </div>}
     </div>
 </>
 
