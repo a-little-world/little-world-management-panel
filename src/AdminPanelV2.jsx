@@ -5,8 +5,13 @@ import { AdminPanel } from './panel_v2/AdminPanel';
 import useSWR from 'swr'
 import { RouterProvider } from "react-router-dom";
 import { createBrowserRouter, Outlet } from "react-router-dom";
-import { UserGroupIcon, ChartBarIcon, UserIcon } from '@heroicons/react/20/solid'
+import { UserGroupIcon, ChartBarIcon, UserIcon, Mail } from '@heroicons/react/20/solid'
 import { AdminPanelV2_Matches } from './panel_v2/AdminPanelMatches';
+import { AdminPanelV2_Emails, AdminPanelV2_EmailDetails } from './panel_v2/AdminPanelEmails';
+
+export function HeroiconsSolidMail(props) {
+	return (<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 20 20" {...props}><g fill="currentColor"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0 0 16 4H4a2 2 0 0 0-1.997 1.884"></path><path d="m18 8.118l-8 4l-8-4V14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2z"></path></g></svg>);
+}
 
 
 /**
@@ -33,6 +38,10 @@ function Root() {
       <a href={`${BACKEND_PATH}/stats/`} className="flex flex-col items-center bg-yellow-500 p-8 rounded-lg shadow-lg m-4 h-64 w-64">
         <ChartBarIcon className="h-16 w-16 text-white mb-2"/>
         <h2 className="text-white text-2xl">Stats</h2>
+      </a>
+      <a href={`${BACKEND_PATH}/emails/`} className="flex flex-col items-center bg-blue-500 p-8 rounded-lg shadow-lg m-4 h-64 w-64">
+        <HeroiconsSolidMail className="h-16 w-16 text-white mb-2"/>
+        <h2 className="text-white text-2xl">emails</h2>
       </a>
     </div>
   )
@@ -109,6 +118,14 @@ function AdminPanelV2(props) {
               path: "matches",
               element: <AdminPanelV2_Matches {...props} />,
             },
+            {
+              path: "emails",
+              element: <AdminPanelV2_Emails {...props} />,
+            },
+            {
+              path: "emails/:emailTemplateName",
+              element: <AdminPanelV2_EmailDetails {...props} />,
+            }
           ],
         },
       ],
