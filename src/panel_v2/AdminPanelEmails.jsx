@@ -6,9 +6,7 @@ import { getCookiesAsObject } from '../utils';
 
 
 export function AdminPanelV2_Emails(props){
-    
     const [tab, setTab] = useState("templates");
-
 
     return <div className="w-screen h-screen flex flex-col justify-center items-center content-center bg-base-100 relative">
         <div className="p-10 flex justify-center content-center items-center flex-row gap-2 w-full flex-wrap bg-base-200 rounded-xl">
@@ -25,12 +23,13 @@ export function AdminPanelV2_Emails(props){
 
 function EmailLogItem({email}){
     // params: template, id, time, sucess, data ({param -> value}), sender (hash, email, id), receiver (hash, email, id)
-    return <div className="p-10 flex justify-center content-center items-center flex-row gap-2 w-full">
-        <h1 className="text-3xl text-bold">{email.template}</h1>
+    return <div className="p-10 flex justify-center content-center items-center flex-row gap-2 w-full bg-base-300 rounded-xl p-3">
+        <a href={`/matching/emails/${email.template}`} className="btn btn-link"><h1 className="text-3xl text-bold">{email.template}</h1></a>
         <h2 className="text-xl text-bold">{email.time}</h2>
         <h2 className="text-xl text-bold">{email.sender.email}</h2>
         <h2 className="text-xl text-bold">{email.receiver.email}</h2>
-        <h2 className="text-xl text-bold">{email.success ? "Sent" : "Failed"}</h2>
+        <h2 className={`text-xl text-bold ${email.success ? 'text-success': 'text-error'}`}>{email.success ? "Sent" : "Failed"}</h2>
+        <a className="btn btn-primary" href={email.retrieve}>View</a>
     </div>
 }
 
@@ -72,6 +71,7 @@ function EmailDetailsSendEmail(){
     const { data: emailParams, isLoading } = useSWR(`/api/admin/list_emails/${emailTemplateName}/params/`, fetcher);
     
     const [renderedEmail, setRenderedEmail] = useState(null);
+    const [emailSendResult, setEmailSendResult] = useState(null);
     
     const [emailForm, setEmailForm] = useState({});
     
@@ -95,6 +95,32 @@ function EmailDetailsSendEmail(){
         }
         console.log("Initial email form", initalEmailForm);
     }, [emailParams]);
+    
+    const sendEmail = async (emailFormFields) => {
+        let emailFormCopy = {...emailFormFields};
+        
+        delete emailFormCopy.email;
+
+        const res = await fetch(`/api/admin/list_emails/${emailTemplateName}/send/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookiesAsObject().csrftoken
+            },
+            body: JSON.stringify({
+                ...emailFormCopy,
+                receiver: emailFormFields.email
+        })})
+        if (res.status === 200) {
+            const data = await res.json();
+            setRenderedEmail(null);
+            setEmailSendResult(data);
+        }else{
+            setEmailSendResult({
+                "error": "something failed"
+            })
+        }
+    };
     
     const fetchRenderedEmail = async (emailFormFields) => {
         
@@ -159,8 +185,11 @@ function EmailDetailsSendEmail(){
             <h1 className="text-2xl">subject: {renderedEmail.subject}</h1>
             <div dangerouslySetInnerHTML={{ __html: renderedEmail.html }} />
             <button className="btn btn-primary" onClick={() => {
-
+                sendEmail(emailForm)
             }}>Send Email</button>
+            </div>}
+        {emailSendResult && <div className="flex flex-col">
+           {JSON.stringify(emailSendResult)} 
             </div>}
     </div>
 </>
