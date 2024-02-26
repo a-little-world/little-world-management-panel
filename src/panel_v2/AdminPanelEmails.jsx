@@ -28,7 +28,7 @@ function EmailLogItem({email}){
         <h2 className="text-xl text-bold">{email.time}</h2>
         <h2 className="text-xl text-bold">{email.sender.email}</h2>
         <h2 className="text-xl text-bold">{email.receiver.email}</h2>
-        <h2 className={`text-xl text-bold ${email.success ? 'text-success': 'text-error'}`}>{email.success ? "Sent" : "Failed"}</h2>
+        <h2 className={`text-xl text-bold ${email.sucess ? 'text-success': 'text-error'}`}>{email.sucess ? "Sent" : "Failed"}</h2>
         <a className="btn btn-primary" href={email.retrieve}>View</a>
     </div>
 }
@@ -40,7 +40,7 @@ function EmailLogsView(){
     console.log("Email logs", emailLogs);
     return <div className="p-10 flex justify-center content-center items-center flex-row gap-2 w-full flex-wrap max-w-full flex-grow">{
         emailLogs && emailLogs.map((email, index) => {
-            return <EmailLogItem email={email}/>
+            return <EmailLogItem email={email} key={index}/>
         })
     }</div>
 }

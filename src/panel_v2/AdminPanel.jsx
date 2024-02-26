@@ -482,7 +482,7 @@ const TaskMonitorComponent = ({task_id, finishedCallback }) => {
   let progressInfo = null
   console.log("INFO", data.info)
   if(data && data?.info && data.info.progress) {
-    progressInfo = JSON.parse(data.info.progress)
+    progressInfo = data.info.progress
     console.log("MANGED TO PARSE", progressInfo);
   }
   
