@@ -1432,7 +1432,10 @@ const AdminChat = ({ user, _messages }) => {
   
   
   return chat ? <>
-    <ChatNavbar user={user} chat={chat} unFocousChat={() => setChat(null)}/>
+    <ChatNavbar user={user} chat={chat} unFocousChat={() => {
+      setChatId(null)
+      setChat(null)
+    }}/>
     <div className='w-full h-full flex flex-col'>
       <AdminChatMessagesDisplay user={user} chatMessages={chat} mutateMessages={mutate}/>
       {/** A simple footer with a text field and a send button */}
@@ -1695,6 +1698,16 @@ const ActionsPane = ({user}) => {
   </> : <></>
 }
 
+function PreMatchingAppointments({user}) {
+  const fetcher = (...args) => fetch(...args).then(res => res.json());
+  const { data: preMatchingAppointment, error, isLoading } = useSWR(`/api/admin/user_advanced/${user.id}/prematching_appointments/`, fetcher)
+
+  return <div className='w-full relative flex flex-col'>
+    {preMatchingAppointment && 
+      <div className='w-full rounded-xl bg-base-300 p-4'>{
+        JSON.stringify(preMatchingAppointment)}</div>}</div>
+}
+
 const AdvancedUserDetails = ({
   user, closeUserDetails, setEmailHTML, 
   addUserToSelection,
@@ -1771,6 +1784,14 @@ const AdvancedUserDetails = ({
         matchingSelectionState={matchingSelectionState}
         setMatchingSelectionState={setMatchingSelectionState}
       />
+    </>
+  },
+  {
+    title: "Pre-Matching",
+    id: "pre-matching",
+    component: <>
+      <h1>Pre-Matching Appointments</h1>
+      <PreMatchingAppointments user={data}/>
     </>
   },
   {
