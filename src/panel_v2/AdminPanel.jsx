@@ -139,6 +139,9 @@ const FIELDS = {
     "profile.second_name": (field, user, key, tableView) => {
         return <Base tableView={tableView} _key={key}>{field}</Base>
     },
+    "profile.target_group": (field, user, key, tableView) => {
+      return <Base tableView={tableView} _key={key}>{field}</Base>
+  },
     "matches.unconfirmed": (field, user, key, tableView) => {
         const matchesListing = matchingBubbleList(field.items)
         return <Base tableView={tableView} _key={key}>{matchesListing}</Base>
@@ -165,6 +168,7 @@ const DEFAULT_FIELDS = [
     "profile.user_type",
     "profile.first_name",
     "profile.second_name",
+    "profile.target_group",
     "matches.unconfirmed",
     "matches.confirmed",
 ]
@@ -908,8 +912,9 @@ const Table = ({users, selectedList, fields, selectedUsersHashes, setSelectedUse
             })}
         </tbody>
       </table>
-        <div className='w-full flex flex-row content-center items-center justify-center h-24 sticky bottom-0 z-50'>
-            <div className="stats shadow">
+        <div className='w-full flex flex-row content-center items-center justify-center sticky bottom-2 z-50'>
+          <div className='bg-slate-100 rounded-xl flex items-center justify-center p-2 gap-2 shadow-xl'>
+            <div className="stats shadow text-center">
       
               <div className="stat">
                 <div className="stat-value">{users.count}</div>
@@ -917,14 +922,14 @@ const Table = ({users, selectedList, fields, selectedUsersHashes, setSelectedUse
               </div>
               
             </div>
-            <div className="form-control w-full max-w-xs mr-8">
+            <div className="form-control">
               <label className="label">
                 <span className="label-text-alt">Entries per page</span>
               </label>
-              <input type="text" placeholder="Type here" className="input input-bordered w-full max-w-xs" defaultValue={users.page_size} onChange={(e) => {
+              <input type="text" placeholder="Type here" className="input input-bordered w-full mb-2" defaultValue={users.page_size} onChange={(e) => {
                 updateQueryParams({param: "items_per_page", value: e.target.value})
               }}/>
-              <button className='btn btn-xs' onClick={() => {
+              <button className='btn btn-xs bg-sky-200' onClick={() => {
                 window.location.reload();
               }}>Refresh</button>
             </div>
@@ -934,9 +939,10 @@ const Table = ({users, selectedList, fields, selectedUsersHashes, setSelectedUse
                 <button className="join-item btn">1</button>
                 <button className="join-item btn" onClick={() => onClickPage(users.page - 1)}>«</button>
               </>}
-              <button className="join-item btn">Page {users.page}</button>
+              <button className="join-item btn bg-sky-200">Page {users.page}</button>
               {users.next_page && <button className="join-item btn" onClick={() => onClickPage(users.next_page)}>»</button>}
             </div>
+          </div>
         </div>
     </>
 }
@@ -1028,6 +1034,9 @@ export const UserDetailsCard = ({
               </div>
               <div className='flex flex-row content-center items-start justify-start'>
                 <b className='text-l'>Matching State</b>: <div className={`badge badge-md ${user.state.matching_state === "searching" ? "bg-error" : "bg-success"}`}>{user.state.matching_state}</div>
+              </div>
+              <div className='flex flex-row content-center items-start justify-start'>
+                <b className='text-l'>Group</b>: {user.profile.target_group}
               </div>
               <div className='text-xl'>Interests</div>
               <ThemedForm
@@ -1122,7 +1131,7 @@ const UserSelectionDrawer = ({
                             setSelectedUsersByHash(selectedUsersHashes.filter((hash) => hash !== _user.hash))
                         }}/>
             })}
-            <div className='absolute bottom-0 flex flex-row'>
+            <div className='absolute bottom-2 flex flex-row gap-2'>
               <input type="text" placeholder="UserId" className="input input-bordered w-full max-w-xs" onChange={(e) => {
                 setExtraLoadUserId(e.target.value)
               }}/>
@@ -1214,9 +1223,9 @@ const DynamicDisplay = ({
           accordion_id={"accordion-1"}
           elements={[{
             title: "User List Selection", 
-            content: (<ul className="menu p-4 w-80 bg-base-200 text-base-content text-left">
+            content: (<ul className="menu w-80 bg-base-200 text-base-content text-left">
             {Object.keys(querySets).map((key, i) => {
-                return <li key={i} className='p-2'>
+                return <li key={i} className='p-2 w-full'>
                     <a onClick={() => {
                         selectUserForDetails(null)
                         updateQueryParams({param: "user_details", value: null})
