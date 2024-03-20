@@ -1732,7 +1732,7 @@ const AdvancedUserDetails = ({
   console.log("Rendering advanced user details", user)
 
   const fetcher = (...args) => fetch(...args).then(res => res.json());
-  const { data, error, isLoading } = useSWR(`/api/admin/user_advanced/${user.id}/`, fetcher)
+  const { data, error, isLoading } = useSWR(`/api/admin/user_advanced/${user.id}/?messages=include`, fetcher)
 
   console.log("ADVANCED USER FETCHED", data);
 
