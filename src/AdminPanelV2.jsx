@@ -65,10 +65,7 @@ function AdminPanelV2_Users(props) {
   let list = queryParams.get('list')
   list = list ? list : 'all'
   const fetcher = (...args) => fetch(...args).then(res => res.json());
-  const { data: _data, error, mutate, isLoading } = useSWR(`/api/admin/user_listing_advanced/${list}/`, fetcher, {
-    initData: initData,
-    revalidateOnMount: true
-  })
+  const { data: _data, error, mutate, isLoading } = useSWR(`/api/admin/user_listing_advanced/${list}/`, fetcher)
 
   console.log("DATATAATA", data, _data)
 
