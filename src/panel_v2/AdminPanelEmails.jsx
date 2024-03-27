@@ -8,7 +8,7 @@ import { getCookiesAsObject } from '../utils';
 export function AdminPanelV2_Emails(props){
     const [tab, setTab] = useState("templates");
 
-    return <div className="w-screen h-screen flex flex-col justify-center items-center content-center bg-base-100 relative">
+    return <div className="w-screen flex flex-col justify-center items-center content-center bg-base-100 relative">
         <div className="p-10 flex justify-center content-center items-center flex-row gap-2 w-full flex-wrap bg-base-200 rounded-xl">
             <a className="btn btn-primary" href="/matching/">Back</a>
             <ul className="menu menu-vertical lg:menu-horizontal bg-base-200 rounded-box">
@@ -24,11 +24,15 @@ export function AdminPanelV2_Emails(props){
 function EmailLogItem({email}){
     // params: template, id, time, sucess, data ({param -> value}), sender (hash, email, id), receiver (hash, email, id)
     return <div className="p-10 flex justify-center content-center items-center flex-row gap-2 w-full bg-base-300 rounded-xl p-3">
-        <a href={`/matching/emails/${email.template}`} className="btn btn-link"><h1 className="text-3xl text-bold">{email.template}</h1></a>
+        <div className='text-center'>
+            <a href={`/matching/emails/${email.template}`} className="btn btn-link"><h1 className="text-xl text-bold">{email.template}</h1></a>
+            <h2 className={`text-xl text-bold ${email.sucess ? 'text-success': 'text-error'}`}>{email.sucess ? "Sent" : "Failed"}</h2>
+        </div>
         <h2 className="text-xl text-bold">{email.time}</h2>
-        <h2 className="text-xl text-bold">{email.sender.email}</h2>
-        <h2 className="text-xl text-bold">{email.receiver.email}</h2>
-        <h2 className={`text-xl text-bold ${email.sucess ? 'text-success': 'text-error'}`}>{email.sucess ? "Sent" : "Failed"}</h2>
+        <div>
+            <h2 className="text-xl text-bold">{email.sender.email}</h2>
+            <h2 className="text-xl text-bold">{email.receiver.email}</h2>
+        </div>
         <a className="btn btn-primary" href={email.retrieve}>View</a>
     </div>
 }
@@ -204,7 +208,7 @@ export function AdminPanelV2_EmailDetails(props){
     console.log("Rendered email", renderedEmail);
     
 
-    return <div className="w-screen h-screen flex justify-center items-center content-center bg-base-100 relative">
+    return <div className="w-screen flex justify-center items-center content-center bg-base-100 relative">
         <div className="w-full relative flex flex-row max-h-full">
             <div className="p-4 bg-base-300 flex flex-col justify-center content-center items-center p-4 rounded-xl w-fit border-2 border-base-300 hover:border-secondary gap-4">
                 <h1 className="text-3xl text-bold">Email Details</h1>
