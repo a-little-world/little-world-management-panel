@@ -9,6 +9,7 @@ import { UserGroupIcon, ChartBarIcon, UserIcon, Mail } from '@heroicons/react/20
 import { AdminPanelV2_Matches } from './panel_v2/AdminPanelMatches';
 import { AdminPanelV2_Emails, AdminPanelV2_EmailDetails } from './panel_v2/AdminPanelEmails';
 import { AdminPanelV2_DevKit, DevkitSelector } from './panel_v2/AdminPanelDevkit';
+import { useSearchParams } from "react-router-dom";
 
 export function HeroiconsSolidMail(props) {
   return (<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 20 20" {...props}><g fill="currentColor"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0 0 16 4H4a2 2 0 0 0-1.997 1.884"></path><path d="m18 8.118l-8 4l-8-4V14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2z"></path></g></svg>);
@@ -56,6 +57,19 @@ function AdminPanelV2_Users(props) {
   const [selectedUsers, setSelectedUsers] = useState(initData?.selected_users ? initData.selected_users : []);
   console.log("User selection updated", selectedUsers)
 
+  let [searchParams, setSearchParams] = useSearchParams();
+  const items_per_page = searchParams.get('items_per_page', null)
+  const page = searchParams.get('page', null)
+  let extraSearch = ""
+  if (items_per_page && page) {
+    extraSearch = `?items_per_page=${items_per_page}&page=${page}`
+  } else if (items_per_page) {
+    extraSearch = `?items_per_page=${items_per_page}`
+  } else if (page) {
+    extraSearch = `?page=${page}`
+  }
+  console.log("SEARCH", searchParams)
+
   /**
    *  The admin pannel with gereally render with data,
     *  but if we need to reload we may still use useSWR
@@ -65,7 +79,7 @@ function AdminPanelV2_Users(props) {
   let list = queryParams.get('list')
   list = list ? list : 'all'
   const fetcher = (...args) => fetch(...args).then(res => res.json());
-  const { data: _data, error, mutate, isLoading } = useSWR(`/api/admin/user_listing_advanced/${list}/`, fetcher)
+  const { data: _data, error, mutate, isLoading } = useSWR(`/api/admin/user_listing_advanced/${list}/${extraSearch}`, fetcher)
 
   console.log("DATATAATA", data, _data)
 
