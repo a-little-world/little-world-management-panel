@@ -1133,7 +1133,7 @@ const UserSelectionDrawer = ({
           }} />
       })}
       <div className='absolute bottom-2 flex flex-row gap-2'>
-        <input type="text" placeholder="UserId" className="input input-bordered w-full max-w-xs" onChange={(e) => {
+        <input type="text" placeholder="UserId or Hash" className="input input-bordered w-full max-w-xs" onChange={(e) => {
           setExtraLoadUserId(e.target.value)
         }} />
         <button className='btn btn-success max-w-xs' onClick={() => {
