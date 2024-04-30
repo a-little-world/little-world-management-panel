@@ -27,7 +27,8 @@ function CallbackCard({ callback, className, setSelectedCallback }) {
   </button>
 }
 
-export function AdminPanelV2_DevKit() {
+export function WebsocketCallbackTester() {
+
   const fetcher = (...args) => fetch(...args).then(res => res.json());
   const userIdFieldRef = useRef(null);
   const { data: callBacks, isLoading } = useSWR("/api/callbacks/", fetcher);
@@ -57,37 +58,50 @@ export function AdminPanelV2_DevKit() {
     setSelectedCallback(callback);
     setFormFields(Object.fromEntries(Object.keys(callback.fields).map((field) => [field, callback.fields[field].default])));
   }
+  return <><div className='flex flex-col gap-2 h-full'>
+    {isLoading ? <div>Loading...</div> : callBacks?.map((callback) => <CallbackCard setSelectedCallback={updateSelectedCallback} callback={callback} className={`${selectedCallback?.type === callback.type ? "bg-error" : ""}`} />)}
+  </div>
+    <div className='flex flex-col gap-2 h-full'>
+      Selected Callback: {selectedCallback?.type}
+      {selectedCallback ?
+        <div className='flex flex-col gap-2'>
+          {JSON.stringify(selectedCallback.fields)}
+          {Object.keys(selectedCallback.fields).map((field) => {
+            const fieldData = selectedCallback.fields[field]
+            return <div key={`${field}_container`}>
+              <div id={`${field}_name`} className='text-xs'>{field} (type: {fieldData.type} )</div>
+              <input id={field} key={field} type='text' value={formFields[field]} onChange={() => {
+                setFormFields({ ...formFields, [field]: document.getElementById(field).value })
+              }} />
+            </div>
+          })}
+          <h1>Receiver Hash ( who send the callback to ? )</h1>
+          <input type='text' ref={userIdFieldRef} placeholder='user_id' />
+          <button className='btn btn-primary' onClick={() => {
+            sendCallback(selectedCallback.type, userIdFieldRef.current.value, formFields);
+          }}>Send Callback</button>
+        </div> : null}
+      <div className='bg-base-200 p-4 rounded-xl'>
+        {res ? JSON.stringify(res) : null}
+      </div>
+    </div></>
+}
+
+const TABS = [
+  'callbacks',
+  'user-journey-v2'
+]
+
+export function AdminPanelV2_DevKit() {
+  const [selectedTab, setSelectedTab] = useState('callbacks');
 
   return <>
     <div className='flex flex-row'>
-      <h1>DEVELOPMENT KIT</h1>
-      <div className='flex flex-col gap-2 h-full'>
-        {isLoading ? <div>Loading...</div> : callBacks?.map((callback) => <CallbackCard setSelectedCallback={updateSelectedCallback} callback={callback} className={`${selectedCallback?.type === callback.type ? "bg-error" : ""}`} />)}
+      <div className='flex flex-col gap-2'>
+        <h1>DEVELOPMENT KIT</h1>
+        {TABS.map((tab) => <button className={`btn btn-primary ${selectedTab === tab ? 'bg-primary' : ''}`} onClick={() => setSelectedTab(tab)}>{tab}</button>)}
       </div>
-      <div className='flex flex-col gap-2 h-full'>
-        Selected Callback: {selectedCallback?.type}
-        {selectedCallback ?
-          <div className='flex flex-col gap-2'>
-            {JSON.stringify(selectedCallback.fields)}
-            {Object.keys(selectedCallback.fields).map((field) => {
-              const fieldData = selectedCallback.fields[field]
-              return <div key={`${field}_container`}>
-                <div id={`${field}_name`} className='text-xs'>{field} (type: {fieldData.type} )</div>
-                <input id={field} key={field} type='text' value={formFields[field]} onChange={() => {
-                  setFormFields({ ...formFields, [field]: document.getElementById(field).value })
-                }} />
-              </div>
-            })}
-            <h1>Receiver Hash ( who send the callback to ? )</h1>
-            <input type='text' ref={userIdFieldRef} placeholder='user_id' />
-            <button className='btn btn-primary' onClick={() => {
-              sendCallback(selectedCallback.type, userIdFieldRef.current.value, formFields);
-            }}>Send Callback</button>
-          </div> : null}
-        <div className='bg-base-200 p-4 rounded-xl'>
-          {res ? JSON.stringify(res) : null}
-        </div>
-      </div>
+      {selectedTab === 'callbacks' ? <WebsocketCallbackTester /> : null}
     </div>
   </>
 }
