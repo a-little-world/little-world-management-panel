@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import useSWR from 'swr';
-import { useParams } from 'react-router-dom';
-import { UserDetailsCard } from './AdminPanel.jsx';
 import { getCookiesAsObject } from '../utils';
 import { HeroiconsSolidMail } from '../AdminPanelV2.jsx';
+import { useSearchParams } from 'react-router-dom';
 
 export function DevkitSelector() {
   const fetcher = (...args) => fetch(...args).then(res => res.json());
@@ -92,16 +91,66 @@ const TABS = [
   'user-journey-v2'
 ]
 
+export function UserJourneyUserListing({
+  data,
+  selectedCategory
+}) {
+  return <div className='max-w-[1000px] h-screen'>
+    {selectedCategory && <div className='h-full flex flex-col'>
+      <div className='flex flex-row gap-2 bg-base-200 w-full p-4 text-xl'>
+        {data.find((bucket) => bucket.query === selectedCategory).name}
+      </div>
+      <div className='flex flex-row bg-base-100'>
+        Content
+      </div>
+    </div>}
+  </div>
+}
+
+export function UserJourneySchema() {
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedCategory = searchParams.get('category') || null;
+
+  const fetcher = (...args) => fetch(...args).then(res => res.json());
+  const { data, isLoading } = useSWR("/api/admin/user_journey/schema/", fetcher);
+
+  if (!data)
+    return <div>Loading...</div>
+
+  return <div className='flex flex-row relative'>
+    <ul className="w-[350px] bg-base-200 text-base-content relative h-screen overflow-y-auto relative">
+      {data.map((bucket, i) => {
+        return <li key={i} className='p-2'>
+          <a onClick={() => {
+            searchParams.set('category', bucket.query);
+            setSearchParams(searchParams);
+          }} className={`rounded-btn flex flex-col hover:bg-error ${selectedCategory === bucket.query}`}>
+            <div className='text-xl'>{bucket.name}</div>
+            <div className='text-xs'>Category: {bucket.category}</div>
+            <div className='text-xs'>{bucket.description}</div>
+          </a>
+        </li>
+      })}
+    </ul>
+    <UserJourneyUserListing data={data} selectedCategory={selectedCategory} />
+  </div>
+}
+
 export function AdminPanelV2_DevKit() {
-  const [selectedTab, setSelectedTab] = useState('callbacks');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedTab = searchParams.get('tab') || 'callbacks';
 
   return <>
     <div className='flex flex-row'>
       <div className='flex flex-col gap-2'>
         <h1>DEVELOPMENT KIT</h1>
-        {TABS.map((tab) => <button className={`btn btn-primary ${selectedTab === tab ? 'bg-primary' : ''}`} onClick={() => setSelectedTab(tab)}>{tab}</button>)}
+        {TABS.map((tab) => <button className={`btn btn-primary ${selectedTab === tab ? 'bg-primary' : ''}`} onClick={() => {
+          setSearchParams({ tab });
+        }}>{tab}</button>)}
       </div>
       {selectedTab === 'callbacks' ? <WebsocketCallbackTester /> : null}
+      {selectedTab === 'user-journey-v2' ? <UserJourneySchema /> : null}
     </div>
   </>
 }
