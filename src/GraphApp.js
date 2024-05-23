@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ThemeProvider } from 'styled-components';
 import { GraphDashboard } from './GraphDashboard';
-import theme from './theme';
 import './withTailwind.css';
 
 const THEMES = [

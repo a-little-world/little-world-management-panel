@@ -1,0 +1,92 @@
+import { isEmpty } from "lodash";
+import styled from "styled-components";
+import React, { useEffect, useState } from "react";
+import UserDetailsCard from '../atoms/UserCard';
+import { ScrollArea } from '@radix-ui/react-scroll-area';
+import { addUserByHash } from '../api/index';
+import { Button, ButtonSizes, TextInput } from '@a-little-world/little-world-design-system';
+import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '../atoms/Sheet';
+import { useForm } from 'react-hook-form';
+
+const StyledSheetButton = styled(Button)`
+position: fixed;
+`
+
+export const registerInput = ({ register, name, options }) => {
+    const { ref, ...rest } = register(name, options);
+  
+    return {
+      ...rest,
+      inputRef: ref,
+    };
+};
+
+export function SelectedUsersSheet({
+  preSelectedUsers,
+  userLists,
+  currentList,
+  deselectUser,
+}) {
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+        setError,
+      } = useForm();
+
+  const [selectedUsers, setSelectedUsers] = useState([])
+  const [isSubmitting, setIsSubmitting] = useState(false); 
+
+  useEffect(() => {
+    setSelectedUsers(preSelectedUsers)
+  }, [preSelectedUsers])
+
+  const onError = error => {
+    setError('userHash', {})
+    setIsSubmitting(false);
+}
+
+  const onAddUser = (formData) => {
+    setIsSubmitting(true);
+
+     addUserByHash(formData.userHash, onError, res => {
+        setIsSubmitting(false);
+        console.log({res})
+        setSelectedUsers((prev) => [...prev, res?.userHash]);
+    });
+  }
+
+  return (
+    <Sheet>
+        {!isEmpty(selectedUsers) && (
+            <SheetTrigger asChild>
+            <StyledSheetButton className='fixed bottom-14 right-2/4 translate-x-2/4'>View Selected Users</StyledSheetButton>
+            </SheetTrigger>
+        )}
+        <SheetContent>
+            <SheetHeader>
+            <SheetTitle>Selected Users</SheetTitle>
+            <SheetDescription>
+                Make changes to your profile here. Click save when you're done.
+            </SheetDescription>
+            </SheetHeader>
+            <ScrollArea className='h-full overflow-scroll'>
+            {selectedUsers.map(userHash => {
+                return <UserDetailsCard key={'card' + userHash} user={userLists[currentList]?.results.find(user => user.hash === userHash)} deselectUser={deselectUser} />;
+            })}
+            </ScrollArea>
+            <SheetFooter>
+              <form className='flex w-full gap-2' onSubmit={handleSubmit(onAddUser)}> 
+                <TextInput {...registerInput({
+                    register,
+                    name: 'userHash',
+                    options: { required: 'error.required' },
+                })} id='addUserHashInput' error={errors?.userHash?.message} placeholder='Enter the user hash'/>
+                <Button type="submit" disabled={isSubmitting} size={ButtonSizes.Small}>Add</Button>
+              </form>
+            </SheetFooter>
+        </SheetContent>
+     </Sheet>
+  )
+}
+  

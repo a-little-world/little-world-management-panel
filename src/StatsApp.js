@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
-import { ThemeProvider } from 'styled-components';
 import { StatsDashboard } from './StatsDashboard';
-import theme from './theme';
+
 
 function StatsApp({ inputCombinedGraphs, inputSeries, inputStaticStats }) {
   const [series, setSeries] = useState({});
@@ -27,13 +26,12 @@ function StatsApp({ inputCombinedGraphs, inputSeries, inputStaticStats }) {
   }, [inputCombinedGraphs]);
 
   return (
-    <ThemeProvider theme={theme}>
       <StatsDashboard
         series={series}
         staticStats={staticStats}
         combinedGraphs={combinedGraphs}
       />
-    </ThemeProvider>
+
   );
 }
 

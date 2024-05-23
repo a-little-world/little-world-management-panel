@@ -1,6 +1,4 @@
 import { useEffect, useState } from 'react';
-import { ThemeProvider } from 'styled-components';
-import theme from './theme';
 import { AdminPanel } from './panel_v2/AdminPanel';
 import useSWR from 'swr'
 

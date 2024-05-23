@@ -19,7 +19,7 @@ var config = function (env) {
   return {
     context: __dirname,
     entry: {
-      staticfiles: './src/index.js',
+      staticfiles: './src/index.tsx',
     },
 
     resolve: {
@@ -68,11 +68,11 @@ var config = function (env) {
     module: {
       rules: [
         {
-          test: /\.(js|jsx)$/,
+          test: /\.(js|jsx|ts|tsx)$/,
           exclude: /node_modules/,
           use: ['babel-loader'],
           resolve: {
-            extensions: ['.js', '.jsx'],
+            extensions: ['.js', '.jsx', '.tsx', '.ts'],
           },
           include: [path.resolve(__dirname, 'src')],
         },

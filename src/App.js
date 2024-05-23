@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
-import { ThemeProvider } from 'styled-components';
 import { Dashboard } from './views/dashboard';
-import theme from './theme';
+
 
 function App({ extraInfo, filteredUsers }) {
   const [users, setUsers] = useState([]);
@@ -18,9 +17,7 @@ function App({ extraInfo, filteredUsers }) {
   }, [extraInfo]);
 
   return (
-    <ThemeProvider theme={theme}>
       <Dashboard users={users} stateInfo={stateInfo} />
-    </ThemeProvider>
   );
 }
 
