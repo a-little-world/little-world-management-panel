@@ -13,13 +13,17 @@ import Users from './views/Users';
 import { CustomThemeProvider, GlobalStyles } from '@a-little-world/little-world-design-system';
 import { GlobalStateProvider } from './store.tsx';
 import UserPanel from './blocks/UserPanel.tsx';
+import Layout from './blocks/Layout.tsx';
 
-export const Root = ({ children, restoreScroll = true }) => (
+export const Root = ({ children, restoreScroll = true, withLayout = false }) => (
   <GlobalStateProvider>  
     <CustomThemeProvider>
       {restoreScroll && <ScrollRestoration />}
       <GlobalStyles />
-      {children || <Outlet />}
+      {withLayout ? (
+        <Layout>{children || <Outlet />}</Layout>
+      ) : (children || <Outlet />)}
+      
     </CustomThemeProvider>
   </GlobalStateProvider>
 );
@@ -31,7 +35,7 @@ function AdminPanelV2(props) {
       [
         {
           path: '/',
-          element: <Root />,
+          element: <Root withLayout />,
           children: [
             {
               path: '',
@@ -40,9 +44,10 @@ function AdminPanelV2(props) {
             {
               path: 'users',
               element: <Users {...props} />,
-              children: [
-                {path: 'details', element: <UserPanel />}
-              ]
+            },
+            {
+              path: 'user/:userId',
+              element: <UserPanel />,
             },
             {
               path: 'matches',

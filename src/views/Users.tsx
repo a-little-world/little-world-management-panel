@@ -9,6 +9,7 @@ import UserImage from '../atoms/UserImage';
 import MatchesIcons from '../atoms/MatchesIcons';
 import { Button, ButtonAppearance, Dropdown, Text, TextInput } from '@a-little-world/little-world-design-system';
 import styled from 'styled-components';
+import { Link } from 'react-router-dom';
 
 
 const StyledDropdown = styled(Dropdown)`
@@ -140,8 +141,7 @@ export function Users(props) {
   }
   
   return (
-    <div className='h-[calc(100dvh)] overflow-hidden font-medium'>
-      <Header />
+    <>
       <div className='flex w-full overflow-scroll gap-2 p-2.5 align-center justify-center items-center'>
         <StyledDropdown value={currentList} options={map(_querySets, (value, key) => ({ value: key, label: value}))} onValueChange={val => setCurrentList(val)}/>
       </div> 
@@ -174,12 +174,12 @@ export function Users(props) {
                 if (key === 'profile.image') {
                   return (
                   <TableCell key={user.hash + key} className="font-medium">
-                    <div className="rounded-full">
+                    <Link to={`/user/${user.id}`}>
                       <UserImage alt={'user profile image'} user={user.profile} dimensions={{
                         height: 32,
                         width: 32
                       }} />
-                    </div>
+                    </Link>
                   </TableCell>
                 )}
 
@@ -195,7 +195,7 @@ export function Users(props) {
     } 
     </Table>
     <SelectedUsersSheet preSelectedUsers={selectedUsers} userLists={data?.user_lists} currentList={currentList}  deselectUser={deselectUser}  />
-    </div>
+    </>
   );
 }
 
