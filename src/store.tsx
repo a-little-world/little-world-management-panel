@@ -1,8 +1,12 @@
+import { unset } from 'lodash';
 import React, { createContext, useState } from 'react';
 import useSWR from 'swr';
 
 export const dataFetcher = (url: string) =>
-  fetch(url).then(res => res.json() as Promise<any>);
+  fetch(url).then(res => {
+    if (res.ok) return res.json();
+    throw new Error('Error fetching data');
+  });
 
 export const useUserListData = (list: string) => {
   const { data, error, mutate, isLoading } = useSWR(
@@ -28,8 +32,20 @@ export function GlobalStateProvider(props) {
     props?.data?.selected_users ?? [],
   );
 
+  const selectUser = user => {
+    setSelectedUsers(currentUsers => ({ ...currentUsers, [user.hash]: user }));
+  };
+
+  const deselectUser = userHash => {
+    setSelectedUsers(currentUsers => {
+      const newUsers = { ...currentUsers };
+      unset(newUsers, userHash);
+      return newUsers;
+    });
+  };
+
   const value = React.useMemo(
-    () => ({ selectedUsers, setSelectedUsers }),
+    () => ({ selectedUsers, selectUser, deselectUser }),
     [selectedUsers],
   );
   return <GlobalStateContext.Provider value={value} {...props} />;

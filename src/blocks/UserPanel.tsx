@@ -1,73 +1,116 @@
 import React from 'react';
-import UserDetailsCard from './UserCard';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../atoms/Tabs';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../atoms/Card';
-import useSWR from 'swr';
-import { dataFetcher } from '../store';
 import { useLocation, useParams } from 'react-router-dom';
+import useSWR from 'swr';
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '../atoms/Card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../atoms/Tabs';
+import { dataFetcher } from '../store';
+import UserDetailsCard from './UserCard';
 import UserChat from './UserChat';
 import UserEmails from './UserEmails';
+import UserMatches from './UserMatches';
 
 const USER_TABS = [
-  { key: 'profile', label: 'Profile' }, { key: 'chat', label: 'Chat', title: 'User Support Chat' }, { key: 'emails', label: 'Emails' }, { key: 'matching', label: 'Matching' }, { key: 'tasks', label: 'Tasks' }, { key: 'actions', label: 'Actions' }
-]
+  { key: 'profile', label: 'Profile' },
+  { key: 'chat', label: 'Chat', title: 'User Support Chat' },
+  { key: 'emails', label: 'Emails' },
+  { key: 'matches', label: 'Matches' },
+  { key: 'tasks', label: 'Tasks' },
+  { key: 'actions', label: 'Actions' },
+];
 
 const UserPanelContent = ({ use, user }) => {
-  console.log({ user })
-  if (use === 'profile') return (
-    <div className='flex flex-col'>
-      <UserDetailsCard user={user} partial={false} />
-    </div>
-  )
+  console.log({ user });
+  if (use === 'profile')
+    return (
+      <div className="flex flex-col">
+        <UserDetailsCard user={user} partial={false} />
+      </div>
+    );
 
-  if (use === 'chat') return (
-    <div className='flex flex-col'>
-      <UserChat user={user} />
-    </div>
-  )
+  if (use === 'chat')
+    return (
+      <div className="flex flex-col">
+        <UserChat user={user} />
+      </div>
+    );
 
+  if (use === 'emails')
+    return (
+      <div className="flex flex-col">
+        <UserEmails user={user} />
+      </div>
+    );
 
-  if (use === 'emails') return (
-    <div className='flex flex-col'>
-      <UserEmails user={user} />
-    </div>
-  )
+  if (use === 'matches')
+    return (
+      <div className="flex flex-col">
+        <UserMatches user={user} />
+      </div>
+    );
   return null;
-}
+};
 
 const UserPanel = () => {
   const { userId } = useParams();
   const { state } = useLocation();
-  const { data: user, error, isLoading } = useSWR(`/api/admin/user_advanced/${userId}/?messages=include`, dataFetcher)
-  if (isLoading && !error) return <div className='w-full p-3 text-center'>Loading</div>
-  if (error) return <div className='w-full p-3 text-center'>Issue fetching this user. Please ensure the user id is correct</div>
-  
+  const {
+    data: user,
+    error,
+    isLoading,
+  } = useSWR(
+    `/api/admin/user_advanced/${userId}/?messages=include`,
+    dataFetcher,
+  );
+  if (isLoading && !error)
+    return <div className="w-full p-3 text-center">Loading</div>;
+  if (error)
     return (
-          <Tabs defaultValue={state?.openTab ?? USER_TABS[0].key} className="w-full flex-1 flex flex-col overflow-hidden">
-          <TabsList className="grid w-full grid-cols-6">
-            {USER_TABS.map(tab => (
-              <TabsTrigger value={tab.key}>{tab.label}</TabsTrigger>
-            ))}
-          </TabsList>
-          {USER_TABS.map(tab => (
-            <TabsContent value={tab.key} className='py-1 px-2 flex-1 overflow-y-auto'>
-              <Card>
-                  <CardHeader>
-                    <CardTitle>{`${user.profile.first_name + user.profile.second_name} - ${tab.title ?? tab.label}`}</CardTitle>
-                    {tab.description && <CardDescription>
-                      {tab.description}
-                    </CardDescription>}
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <UserPanelContent use={tab.key} user={user} />
-                  </CardContent>
-                  <CardFooter>
-                  </CardFooter>
-                </Card>
-            </TabsContent>
-          ))}
-        </Tabs>
-    )
-}
+      <div className="w-full p-3 text-center">
+        Issue fetching this user. Please ensure the user id is correct
+      </div>
+    );
 
-export default UserPanel
+  return (
+    <Tabs
+      defaultValue={state?.openTab ?? USER_TABS[0].key}
+      className="w-full flex-1 flex flex-col overflow-hidden"
+    >
+      <TabsList className="grid w-full grid-cols-6">
+        {USER_TABS.map(tab => (
+          <TabsTrigger value={tab.key}>{tab.label}</TabsTrigger>
+        ))}
+      </TabsList>
+      {USER_TABS.map(tab => (
+        <TabsContent
+          value={tab.key}
+          className="py-1 px-2 flex-1 overflow-y-auto"
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle>{`${
+                user.profile.first_name + user.profile.second_name
+              } - ${tab.title ?? tab.label}`}</CardTitle>
+              {tab.description && (
+                <CardDescription>{tab.description}</CardDescription>
+              )}
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <UserPanelContent use={tab.key} user={user} />
+            </CardContent>
+            <CardFooter></CardFooter>
+          </Card>
+        </TabsContent>
+      ))}
+    </Tabs>
+  );
+};
+
+export default UserPanel;

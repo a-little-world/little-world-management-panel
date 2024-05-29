@@ -39,7 +39,7 @@ const DEFAULT_FIELDS = [
   { key: 'profile.target_group', label: 'Target Group' },
   { key: 'matches.unconfirmed', label: 'Unconfirmed' },
   { key: 'matches.confirmed', label: 'Confirmed' },
-  { key: 'matches.support', label: 'Supoort' },
+  { key: 'matches.support', label: 'Support' },
 ];
 
 const dataFetcher = (url: string) =>
@@ -48,7 +48,7 @@ const dataFetcher = (url: string) =>
 export function Users(props) {
   const [data, setData] = useState(null);
   const [currentList, setCurrentList] = useState('all');
-  const { selectedUsers, setSelectedUsers } = useGlobalState();
+  const { selectedUsers, selectUser, deselectUser } = useGlobalState();
   /**
    *  The admin panel with generally render with data,
    *  but if we need to reload we may still use useSWR
@@ -129,29 +129,6 @@ export function Users(props) {
     }
   }, [_pre_loaded_user]);
 
-  //   const selectedUsersHashes = selectedUsers
-  //     .map(user => (user ? user.hash : null))
-  //     .filter(hash => hash !== null);
-
-  //   const setSelectedUsersByHash = usersHashes => {
-  //     const users = usersHashes.map((hash, i) =>
-  //       userLists[list].results.filter(user => user.hash === hash).length > 0
-  //         ? userLists[list].results.filter(user => user.hash === hash)[0]
-  //         : selectedUsers[i],
-  //     );
-  //     setSelectedUsers(users);
-  //   };
-
-  // const onSelectUser = (user) => {
-  //   setSelectedUsers(current => {
-  //     return [current, user]
-  //   })
-  // }
-
-  const deselectUser = userHash => {
-    setSelectedUsers(selectedUsers.filter(hash => hash !== userHash));
-  };
-
   return (
     <>
       <div className="flex w-full overflow-scroll gap-2 p-2.5 align-center justify-center items-center">
@@ -187,13 +164,13 @@ export function Users(props) {
                   <TableCell className="w-20">
                     <input
                       type="checkbox"
-                      checked={selectedUsers.includes(user.hash)}
+                      checked={!!selectedUsers[user.hash]}
                       className="checkbox ml-2"
                       onChange={() => {
-                        if (selectedUsers.includes(user.hash)) {
+                        if (!!selectedUsers[user.hash]) {
                           deselectUser(user.hash);
                         } else {
-                          setSelectedUsers([...selectedUsers, user.hash]);
+                          selectUser(user);
                         }
                       }}
                     />
@@ -238,66 +215,9 @@ export function Users(props) {
           </Text>
         )}
       </Table>
-      <SelectedUsersSheet
-        userLists={data?.user_lists}
-        currentList={currentList}
-        deselectUser={deselectUser}
-      />
+      <SelectedUsersSheet currentList={currentList} />
     </>
   );
 }
 
 export default Users;
-// <DynamicDispay>
-//   querySets={_querySets}
-//   selectedList={list}
-//   selectedUsersHashes={selectedUsersHashes}
-//   selectedUsers={selectedUsers}
-//   setSelectedUsers={setSelectedUsers}
-//   setSelectedUsersByHash={setSelectedUsersByHash}
-//   fields={fields}
-//   setFields={setFields}
-//   selectUserForDetails={(user) => {
-
-//     if (matchingSelectionState.inProgress) {
-//       setMatchingSelectionState({ ...matchingSelectionState, user: user })
-//       console.log("Updated Matching Selection", matchingSelectionState)
-//     } else {
-//       setDetailUser(user)
-//     }
-
-//   }}
-//   setData={setData}
-// >
-//   {detailUser ?
-//     <AdvancedUserDetails user={detailUser}
-//       reloadUserList={reloadUserList}
-//       addUserToSelection={(user) => {
-//         if (selectedUsersHashes.indexOf(user.hash) === -1) {
-//           setSelectedUsers([...selectedUsers, user])
-//         }
-//       }}
-//       closeUserDetails={() => {
-//         updateQueryParams({ param: "user_details", value: null });
-//         setDetailUser(null);
-//       }}
-//       setEmailHTML={setEmailHTML}
-//       matchingSelectionState={matchingSelectionState}
-//       setMatchingSelectionState={setMatchingSelectionState}
-//     /> :
-//     <Table
-//       users={userLists[list]}
-//       fields={fields}
-//       selectedList={list}
-//       selectedUsersHashes={selectedUsersHashes}
-//       setSelectedUsers={setSelectedUsersByHash} />}
-//   <dialog id="my_modal_1" className="modal">
-//     <form method="dialog" className="modal-box max-w-full w-fit">
-//       <p className="py-4">Press ESC key or click the button below to close</p>
-//       <div className="modal-action">
-//         {emailHTML && <div dangerouslySetInnerHTML={{ __html: emailHTML }} />}
-//         <button className="btn">Close</button>
-//       </div>
-//     </form>
-//   </dialog>
-// </DynamicDisplay>
