@@ -4,7 +4,7 @@
   "private": true,
   "prettier": "@a-little-world/little-world-prettier-config",
   "dependencies": {
-    "@a-little-world/little-world-design-system": "^1.17.3",
+    "@a-little-world/little-world-design-system": "^1.17.4",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@heroicons/react": "^2.0.18",
@@ -24,6 +24,7 @@
     "@uiw/react-md-editor": "^3.23.5",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "date-fns": "^3.6.0",
     "lodash": "^4.17.21",
     "plotly.js": "^2.17.1",
     "react": "^18.2.0",
@@ -68,6 +69,7 @@
     ]
   },
   "devDependencies": {
+    "@a-little-world/little-world-prettier-config": "^1.2.0",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^14.0.0",
     "@types/lodash": "^4.17.4",

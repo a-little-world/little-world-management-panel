@@ -1,9 +1,8 @@
 import React from "react";
-import { Button, ButtonVariations, Card } from "@a-little-world/little-world-design-system";
-import UserImage from "./UserImage";
-import MatchesIcons from "./MatchesIcons";
-import Tag, { TagTypes } from "./Tag";
-import { Link } from "react-router-dom";
+import { Button, ButtonVariations, Text, TextTypes, Link } from "@a-little-world/little-world-design-system";
+import UserImage from "../atoms/UserImage";
+import MatchesIcons from "../atoms/MatchesIcons";
+import Tag, { TagTypes } from "../atoms/Tag";
 
 type UserCardProps = {
   user: any,
@@ -13,7 +12,7 @@ type UserCardProps = {
   horizontal: boolean;
 }
 
-export const UserDetailsCard = ({
+export const UserCard = ({
     user,
     deselectUser,
     selectUserForDetails,
@@ -27,7 +26,7 @@ export const UserDetailsCard = ({
     let Content = <></>
     if (!tiny) {  
       Content = 
-        <div className='w-full text-xs text-center flex flex-col gap-2 items-center'>
+        <div className='w-full text-xs text-center flex flex-col gap-2 items-center border-blue'>
           <MatchesIcons label='Confirmed' matches={user?.matches.confirmed?.items} />
           <MatchesIcons label='Unconfirmed' matches={user?.matches.unconfirmed?.items} />
           <MatchesIcons label='Proposed' matches={user?.matches.proposed?.items} />
@@ -40,7 +39,7 @@ export const UserDetailsCard = ({
   
       End = <>
  
-        <div className='flex flex-col gap-4 medium:flex-row'>
+        <div className='flex flex-col gap-4 items-start sm:flex-row'>
           <div className="w-full flex flex-col content-start justify-start items-start gap-2">
             <div className='flex flex-row content-center items-start justify-start'>
               <b className='text-l'>Id</b>: {user.id}
@@ -70,9 +69,9 @@ export const UserDetailsCard = ({
             <div className='text-xl'>Which languages do you speak and how well?</div>
             <div>{user.profile.language_skill_description}</div>
           </div>
-          <div className='w-1/2 flex-grow p-2'>
-            <span className='text-2xl'>Actions</span>
-            <ul className="steps steps-vertical">
+          <div className='w-1/2 bg-white rounded-xl p-3 flex-col border border-slate-200'>
+            <Text type={TextTypes.Body4} center bold>Current Status</Text>
+            <ul className="steps steps-vertical w-full">
               <li className="step step-primary">Register {(new Date(user.date_joined)).toDateString()}</li>
               {user.email_authenticated ? <li className="step step-primary">Email Authenticated</li> : <li className="step">Email Authenticated</li>}
               {user.matches.confirmed.items.length > 0 ? <>
@@ -89,7 +88,7 @@ export const UserDetailsCard = ({
     }
 
     return (
-        <div className={`w-full flex ${horizontal ? 'flex-row' : 'flex-col'} bg-base-200 h-fit items-center content-center justify-center rounded-xl p-2 gap-2 mb-1 relativ border border-border-slate-400`}>
+        <div className={`w-full flex ${horizontal ? 'flex-row' : 'flex-col'} bg-base-200 h-fit items-center content-center justify-center rounded-xl p-4 gap-2 mb-1 relativ border border-border-slate-400`}>
         {(partial && !tiny) &&
         <div className='w-full h-fit flex flex-row justify-between'>
             <Tag type={user.profile.user_type === 'volunteer' ? TagTypes.primary : TagTypes.secondary}>{user.profile.user_type}</Tag>
@@ -114,10 +113,15 @@ export const UserDetailsCard = ({
         {user.profile.first_name} {user.profile.second_name}
         </div>
         {Content}
-        {(partial) && <Link to={`/user/${user.id}`}>View profile</Link>}
+        {(partial) && (
+          <div className='flex gap-4 items-center mt-2'>
+            <Link to={`/user/${user.id}`}>View profile</Link>
+            <Link to={`/user/${user.id}`} state={{ openTab: 'chat'}}>Open chat</Link>
+          </div>
+        )}
         {End}
     </div>
     )
 }
 
-export default UserDetailsCard
+export default UserCard

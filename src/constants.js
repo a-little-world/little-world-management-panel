@@ -269,3 +269,8 @@ export const ADDITIONAL_USER_FIELDS = [
 ];
 
 export const USER_TAGS = [''];
+
+export const LANGUAGES = {
+  de: 'de',
+  en: 'en',
+};

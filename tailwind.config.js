@@ -5,6 +5,6 @@ module.exports = {
   plugins: [require('daisyui')],
   theme: {
     screens: 
-     {...designTokens?.breakpoints },
+     { mid: '800px' },
   }
 };
