@@ -11,6 +11,7 @@ import { LOCAL_DEV } from './ENVIRONMENT.js';
 import App from './App.tsx';
 import LandingPage from './landing/LandingPage.jsx';
 import AdminPanelV2Login from './AdminPanelV2Login.js';
+import { MatchingPannel } from './App.tsx';
 
 const dispatchRenderApp = initData => {
   const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -23,6 +24,20 @@ const dispatchRenderApp = initData => {
     </React.StrictMode>,
   );
 };
+
+function renderAppV2(
+  {
+    apiOptions,
+    apiTranslations
+  }
+) {
+  const root = ReactDOM.createRoot(document.getElementById('root'));
+  root.render(
+    <React.StrictMode>
+      <MatchingPannel apiOptions={apiOptions} apiTranslations={apiTranslations} />
+    </React.StrictMode>,
+  );
+}
 
 const dispatchRenderStatsApp = initData => {
   const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -96,6 +111,7 @@ if (LOCAL_DEV) {
   // Window function registered to be called from inside a django view
   console.log('Registered render function and cheese!');
   window.renderApp = dispatchRenderApp;
+  window.renderAppV2 = renderAppV2; // TODO: Only relevant one, all others should be depricated once the new matching pannel is deployed!
   window.renderStatsApp = dispatchRenderStatsApp;
   window.renderGraphApp = dispatchRenderGraphApp;
   window.renderUserListApp = dispatchRenderUserListApp;

@@ -16,17 +16,67 @@ import UserPanel from './blocks/UserPanel.tsx';
 import Layout from './blocks/Layout.tsx';
 
 export const Root = ({ children, restoreScroll = true, withLayout = false }) => (
-  <GlobalStateProvider>  
+  <GlobalStateProvider>
     <CustomThemeProvider>
       {restoreScroll && <ScrollRestoration />}
       <GlobalStyles />
       {withLayout ? (
         <Layout>{children || <Outlet />}</Layout>
       ) : (children || <Outlet />)}
-      
+
     </CustomThemeProvider>
   </GlobalStateProvider>
 );
+
+export function MatchingPannel({
+  apiOptions,
+  apiTranslations
+}) {
+  const router = useMemo(() => {
+    const props = {};
+    return createBrowserRouter(
+      [
+        {
+          path: '/',
+          element: <Root withLayout />,
+          children: [
+            {
+              path: '',
+              element: <Home />,
+            },
+            {
+              path: 'users',
+              element: <Users {...props} />,
+            },
+            {
+              path: 'user/:userId',
+              element: <UserPanel />,
+            },
+            {
+              path: 'matches',
+              element: <AdminPanelV2_Matches {...props} />,
+            },
+            {
+              path: 'emails',
+              element: <AdminPanelV2_Emails {...props} />,
+            },
+            {
+              path: 'devkit',
+              element: <AdminPanelV2_DevKit {...props} />,
+            },
+            {
+              path: 'emails/:emailTemplateName',
+              element: <AdminPanelV2_EmailDetails {...props} />,
+            },
+          ],
+        },
+      ],
+      { basename: `/matching/` },
+    );
+  }, []);
+
+  return <RouterProvider router={router} />;
+}
 
 
 function AdminPanelV2(props) {
