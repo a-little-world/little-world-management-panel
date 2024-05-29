@@ -7,6 +7,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 const Header = () => {
   const navigate = useNavigate();
   const { userId } = useParams();
+  
   return (
   <div className="container max-w-full flex h-20 justify-between p-4 items-center border-solid border-b-2 border-slate-100">
     <img className="h-full" alt="little world logo" src={logo} />
