@@ -144,7 +144,7 @@ export function Users() {
   }
 
   return <>
-    <div className="flex w-full overflow-scroll gap-2 p-2.5 align-center justify-center items-center">
+    <div className="flex w-full overflow-scroll gap-2 p-2.5 align-center z-100 justify-center items-center">
       {/*{`Filters ${JSON.stringify(filterOptions?.filters.map(({ name }) => name))}`} todo use to render some filter menu*/}
       {filtersLoading ? "Loading filters..." : <StyledDropdown
         value={list}
