@@ -23,14 +23,13 @@ const GlobalStateContext = createContext({
 });
 
 export function GlobalStateProvider(props) {
-  console.log('store', { props });
-  const [selectedUsers, setSelectedUsers] = useState(
-    props?.data?.selected_users ?? [],
-  );
+  const [selectedUsers, setSelectedUsers] = useState([]);
+  const [apiOptions,] = useState(props?.apiOptions || {});
+  const [apiTranslations,] = useState(props?.apiTranslations || {});
 
   const value = React.useMemo(
-    () => ({ selectedUsers, setSelectedUsers }),
-    [selectedUsers],
+    () => ({ selectedUsers, setSelectedUsers, apiOptions, apiTranslations }),
+    [selectedUsers, apiOptions, apiTranslations],
   );
   return <GlobalStateContext.Provider value={value} {...props} />;
 }
