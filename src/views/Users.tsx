@@ -40,12 +40,11 @@ const DEFAULT_FIELDS = [
   { key: 'profile.target_group', label: 'Target Group' },
   { key: 'matches.unconfirmed', label: 'Unconfirmed' },
   { key: 'matches.confirmed', label: 'Confirmed' },
-  { key: 'matches.support', label: 'Supoort' },
+  { key: 'matches.support', label: 'Support' },
 ];
 
 const dataFetcher = (url: string) =>
   fetch(url).then(res => res.json() as Promise<any>);
-
 
 import { createSearchParams, useNavigate } from "react-router-dom";
 

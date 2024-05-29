@@ -4,7 +4,7 @@ import {
   TextInput,
 } from '@a-little-world/little-world-design-system';
 import { ScrollArea } from '@radix-ui/react-scroll-area';
-import { isEmpty } from 'lodash';
+import { isEmpty, map } from 'lodash';
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import styled from 'styled-components';
@@ -35,7 +35,7 @@ export const registerInput = ({ register, name, options }) => {
   };
 };
 
-export function SelectedUsersSheet({ userLists, currentList, deselectUser }) {
+export function SelectedUsersSheet({ currentList }) {
   const {
     register,
     handleSubmit,
@@ -43,7 +43,7 @@ export function SelectedUsersSheet({ userLists, currentList, deselectUser }) {
     setError,
   } = useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { selectedUsers, setSelectedUsers } = useGlobalState();
+  const { selectedUsers, selectUser, deselectUser } = useGlobalState();
 
   const onError = error => {
     setError('userHash', {});
@@ -55,7 +55,7 @@ export function SelectedUsersSheet({ userLists, currentList, deselectUser }) {
 
     addUserByHash(formData.userHash, onError, res => {
       setIsSubmitting(false);
-      setSelectedUsers(prev => [...prev, res?.userHash]);
+      selectUser(res);
     });
   };
 
@@ -76,13 +76,11 @@ export function SelectedUsersSheet({ userLists, currentList, deselectUser }) {
           </SheetDescription>
         </SheetHeader>
         <ScrollArea className="h-full overflow-scroll">
-          {selectedUsers.map(userHash => {
+          {map(selectedUsers, user => {
             return (
               <UserDetailsCard
-                key={'card' + userHash}
-                user={userLists?.[currentList]?.results.find(
-                  user => user.hash === userHash,
-                )}
+                key={'card' + user.hash}
+                user={user}
                 deselectUser={deselectUser}
               />
             );
