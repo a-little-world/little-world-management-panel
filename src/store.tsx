@@ -4,9 +4,24 @@ import useSWR from 'swr';
 export const dataFetcher = (url: string) =>
   fetch(url).then(res => res.json() as Promise<any>);
 
-export const useUserListData = (list: string) => {
+export const useFilterOptions = () => {
   const { data, error, mutate, isLoading } = useSWR(
-    `/api/admin/user_listing_advanced/${list}/`,
+    `/api/matching/users/filters/`,
+    dataFetcher,
+  );
+
+  return {
+    filterOptions: data,
+    error,
+    mutate,
+    isLoading,
+  };
+}
+
+export const useUserListData = (list: string) => {
+  // todo allow passing `filterQuery` or `filters` in the future
+  const { data, error, mutate, isLoading } = useSWR(
+    `/api/matching/users/?list=${list}`,
     dataFetcher,
   );
 
