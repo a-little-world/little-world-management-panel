@@ -5,7 +5,6 @@ import {
 } from '@heroicons/react/20/solid';
 import React from 'react';
 import { HeroiconsSolidMail } from '../atoms/HeroiconsSolidMail.tsx';
-import { DevkitSelector } from '../panel_v2/AdminPanelDevkit.jsx';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
 const TABS = [
@@ -29,11 +28,6 @@ const TABS = [
   {
     name: 'Emails',
     path: 'emails',
-    icon: <HeroiconsSolidMail className="h-16 w-16 text-white mb-2" />
-  },
-  {
-    name: 'Devkit',
-    path: 'devkit',
     icon: <HeroiconsSolidMail className="h-16 w-16 text-white mb-2" />
   },
 ]
