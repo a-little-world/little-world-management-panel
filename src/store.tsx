@@ -22,10 +22,10 @@ export const useFilterOptions = () => {
   };
 }
 
-export const useUserListData = (list: string) => {
+export const useUserListData = (searchParams: string) => {
   // todo allow passing `filterQuery` or `filters` in the future
   const { data, error, mutate, isLoading } = useSWR(
-    `/api/matching/users/?list=${list}`,
+    `/api/matching/users/?${searchParams}`,
     dataFetcher,
   );
 

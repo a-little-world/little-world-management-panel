@@ -136,7 +136,7 @@ export function Users() {
   const list = searchParams.get('list') || 'all';
   const { filterOptions, isLoading: filtersLoading } = useFilterOptions();
 
-  const { userList, isLoading: usersLoading } = useUserListData(list);
+  const { userList, isLoading: usersLoading } = useUserListData(createSearchParams(searchParams));
 
   const changeList = (list: string) => {
     setSearchParams(createSearchParams({ ...searchParams, list }));
