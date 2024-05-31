@@ -52,7 +52,7 @@ export function UsersTable({
   list,
   userList
 }) {
-  const { selectedUsers, setSelectedUsers } = useGlobalState();
+  const { selectedUsers, selectUser, deselectUser } = useGlobalState();
   const [fields, setFields] = useState(DEFAULT_FIELDS);
   return <><Table>
     <TableHeader>
@@ -76,13 +76,13 @@ export function UsersTable({
             <TableCell className="w-20">
               <input
                 type="checkbox"
-                checked={selectedUsers.includes(user.hash)}
+                checked={Object.keys(selectedUsers).includes(user.hash)}
                 className="checkbox ml-2"
                 onChange={() => {
-                  if (selectedUsers.includes(user.hash)) {
+                  if (Object.keys(selectedUsers).includes(user.hash)) {
                     deselectUser(user.hash);
                   } else {
-                    setSelectedUsers([...selectedUsers, user.hash]);
+                    selectUser(user);
                   }
                 }}
               />
@@ -122,11 +122,9 @@ export function UsersTable({
       </TableBody>
     )}
   </Table>
-    {/*<SelectedUsersSheet
-      userLists={data?.user_lists}
+    {<SelectedUsersSheet
       currentList={list}
-      deselectUser={() => { }}
-  />*/}
+    />}
   </>
 
 }
