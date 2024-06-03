@@ -8,9 +8,24 @@ export const dataFetcher = (url: string) =>
     throw new Error('Error fetching data');
   });
 
-export const useUserListData = (list: string) => {
+export const useFilterOptions = () => {
   const { data, error, mutate, isLoading } = useSWR(
-    `/api/admin/user_listing_advanced/${list}/`,
+    `/api/matching/users/filters/`,
+    dataFetcher,
+  );
+
+  return {
+    filterOptions: data,
+    error,
+    mutate,
+    isLoading,
+  };
+}
+
+export const useUserListData = (searchParams: string) => {
+  // todo allow passing `filterQuery` or `filters` in the future
+  const { data, error, mutate, isLoading } = useSWR(
+    `/api/matching/users/?${searchParams}`,
     dataFetcher,
   );
 
@@ -27,10 +42,9 @@ const GlobalStateContext = createContext({
 });
 
 export function GlobalStateProvider(props) {
-  console.log('store', { props });
-  const [selectedUsers, setSelectedUsers] = useState(
-    props?.data?.selected_users ?? [],
-  );
+  const [selectedUsers, setSelectedUsers] = useState([]);
+  const [apiOptions,] = useState(props?.apiOptions || {});
+  const [apiTranslations,] = useState(props?.apiTranslations || {});
 
   const selectUser = user => {
     setSelectedUsers(currentUsers => ({ ...currentUsers, [user.hash]: user }));
@@ -45,8 +59,8 @@ export function GlobalStateProvider(props) {
   };
 
   const value = React.useMemo(
-    () => ({ selectedUsers, selectUser, deselectUser }),
-    [selectedUsers],
+    () => ({ selectedUsers, selectUser, deselectUser, apiOptions, apiTranslations }),
+    [selectedUsers, selectUser, deselectUser, apiOptions, apiTranslations],
   );
   return <GlobalStateContext.Provider value={value} {...props} />;
 }
