@@ -16,63 +16,62 @@ import UserPanel from './blocks/UserPanel.tsx';
 import Layout from './blocks/Layout.tsx';
 
 export const Root = ({ children, restoreScroll = true, withLayout = false }) => (
-  <GlobalStateProvider>  
-    <CustomThemeProvider>
-      {restoreScroll && <ScrollRestoration />}
-      <GlobalStyles />
-      {withLayout ? (
-        <Layout>{children || <Outlet />}</Layout>
-      ) : (children || <Outlet />)}
-      
-    </CustomThemeProvider>
-  </GlobalStateProvider>
+  <CustomThemeProvider>
+    {restoreScroll && <ScrollRestoration />}
+    <GlobalStyles />
+    {withLayout ? (
+      <Layout>{children || <Outlet />}</Layout>
+    ) : (children || <Outlet />)}
+
+  </CustomThemeProvider>
+);
+
+const router = createBrowserRouter(
+  [
+    {
+      path: '/',
+      element: <Root withLayout />,
+      children: [
+        {
+          path: '',
+          element: <Home />,
+        },
+        {
+          path: 'users',
+          element: <Users />,
+        },
+        {
+          path: 'user/:userId',
+          element: <UserPanel />,
+        },
+        {
+          path: 'matches',
+          element: <AdminPanelV2_Matches />,
+        },
+        {
+          path: 'emails',
+          element: <AdminPanelV2_Emails />,
+        },
+        {
+          path: 'devkit',
+          element: <AdminPanelV2_DevKit />,
+        },
+        {
+          path: 'emails/:emailTemplateName',
+          element: <AdminPanelV2_EmailDetails />,
+        },
+      ],
+    },
+  ],
+  { basename: `/matching/` },
 );
 
 
-function AdminPanelV2(props) {
-  const router = useMemo(() => {
-    return createBrowserRouter(
-      [
-        {
-          path: '/',
-          element: <Root withLayout />,
-          children: [
-            {
-              path: '',
-              element: <Home />,
-            },
-            {
-              path: 'users',
-              element: <Users {...props} />,
-            },
-            {
-              path: 'user/:userId',
-              element: <UserPanel />,
-            },
-            {
-              path: 'matches',
-              element: <AdminPanelV2_Matches {...props} />,
-            },
-            {
-              path: 'emails',
-              element: <AdminPanelV2_Emails {...props} />,
-            },
-            {
-              path: 'devkit',
-              element: <AdminPanelV2_DevKit {...props} />,
-            },
-            {
-              path: 'emails/:emailTemplateName',
-              element: <AdminPanelV2_EmailDetails {...props} />,
-            },
-          ],
-        },
-      ],
-      { basename: `/matching/` },
-    );
-  }, []);
-
-  return <RouterProvider router={router} />;
+export function MatchingPannel({
+  apiOptions,
+  apiTranslations
+}) {
+  return <GlobalStateProvider apiOptions={apiOptions} apiTranslations={apiTranslations}>
+    <RouterProvider router={router} />;
+  </GlobalStateProvider>
 }
-
-export default AdminPanelV2;
