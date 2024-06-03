@@ -2,9 +2,11 @@ import {
   Button,
   ButtonVariations,
   Link,
+  Tags,
   Text,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
+import { isEmpty } from 'lodash';
 import React from 'react';
 
 import MatchesIcons from '../atoms/MatchesIcons';
@@ -87,7 +89,7 @@ export const UserCard = ({
               <b className="text-l">Group</b>: {user.profile.target_group}
             </div>
             <div className="text-l bold">Interests</div>
-            {/* <Tags content={user.profile.interests} /> */}
+            <Tags content={user.profile.interests} />
 
             <div>About</div>
             <div>{user.profile.description}</div>
@@ -106,30 +108,29 @@ export const UserCard = ({
               <li className="step step-primary">
                 Register {new Date(user.date_joined).toDateString()}
               </li>
-              {user.email_authenticated ? (
-                <li className="step step-primary">Email Authenticated</li>
-              ) : (
-                <li className="step">Email Authenticated</li>
-              )}
-              {user.matches.confirmed.items.length > 0 ? (
-                <>
-                  <li className="step step-primary">First Match</li>
-                  {user.matches.unconfirmed.items.length > 0 ? (
-                    <li className="step">View New Match to Confirm</li>
-                  ) : (
-                    <></>
-                  )}
-                </>
-              ) : (
-                <>
-                  {user.matches.unconfirmed.items.length > 0 ? (
-                    <li className="step">View New Match to Confirm</li>
-                  ) : (
-                    <></>
-                  )}
-                  <li className="step">First Match</li>
-                </>
-              )}
+
+              <li
+                className={`step ${
+                  user.email_authenticated ? 'step-primary' : ''
+                }`}
+              >
+                Email Authenticated
+              </li>
+              {!isEmpty(user.matches.unconfirmed.items) &&
+                isEmpty(user.matches.confirmed.items) && (
+                  <li className="step">Has pending match</li>
+                )}
+              <li
+                className={`step ${
+                  !isEmpty(user.matches.confirmed.items) ? 'step-primary' : ''
+                }`}
+              >
+                First Match
+              </li>
+              {!isEmpty(user.matches.unconfirmed.items) &&
+                !isEmpty(user.matches.confirmed.items) && (
+                  <li className="step">Has pending match</li>
+                )}
             </ul>
           </div>
         </div>
@@ -141,7 +142,7 @@ export const UserCard = ({
     <div
       className={`w-full flex ${
         horizontal ? 'flex-row' : 'flex-col'
-      } bg-base-200 h-fit items-center content-center justify-center rounded-xl p-4 gap-2 mb-1 relativ border border-border-slate-400`}
+      } bg-base-200 h-fit items-center content-center justify-center rounded-xl p-4 gap-2 mb-1 border border-border-slate-400`}
     >
       {partial && !tiny && (
         <div className="w-full h-fit flex flex-row justify-between">

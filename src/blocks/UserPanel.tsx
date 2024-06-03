@@ -12,6 +12,7 @@ import {
 } from '../atoms/Card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../atoms/Tabs';
 import { dataFetcher } from '../store';
+import UserActions from './UserActions';
 import UserDetailsCard from './UserCard';
 import UserChat from './UserChat';
 import UserEmails from './UserEmails';
@@ -22,11 +23,11 @@ const USER_TABS = [
   { key: 'chat', label: 'Chat', title: 'User Support Chat' },
   { key: 'emails', label: 'Emails' },
   { key: 'matches', label: 'Matches' },
-  { key: 'tasks', label: 'Tasks' },
+  // { key: 'tasks', label: 'Tasks' },
   { key: 'actions', label: 'Actions' },
 ];
 
-const UserPanelContent = ({ use, user }) => {
+const UserPanelContent = ({ preMatchingAppointment, use, user }) => {
   console.log({ user });
   if (use === 'profile')
     return (
@@ -52,7 +53,17 @@ const UserPanelContent = ({ use, user }) => {
   if (use === 'matches')
     return (
       <div className="flex flex-col">
-        <UserMatches user={user} />
+        <UserMatches
+          user={user}
+          preMatchingAppointment={preMatchingAppointment}
+        />
+      </div>
+    );
+
+  if (use === 'actions')
+    return (
+      <div className="flex flex-col">
+        <UserActions user={user} />
       </div>
     );
   return null;
@@ -67,6 +78,11 @@ const UserPanel = () => {
     isLoading,
   } = useSWR(
     `/api/admin/user_advanced/${userId}/?messages=include`,
+    dataFetcher,
+  );
+
+  const { data: preMatchingAppointment } = useSWR(
+    `/api/admin/user_advanced/${userId}/prematching_appointments/`,
     dataFetcher,
   );
   if (isLoading && !error)
@@ -103,7 +119,11 @@ const UserPanel = () => {
               )}
             </CardHeader>
             <CardContent className="space-y-2">
-              <UserPanelContent use={tab.key} user={user} />
+              <UserPanelContent
+                use={tab.key}
+                user={user}
+                preMatchingAppointment={preMatchingAppointment?.start_time}
+              />
             </CardContent>
             <CardFooter></CardFooter>
           </Card>
