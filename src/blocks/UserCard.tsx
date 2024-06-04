@@ -140,10 +140,15 @@ export const UserCard = ({
 
   return (
     <div
-      className={`w-full flex ${
+      className={`w-full relative flex ${
         horizontal ? 'flex-row' : 'flex-col'
       } bg-base-200 h-fit items-center content-center justify-center rounded-xl p-4 gap-2 mb-1 border border-border-slate-400`}
     >
+      {user.state.unresponsive && (
+        <div className="w-90% p-2 z-10 rounded-md absolute top-3 right-1/2 translate-x-2/4 max-w-ful bg-error text-2xl text-center">
+          Marked as unresponsive
+        </div>
+      )}
       {partial && !tiny && (
         <div className="w-full h-fit flex flex-row justify-between">
           <Tag
@@ -189,11 +194,7 @@ export const UserCard = ({
           }}
         />
       </div>
-      {user.state.unresponsive && (
-        <div className="w-96 max-w-ful h-10 bg-error text-3xl">
-          Marked as unresponsive
-        </div>
-      )}
+
       <div
         className={`w-full h-fit text-center ${tiny ? 'text-xs' : 'text-2xl'}`}
       >

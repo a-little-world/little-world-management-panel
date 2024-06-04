@@ -15,8 +15,8 @@ import {
   TableRow,
 } from '../atoms/Table';
 import UserImage from '../atoms/UserImage';
+// import { SelectedMatchSheet } from '../blocks/SelectedMatchSheet';
 import { useFilterOptions, useGlobalState, useUserListData } from '../store';
-import { SelectedUsersSheet } from './../blocks/SelectedUsersSheet';
 
 const StyledDropdown = styled(Dropdown)`
   div[data-radix-popper-content-wrapper] {
@@ -24,20 +24,16 @@ const StyledDropdown = styled(Dropdown)`
   }
 `;
 
-const DEFAULT_FIELDS = [
-  { key: 'profile.image', label: 'Image' },
-  { key: 'profile.user_type', label: 'Type' },
-  { key: 'profile.first_name', label: 'First Name' },
-  { key: 'profile.second_name', label: 'Second Name' },
-  { key: 'profile.target_group', label: 'Target Group' },
-  { key: 'matches.unconfirmed', label: 'Unconfirmed' },
-  { key: 'matches.confirmed', label: 'Confirmed' },
-  { key: 'matches.support', label: 'Support' },
+const MATCHES_FIELDS = [
+  { key: 'status', label: 'Status' },
+  { key: 'participants', label: 'Participants' },
+  { key: 'created', label: 'Created' },
+  { key: 'last_activity', label: 'Last Activity' },
 ];
 
-export function UsersTable({ list, userList }) {
-  const { selectedUsers, selectUser, deselectUser } = useGlobalState();
-  const [fields, setFields] = useState(DEFAULT_FIELDS);
+export function MatchesTable({ list, matchList }) {
+  const { selectedMatch, selectMatch, deselectMatch } = useGlobalState();
+  const [fields, setFields] = useState(MATCHES_FIELDS);
   return (
     <>
       <Table>
@@ -51,32 +47,32 @@ export function UsersTable({ list, userList }) {
             ))}
           </TableRow>
         </TableHeader>
-        {isEmpty(userList?.results) ? (
+        {isEmpty(matchList?.results) ? (
           <Text className="p-4 w-full" center>
             No results.
           </Text>
         ) : (
           <TableBody>
-            {userList?.results.map(user => (
-              <TableRow key={user.hash}>
+            {matchList?.results.map(match => (
+              <TableRow key={match.id}>
                 <TableCell className="w-20">
                   <input
                     type="checkbox"
-                    checked={Object.keys(selectedUsers).includes(user.hash)}
+                    checked={Object.keys(selectedMatch).includes(user.hash)}
                     className="checkbox ml-2"
                     onChange={() => {
-                      if (Object.keys(selectedUsers).includes(user.hash)) {
-                        deselectUser(user.hash);
+                      if (Object.keys(selectedMatch).includes(user.hash)) {
+                        deselectMatch(match.id);
                       } else {
-                        selectUser(user);
+                        selectMatch(match);
                       }
                     }}
                   />
                 </TableCell>
                 {fields.map(({ key }) => {
-                  if (key === 'profile.image') {
+                  if (key === 'participants') {
                     return (
-                      <TableCell key={user.hash + key}>
+                      <TableCell key={match.hash + key}>
                         <Link to={`/user/${user.id}`}>
                           <UserImage
                             alt={'user profile image'}
@@ -108,17 +104,17 @@ export function UsersTable({ list, userList }) {
           </TableBody>
         )}
       </Table>
-      {<SelectedUsersSheet />}
+      {/* {<SelectedMatchSheet />} */}
     </>
   );
 }
 
-export function Users() {
+export function Matches() {
   let [searchParams, setSearchParams] = useSearchParams();
   const list = searchParams.get('list') || 'all';
   const { filterOptions, isLoading: filtersLoading } = useFilterOptions();
 
-  const { userList, isLoading: usersLoading } = useUserListData(
+  const { matchList, isLoading: usersLoading } = useUserListData(
     createSearchParams(searchParams),
   );
 
@@ -144,12 +140,12 @@ export function Users() {
         )}
       </div>
       {usersLoading ? (
-        <div className="p-4 text-center">Loading users list '${list}'...</div>
+        `Loading users list '${list}' ...`
       ) : (
-        <UsersTable userList={userList} list={list} />
+        <MatchesTable matchList={matchList} list={list} />
       )}
     </>
   );
 }
 
-export default Users;
+export default Matches;

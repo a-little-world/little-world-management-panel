@@ -28,44 +28,21 @@ const USER_TABS = [
 ];
 
 const UserPanelContent = ({ preMatchingAppointment, use, user }) => {
-  console.log({ user });
-  if (use === 'profile')
-    return (
-      <div className="flex flex-col">
-        <UserDetailsCard user={user} partial={false} />
-      </div>
-    );
+  if (use === 'profile') return <UserDetailsCard user={user} partial={false} />;
 
-  if (use === 'chat')
-    return (
-      <div className="flex flex-col">
-        <UserChat user={user} />
-      </div>
-    );
+  if (use === 'chat') return <UserChat user={user} />;
 
-  if (use === 'emails')
-    return (
-      <div className="flex flex-col">
-        <UserEmails user={user} />
-      </div>
-    );
+  if (use === 'emails') return <UserEmails user={user} />;
 
   if (use === 'matches')
     return (
-      <div className="flex flex-col">
-        <UserMatches
-          user={user}
-          preMatchingAppointment={preMatchingAppointment}
-        />
-      </div>
+      <UserMatches
+        user={user}
+        preMatchingAppointment={preMatchingAppointment}
+      />
     );
 
-  if (use === 'actions')
-    return (
-      <div className="flex flex-col">
-        <UserActions user={user} />
-      </div>
-    );
+  if (use === 'actions') return <UserActions user={user} />;
   return null;
 };
 
@@ -118,7 +95,7 @@ const UserPanel = () => {
                 <CardDescription>{tab.description}</CardDescription>
               )}
             </CardHeader>
-            <CardContent className="space-y-2">
+            <CardContent className="space-y-2 flex flex-col">
               <UserPanelContent
                 use={tab.key}
                 user={user}

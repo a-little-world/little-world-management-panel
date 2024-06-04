@@ -26,7 +26,15 @@ const StyledSheetButton = styled(Button)`
   position: fixed;
 `;
 
-export const registerInput = ({ register, name, options }) => {
+export const registerInput = ({
+  register,
+  name,
+  options,
+}: {
+  register: any;
+  name: string;
+  options?: any;
+}) => {
   const { ref, ...rest } = register(name, options);
 
   return {
@@ -35,7 +43,7 @@ export const registerInput = ({ register, name, options }) => {
   };
 };
 
-export function SelectedUsersSheet({ currentList }) {
+export function SelectedUsersSheet() {
   const {
     register,
     handleSubmit,
