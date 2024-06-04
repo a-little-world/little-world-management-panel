@@ -5,6 +5,7 @@ import {
   DotsIcon,
   Popover,
   SendIcon,
+  TextAreaSize,
   TextTypes,
   TickDoubleIcon,
   TickIcon,
@@ -130,7 +131,7 @@ const UserChat = ({ user }) => {
                             width="16px"
                             label="message menu icon"
                             labelId="messageMenuIcon"
-                            color={theme.color.text.highlight}
+                            color={theme.color.surface.quaternary}
                           />
                         </Button>
                       }
@@ -187,10 +188,11 @@ const UserChat = ({ user }) => {
           error={errors?.newMessage?.message}
           placeholder="Write a message here..."
           onSubmit={() => handleSubmit(sendNewMessage)()}
+          size={TextAreaSize.Medium}
         />
 
         <SendButton
-          size={ButtonSizes.Medium}
+          size={ButtonSizes.Large}
           type="submit"
           disabled={isSubmitting}
           variation={ButtonVariations.Circle}

@@ -1,6 +1,9 @@
-import { Button, Text, TextArea } from '@a-little-world/little-world-design-system';
+import {
+  Button,
+  Text,
+  TextArea,
+} from '@a-little-world/little-world-design-system';
 import styled, { css } from 'styled-components';
-
 
 export const SendButton = styled(Button)`
   flex-shrink: 0;
@@ -104,9 +107,10 @@ export const MessageText = styled(Text)<{ $isSelf: boolean }>`
 `;
 
 export const MessageBox = styled(TextArea)`
-  height: 38px;
+  height: 44px;
   border-radius: 100px;
   background: ${({ theme }) => theme.color.surface.secondary};
+  padding: ${({ theme }) => theme.spacing.xsmall};
 `;
 
 export const NoMessages = styled(Text)`
@@ -119,7 +123,6 @@ export const NoMessages = styled(Text)`
   display: flex;
   padding: ${({ theme }) => theme.spacing.xxsmall};
 `;
-
 
 export const Time = styled(Text)`
   display: flex;

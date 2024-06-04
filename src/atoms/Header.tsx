@@ -24,31 +24,39 @@ const Header = () => {
 
   return (
     <div className="container max-w-full flex h-20 justify-between p-4 items-center border-solid border-b-2 border-slate-100">
-      <img className="h-full" alt="little world logo" src={logo} />
-      <Text tag="h1" type={TextTypes.Heading3}>
-        Admin Panel
-      </Text>
+      <div className="flex gap-4 items-center">
+        <img className="h-12" alt="little world logo" src={logo} />
+        <Text tag="h1" type={TextTypes.Heading4}>
+          User Management
+        </Text>
+      </div>
       <div className="flex gap-4 items-center justify-center">
         <NavigationMenu>
           <NavigationMenuItem>
-            <NavigationMenuLink href={'/matching/users'}>
+            <NavigationMenuLink to={'/matching/users'}>
               Users
             </NavigationMenuLink>
           </NavigationMenuItem>
           <NavigationMenuItem>
-            <NavigationMenuLink href={'/matching/matches-list'}>
+            <NavigationMenuLink to={'/matching/matches-list'}>
               Matches
             </NavigationMenuLink>
           </NavigationMenuItem>
           <NavigationMenuItem>
             <NavigationMenuTrigger>Areas</NavigationMenuTrigger>
             <NavigationMenuContent layout={MenuContentLayout.twoColumns}>
-              <NavigationMenuContentItem>Matching</NavigationMenuContentItem>
-              <NavigationMenuContentItem active>
+              <NavigationMenuContentItem to="/matching/matches">
+                Matching
+              </NavigationMenuContentItem>
+              <NavigationMenuContentItem active to="/matching/matches">
                 Users
               </NavigationMenuContentItem>
-              <NavigationMenuContentItem>Email</NavigationMenuContentItem>
-              <NavigationMenuContentItem>Stats</NavigationMenuContentItem>
+              <NavigationMenuContentItem to="/matching/matches">
+                Email
+              </NavigationMenuContentItem>
+              <NavigationMenuContentItem to="/matching/matches">
+                Stats
+              </NavigationMenuContentItem>
             </NavigationMenuContent>
           </NavigationMenuItem>
         </NavigationMenu>

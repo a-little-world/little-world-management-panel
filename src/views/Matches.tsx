@@ -136,6 +136,7 @@ export function Matches() {
               label: description,
             }))}
             onValueChange={val => changeList(val)}
+            cannotError
           />
         )}
       </div>
