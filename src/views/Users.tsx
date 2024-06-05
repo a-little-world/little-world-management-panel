@@ -8,6 +8,15 @@ import styled from 'styled-components';
 
 import MatchesIcons from '../atoms/MatchesIcons';
 import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '../atoms/Pagination';
+import {
   Table,
   TableBody,
   TableCell,
@@ -15,6 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from '../atoms/Table';
+import Tag, { TagAppearance, TagSizes } from '../atoms/Tag';
 import UserImage from '../atoms/UserImage';
 import { useFilterOptions, useGlobalState, useUserListData } from '../store';
 import { SelectedUsersSheet } from './../blocks/SelectedUsersSheet';
@@ -36,7 +46,7 @@ const DEFAULT_FIELDS = [
   { key: 'matches.support', label: 'Support' },
 ];
 
-export function UsersTable({ list, userList }) {
+export function UsersTable({ userList }) {
   const { selectedUsers, selectUser, deselectUser } = useGlobalState();
   const [fields, setFields] = useState(DEFAULT_FIELDS);
   return (
@@ -92,6 +102,22 @@ export function UsersTable({ list, userList }) {
                     );
                   }
 
+                  if (key === 'profile.user_type')
+                    return (
+                      <TableCell key={user.hash + key}>
+                        <Tag
+                          size={TagSizes.small}
+                          appearance={
+                            user.profile.user_type === 'volunteer'
+                              ? TagAppearance.primary
+                              : TagAppearance.secondary
+                          }
+                        >
+                          {user.profile.user_type}
+                        </Tag>
+                      </TableCell>
+                    );
+
                   if (key.includes('matches.'))
                     return (
                       <TableCell key={user.hash + key}>
@@ -110,7 +136,7 @@ export function UsersTable({ list, userList }) {
           </TableBody>
         )}
       </Table>
-      {<SelectedUsersSheet />}
+      <SelectedUsersSheet />
     </>
   );
 }
@@ -127,7 +153,7 @@ export function Users() {
   const changeList = (list: string) => {
     setSearchParams(createSearchParams({ ...searchParams, list }));
   };
-
+  console.log({ userList, list, filterOptions });
   return (
     <>
       <div className="flex w-full overflow-scroll gap-2 p-4 align-center justify-center items-center">
@@ -135,16 +161,53 @@ export function Users() {
         {filtersLoading ? (
           'Loading filters...'
         ) : (
-          <StyledDropdown
-            value={list}
-            options={filterOptions.lists.map(({ name, description }) => ({
-              value: name,
-              label: description,
-            }))}
-            onValueChange={val => changeList(val)}
-            placeholder="Select a user list..."
-            cannotError
-          />
+          <div className="flex items-center w-full gap-8 justify-between">
+            <StyledDropdown
+              value={list}
+              options={filterOptions.lists.map(({ name, description }) => ({
+                value: name,
+                label: description,
+              }))}
+              onValueChange={val => changeList(val)}
+              placeholder="Select a user list..."
+              cannotError
+            />
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    to={`/users?page=${userList?.previous_page}`}
+                  />
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationLink to={`/users?page=${userList?.previous_page}`}>
+                    {userList?.previous_page}
+                  </PaginationLink>
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationLink isActive to="">
+                    {userList?.page}
+                  </PaginationLink>
+                </PaginationItem>
+                {userList?.page !== userList?.last_page && (
+                  <>
+                    <PaginationItem>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                    <PaginationItem>
+                      <PaginationLink to={`/users?page=${userList?.last_page}`}>
+                        {userList?.last_page}
+                      </PaginationLink>
+                    </PaginationItem>
+                  </>
+                )}
+
+                <PaginationItem>
+                  <PaginationNext to={`/users?page=${userList?.next_page}`} />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
         )}
       </div>
       {usersLoading ? (

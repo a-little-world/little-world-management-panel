@@ -14,7 +14,6 @@ export const ChatContainer = styled.div`
   flex-direction: column;
   flex: 1;
   gap: ${({ theme }) => theme.spacing.small};
-  overflow-y: hidden;
   width: 100%;
 `;
 
@@ -111,6 +110,7 @@ export const MessageBox = styled(TextArea)`
   border-radius: 100px;
   background: ${({ theme }) => theme.color.surface.secondary};
   padding: ${({ theme }) => theme.spacing.xsmall};
+  line-height: normal;
 `;
 
 export const NoMessages = styled(Text)`

@@ -10,7 +10,7 @@ import { isEmpty } from 'lodash';
 import React from 'react';
 
 import MatchesIcons from '../atoms/MatchesIcons';
-import Tag, { TagTypes } from '../atoms/Tag';
+import Tag, { TagAppearance } from '../atoms/Tag';
 import UserImage from '../atoms/UserImage';
 import { formatDate } from '../helpers/date';
 
@@ -59,22 +59,35 @@ export const UserCard = ({
         <div className="flex flex-col gap-4 items-start sm:flex-row">
           <div className="w-full flex flex-col content-start justify-start items-start gap-2">
             <div className="flex flex-row content-center items-start justify-start">
-              <b className="text-l">Id</b>: {user.id}
+              <Text tag="h4" bold type={TextTypes.Heading6}>
+                Id
+              </Text>
+              : {user.id}
             </div>
             <div className="flex flex-row content-center items-start justify-start">
-              <b className="text-l">Date Joined</b>:{' '}
-              {formatDate(new Date(user.date_joined))}
+              <Text tag="h4" bold type={TextTypes.Heading6}>
+                Date Joined
+              </Text>
+              : {formatDate(new Date(user.date_joined))}
             </div>
             <div className="flex flex-row content-center items-start justify-start">
-              <b className="text-l">Email</b>: {user.email}
+              <Text tag="h4" bold type={TextTypes.Heading6}>
+                Email
+              </Text>
+              : {user.email}
             </div>
             <div className="flex flex-row content-center items-start justify-start">
-              <b className="text-l">Phone Number</b>:{' '}
-              {user.profile.phone_mobile} (Nofify via{' '}
+              <Text tag="h4" bold type={TextTypes.Heading6}>
+                Phone Number
+              </Text>
+              : {user.profile.phone_mobile} (Nofify via{' '}
               {user.profile.notify_channel})
             </div>
             <div className="flex flex-row content-center items-start justify-start">
-              <b className="text-l">Matching State</b>:{' '}
+              <Text tag="h4" bold type={TextTypes.Heading6}>
+                Matching State
+              </Text>
+              :{' '}
               <div
                 className={`badge badge-md ${
                   user.state.matching_state === 'searching'
@@ -86,19 +99,28 @@ export const UserCard = ({
               </div>
             </div>
             <div className="flex flex-row content-center items-start justify-start">
-              <b className="text-l">Group</b>: {user.profile.target_group}
+              <Text tag="h4" bold type={TextTypes.Heading6}>
+                Group
+              </Text>
+              : {user.profile.target_group}
             </div>
-            <div className="text-l bold">Interests</div>
+            <Text tag="h4" bold type={TextTypes.Heading6}>
+              Interests
+            </Text>
             <Tags content={user.profile.interests} />
 
-            <div>About</div>
-            <div>{user.profile.description}</div>
-            <div className="text-l bold">Other Topics</div>
-            <div>{user.profile.additional_interests}</div>
-            <div className="text-l bold">
+            <Text tag="h4" bold type={TextTypes.Heading6}>
+              About
+            </Text>
+            <Text>{user.profile.description}</Text>
+            <Text tag="h4" bold type={TextTypes.Heading6}>
+              Other Topics
+            </Text>
+            <Text>{user.profile.additional_interests}</Text>
+            <Text tag="h4" bold type={TextTypes.Heading6}>
               Which languages do you speak and how well?
-            </div>
-            <div>{user.profile.language_skill_description}</div>
+            </Text>
+            <Text>{user.profile.language_skill_description}</Text>
           </div>
           <div className="w-1/2 bg-white rounded-xl p-3 flex-col border border-slate-200">
             <Text type={TextTypes.Body4} center bold>
@@ -149,17 +171,18 @@ export const UserCard = ({
           Marked as unresponsive
         </div>
       )}
+      <Tag
+        className="absolute top-4 left-4"
+        appearance={
+          user.profile.user_type === 'volunteer'
+            ? TagAppearance.primary
+            : TagAppearance.secondary
+        }
+      >
+        {user.profile.user_type}
+      </Tag>
       {partial && !tiny && (
-        <div className="w-full h-fit flex flex-row justify-between">
-          <Tag
-            type={
-              user.profile.user_type === 'volunteer'
-                ? TagTypes.primary
-                : TagTypes.secondary
-            }
-          >
-            {user.profile.user_type}
-          </Tag>
+        <div className="w-full h-fit flex flex-row justify-end">
           <Button
             variation={ButtonVariations.Icon}
             onClick={e => {

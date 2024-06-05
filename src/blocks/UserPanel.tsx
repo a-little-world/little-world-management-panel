@@ -12,6 +12,7 @@ import {
 } from '../atoms/Card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../atoms/Tabs';
 import { dataFetcher } from '../store';
+import { SelectedUsersSheet } from './SelectedUsersSheet';
 import UserActions from './UserActions';
 import UserDetailsCard from './UserCard';
 import UserChat from './UserChat';
@@ -106,6 +107,7 @@ const UserPanel = () => {
           </Card>
         </TabsContent>
       ))}
+      <SelectedUsersSheet />
     </Tabs>
   );
 };

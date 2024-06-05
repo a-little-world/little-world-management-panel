@@ -1,15 +1,18 @@
-import { Text } from '@a-little-world/little-world-design-system';
-import React from 'react';
-import styled from 'styled-components';
+import { Text, TextTypes } from '@a-little-world/little-world-design-system';
+import React, { FC, PropsWithChildren } from 'react';
+import styled, { css } from 'styled-components';
 
-export enum TagTypes {
+export enum TagAppearance {
   primary = 'primary',
   secondary = 'secondary',
 }
 
-export const StyledTag = styled(Text)<{ $type: string }>`
-  width: 104px;
-  height: 34px;
+export enum TagSizes {
+  small = 'small',
+  large = 'large',
+}
+
+export const StyledTag = styled(Text)<{ $size: string; $appearance: string }>`
   font-family: revert;
   padding: ${({ theme }) => theme.spacing.xxsmall};
   display: flex;
@@ -19,23 +22,53 @@ export const StyledTag = styled(Text)<{ $type: string }>`
   background-color: ${({ theme }) => theme.color.surface.primary};
   border-radius: ${({ theme }) => theme.radius.large};
   gap: ${({ theme }) => theme.spacing.xxxsmall};
-  color: ${({ theme, $type }) =>
-    $type === TagTypes.primary ? theme.color.text.heading : '#de5050'};
+  color: ${({ theme, $appearance }) =>
+    $appearance === TagAppearance.primary
+      ? theme.color.text.heading
+      : '#de5050'};
   border: 2px solid
-    ${({ theme, $type }) =>
-      $type === TagTypes.primary ? theme.color.border.bold : '#de5050'};
+    ${({ theme, $appearance }) =>
+      $appearance === TagAppearance.primary
+        ? theme.color.border.bold
+        : '#de5050'};
   filter: drop-shadow(0px 1px 3px rgb(0 0 0 / 22%));
   line-height: 1.1;
+
+  ${({ theme, $size }) => {
+    if ($size === TagSizes.small)
+      return css`
+        height: 30px;
+        padding: ${theme.spacing.xsmall};
+        width: 96px;
+      `;
+
+    if ($size === TagSizes.large)
+      return css`
+        width: 104px;
+        height: 34px;
+      `;
+  }}}
 `;
 
 interface TagProps {
-  className: string;
-  type: keyof typeof TagTypes;
+  className?: string;
+  appearance?: keyof typeof TagAppearance;
+  size?: keyof typeof TagSizes;
 }
 
-const Tag = ({ children, className, type = TagTypes.primary }: TagProps) => {
+const Tag: FC<PropsWithChildren<TagProps>> = ({
+  children,
+  className,
+  size = TagSizes.large,
+  appearance = TagAppearance.primary,
+}) => {
   return (
-    <StyledTag className={className} $type={type}>
+    <StyledTag
+      className={className}
+      type={size === TagSizes.small ? TextTypes.Body6 : TextTypes.Body5}
+      $appearance={appearance}
+      $size={size}
+    >
       {children}
     </StyledTag>
   );

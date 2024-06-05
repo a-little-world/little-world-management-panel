@@ -8,7 +8,7 @@ import { isEmpty } from 'lodash';
 import React from 'react';
 
 import { formatTimeDistance } from '../helpers/date';
-import Tag, { TagTypes } from './Tag';
+import Tag, { TagAppearance } from './Tag';
 import UserImage from './UserImage';
 
 const MatchCard = ({ match }: { match: any }) => {
@@ -33,10 +33,10 @@ const MatchCard = ({ match }: { match: any }) => {
 
       <Tag
         className="absolute top-2 left-2"
-        type={
+        appearance={
           match.partner.user_type === 'volunteer'
-            ? TagTypes.primary
-            : TagTypes.secondary
+            ? TagAppearance.primary
+            : TagAppearance.secondary
         }
       >
         {match.partner.user_type}
