@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { createSearchParams } from 'react-router-dom';
+import { useMatchesFilterOptions } from '../store';
 import styled from 'styled-components';
 
 import {
@@ -16,7 +17,8 @@ import {
 } from '../atoms/Table';
 import UserImage from '../atoms/UserImage';
 // import { SelectedMatchSheet } from '../blocks/SelectedMatchSheet';
-import { useFilterOptions, useGlobalState, useUserListData } from '../store';
+import { useFilterOptions, useGlobalState, useMatchListData, useUserListData } from '../store';
+import { MatchesTable } from '../blocks/MatchesTable';
 
 const StyledDropdown = styled(Dropdown)`
   div[data-radix-popper-content-wrapper] {
@@ -24,97 +26,13 @@ const StyledDropdown = styled(Dropdown)`
   }
 `;
 
-const MATCHES_FIELDS = [
-  { key: 'status', label: 'Status' },
-  { key: 'participants', label: 'Participants' },
-  { key: 'created', label: 'Created' },
-  { key: 'last_activity', label: 'Last Activity' },
-];
-
-export function MatchesTable({ list, matchList }) {
-  const { selectedMatch, selectMatch, deselectMatch } = useGlobalState();
-  const [fields, setFields] = useState(MATCHES_FIELDS);
-  return (
-    <>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[100px]">Selected</TableHead>
-            {fields.map(({ key, label }) => (
-              <TableHead key={key} className="w-[100px]">
-                {label}
-              </TableHead>
-            ))}
-          </TableRow>
-        </TableHeader>
-        {isEmpty(matchList?.results) ? (
-          <Text className="p-4 w-full" center>
-            No results.
-          </Text>
-        ) : (
-          <TableBody>
-            {matchList?.results.map(match => (
-              <TableRow key={match.id}>
-                <TableCell className="w-20">
-                  <input
-                    type="checkbox"
-                    checked={Object.keys(selectedMatch).includes(user.hash)}
-                    className="checkbox ml-2"
-                    onChange={() => {
-                      if (Object.keys(selectedMatch).includes(user.hash)) {
-                        deselectMatch(match.id);
-                      } else {
-                        selectMatch(match);
-                      }
-                    }}
-                  />
-                </TableCell>
-                {fields.map(({ key }) => {
-                  if (key === 'participants') {
-                    return (
-                      <TableCell key={match.hash + key}>
-                        <Link to={`/user/${user.id}`}>
-                          <UserImage
-                            alt={'user profile image'}
-                            user={user.profile}
-                            dimensions={{
-                              height: 32,
-                              width: 32,
-                            }}
-                          />
-                        </Link>
-                      </TableCell>
-                    );
-                  }
-
-                  if (key.includes('matches.'))
-                    return (
-                      <TableCell key={user.hash + key}>
-                        {/*<MatchesIcons matches={get(user, key).items} />*/}
-                      </TableCell>
-                    );
-                  return (
-                    <TableCell key={user.hash + key}>
-                      {get(user, key)}
-                    </TableCell>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableBody>
-        )}
-      </Table>
-      {/* {<SelectedMatchSheet />} */}
-    </>
-  );
-}
 
 export function Matches() {
   let [searchParams, setSearchParams] = useSearchParams();
   const list = searchParams.get('list') || 'all';
-  const { filterOptions, isLoading: filtersLoading } = useFilterOptions();
+  const { filterOptions, isLoading: filtersLoading } = useMatchesFilterOptions();
 
-  const { matchList, isLoading: usersLoading } = useUserListData(
+  const { matchList, isLoading: usersLoading } = useMatchListData(
     createSearchParams(searchParams),
   );
 

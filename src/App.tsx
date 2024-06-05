@@ -54,11 +54,11 @@ const router = createBrowserRouter(
           element: <UserPanel />,
         },
         {
-          path: 'matches-list',
+          path: 'matches',
           element: <Matches />,
         },
         {
-          path: 'matches',
+          path: 'scores',
           element: <AdminPanelV2_Matches />,
         },
         {

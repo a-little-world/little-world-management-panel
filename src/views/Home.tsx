@@ -18,7 +18,11 @@ const TABS = [
     path: 'matches',
     icon: <UserIcon className="h-16 w-16 text-white mb-2" />
   },
-
+  {
+    name: 'Scores',
+    path: 'scores',
+    icon: <UserIcon className="h-16 w-16 text-white mb-2" />
+  },
   {
     name: 'Stats',
     path: 'stats',

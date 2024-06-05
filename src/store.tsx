@@ -22,8 +22,35 @@ export const useFilterOptions = () => {
   };
 }
 
+export const useMatchesFilterOptions = () => {
+  const { data, error, mutate, isLoading } = useSWR(
+    `/api/matching/matches/filters/`,
+    dataFetcher,
+  );
+
+  return {
+    filterOptions: data,
+    error,
+    mutate,
+    isLoading,
+  };
+}
+
+export const useMatchListData = (searchParams: string) => {
+  const { data, error, mutate, isLoading } = useSWR(
+    `/api/matching/matches/?${searchParams}`,
+    dataFetcher,
+  );
+
+  return {
+    matchList: data,
+    error,
+    mutate,
+    isLoading,
+  };
+};
+
 export const useUserListData = (searchParams: string) => {
-  // todo allow passing `filterQuery` or `filters` in the future
   const { data, error, mutate, isLoading } = useSWR(
     `/api/matching/users/?${searchParams}`,
     dataFetcher,
