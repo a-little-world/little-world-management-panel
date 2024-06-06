@@ -4,7 +4,7 @@ import {
   TextInput,
 } from '@a-little-world/little-world-design-system';
 import { ScrollArea } from '@radix-ui/react-scroll-area';
-import { isEmpty, map } from 'lodash';
+import { isEmpty, map, size } from 'lodash';
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import styled from 'styled-components';
@@ -72,7 +72,7 @@ export function SelectedUsersSheet() {
       {!isEmpty(selectedUsers) && (
         <SheetTrigger asChild>
           <StyledSheetButton className="fixed bottom-14 right-2/4 translate-x-2/4">
-            View Selected Users
+            View Selected Users ({size(selectedUsers)})
           </StyledSheetButton>
         </SheetTrigger>
       )}

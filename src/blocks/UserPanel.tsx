@@ -24,7 +24,7 @@ const USER_TABS = [
   { key: 'chat', label: 'Chat', title: 'User Support Chat' },
   { key: 'emails', label: 'Emails' },
   { key: 'matches', label: 'Matches' },
-  // { key: 'tasks', label: 'Tasks' },
+  // { key: 'notes', label: 'Notes' },
   { key: 'actions', label: 'Actions' },
 ];
 
@@ -87,7 +87,7 @@ const UserPanel = () => {
           value={tab.key}
           className="py-1 px-2 flex-1 overflow-y-auto"
         >
-          <Card>
+          <Card className={'border-none shadow-none'}>
             <CardHeader>
               <CardTitle>{`${
                 user.profile.first_name + user.profile.second_name

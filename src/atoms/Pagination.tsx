@@ -11,7 +11,7 @@ const Pagination = ({ className, ...props }: React.ComponentProps<'nav'>) => (
   <nav
     role="navigation"
     aria-label="pagination"
-    className={cn('flex w-full justify-end', className)}
+    className={cn('flex', className)}
     {...props}
   />
 );
@@ -72,7 +72,7 @@ const PaginationPrevious = ({
       labelId="prevPageIcon"
       className="h-3 w-3"
     />
-    <span>Previous</span>
+    <span className="max-md:hidden">Previous</span>
   </PaginationLink>
 );
 PaginationPrevious.displayName = 'PaginationPrevious';
@@ -86,7 +86,7 @@ const PaginationNext = ({
     className={cn('gap-1 pr-2.5', className)}
     {...props}
   >
-    <span>Next</span>
+    <span className="max-md:hidden">Next</span>
     <ChevronRightIcon
       label="next page icon"
       labelId="nextPageIcon"

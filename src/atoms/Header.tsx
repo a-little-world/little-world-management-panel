@@ -1,8 +1,5 @@
 import {
-  Button,
-  ButtonVariations,
   MenuContentLayout,
-  MenuIcon,
   NavigationMenu,
   NavigationMenuContent,
   NavigationMenuContentItem,
@@ -12,50 +9,88 @@ import {
   Text,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
-import { HomeIcon } from '@heroicons/react/20/solid';
 import React from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import styled from 'styled-components';
 
 import logo from '../assets/logo.svg';
 
+const HeaderTitle = styled(Text)`
+  font-size: 1.5rem;
+  color: #074367;
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.medium}) {
+    font-size: 2rem;
+  }
+`;
+
 const Header = () => {
-  const navigate = useNavigate();
-  const { userId } = useParams();
+  const location = useLocation();
 
   return (
-    <div className="container max-w-full flex h-20 justify-between p-4 items-center border-solid border-b-2 border-slate-100">
+    <div className="container bg-sky-50 max-w-full flex h-20 justify-between p-4 items-center border-solid border-b-2 border-slate-100">
       <div className="flex gap-4 items-center">
-        <img className="h-12" alt="little world logo" src={logo} />
-        <Text tag="h1" type={TextTypes.Heading4}>
+        <img className="h-9 md:h-12" alt="little world logo" src={logo} />
+        <HeaderTitle
+          className="max-md:text-xl text-xl"
+          tag="h1"
+          type={TextTypes.Heading4}
+        >
           User Management
-        </Text>
+        </HeaderTitle>
       </div>
       <div className="flex gap-4 items-center justify-center">
-        <NavigationMenu>
-          <NavigationMenuItem>
-            <NavigationMenuLink to={'/matching/users'}>
+        <NavigationMenu withShadow>
+          <NavigationMenuItem className="max-sm:hidden">
+            <NavigationMenuLink
+              className="text-sky-900"
+              to={'/users'}
+              active={location.pathname === '/users/'}
+            >
               Users
             </NavigationMenuLink>
           </NavigationMenuItem>
-          <NavigationMenuItem>
-            <NavigationMenuLink to={'/matching/matches-list'}>
+          <NavigationMenuItem className="max-sm:hidden">
+            <NavigationMenuLink
+              active
+              to={'/matches-list'}
+              active={location.pathname === '/users/matches-list'}
+            >
               Matches
             </NavigationMenuLink>
           </NavigationMenuItem>
           <NavigationMenuItem>
-            <NavigationMenuTrigger>Areas</NavigationMenuTrigger>
+            <NavigationMenuTrigger>Menu</NavigationMenuTrigger>
             <NavigationMenuContent layout={MenuContentLayout.twoColumns}>
-              <NavigationMenuContentItem to="/matching/matches">
+              <NavigationMenuContentItem
+                to="/matches"
+                active={location.pathname === '/matches/'}
+              >
                 Matching
               </NavigationMenuContentItem>
-              <NavigationMenuContentItem active to="/matching/matches">
+              <NavigationMenuContentItem
+                to="/users"
+                active={location.pathname === '/users/'}
+              >
                 Users
               </NavigationMenuContentItem>
-              <NavigationMenuContentItem to="/matching/matches">
+              <NavigationMenuContentItem
+                to="/email"
+                active={location.pathname === '/email/'}
+              >
                 Email
               </NavigationMenuContentItem>
-              <NavigationMenuContentItem to="/matching/matches">
+              <NavigationMenuContentItem
+                to="/stats"
+                active={location.pathname === '/stats/'}
+              >
                 Stats
+              </NavigationMenuContentItem>
+              <NavigationMenuContentItem
+                to="/scores"
+                active={location.pathname === '/scores/'}
+              >
+                Scores
               </NavigationMenuContentItem>
             </NavigationMenuContent>
           </NavigationMenuItem>

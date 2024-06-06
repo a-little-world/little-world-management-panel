@@ -1,5 +1,6 @@
 import {
   Button,
+  ButtonAppearance,
   ButtonVariations,
   Link,
   Tags,
@@ -10,7 +11,7 @@ import { isEmpty } from 'lodash';
 import React from 'react';
 
 import MatchesIcons from '../atoms/MatchesIcons';
-import Tag, { TagAppearance } from '../atoms/Tag';
+import Tag, { TagAppearance, TagSizes } from '../atoms/Tag';
 import UserImage from '../atoms/UserImage';
 import { formatDate } from '../helpers/date';
 
@@ -56,47 +57,49 @@ export const UserCard = ({
   if (!partial) {
     End = (
       <>
-        <div className="flex flex-col gap-4 items-start sm:flex-row">
+        <div className="flex flex-col gap-4 items-start sm:flex-row mt-2">
           <div className="w-full flex flex-col content-start justify-start items-start gap-2">
-            <div className="flex flex-row content-center items-start justify-start">
+            <div className="flex flex-row content-center items-start justify-start gap-1">
               <Text tag="h4" bold type={TextTypes.Heading6}>
                 Id
               </Text>
-              : {user.id}
+              {user.id}
             </div>
-            <div className="flex flex-row content-center items-start justify-start">
+            <div className="flex flex-row content-center items-start justify-start gap-1">
               <Text tag="h4" bold type={TextTypes.Heading6}>
-                Date Joined
+                Date Joined:
               </Text>
-              : {formatDate(new Date(user.date_joined))}
+              {formatDate(new Date(user.date_joined))}
             </div>
-            <div className="flex flex-row content-center items-start justify-start">
+            <div className="flex flex-row content-center items-start justify-start gap-1">
               <Text tag="h4" bold type={TextTypes.Heading6}>
-                Email
+                Email:
               </Text>
-              : {user.email}
+              {user.email}
             </div>
-            <div className="flex flex-row content-center items-start justify-start">
+            <div className="flex flex-row content-center items-start justify-start gap-1">
               <Text tag="h4" bold type={TextTypes.Heading6}>
-                Phone Number
+                Phone Number:
               </Text>
-              : {user.profile.phone_mobile} (Nofify via{' '}
+              {user.profile.phone_mobile} (Nofify via{' '}
               {user.profile.notify_channel})
             </div>
-            <div className="flex flex-row content-center items-start justify-start">
+            <div className="flex content-center items-start justify-center gap-1">
               <Text tag="h4" bold type={TextTypes.Heading6}>
-                Matching State
+                Matching State:
               </Text>
-              :{' '}
-              <div
-                className={`badge badge-md ${
-                  user.state.matching_state === 'searching'
-                    ? 'bg-error'
-                    : 'bg-success'
-                }`}
+              <Tag
+                appearance={
+                  TagAppearance[
+                    user.state.matching_state === 'searching'
+                      ? 'error'
+                      : 'success'
+                  ]
+                }
+                size={TagSizes.small}
               >
                 {user.state.matching_state}
-              </div>
+              </Tag>
             </div>
             <div className="flex flex-row content-center items-start justify-start">
               <Text tag="h4" bold type={TextTypes.Heading6}>
@@ -122,7 +125,7 @@ export const UserCard = ({
             </Text>
             <Text>{user.profile.language_skill_description}</Text>
           </div>
-          <div className="w-1/2 bg-white rounded-xl p-3 flex-col border border-slate-200">
+          <div className="w-full md:w-1/2 bg-white rounded-xl p-3 flex-col border border-slate-200">
             <Text type={TextTypes.Body4} center bold>
               Current Status
             </Text>
@@ -224,6 +227,17 @@ export const UserCard = ({
         {user.profile.first_name} {user.profile.second_name}
       </div>
       {Content}
+      {!partial && (
+        <div className="flex flex-row content-center items-start justify-start gap-1 my-2">
+          <Link
+            href={`https://little-world.com/app/profile/${user.hash}`}
+            target="_blank"
+            buttonAppearance={ButtonAppearance.Secondary}
+          >
+            View App Profile
+          </Link>
+        </div>
+      )}
       {partial && (
         <div className="flex gap-4 items-center mt-2">
           <Link to={`/user/${user.id}`}>View profile</Link>

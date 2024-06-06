@@ -5,6 +5,8 @@ import styled, { css } from 'styled-components';
 export enum TagAppearance {
   primary = 'primary',
   secondary = 'secondary',
+  error = 'error',
+  success = 'success',
 }
 
 export enum TagSizes {
@@ -46,6 +48,24 @@ export const StyledTag = styled(Text)<{ $size: string; $appearance: string }>`
       return css`
         width: 104px;
         height: 34px;
+      `;
+  }}}
+
+  ${({ theme, $appearance }) => {
+    if ($appearance === TagAppearance.error)
+      return css`
+        color: ${theme.color.text.error};
+        background: ${theme.color.surface.error};
+        border: 0px;
+        filter: none;
+      `;
+
+    if ($appearance === TagAppearance.success)
+      return css`
+        color: ${theme.color.text.success};
+        background: ${theme.color.surface.success};
+        border: 0px;
+        filter: none;
       `;
   }}}
 `;

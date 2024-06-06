@@ -153,67 +153,79 @@ export function Users() {
   const changeList = (list: string) => {
     setSearchParams(createSearchParams({ ...searchParams, list }));
   };
-  console.log({ userList, list, filterOptions });
+
   return (
     <>
-      <div className="flex w-full overflow-scroll gap-2 p-4 align-center justify-center items-center">
-        {/*{`Filters ${JSON.stringify(filterOptions?.filters.map(({ name }) => name))}`} todo use to render some filter menu*/}
-        {filtersLoading ? (
-          'Loading filters...'
-        ) : (
-          <div className="flex items-center w-full gap-8 justify-between">
-            <StyledDropdown
-              value={list}
-              options={filterOptions.lists.map(({ name, description }) => ({
-                value: name,
-                label: description,
-              }))}
-              onValueChange={val => changeList(val)}
-              placeholder="Select a user list..."
-              cannotError
-            />
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious
-                    to={`/users?page=${userList?.previous_page}`}
-                  />
-                </PaginationItem>
+      {filtersLoading ? (
+        <div className="flex w-full overflow-scroll gap-2 p-4 align-center justify-center items-center">
+          Loading filters...
+        </div>
+      ) : (
+        <div className="w-full flex items-center w-full gap-4 p-4 justify-between flex-wrap">
+          <StyledDropdown
+            value={list}
+            options={filterOptions.lists.map(({ name, description }) => ({
+              value: name,
+              label: description,
+            }))}
+            onValueChange={val => changeList(val)}
+            placeholder="Select a user list..."
+            cannotError
+          />
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  to={
+                    userList?.previous_page
+                      ? `/users?page=${userList?.previous_page}`
+                      : ''
+                  }
+                />
+              </PaginationItem>
+              {userList?.previous_page && (
                 <PaginationItem>
                   <PaginationLink to={`/users?page=${userList?.previous_page}`}>
                     {userList?.previous_page}
                   </PaginationLink>
                 </PaginationItem>
-                <PaginationItem>
-                  <PaginationLink isActive to="">
-                    {userList?.page}
-                  </PaginationLink>
-                </PaginationItem>
-                {userList?.page !== userList?.last_page && (
-                  <>
-                    <PaginationItem>
-                      <PaginationEllipsis />
-                    </PaginationItem>
-                    <PaginationItem>
-                      <PaginationLink to={`/users?page=${userList?.last_page}`}>
-                        {userList?.last_page}
-                      </PaginationLink>
-                    </PaginationItem>
-                  </>
-                )}
+              )}
+              <PaginationItem>
+                <PaginationLink isActive to="">
+                  {userList?.page}
+                </PaginationLink>
+              </PaginationItem>
+              {userList?.page !== userList?.last_page && (
+                <>
+                  <PaginationItem>
+                    <PaginationEllipsis />
+                  </PaginationItem>
+                  <PaginationItem>
+                    <PaginationLink to={`/users?page=${userList?.last_page}`}>
+                      {userList?.last_page}
+                    </PaginationLink>
+                  </PaginationItem>
+                </>
+              )}
 
-                <PaginationItem>
-                  <PaginationNext to={`/users?page=${userList?.next_page}`} />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
-          </div>
-        )}
-      </div>
+              <PaginationItem>
+                <PaginationNext
+                  to={
+                    userList?.next_page
+                      ? `/users?page=${userList?.next_page}`
+                      : ''
+                  }
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
+
       {usersLoading ? (
         <div className="p-4 text-center">Loading users list '${list}'...</div>
       ) : (
-        <UsersTable userList={userList} list={list} />
+        <UsersTable userList={userList} />
       )}
     </>
   );
