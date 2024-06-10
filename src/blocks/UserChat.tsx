@@ -33,8 +33,6 @@ import {
 } from './UserChat.styles';
 
 const UserChat = ({ user }) => {
-  const [chat, setChat] = useState(null);
-  const [chatId, setChatId] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const messagesRef = useRef();
   const theme = useTheme();
@@ -47,28 +45,20 @@ const UserChat = ({ user }) => {
   } = useForm();
 
   const {
-    data: messages,
+    data,
     mutate,
     error,
     isLoading,
   } = useSWR(`/api/matching/users/${user.id}/messages/`, dataFetcher);
 
-  useEffect(() => {
-    if (isEmpty(messages)) return;
-
-    const supportChat = find(messages, chat => chat?.match.with_management);
-    if (supportChat) {
-      setChat(supportChat ?? null);
-      setChatId(supportChat?.match.match_id);
-    }
-  }, [messages]);
+  const { chat, messages } = data || {};
 
   const onError = error => {
     setError('message', {});
     setIsSubmitting(false);
   };
 
-  const sendNewMessage = data => {
+  const sendNewMessage = (data) => {
     setIsSubmitting(true);
     sendChatMessage({
       userId: user.id,
@@ -77,10 +67,7 @@ const UserChat = ({ user }) => {
       onSuccess: message => {
         mutate({
           ...messages,
-          [chatId]: {
-            ...messages[chatId],
-            items: [message, ...messages[chatId].items],
-          },
+          results: [...messages.results, message]
         });
         setIsSubmitting(false);
       },
@@ -103,14 +90,14 @@ const UserChat = ({ user }) => {
   return (
     <ChatContainer>
       <Messages ref={messagesRef}>
-        {chat.currentPage &&
+        {messages &&
           (isEmpty(chat) ? (
             <NoMessages type={TextTypes.Body4}>
               {'No messages sent yet'}
             </NoMessages>
           ) : (
             <>
-              {chat?.items?.map(message => (
+              {messages?.results?.map(message => (
                 <Message
                   $isSelf={message.sender !== user.id}
                   key={message.uuid}
