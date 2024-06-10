@@ -18,7 +18,7 @@ export const addUserByHash = async (
 };
 
 export const sendChatMessage = ({ userId, message, onError, onSuccess }) =>
-  fetch(`/api/admin/user_advanced/${userId}/message_reply/`, {
+  fetch(`/api/matching/users/${userId}/message_reply/`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -38,7 +38,7 @@ export const sendChatMessage = ({ userId, message, onError, onSuccess }) =>
     .catch(onError);
 
 export const markMessageAsRead = ({ messageId, userId, onError, onSuccess }) =>
-  fetch(`/api/admin/user_advanced/${userId}/message_read/`, {
+  fetch(`/api/matching/matches/${userId}/message_read/`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -57,7 +57,7 @@ export const markMessageAsRead = ({ messageId, userId, onError, onSuccess }) =>
     })
     .catch(onError);
 
-export const deleteMessage = ({}) => null;
+export const deleteMessage = ({ }) => null;
 
 export const sendSms = ({ userId, message, onError, onSuccess }) =>
   fetch(`/api/admin/quick_actions/send_sms_to_user/`, {

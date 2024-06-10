@@ -91,9 +91,9 @@ export const UserCard = ({
               <Tag
                 appearance={
                   TagAppearance[
-                    user.state.matching_state === 'searching'
-                      ? 'error'
-                      : 'success'
+                  user.state.matching_state === 'searching'
+                    ? 'error'
+                    : 'success'
                   ]
                 }
                 size={TagSizes.small}
@@ -110,7 +110,7 @@ export const UserCard = ({
             <Text tag="h4" bold type={TextTypes.Heading6}>
               Interests
             </Text>
-            <Tags content={user.profile.interests} />
+            {/*<Tags content={user.profile.interests} /> */}
 
             <Text tag="h4" bold type={TextTypes.Heading6}>
               About
@@ -135,9 +135,8 @@ export const UserCard = ({
               </li>
 
               <li
-                className={`step ${
-                  user.email_authenticated ? 'step-primary' : ''
-                }`}
+                className={`step ${user.email_authenticated ? 'step-primary' : ''
+                  }`}
               >
                 Email Authenticated
               </li>
@@ -146,9 +145,8 @@ export const UserCard = ({
                   <li className="step">Has pending match</li>
                 )}
               <li
-                className={`step ${
-                  !isEmpty(user.matches.confirmed.items) ? 'step-primary' : ''
-                }`}
+                className={`step ${!isEmpty(user.matches.confirmed.items) ? 'step-primary' : ''
+                  }`}
               >
                 First Match
               </li>
@@ -165,9 +163,8 @@ export const UserCard = ({
 
   return (
     <div
-      className={`w-full relative flex ${
-        horizontal ? 'flex-row' : 'flex-col'
-      } bg-base-200 h-fit items-center content-center justify-center rounded-xl p-4 gap-2 mb-1 border border-border-slate-400`}
+      className={`w-full relative flex ${horizontal ? 'flex-row' : 'flex-col'
+        } bg-base-200 h-fit items-center content-center justify-center rounded-xl p-4 gap-2 mb-1 border border-border-slate-400`}
     >
       {user.state.unresponsive && (
         <div className="w-90% p-2 z-10 rounded-md absolute top-3 right-1/2 translate-x-2/4 max-w-ful bg-error text-2xl text-center">

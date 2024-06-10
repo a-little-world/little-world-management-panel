@@ -51,7 +51,7 @@ const UserChat = ({ user }) => {
     mutate,
     error,
     isLoading,
-  } = useSWR(`/api/admin/user_advanced/${user.id}/messages/`, dataFetcher);
+  } = useSWR(`/api/matching/users/${user.id}/messages/`, dataFetcher);
 
   useEffect(() => {
     if (isEmpty(messages)) return;

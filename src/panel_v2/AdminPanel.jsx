@@ -331,7 +331,7 @@ const EmailsTable = ({
         <div className="modal-action">
           <span className="btn btn-success" onClick={(e) => {
             console.log("CLICKED")
-            fetch(`/api/admin/user_advanced/${user.id}/resend_email/`, {
+            fetch(`/api/matching/users/${user.id}/resend_email/`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -514,7 +514,7 @@ const UserSmsTab = ({
 }) => {
 
   const fetcher = (...args) => fetch(...args).then(res => res.json());
-  const { data: sms, error, mutate, isLoading } = useSWR(`/api/admin/user_advanced/${user.id}/sms/`, fetcher)
+  const { data: sms, error, mutate, isLoading } = useSWR(`/api/matching/users/${user.id}/sms/`, fetcher)
   const [smsInput, setSmsInput] = useState({
     message: "",
   })
@@ -587,7 +587,7 @@ const UserTasksTab = ({
 }) => {
 
   const fetcher = (...args) => fetch(...args).then(res => res.json());
-  const { data: tasks, error, mutate, isLoading } = useSWR(`/api/admin/user_advanced/${user.id}/tasks/`, fetcher)
+  const { data: tasks, error, mutate, isLoading } = useSWR(`/api/matching/users/${user.id}/tasks/`, fetcher)
   const [tasksInput, setTaskInput] = useState({
     description: "",
   })
@@ -613,7 +613,7 @@ const UserTasksTab = ({
             return <tr key={i} className='p-0 hover:bg-100 hover:text-success hover:border hover:border-accent'>
               <th className='w-20'>
                 <input type="checkbox" className="checkbox ml-2" onChange={() => {
-                  fetch(`/api/admin/user_advanced/${user.id}/tasks/complete/`, {
+                  fetch(`/api/matching/users/${user.id}/tasks/complete/`, {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',
@@ -649,7 +649,7 @@ const UserTasksTab = ({
         setTaskInput({ ...tasksInput, description: e.target.value })
       }} />
       <button className='btn btn-success' onClick={() => {
-        fetch(`/api/admin/user_advanced/${user.id}/tasks/`, {
+        fetch(`/api/admin/matching/users/${user.id}/tasks/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -687,7 +687,7 @@ function MatchCaculationOptions({ user, mutateScores }) {
         <h3 className="font-bold text-lg">Consider maximum dasy searching</h3>
         <input type="number" ref={daysSearchingInput} placeholder="Days searching" defaultValue={40} className="input input-bordered w-full max-w-xs" />
         <button className='btn' onClick={() => {
-          fetcher(`/api/admin/user_advanced/${user.id}/request_score_update/?days_searching=${daysSearchingInput.current.value}`).then((res) => {
+          fetcher(`/api/matching/users/${user.id}/request_score_update/?days_searching=${daysSearchingInput.current.value}`).then((res) => {
             setMonitorTask(res.task_id)
           })
         }}>Calculate Score</button>
@@ -732,7 +732,7 @@ const MatchingTable = ({
     title: "Make Match" // or "Make Matching Proposal"
   });
 
-  const { data, error, isLoading, mutate } = useSWR(`/api/admin/user_advanced/${user.id}/scores/`, fetcher)
+  const { data, error, isLoading, mutate } = useSWR(`/api/matching/users/${user.id}/scores/`, fetcher)
 
   const makeMatchingApi = (matchingType) => {
     let postData = (matchingType === "proposal") ? {
@@ -1319,7 +1319,7 @@ const AdminChatMessagesDisplay = ({
               <li><a>Delete Message</a></li>
             </>}
             <li><a onClick={() => {
-              fetch(`/api/admin/user_advanced/${user.id}/message_read/`, {
+              fetch(`/api/matching/users/${user.id}/message_read/`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -1430,7 +1430,7 @@ const AdminChat = ({ user, _messages }) => {
   const [aiOptionsVisible, setAiOptionsVisible] = useState(false)
 
   const fetcher = (...args) => fetch(...args).then(res => res.json());
-  const { data: messages, mutate, error, isLoading } = useSWR(`/api/admin/user_advanced/${user.id}/messages/`, fetcher)
+  const { data: messages, mutate, error, isLoading } = useSWR(`/api/matching/users/${user.id}/messages/`, fetcher)
 
   useEffect(() => {
     if (chatId) {
@@ -1456,7 +1456,7 @@ const AdminChat = ({ user, _messages }) => {
         }}>AI</button>
         <input type="text" ref={messageInputRef} placeholder="Type a message" className="input input-primary input-bordered w-full" />
         <button className="btn btn-primary" onClick={() => {
-          fetch(`/api/admin/user_advanced/${user.id}/message_reply/`, {
+          fetch(`/api/matching/users/${user.id}/message_reply/`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -1518,7 +1518,7 @@ const NotesPane = ({ user }) => {
   // Create Note
   const createNote = useCallback(
     debounce((newNote) => { // A debounced function that waits 500 ms after the last call to run
-      fetch(`/api/admin/user_advanced/${user.id}/notes/`, {
+      fetch(`/api/matching/users/${user.id}/notes/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1540,7 +1540,7 @@ const NotesPane = ({ user }) => {
   );
 
   const fetcher = (...args) => fetch(...args).then(res => res.json());
-  const { data: _user_notes, mutate, error, isLoading } = useSWR(`/api/admin/user_advanced/${user.id}/notes/`, fetcher)
+  const { data: _user_notes, mutate, error, isLoading } = useSWR(`/api/admin/matching/users/${user.id}/notes/`, fetcher)
 
   useEffect(() => {
     if (_user_notes)
@@ -1713,7 +1713,7 @@ const ActionsPane = ({ user }) => {
 
 function PreMatchingAppointments({ user }) {
   const fetcher = (...args) => fetch(...args).then(res => res.json());
-  const { data: preMatchingAppointment, error, isLoading } = useSWR(`/api/admin/user_advanced/${user.id}/prematching_appointments/`, fetcher)
+  const { data: preMatchingAppointment, error, isLoading } = useSWR(`/api/matching/users/${user.id}/prematching_appointments/`, fetcher)
 
   return <div className='w-full relative flex flex-col'>
     {preMatchingAppointment &&
@@ -1732,7 +1732,7 @@ const AdvancedUserDetails = ({
   console.log("Rendering advanced user details", user)
 
   const fetcher = (...args) => fetch(...args).then(res => res.json());
-  const { data, error, isLoading } = useSWR(`/api/admin/user_advanced/${user.id}/?messages=include`, fetcher)
+  const { data, error, isLoading } = useSWR(`/api/matching/users/${user.id}/?messages=include`, fetcher)
 
   console.log("ADVANCED USER FETCHED", data);
 
@@ -1900,7 +1900,7 @@ export const AdminPanel = ({
   let user_details = queryParams.get('user_details')
   user_details = user_details ? user_details : null
   const fetcher = (...args) => fetch(...args).then(res => res.json());
-  const { data: _pre_loaded_user, error, isLoading } = useSWR((!detailUser && user_details) ? `/api/admin/user_advanced/${user_details}/` : null, fetcher)
+  const { data: _pre_loaded_user, error, isLoading } = useSWR((!detailUser && user_details) ? `/api/matching/users/${user_details}/` : null, fetcher)
 
   useEffect(() => {
     if (_pre_loaded_user) {

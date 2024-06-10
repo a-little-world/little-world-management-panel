@@ -1,5 +1,6 @@
 import React from 'react';
 import { useLocation, useParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import useSWR from 'swr';
 
 import {
@@ -28,14 +29,17 @@ const USER_TABS = [
   { key: 'actions', label: 'Actions' },
 ];
 
-const UserPanelContent = ({ preMatchingAppointment, use, user }) => {
-  if (use === 'profile') return <UserDetailsCard user={user} partial={false} />;
+const UserPanelContent = ({
+  preMatchingAppointment,
+  tab,
+  user }) => {
+  if (tab === 'profile') return <UserDetailsCard user={user} partial={false} />;
 
-  if (use === 'chat') return <UserChat user={user} />;
+  if (tab === 'chat') return <UserChat user={user} />;
 
-  if (use === 'emails') return <UserEmails user={user} />;
+  if (tab === 'emails') return <UserEmails user={user} />;
 
-  if (use === 'matches')
+  if (tab === 'matches')
     return (
       <UserMatches
         user={user}
@@ -43,24 +47,27 @@ const UserPanelContent = ({ preMatchingAppointment, use, user }) => {
       />
     );
 
-  if (use === 'actions') return <UserActions user={user} />;
+  if (tab === 'actions') return <UserActions user={user} />;
   return null;
 };
 
 const UserPanel = () => {
   const { userId } = useParams();
   const { state } = useLocation();
+  let [searchParams, setSearchParams] = useSearchParams();
+  const tab = searchParams.get('tab') || 'profile';
+
   const {
     data: user,
     error,
     isLoading,
   } = useSWR(
-    `/api/admin/user_advanced/${userId}/?messages=include`,
+    `/api/matching/users/${userId}/?messages=include`,
     dataFetcher,
   );
 
   const { data: preMatchingAppointment } = useSWR(
-    `/api/admin/user_advanced/${userId}/prematching_appointments/`,
+    `/api/matching/users/${userId}/prematching_appointments/`,
     dataFetcher,
   );
   if (isLoading && !error)
@@ -79,7 +86,9 @@ const UserPanel = () => {
     >
       <TabsList className="grid w-full grid-cols-6">
         {USER_TABS.map(tab => (
-          <TabsTrigger value={tab.key}>{tab.label}</TabsTrigger>
+          <TabsTrigger value={tab.key} onClick={() => {
+            setSearchParams({ tab: tab.key });
+          }}>{tab.label}</TabsTrigger>
         ))}
       </TabsList>
       {USER_TABS.map(tab => (
@@ -89,16 +98,15 @@ const UserPanel = () => {
         >
           <Card className={'border-none shadow-none'}>
             <CardHeader>
-              <CardTitle>{`${
-                user.profile.first_name + user.profile.second_name
-              } - ${tab.title ?? tab.label}`}</CardTitle>
+              <CardTitle>{`${user.profile.first_name + user.profile.second_name
+                } - ${tab.title ?? tab.label}`}</CardTitle>
               {tab.description && (
                 <CardDescription>{tab.description}</CardDescription>
               )}
             </CardHeader>
             <CardContent className="space-y-2 flex flex-col">
               <UserPanelContent
-                use={tab.key}
+                tab={tab.key}
                 user={user}
                 preMatchingAppointment={preMatchingAppointment?.start_time}
               />
