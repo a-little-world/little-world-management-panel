@@ -8,8 +8,10 @@ import {
   TextTypes,
 } from '@a-little-world/little-world-design-system';
 import { isEmpty } from 'lodash';
+import { dataFetcher } from '../store';
 import React, { useState } from 'react';
 import { useTheme } from 'styled-components';
+import useSWR from 'swr';
 
 import {
   Table,
@@ -30,6 +32,13 @@ const fields = [
 ];
 
 const UserEmails = ({ user }) => {
+  const {
+    data: emails,
+    mutate,
+    error,
+    isLoading,
+  } = useSWR(`/api/matching/users/${user.id}/emails/`, dataFetcher);
+
   const [viewEmail, setViewEmail] = useState<string | null>(null);
   const theme = useTheme();
 
@@ -40,6 +49,13 @@ const UserEmails = ({ user }) => {
         setViewEmail(html);
       });
   };
+
+  if (error) {
+    return <Text className="p-4 w-full" center>Error loading emails</Text>;
+  }
+  if (isLoading) {
+    return <Text className="p-4 w-full" center>Loading...</Text>;
+  }
 
   return (
     <div className="w-full">
@@ -54,13 +70,13 @@ const UserEmails = ({ user }) => {
           </TableRow>
         </TableHeader>
         {user ? (
-          isEmpty(user?.email_logs.items) ? (
+          isEmpty(emails?.results) ? (
             <Text className="p-4 w-full" center>
               No results.
             </Text>
           ) : (
             <TableBody>
-              {user?.email_logs.items.map(email => (
+              {emails?.results.map(email => (
                 <TableRow key={email.id}>
                   {fields.map(({ key }) => {
                     if (key === 'retrieve') {
