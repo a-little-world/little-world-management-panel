@@ -8,7 +8,6 @@ import { Outlet, createBrowserRouter } from 'react-router-dom';
 
 import Layout from './blocks/Layout.tsx';
 import UserPanel from './blocks/UserPanel.tsx';
-import { AdminPanelV2_DevKit } from './panel_v2/AdminPanelDevkit.jsx';
 import {
   AdminPanelV2_EmailDetails,
   AdminPanelV2_Emails,
@@ -64,10 +63,6 @@ const router = createBrowserRouter(
         {
           path: 'emails',
           element: <AdminPanelV2_Emails />,
-        },
-        {
-          path: 'devkit',
-          element: <AdminPanelV2_DevKit />,
         },
         {
           path: 'emails/:emailTemplateName',
