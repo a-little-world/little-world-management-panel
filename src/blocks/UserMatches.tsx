@@ -7,10 +7,8 @@ import { formatDate, formatTime } from '../helpers/date';
 
 const UserMatches = ({ preMatchingAppointment, user }) => {
   const theme = useTheme();
-
   const matches = {};
-  console.log({ preMatchingAppointment });
-  console.log({ user });
+
   return (
     <div className="w-full">
       {preMatchingAppointment && (

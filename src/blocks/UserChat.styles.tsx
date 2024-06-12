@@ -15,6 +15,7 @@ export const ChatContainer = styled.div`
   flex: 1;
   gap: ${({ theme }) => theme.spacing.small};
   width: 100%;
+  height: 100%;
 `;
 
 export const WriteSection = styled.form`
@@ -29,7 +30,7 @@ export const Messages = styled.div`
   border-radius: 20px;
   flex-grow: 1;
   display: flex;
-  flex-direction: column;
+  flex-direction: column-reverse;
   gap: ${({ theme }) => theme.spacing.small};
   padding: ${({ theme }) => theme.spacing.small};
   overflow-y: scroll;

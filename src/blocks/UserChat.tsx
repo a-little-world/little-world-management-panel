@@ -10,8 +10,8 @@ import {
   TickDoubleIcon,
   TickIcon,
 } from '@a-little-world/little-world-design-system';
-import { find, isEmpty } from 'lodash';
-import React, { useEffect, useRef, useState } from 'react';
+import { isEmpty } from 'lodash';
+import React, { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTheme } from 'styled-components';
 import useSWR from 'swr';
@@ -44,12 +44,10 @@ const UserChat = ({ user }) => {
     setError,
   } = useForm();
 
-  const {
-    data,
-    mutate,
-    error,
-    isLoading,
-  } = useSWR(`/api/matching/users/${user.id}/messages/`, dataFetcher);
+  const { data, mutate, error, isLoading } = useSWR(
+    `/api/matching/users/${user.id}/messages/`,
+    dataFetcher,
+  );
 
   const { chat, messages } = data || {};
 
@@ -58,7 +56,7 @@ const UserChat = ({ user }) => {
     setIsSubmitting(false);
   };
 
-  const sendNewMessage = (data) => {
+  const sendNewMessage = data => {
     setIsSubmitting(true);
     sendChatMessage({
       userId: user.id,
@@ -67,7 +65,7 @@ const UserChat = ({ user }) => {
       onSuccess: message => {
         mutate({
           ...messages,
-          results: [...messages.results, message]
+          results: [...messages.results, message],
         });
         setIsSubmitting(false);
       },
@@ -84,7 +82,7 @@ const UserChat = ({ user }) => {
   };
 
   if (isLoading) return null;
-  console.log({ messages, chat });
+  console.log({ messages, chat, user });
   if ((!messages || !chat) && !isLoading) return <>No Messages to display</>;
 
   return (
@@ -99,11 +97,11 @@ const UserChat = ({ user }) => {
             <>
               {messages?.results?.map(message => (
                 <Message
-                  $isSelf={message.sender !== user.id}
+                  $isSelf={message.sender !== user.hash}
                   key={message.uuid}
                 >
                   <MessageText
-                    $isSelf={message.sender !== user.id}
+                    $isSelf={message.sender !== user.hash}
                     disableParser={!message.parsable}
                   >
                     {message.text}
@@ -125,14 +123,14 @@ const UserChat = ({ user }) => {
                     >
                       <Button
                         variation={ButtonVariations.Inline}
-                        disabled={message.sender !== user.id || message.read}
+                        disabled={message.sender !== user.hash || message.read}
                         onClick={() => handleReadMessage(message.uuid)}
                       >
                         Mark as Read
                       </Button>
                       <Button
                         variation={ButtonVariations.Inline}
-                        disabled={message.sender === user.id}
+                        disabled={message.sender === user.hash}
                       >
                         Delete Message
                       </Button>

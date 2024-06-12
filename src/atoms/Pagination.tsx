@@ -58,11 +58,32 @@ const PaginationLink = ({
 );
 PaginationLink.displayName = 'PaginationLink';
 
+type PaginationButtonProps = {
+  isActive?: boolean;
+} & React.ButtonHTMLAttributes<HTMLButtonElement>;
+
+const PaginationButton = ({
+  className,
+  isActive,
+  onClick,
+  ...props
+}: PaginationButtonProps) => (
+  <button
+    onClick={onClick}
+    aria-current={isActive ? 'page' : undefined}
+    className={`inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-slate-200 hover:text-accent-foreground h-10 px-4 py-2 gap-1 ${
+      isActive && 'border border-slate-300'
+    }`}
+    {...props}
+  />
+);
+PaginationButton.displayName = 'PaginationButton';
+
 const PaginationPrevious = ({
   className,
   ...props
-}: React.ComponentProps<typeof PaginationLink>) => (
-  <PaginationLink
+}: React.ComponentProps<typeof PaginationButton>) => (
+  <PaginationButton
     aria-label="Go to previous page"
     className={cn('gap-1 pl-2.5', className)}
     {...props}
@@ -73,15 +94,15 @@ const PaginationPrevious = ({
       className="h-3 w-3"
     />
     <span className="max-md:hidden">Previous</span>
-  </PaginationLink>
+  </PaginationButton>
 );
 PaginationPrevious.displayName = 'PaginationPrevious';
 
 const PaginationNext = ({
   className,
   ...props
-}: React.ComponentProps<typeof PaginationLink>) => (
-  <PaginationLink
+}: React.ComponentProps<typeof PaginationButton>) => (
+  <PaginationButton
     aria-label="Go to next page"
     className={cn('gap-1 pr-2.5', className)}
     {...props}
@@ -92,7 +113,7 @@ const PaginationNext = ({
       labelId="nextPageIcon"
       className="h-3 w-3"
     />
-  </PaginationLink>
+  </PaginationButton>
 );
 PaginationNext.displayName = 'PaginationNext';
 
@@ -117,6 +138,7 @@ PaginationEllipsis.displayName = 'PaginationEllipsis';
 
 export {
   Pagination,
+  PaginationButton,
   PaginationContent,
   PaginationEllipsis,
   PaginationItem,

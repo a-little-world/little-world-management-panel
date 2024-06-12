@@ -51,7 +51,6 @@ const Matching = () => {
   //       Issue fetching this user. Please ensure the user id is correct
   //     </div>
   //   );
-  console.log({ potentialMatch });
 
   const onMatchAction = () => {
     setSubmitError('');

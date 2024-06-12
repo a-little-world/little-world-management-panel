@@ -15,7 +15,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '../atoms/Card';
@@ -118,10 +117,10 @@ const UserPanel = () => {
       {USER_TABS.map(tab => (
         <TabsContent
           value={tab.key}
-          className="py-1 px-2 flex-1 overflow-y-auto"
+          className="data-[state=active]:flex data-[state=active]:flex-1 overflow-y-auto"
         >
-          <Card className={'border-none shadow-none'}>
-            <CardHeader className="flex-row items-center justify-between">
+          <Card className={'border-none shadow-none flex flex-col'}>
+            <CardHeader className="flex-row items-center justify-between px-6 py-4">
               <div>
                 <CardTitle>{`${
                   user.profile.first_name + user.profile.second_name
@@ -145,14 +144,13 @@ const UserPanel = () => {
                 />
               </Button>
             </CardHeader>
-            <CardContent className="space-y-2 flex flex-col">
+            <CardContent className="px-6 py-4 flex flex-col min-h-0 h-full">
               <UserPanelContent
                 tab={tab.key}
                 user={user}
                 preMatchingAppointment={preMatchingAppointment?.start_time}
               />
             </CardContent>
-            <CardFooter></CardFooter>
           </Card>
         </TabsContent>
       ))}

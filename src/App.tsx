@@ -15,7 +15,6 @@ import {
 import { AdminPanelV2_Matches } from './panel_v2/AdminPanelMatches.jsx';
 import {
   BASE_ROUTE,
-  DEVKIT_ROUTE,
   EMAILS_ROUTE,
   EMAIL_ROUTE,
   MATCHES_LIST_ROUTE,

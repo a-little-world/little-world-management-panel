@@ -33,7 +33,6 @@ function SendSms({ userId }) {
   } = useForm();
 
   const onError = error => {
-    console.log({ error });
     setError('smsMessage', {
       message: error?.message || 'Issue sending message',
     });
@@ -41,7 +40,6 @@ function SendSms({ userId }) {
   };
 
   const onSendSms = data => {
-    console.log({ data });
     setIsSubmitting(true);
     sendSms({
       userId: userId,
@@ -108,7 +106,6 @@ const UserActions = ({ user }) => {
           userId: user.id,
           [key]: data[key],
           onError: error => {
-            console.log('IN', { error });
             setError(key, error.message);
           },
           onSuccess: res => console.log(res),
@@ -120,7 +117,7 @@ const UserActions = ({ user }) => {
         setIsSubmitting(false);
       });
   };
-  console.log({ user });
+
   return (
     <div className="w-full">
       <SendSms userId={user} />

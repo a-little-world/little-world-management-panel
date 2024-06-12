@@ -12,7 +12,6 @@ import Tag, { TagAppearance } from './Tag';
 import UserImage from './UserImage';
 
 const MatchCard = ({ match }: { match: any }) => {
-  console.log({ match });
   return (
     <div className="w-full max-w-[320px] flex flex-col bg-white h-fit relative items-center justify-center rounded-xl p-4 gap-2 border border-border-slate-400">
       <Link

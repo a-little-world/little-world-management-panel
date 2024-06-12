@@ -5,7 +5,6 @@ export const addUserByHash = async (
   onError: (error) => void,
   onSuccess: (user: string[]) => void,
 ) => {
-  console.log('ADDING');
   fetch(`/api/admin/user_info/${userHash}/`)
     .then(res => {
       if (res.ok) {

@@ -1,6 +1,6 @@
-import React from "react";
+import React from 'react';
 
-const REQUIRED_FIELD_SYMBOL = "*";
+const REQUIRED_FIELD_SYMBOL = '*';
 
 export type LabelProps = {
   /** The label for the field */
@@ -20,7 +20,7 @@ export default function Label(props: LabelProps) {
   if (!label) {
     return null;
   }
-  console.log("Label props", label);
+
   return (
     <label className="justify-start gap-1 label" htmlFor={id}>
       <span className="label-text">

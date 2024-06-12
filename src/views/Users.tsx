@@ -9,10 +9,10 @@ import styled from 'styled-components';
 import MatchesIcons from '../atoms/MatchesIcons';
 import {
   Pagination,
+  PaginationButton,
   PaginationContent,
   PaginationEllipsis,
   PaginationItem,
-  PaginationLink,
   PaginationNext,
   PaginationPrevious,
 } from '../atoms/Pagination';
@@ -26,6 +26,7 @@ import {
 } from '../atoms/Table';
 import Tag, { TagAppearance, TagSizes } from '../atoms/Tag';
 import UserImage from '../atoms/UserImage';
+import { formatDate } from '../helpers/date';
 import { useFilterOptions, useGlobalState, useUserListData } from '../store';
 import { SelectedUsersSheet } from './../blocks/SelectedUsersSheet';
 
@@ -43,7 +44,7 @@ const DEFAULT_FIELDS = [
   { key: 'profile.target_group', label: 'Target Group' },
   { key: 'matches.unconfirmed', label: 'Unconfirmed' },
   { key: 'matches.confirmed', label: 'Confirmed' },
-  { key: 'matches.support', label: 'Support' },
+  { key: 'date_joined', label: 'Joined' },
 ];
 
 export function UsersTable({ userList }) {
@@ -125,6 +126,13 @@ export function UsersTable({ userList }) {
                       </TableCell>
                     );
 
+                  if (key === 'date_joined')
+                    return (
+                      <TableCell key={user.hash + key}>
+                        {formatDate(new Date(user.date_joined))}
+                      </TableCell>
+                    );
+
                   return (
                     <TableCell key={user.hash + key}>
                       {get(user, key)}
@@ -176,24 +184,27 @@ export function Users() {
             <PaginationContent>
               <PaginationItem>
                 <PaginationPrevious
-                  to={
-                    userList?.previous_page
-                      ? `/users?page=${userList?.previous_page}`
-                      : ''
-                  }
+                  disabled={!userList?.previous_page}
+                  onClick={setSearchParams(prev => ({
+                    ...prev,
+                    page: userList?.previous_page,
+                  }))}
                 />
               </PaginationItem>
               {userList?.previous_page && (
                 <PaginationItem>
-                  <PaginationLink to={`/users?page=${userList?.previous_page}`}>
+                  <PaginationButton
+                    onClick={setSearchParams(prev => ({
+                      ...prev,
+                      page: userList?.previous_page,
+                    }))}
+                  >
                     {userList?.previous_page}
-                  </PaginationLink>
+                  </PaginationButton>
                 </PaginationItem>
               )}
               <PaginationItem>
-                <PaginationLink isActive to="">
-                  {userList?.page}
-                </PaginationLink>
+                <PaginationButton isActive>{userList?.page}</PaginationButton>
               </PaginationItem>
               {userList?.page !== userList?.last_page && (
                 <>
@@ -201,20 +212,25 @@ export function Users() {
                     <PaginationEllipsis />
                   </PaginationItem>
                   <PaginationItem>
-                    <PaginationLink to={`/users?page=${userList?.last_page}`}>
+                    <PaginationButton
+                      onClick={setSearchParams(prev => ({
+                        ...prev,
+                        page: userList?.last_page,
+                      }))}
+                    >
                       {userList?.last_page}
-                    </PaginationLink>
+                    </PaginationButton>
                   </PaginationItem>
                 </>
               )}
 
               <PaginationItem>
                 <PaginationNext
-                  to={
-                    userList?.next_page
-                      ? `/users?page=${userList?.next_page}`
-                      : ''
-                  }
+                  disabled={!userList?.next_page}
+                  onClick={setSearchParams(prev => ({
+                    ...prev,
+                    page: userList?.next_page,
+                  }))}
                 />
               </PaginationItem>
             </PaginationContent>
