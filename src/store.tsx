@@ -1,4 +1,4 @@
-import { unset } from 'lodash';
+import { filter, pull, unset } from 'lodash';
 import React, { createContext, useState } from 'react';
 import useSWR from 'swr';
 
@@ -20,7 +20,7 @@ export const useFilterOptions = () => {
     mutate,
     isLoading,
   };
-}
+};
 
 export const useMatchesFilterOptions = () => {
   const { data, error, mutate, isLoading } = useSWR(
@@ -34,7 +34,7 @@ export const useMatchesFilterOptions = () => {
     mutate,
     isLoading,
   };
-}
+};
 
 export const useMatchListData = (searchParams: string) => {
   const { data, error, mutate, isLoading } = useSWR(
@@ -70,14 +70,15 @@ const GlobalStateContext = createContext({
 
 export function GlobalStateProvider(props) {
   const [selectedUsers, setSelectedUsers] = useState([]);
-  const [apiOptions,] = useState(props?.apiOptions || {});
-  const [apiTranslations,] = useState(props?.apiTranslations || {});
+  const [potentialMatch, setPotentialMatch] = useState<any[]>([]);
+  const [apiOptions] = useState(props?.apiOptions || {});
+  const [apiTranslations] = useState(props?.apiTranslations || {});
 
-  const selectUser = user => {
+  const selectUser = (user: any) => {
     setSelectedUsers(currentUsers => ({ ...currentUsers, [user.hash]: user }));
   };
 
-  const deselectUser = userHash => {
+  const deselectUser = (userHash: string) => {
     setSelectedUsers(currentUsers => {
       const newUsers = { ...currentUsers };
       unset(newUsers, userHash);
@@ -85,9 +86,39 @@ export function GlobalStateProvider(props) {
     });
   };
 
+  const addUserToMatching = (user: any) => {
+    setPotentialMatch(current =>
+      current.length === 2 ? [current[0], user] : [...current, user],
+    );
+  };
+
+  const removeUserFromMatching = (userHash: string) => {
+    setPotentialMatch(current =>
+      filter(current, (user: any) => user.hash !== userHash),
+    );
+  };
+
   const value = React.useMemo(
-    () => ({ selectedUsers, selectUser, deselectUser, apiOptions, apiTranslations }),
-    [selectedUsers, selectUser, deselectUser, apiOptions, apiTranslations],
+    () => ({
+      addUserToMatching,
+      removeUserFromMatching,
+      potentialMatch,
+      selectedUsers,
+      selectUser,
+      deselectUser,
+      apiOptions,
+      apiTranslations,
+    }),
+    [
+      addUserToMatching,
+      removeUserFromMatching,
+      potentialMatch,
+      selectedUsers,
+      selectUser,
+      deselectUser,
+      apiOptions,
+      apiTranslations,
+    ],
   );
   return <GlobalStateContext.Provider value={value} {...props} />;
 }

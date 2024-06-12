@@ -57,7 +57,7 @@ export const markMessageAsRead = ({ messageId, userId, onError, onSuccess }) =>
     })
     .catch(onError);
 
-export const deleteMessage = ({ }) => null;
+export const deleteMessage = ({}) => null;
 
 export const sendSms = ({ userId, message, onError, onSuccess }) =>
   fetch(`/api/admin/quick_actions/send_sms_to_user/`, {
@@ -146,4 +146,54 @@ export const setHadPrematchingCall = async ({
   } catch (error) {
     onError(error);
   }
+};
+
+export const matchUsers = ({ data, onError, onSuccess }) =>
+  fetch(`/api/admin/user/match/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookiesAsObject().csrftoken,
+    },
+    body: JSON.stringify(data),
+  })
+    .then(res => {
+      if (res.ok) {
+        res.text().then(text => {
+          onSuccess(text);
+        });
+      } else {
+        res.text().then(text => {
+          onError(new Error(text));
+        });
+      }
+    })
+    .catch(onError);
+
+export const calculateScoreBetweenUsers = ({
+  user1Id,
+  user2Id,
+  onSuccess,
+  onError,
+}) => {
+  fetch(`api/matching/users/${user1Id}/score_between/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookiesAsObject().csrftoken,
+    },
+    body: JSON.stringify({ to_user: user2Id }),
+  })
+    .then(res => {
+      if (res.ok) {
+        res.text().then(text => {
+          onSuccess(text);
+        });
+      } else {
+        res.text().then(text => {
+          onError(new Error(text));
+        });
+      }
+    })
+    .catch(onError);
 };

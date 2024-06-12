@@ -14,9 +14,21 @@ import {
   AdminPanelV2_Emails,
 } from './panel_v2/AdminPanelEmails.jsx';
 import { AdminPanelV2_Matches } from './panel_v2/AdminPanelMatches.jsx';
+import {
+  BASE_ROUTE,
+  DEVKIT_ROUTE,
+  EMAILS_ROUTE,
+  EMAIL_ROUTE,
+  MATCHES_LIST_ROUTE,
+  MATCHING_ROUTE,
+  SCORES_ROUTE,
+  USERS_ROUTE,
+  USER_DETAILS_ROUTE,
+} from './routes';
 import { GlobalStateProvider } from './store.tsx';
 import Home from './views/Home';
 import Matches from './views/Matches';
+import Matching from './views/Matching';
 import Users from './views/Users';
 
 export const Root = ({
@@ -46,37 +58,41 @@ const router = createBrowserRouter(
           element: <Home />,
         },
         {
-          path: 'users',
+          path: USERS_ROUTE,
           element: <Users />,
         },
         {
-          path: 'user/:userId',
+          path: USER_DETAILS_ROUTE,
           element: <UserPanel />,
         },
         {
-          path: 'matches',
+          path: MATCHING_ROUTE,
+          element: <Matching />,
+        },
+        {
+          path: MATCHES_LIST_ROUTE,
           element: <Matches />,
         },
         {
-          path: 'scores',
+          path: SCORES_ROUTE,
           element: <AdminPanelV2_Matches />,
         },
         {
-          path: 'emails',
+          path: EMAILS_ROUTE,
           element: <AdminPanelV2_Emails />,
         },
         {
-          path: 'devkit',
+          path: DEVKIT_ROUTE,
           element: <AdminPanelV2_DevKit />,
         },
         {
-          path: 'emails/:emailTemplateName',
+          path: EMAIL_ROUTE,
           element: <AdminPanelV2_EmailDetails />,
         },
       ],
     },
   ],
-  { basename: `/matching/` },
+  { basename: BASE_ROUTE },
 );
 
 export function MatchingPannel({ apiOptions, apiTranslations }) {
@@ -85,7 +101,7 @@ export function MatchingPannel({ apiOptions, apiTranslations }) {
       apiOptions={apiOptions}
       apiTranslations={apiTranslations}
     >
-      <RouterProvider router={router} />;
+      <RouterProvider router={router} />
     </GlobalStateProvider>
   );
 }

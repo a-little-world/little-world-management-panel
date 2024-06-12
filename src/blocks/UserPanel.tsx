@@ -1,6 +1,14 @@
+import {
+  Button,
+  ButtonAppearance,
+  ButtonSizes,
+  ButtonVariations,
+  PlusIcon,
+} from '@a-little-world/little-world-design-system';
 import React from 'react';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useSearchParams } from 'react-router-dom';
+import { useTheme } from 'styled-components';
 import useSWR from 'swr';
 
 import {
@@ -12,7 +20,8 @@ import {
   CardTitle,
 } from '../atoms/Card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../atoms/Tabs';
-import { dataFetcher } from '../store';
+import { MATCHING_ROUTE } from '../routes';
+import { dataFetcher, useGlobalState } from '../store';
 import { SelectedUsersSheet } from './SelectedUsersSheet';
 import UserActions from './UserActions';
 import UserDetailsCard from './UserCard';
@@ -32,7 +41,12 @@ const USER_TABS = [
 const UserPanelContent = ({
   preMatchingAppointment,
   tab,
-  user }) => {
+  user,
+}: {
+  preMatchingAppointment: string;
+  tab: string;
+  user: any;
+}) => {
   if (tab === 'profile') return <UserDetailsCard user={user} partial={false} />;
 
   if (tab === 'chat') return <UserChat user={user} />;
@@ -54,17 +68,22 @@ const UserPanelContent = ({
 const UserPanel = () => {
   const { userId } = useParams();
   const { state } = useLocation();
+  const { addUserToMatching } = useGlobalState();
+  const theme = useTheme();
   let [searchParams, setSearchParams] = useSearchParams();
-  const tab = searchParams.get('tab') || 'profile';
+
+  const navigate = useNavigate();
 
   const {
     data: user,
     error,
     isLoading,
-  } = useSWR(
-    `/api/matching/users/${userId}/?messages=include`,
-    dataFetcher,
-  );
+  } = useSWR(`/api/matching/users/${userId}/?messages=include`, dataFetcher);
+
+  const onAddToMatching = () => {
+    addUserToMatching(user);
+    navigate(MATCHING_ROUTE);
+  };
 
   const { data: preMatchingAppointment } = useSWR(
     `/api/matching/users/${userId}/prematching_appointments/`,
@@ -86,9 +105,14 @@ const UserPanel = () => {
     >
       <TabsList className="grid w-full grid-cols-6">
         {USER_TABS.map(tab => (
-          <TabsTrigger value={tab.key} onClick={() => {
-            setSearchParams({ tab: tab.key });
-          }}>{tab.label}</TabsTrigger>
+          <TabsTrigger
+            value={tab.key}
+            onClick={() => {
+              setSearchParams({ tab: tab.key });
+            }}
+          >
+            {tab.label}
+          </TabsTrigger>
         ))}
       </TabsList>
       {USER_TABS.map(tab => (
@@ -97,12 +121,29 @@ const UserPanel = () => {
           className="py-1 px-2 flex-1 overflow-y-auto"
         >
           <Card className={'border-none shadow-none'}>
-            <CardHeader>
-              <CardTitle>{`${user.profile.first_name + user.profile.second_name
+            <CardHeader className="flex-row items-center justify-between">
+              <div>
+                <CardTitle>{`${
+                  user.profile.first_name + user.profile.second_name
                 } - ${tab.title ?? tab.label}`}</CardTitle>
-              {tab.description && (
-                <CardDescription>{tab.description}</CardDescription>
-              )}
+                {tab.description && (
+                  <CardDescription>{tab.description}</CardDescription>
+                )}
+              </div>
+              <Button
+                backgroundColor={theme.color.gradient.blue10}
+                size={ButtonSizes.Medium}
+                variation={ButtonVariations.Circle}
+                onClick={onAddToMatching}
+              >
+                <PlusIcon
+                  color={theme.color.surface.primary}
+                  label="select user"
+                  labelId="selectUser"
+                  width={16}
+                  height={16}
+                />
+              </Button>
             </CardHeader>
             <CardContent className="space-y-2 flex flex-col">
               <UserPanelContent

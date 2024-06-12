@@ -9,11 +9,14 @@ import {
 } from '@a-little-world/little-world-design-system';
 import { isEmpty } from 'lodash';
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import MatchesIcons from '../atoms/MatchesIcons';
 import Tag, { TagAppearance, TagSizes } from '../atoms/Tag';
 import UserImage from '../atoms/UserImage';
 import { formatDate } from '../helpers/date';
+import { MATCHING_ROUTE } from '../routes';
+import { useGlobalState } from '../store';
 
 type UserCardProps = {
   user: any;
@@ -31,27 +34,13 @@ export const UserCard = ({
   tiny = false,
   horizontal = false,
 }: UserCardProps) => {
+  const { addUserToMatching } = useGlobalState();
+  const navigate = useNavigate();
+  const onAddToMatching = () => {
+    addUserToMatching(user);
+    navigate(MATCHING_ROUTE);
+  };
   if (!user) return <div>Undefined User</div>;
-
-  let Content = <></>;
-  if (!tiny) {
-    Content = (
-      <div className="w-full text-xs text-center flex flex-col gap-2 items-center border-blue">
-        <MatchesIcons
-          label="Confirmed"
-          matches={user?.matches.confirmed?.items}
-        />
-        <MatchesIcons
-          label="Unconfirmed"
-          matches={user?.matches.unconfirmed?.items}
-        />
-        <MatchesIcons
-          label="Proposed"
-          matches={user?.matches.proposed?.items}
-        />
-      </div>
-    );
-  }
 
   let End = <></>;
   if (!partial) {
@@ -91,9 +80,9 @@ export const UserCard = ({
               <Tag
                 appearance={
                   TagAppearance[
-                  user.state.matching_state === 'searching'
-                    ? 'error'
-                    : 'success'
+                    user.state.matching_state === 'searching'
+                      ? 'error'
+                      : 'success'
                   ]
                 }
                 size={TagSizes.small}
@@ -130,29 +119,31 @@ export const UserCard = ({
               Current Status
             </Text>
             <ul className="steps steps-vertical w-full">
-              <li className="step step-primary">
+              <li className="step step-primary text-left">
                 Register {new Date(user.date_joined).toDateString()}
               </li>
 
               <li
-                className={`step ${user.email_authenticated ? 'step-primary' : ''
-                  }`}
+                className={`step text-left ${
+                  user.email_authenticated ? 'step-primary' : ''
+                }`}
               >
                 Email Authenticated
               </li>
               {!isEmpty(user.matches.unconfirmed.items) &&
                 isEmpty(user.matches.confirmed.items) && (
-                  <li className="step">Has pending match</li>
+                  <li className="step text-left">Has pending match</li>
                 )}
               <li
-                className={`step ${!isEmpty(user.matches.confirmed.items) ? 'step-primary' : ''
-                  }`}
+                className={`step text-left ${
+                  !isEmpty(user.matches.confirmed.items) ? 'step-primary' : ''
+                }`}
               >
                 First Match
               </li>
               {!isEmpty(user.matches.unconfirmed.items) &&
                 !isEmpty(user.matches.confirmed.items) && (
-                  <li className="step">Has pending match</li>
+                  <li className="step text-left">Has pending match</li>
                 )}
             </ul>
           </div>
@@ -163,26 +154,27 @@ export const UserCard = ({
 
   return (
     <div
-      className={`w-full relative flex ${horizontal ? 'flex-row' : 'flex-col'
-        } bg-base-200 h-fit items-center content-center justify-center rounded-xl p-4 gap-2 mb-1 border border-border-slate-400`}
+      className={`w-full relative flex ${
+        horizontal ? 'flex-row gap-8' : 'flex-col gap-2'
+      } bg-base-200 h-fit items-center content-center justify-center rounded-xl p-4  mb-2 border border-border-slate-400`}
     >
       {user.state.unresponsive && (
         <div className="w-90% p-2 z-10 rounded-md absolute top-3 right-1/2 translate-x-2/4 max-w-ful bg-error text-2xl text-center">
           Marked as unresponsive
         </div>
       )}
-      <Tag
-        className="absolute top-4 left-4"
-        appearance={
-          user.profile.user_type === 'volunteer'
-            ? TagAppearance.primary
-            : TagAppearance.secondary
-        }
-      >
-        {user.profile.user_type}
-      </Tag>
       {partial && !tiny && (
-        <div className="w-full h-fit flex flex-row justify-end">
+        <div className="w-full h-fit p-3 flex flex-row justify-between absolute top-0 left-0 z-10">
+          <Tag
+            className=""
+            appearance={
+              user.profile.user_type === 'volunteer'
+                ? TagAppearance.primary
+                : TagAppearance.secondary
+            }
+          >
+            {user.profile.user_type}
+          </Tag>
           <Button
             variation={ButtonVariations.Icon}
             onClick={e => {
@@ -207,7 +199,8 @@ export const UserCard = ({
           </Button>
         </div>
       )}
-      <div className="w-full h-fit flex flex-row items-center content-center justify-center">
+
+      <div className="h-fit flex flex-row items-center content-center justify-center">
         <UserImage
           alt="user profile pic"
           user={user.profile}
@@ -218,12 +211,30 @@ export const UserCard = ({
         />
       </div>
 
-      <div
-        className={`w-full h-fit text-center ${tiny ? 'text-xs' : 'text-2xl'}`}
-      >
-        {user.profile.first_name} {user.profile.second_name}
+      <div className="flex flex-col gap-2">
+        <div
+          className={`w-full h-fit text-center ${
+            tiny ? 'text-xs' : 'text-2xl'
+          }`}
+        >
+          {user.profile.first_name} {user.profile.second_name}
+        </div>
+        <div className="w-full text-xs text-center flex flex-col gap-2 items-center border-blue">
+          <MatchesIcons
+            label="Confirmed"
+            matches={user?.matches.confirmed?.items}
+          />
+          <MatchesIcons
+            label="Unconfirmed"
+            matches={user?.matches.unconfirmed?.items}
+          />
+          <MatchesIcons
+            label="Proposed"
+            matches={user?.matches.proposed?.items}
+          />
+        </div>
       </div>
-      {Content}
+
       {!partial && (
         <div className="flex flex-row content-center items-start justify-start gap-1 my-2">
           <Link
@@ -236,11 +247,23 @@ export const UserCard = ({
         </div>
       )}
       {partial && (
-        <div className="flex gap-4 items-center mt-2">
+        <div
+          className={`flex gap-4 ${
+            horizontal ? 'flex-col ' : 'items-center mt-2'
+          }`}
+        >
           <Link to={`/user/${user.id}`}>View profile</Link>
           <Link to={`/user/${user.id}`} state={{ openTab: 'chat' }}>
             Open chat
           </Link>
+          {!horizontal && (
+            <Button
+              variation={ButtonVariations.Inline}
+              onClick={onAddToMatching}
+            >
+              Match
+            </Button>
+          )}
         </div>
       )}
       {End}

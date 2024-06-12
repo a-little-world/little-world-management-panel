@@ -1,35 +1,41 @@
-import Form from "@rjsf/mui";
-import ReactMarkdown from 'react-markdown'
+import Form from '@rjsf/mui';
+import { RJSFSchema } from '@rjsf/utils';
+import validator from '@rjsf/validator-ajv8';
 //import Form from "@rjsf/core";
-import { JsonViewer } from '@textea/json-viewer'
+import { JsonViewer } from '@textea/json-viewer';
 import { useEffect, useState } from 'react';
-import { simulateFilterUpdate } from '../loginSimulator';
-import Header from '../atoms/header';
-import Panel from '../atoms/panel';
-import UserImage from '../atoms/userImage';
-import { getCookiesAsObject } from "../utils";
+import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-import Dropdown from '../atoms/dropdown';
 import { genericTwoUserApiCall } from '../api';
+import Dropdown from '../atoms/dropdown';
+import Panel from '../atoms/panel';
+import UserImage from '../atoms/userImage';
+import Header from '../blocks/Header.tsx';
 import {
-  OverlaySelectorListContainer,
-  OverlaySelectorTopMenu,
-  OverlaySelectorToggle,
+  ADDITIONAL_USER_FIELDS,
+  ADMIN_ACTIONS,
+  USER_FILTERS,
+} from '../constants';
+import { simulateFilterUpdate } from '../loginSimulator';
+import { getCookiesAsObject } from '../utils';
+import {
   ActionsMenuResultsContainer,
-  InputFormContainer,
-  UserDetailed,
-  UserTags,
   Button,
   CloseIcon,
   Container,
   Filter,
   Filters,
   FlexContainer,
+  InputFormContainer,
   InteractionsContainer,
   Name,
   Option,
   OrderedList,
+  OverlaySelector,
+  OverlaySelectorListContainer,
+  OverlaySelectorToggle,
+  OverlaySelectorTopMenu,
   PanelFallbackText,
   SearchPanels,
   SearchSection,
@@ -37,22 +43,16 @@ import {
   Subheading,
   Text,
   User,
+  UserDetailed,
   UserList,
-  OverlaySelector,
+  UserTags,
 } from './styles';
-import { 
-  USER_FILTERS, 
-  ADDITIONAL_USER_FIELDS,
-  ADMIN_ACTIONS,
-} from '../constants';
-import { RJSFSchema } from "@rjsf/utils";
-import validator from "@rjsf/validator-ajv8";
 
 const markdown = `A paragraph with *emphasis* and **strong importance**.
 
 | a | b |
 | - | - |
-`
+`;
 
 const UserItem = ({
   isSelected,
@@ -84,71 +84,83 @@ const UserListItemDetailed = ({
   stateInfo,
   userTags,
   updateUserTags,
-  mode = 'regular' // or suggestions
+  mode = 'regular', // or suggestions
 }) => {
-  const curUserTags = userTags.filter((u) => u.userHash === user.user.hash)[0]
-  
+  const curUserTags = userTags.filter(u => u.userHash === user.user.hash)[0];
+
   return (
-  <><UserDetailed>
-    <Name>
-      {user.profile.first_name} {user.profile.second_name} ({user.user.email})
-    </Name>
-  {mode === 'regular' && 
-    <Option onClick={setViewUser}>View</Option>}
-    {mode === 'regular' && <Option disabled={isSelected} onClick={setSelection1}>
-      Select (1)
-    </Option>}
-    <Option disabled={isSelected} onClick={setSelection2}>
-      Select (2)
-    </Option>
-    {mode === 'regular' && <Option onClick={(e) => {
-          const parser = new URL(window.location);
-          parser.searchParams.set("suggest", user.user.hash);
-          window.open(parser.href, '_blank');
-    }}>
-      Focus for maching
-    </Option>}
-    {mode === 'suggestion' && <Option>
-      Score: {user.score.score}
-      </Option>}
-    {mode === 'suggestion' && <Option>
-      View Scoring Table
-      </Option>}
-  </UserDetailed>
-  <UserTags>
-      {stateInfo?.filter_options.state.tags.map((tag) => (
-        <Option style={{
-          'font-size': '10px',
-          'padding': '0px',
-          'background': curUserTags?.tags.includes(tag.value) ? 'green' : 'white'
-        }} onClick={(e)=> {
-          fetch(`/api/admin/user/tag/toggle/`, {
-            method: 'POST',
-            headers: {
-              'X-CSRFToken': getCookiesAsObject().csrftoken,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              tag: tag.value,
-              user: user.user.hash,
-              lookup: 'hash'
-            }),
-          }).then((res) => {
-            if(res.status === 200)
-              res.json().then(json => {
-                updateUserTags(prevState => [...prevState.filter((u) => u.userHash !== user.user.hash), {
-                  tags: json.tags,
-                  userHash: curUserTags.userHash
-                }])
-              });
-          })
-        }}>
-          {tag.tag}
+    <>
+      <UserDetailed>
+        <Name>
+          {user.profile.first_name} {user.profile.second_name} (
+          {user.user.email})
+        </Name>
+        {mode === 'regular' && <Option onClick={setViewUser}>View</Option>}
+        {mode === 'regular' && (
+          <Option disabled={isSelected} onClick={setSelection1}>
+            Select (1)
+          </Option>
+        )}
+        <Option disabled={isSelected} onClick={setSelection2}>
+          Select (2)
         </Option>
-      ))}
-    </UserTags>
-  </>
-)}
+        {mode === 'regular' && (
+          <Option
+            onClick={e => {
+              const parser = new URL(window.location);
+              parser.searchParams.set('suggest', user.user.hash);
+              window.open(parser.href, '_blank');
+            }}
+          >
+            Focus for maching
+          </Option>
+        )}
+        {mode === 'suggestion' && <Option>Score: {user.score.score}</Option>}
+        {mode === 'suggestion' && <Option>View Scoring Table</Option>}
+      </UserDetailed>
+      <UserTags>
+        {stateInfo?.filter_options.state.tags.map(tag => (
+          <Option
+            style={{
+              'font-size': '10px',
+              padding: '0px',
+              background: curUserTags?.tags.includes(tag.value)
+                ? 'green'
+                : 'white',
+            }}
+            onClick={e => {
+              fetch(`/api/admin/user/tag/toggle/`, {
+                method: 'POST',
+                headers: {
+                  'X-CSRFToken': getCookiesAsObject().csrftoken,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  tag: tag.value,
+                  user: user.user.hash,
+                  lookup: 'hash',
+                }),
+              }).then(res => {
+                if (res.status === 200)
+                  res.json().then(json => {
+                    updateUserTags(prevState => [
+                      ...prevState.filter(u => u.userHash !== user.user.hash),
+                      {
+                        tags: json.tags,
+                        userHash: curUserTags.userHash,
+                      },
+                    ]);
+                  });
+              });
+            }}
+          >
+            {tag.tag}
+          </Option>
+        ))}
+      </UserTags>
+    </>
+  );
+};
 
 const UserPanel = ({ additionalFields = [], heading, user, fallback }) => (
   <Panel heading={heading}>
@@ -160,7 +172,8 @@ const UserPanel = ({ additionalFields = [], heading, user, fallback }) => (
             user={user.profile}
           />
           <Name>
-            {user.profile.first_name} {user.profile.second_name} ({user.user.email})
+            {user.profile.first_name} {user.profile.second_name} (
+            {user.user.email})
           </Name>
         </FlexContainer>
 
@@ -181,7 +194,7 @@ export const Dashboard = ({
   availableFilters = USER_FILTERS,
   initalFilters = localStorage.getItem('filterTags') || '[]',
   users,
-  stateInfo
+  stateInfo,
 }) => {
   const [selection1, setSelection1] = useState(null);
   const [selection2, setSelection2] = useState(null);
@@ -192,20 +205,22 @@ export const Dashboard = ({
   const [requestResponse, updateRequestResponse] = useState({});
   const [overlaySelectorState, setOverlaySelectorState] = useState({
     visible: false,
-    tab: 'users'
-  })
-  const [userTags, setUserTags] = useState(null)
+    tab: 'users',
+  });
+  const [userTags, setUserTags] = useState(null);
   const [suggestionTable, setSuggestionTable] = useState(null);
 
   useEffect(() => {
     /* This should be handled by a some sort of global state instead */
-    setUserTags(users.map((u) => {
-      return {
-        tags: u.state.tags,
-        userHash: u.user.hash
-      }
-    }));
-  }, [users])
+    setUserTags(
+      users.map(u => {
+        return {
+          tags: u.state.tags,
+          userHash: u.user.hash,
+        };
+      }),
+    );
+  }, [users]);
 
   useEffect(() => {
     updateRequestResponse(stateInfo);
@@ -215,7 +230,6 @@ export const Dashboard = ({
 
     if (stateInfo?.s2)
       setSelection2(users.filter(u => u.user.hash === stateInfo.s2)[0]);
-
   }, [stateInfo, users]);
 
   const updateFilters = updatedFilters => {
@@ -252,16 +266,16 @@ export const Dashboard = ({
           </UserPanel>
           <InputFormContainer>
             <Dropdown
-                name="filters"
-                id="filter-select"
-                onChange={e => setAdminAction(ADMIN_ACTIONS[e.target.value])}
+              name="filters"
+              id="filter-select"
+              onChange={e => setAdminAction(ADMIN_ACTIONS[e.target.value])}
             >
               <option value="">--sect an admin action--</option>
-                {Object.keys(ADMIN_ACTIONS).map(key => (
-                  <option key={key} value={key} selected={key==='makeMatch'}>
-                    {ADMIN_ACTIONS[key].text}
-                  </option>
-                ))}
+              {Object.keys(ADMIN_ACTIONS).map(key => (
+                <option key={key} value={key} selected={key === 'makeMatch'}>
+                  {ADMIN_ACTIONS[key].text}
+                </option>
+              ))}
             </Dropdown>
             {/* We can coveniently use react-jsonschema-form 
             this allowes us to copy our open api schemas 
@@ -269,31 +283,39 @@ export const Dashboard = ({
             We can dynamicly input userdata to this form ( -> see constants.ADMIN_ACTIONS.schema )
             but still allow admins to change the other form params! 
             -> react-jsonschema-form.readthedocs.io  */}
-            <Form 
+            <Form
               name="adminForm"
               schema={adminAction.schema(selection1, selection2)}
-              onSubmit={(e) => {
-                fetch(adminAction.path, adminAction?.method === 'GET' ? {
-                  method: 'GET',
-                } :{
-                  method: 'POST',
-                  redirect: 'manual',
-                  headers: {
-                    'X-CSRFToken': getCookiesAsObject().csrftoken,
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify('transformData' in adminAction ? adminAction.transformData(e.formData) : e.formData )
-                }).then(res => {
+              onSubmit={e => {
+                fetch(
+                  adminAction.path,
+                  adminAction?.method === 'GET'
+                    ? {
+                        method: 'GET',
+                      }
+                    : {
+                        method: 'POST',
+                        redirect: 'manual',
+                        headers: {
+                          'X-CSRFToken': getCookiesAsObject().csrftoken,
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(
+                          'transformData' in adminAction
+                            ? adminAction.transformData(e.formData)
+                            : e.formData,
+                        ),
+                      },
+                ).then(res => {
                   /* TODO based on status code change result background or smth */
                   res.json().then(json => {
                     updateRequestResponse(json);
                   });
-                })
+                });
               }}
-              validator={validator}>
-              <Button type='submit'>
-                {adminAction.text}
-              </Button>
+              validator={validator}
+            >
+              <Button type="submit">{adminAction.text}</Button>
             </Form>
           </InputFormContainer>
         </Selections>
@@ -328,19 +350,37 @@ export const Dashboard = ({
           </Filters>
           <div>
             {/* Temporary page selectors for pagination */}
-            {[...Array(stateInfo?.num_pages).keys()].map((x) => x + 1).map(page => {
-              return (<><button id={page} onClick={(e) => {
-                    // Switch to that page by reloading, with url param
-                    const url = window.location.href;
-                    const parser = new URL(url || window.location);
-                    parser.searchParams.set("page", e.target.id);
-                    window.location = parser.href;
-              } }>{page}</button><span>  </span></>)
-            })}
+            {[...Array(stateInfo?.num_pages).keys()]
+              .map(x => x + 1)
+              .map(page => {
+                return (
+                  <>
+                    <button
+                      id={page}
+                      onClick={e => {
+                        // Switch to that page by reloading, with url param
+                        const url = window.location.href;
+                        const parser = new URL(url || window.location);
+                        parser.searchParams.set('page', e.target.id);
+                        window.location = parser.href;
+                      }}
+                    >
+                      {page}
+                    </button>
+                    <span> </span>
+                  </>
+                );
+              })}
           </div>
           <Selections>
             <ActionsMenuResultsContainer>
-              <JsonViewer src={typeof requestResponse === 'string' ? {"msg" : requestResponse } : requestResponse} />
+              <JsonViewer
+                src={
+                  typeof requestResponse === 'string'
+                    ? { msg: requestResponse }
+                    : requestResponse
+                }
+              />
             </ActionsMenuResultsContainer>
             <UserPanel
               additionalFields={ADDITIONAL_USER_FIELDS}
@@ -370,54 +410,84 @@ export const Dashboard = ({
           </Selections>
         </SearchSection>
       </InteractionsContainer>
-      ...{overlaySelectorState?.visible && 
+      ...
+      {overlaySelectorState?.visible && (
         <OverlaySelector>
           <OverlaySelectorTopMenu>
-            <Option style={{
-              'background': overlaySelectorState.tab === 'users' ? 'green' : 'white'
-            }} onClick={(e) => {
-              setOverlaySelectorState({
-                ...overlaySelectorState,
-                tab: 'users'
-              })
-            }}>
+            <Option
+              style={{
+                background:
+                  overlaySelectorState.tab === 'users' ? 'green' : 'white',
+              }}
+              onClick={e => {
+                setOverlaySelectorState({
+                  ...overlaySelectorState,
+                  tab: 'users',
+                });
+              }}
+            >
               Users
             </Option>
-            <Option style={{
-              'background': overlaySelectorState.tab === 'suggestions' ? 'green' : 'white'
-            }} onClick={(e) => {
-              setOverlaySelectorState({
-                ...overlaySelectorState,
-                tab: 'suggestions'
-              })
-            }}>
+            <Option
+              style={{
+                background:
+                  overlaySelectorState.tab === 'suggestions'
+                    ? 'green'
+                    : 'white',
+              }}
+              onClick={e => {
+                setOverlaySelectorState({
+                  ...overlaySelectorState,
+                  tab: 'suggestions',
+                });
+              }}
+            >
               Suggestions
             </Option>
-            <Option style={{
-              'background': overlaySelectorState.tab === 'table' ? 'green' : 'white'
-            }} onClick={(e) => {
-              setOverlaySelectorState({
-                ...overlaySelectorState,
-                tab: 'table'
-              })
-            }}>
+            <Option
+              style={{
+                background:
+                  overlaySelectorState.tab === 'table' ? 'green' : 'white',
+              }}
+              onClick={e => {
+                setOverlaySelectorState({
+                  ...overlaySelectorState,
+                  tab: 'table',
+                });
+              }}
+            >
               Table
             </Option>
-            <Option disabled={true}>
-              Pages:
-            </Option>
-            {[...Array(stateInfo?.num_pages).keys()].map((x) => x + 1).map(page => {
-              return (<><Option id={page} onClick={(e) => {
-                    // Switch to that page by reloading, with url param
-                    const url = window.location.href;
-                    const parser = new URL(url || window.location);
-                    parser.searchParams.set("page", e.target.id);
-                    window.location = parser.href;
-              } }>{page}</Option><span>  </span></>)
-            })}
+            <Option disabled={true}>Pages:</Option>
+            {[...Array(stateInfo?.num_pages).keys()]
+              .map(x => x + 1)
+              .map(page => {
+                return (
+                  <>
+                    <Option
+                      id={page}
+                      onClick={e => {
+                        // Switch to that page by reloading, with url param
+                        const url = window.location.href;
+                        const parser = new URL(url || window.location);
+                        parser.searchParams.set('page', e.target.id);
+                        window.location = parser.href;
+                      }}
+                    >
+                      {page}
+                    </Option>
+                    <span> </span>
+                  </>
+                );
+              })}
           </OverlaySelectorTopMenu>
           <OverlaySelectorListContainer>
-            <OrderedList style={{display: overlaySelectorState.tab === 'users' ? 'block' : 'none'}}>
+            <OrderedList
+              style={{
+                display:
+                  overlaySelectorState.tab === 'users' ? 'block' : 'none',
+              }}
+            >
               {users.map(user => (
                 <UserListItemDetailed
                   key={user.hash}
@@ -435,7 +505,12 @@ export const Dashboard = ({
                 />
               ))}
             </OrderedList>
-            <OrderedList style={{display: overlaySelectorState.tab === 'suggestions' ? 'block' : 'none'}}>
+            <OrderedList
+              style={{
+                display:
+                  overlaySelectorState.tab === 'suggestions' ? 'block' : 'none',
+              }}
+            >
               {stateInfo.suggested_users?.map(user => (
                 <UserListItemDetailed
                   key={user.hash}
@@ -454,15 +529,25 @@ export const Dashboard = ({
                 />
               ))}
             </OrderedList>
-            {overlaySelectorState.tab === "table"  && 
-            <div style={{ background: 'white'}}><ReactMarkdown 
-              children={selection2?.score.rendered_results_md_table} remarkPlugins={[remarkGfm]} /></div>}
+            {overlaySelectorState.tab === 'table' && (
+              <div style={{ background: 'white' }}>
+                <ReactMarkdown
+                  children={selection2?.score.rendered_results_md_table}
+                  remarkPlugins={[remarkGfm]}
+                />
+              </div>
+            )}
           </OverlaySelectorListContainer>
         </OverlaySelector>
-      }
-      <OverlaySelectorToggle onClick={(e) => {
-        setOverlaySelectorState({...overlaySelectorState, visible: !overlaySelectorState.visible})
-      }}>
+      )}
+      <OverlaySelectorToggle
+        onClick={e => {
+          setOverlaySelectorState({
+            ...overlaySelectorState,
+            visible: !overlaySelectorState.visible,
+          });
+        }}
+      >
         YO YO
       </OverlaySelectorToggle>
     </Container>

@@ -1,0 +1,10 @@
+export const BASE_ROUTE = '/matching/';
+export const USERS_ROUTE = '/users/';
+export const USER_DETAILS_ROUTE = '/user/:userId';
+export const MATCHES_LIST_ROUTE = '/matches/';
+export const MATCHING_ROUTE = '/match-info/';
+export const SCORES_ROUTE = '/scores/';
+export const STATS_ROUTE = '/stats/';
+export const EMAILS_ROUTE = '/emails/';
+export const EMAIL_ROUTE = '/emails/:emailTemplateName';
+export const DEVKIT_ROUTE = '/devkit/';
