@@ -162,6 +162,12 @@ export function Users() {
     setSearchParams(createSearchParams({ ...searchParams, list }));
   };
 
+  const handlePagination = newPage => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set('page', newPage);
+    setSearchParams(newParams);
+  };
+
   return (
     <>
       {filtersLoading ? (
@@ -185,19 +191,13 @@ export function Users() {
               <PaginationItem>
                 <PaginationPrevious
                   disabled={!userList?.previous_page}
-                  onClick={setSearchParams(prev => ({
-                    ...prev,
-                    page: userList?.previous_page,
-                  }))}
+                  onClick={() => handlePagination(userList?.previous_page)}
                 />
               </PaginationItem>
               {userList?.previous_page && (
                 <PaginationItem>
                   <PaginationButton
-                    onClick={setSearchParams(prev => ({
-                      ...prev,
-                      page: userList?.previous_page,
-                    }))}
+                    onClick={() => handlePagination(userList?.previous_page)}
                   >
                     {userList?.previous_page}
                   </PaginationButton>
@@ -213,10 +213,7 @@ export function Users() {
                   </PaginationItem>
                   <PaginationItem>
                     <PaginationButton
-                      onClick={setSearchParams(prev => ({
-                        ...prev,
-                        page: userList?.last_page,
-                      }))}
+                      onClick={() => handlePagination(userList?.last_page)}
                     >
                       {userList?.last_page}
                     </PaginationButton>
@@ -227,10 +224,7 @@ export function Users() {
               <PaginationItem>
                 <PaginationNext
                   disabled={!userList?.next_page}
-                  onClick={setSearchParams(prev => ({
-                    ...prev,
-                    page: userList?.next_page,
-                  }))}
+                  onClick={() => handlePagination(userList?.next_page)}
                 />
               </PaginationItem>
             </PaginationContent>

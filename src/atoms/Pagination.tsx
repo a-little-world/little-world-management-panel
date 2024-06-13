@@ -71,8 +71,8 @@ const PaginationButton = ({
   <button
     onClick={onClick}
     aria-current={isActive ? 'page' : undefined}
-    className={`inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-slate-200 hover:text-accent-foreground h-10 px-4 py-2 gap-1 ${
-      isActive && 'border border-slate-300'
+    className={`inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-slate-200 hover:text-accent-foreground h-10 px-4 py-2 gap-1 border ${
+      isActive && 'border-solid border-slate-300'
     }`}
     {...props}
   />
