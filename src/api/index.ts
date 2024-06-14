@@ -175,7 +175,7 @@ export const calculateScoreBetweenUsers = ({
   onSuccess,
   onError,
 }) => {
-  fetch(`api/matching/users/${user1Id}/score_between/`, {
+  fetch(`/api/matching/users/${user1Id}/score_between/`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

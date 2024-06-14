@@ -3,11 +3,15 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   DotsIcon,
+  Text,
 } from '@a-little-world/little-world-design-system';
 import React from 'react';
-import { Link, LinkProps } from 'react-router-dom';
+import { Link, LinkProps, useSearchParams } from 'react-router-dom';
 
-const Pagination = ({ className, ...props }: React.ComponentProps<'nav'>) => (
+const PaginationRoot = ({
+  className,
+  ...props
+}: React.ComponentProps<'nav'>) => (
   <nav
     role="navigation"
     aria-label="pagination"
@@ -15,7 +19,7 @@ const Pagination = ({ className, ...props }: React.ComponentProps<'nav'>) => (
     {...props}
   />
 );
-Pagination.displayName = 'Pagination';
+PaginationRoot.displayName = 'PaginationRoot';
 
 const PaginationContent = React.forwardRef<
   HTMLUListElement,
@@ -136,8 +140,63 @@ const PaginationEllipsis = ({
 );
 PaginationEllipsis.displayName = 'PaginationEllipsis';
 
+const Pagination = ({ list }: { list: any }) => {
+  let [searchParams, setSearchParams] = useSearchParams();
+  const handlePagination = newPage => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set('page', newPage);
+    setSearchParams(newParams);
+  };
+  return (
+    <PaginationRoot>
+      <PaginationContent>
+        <Text>{list?.count ? `${list?.count} items` : ''}</Text>
+        <PaginationItem>
+          <PaginationPrevious
+            disabled={!list?.previous_page}
+            onClick={() => handlePagination(list?.previous_page)}
+          />
+        </PaginationItem>
+        {list?.previous_page && (
+          <PaginationItem>
+            <PaginationButton
+              onClick={() => handlePagination(list?.previous_page)}
+            >
+              {list?.previous_page}
+            </PaginationButton>
+          </PaginationItem>
+        )}
+        <PaginationItem>
+          <PaginationButton isActive>{list?.page}</PaginationButton>
+        </PaginationItem>
+        {list?.page !== list?.last_page && (
+          <>
+            <PaginationItem>
+              <PaginationEllipsis />
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationButton
+                onClick={() => handlePagination(list?.last_page)}
+              >
+                {list?.last_page}
+              </PaginationButton>
+            </PaginationItem>
+          </>
+        )}
+
+        <PaginationItem>
+          <PaginationNext
+            disabled={!list?.next_page}
+            onClick={() => handlePagination(list?.next_page)}
+          />
+        </PaginationItem>
+      </PaginationContent>
+    </PaginationRoot>
+  );
+};
+
 export {
-  Pagination,
+  PaginationRoot,
   PaginationButton,
   PaginationContent,
   PaginationEllipsis,
@@ -146,3 +205,4 @@ export {
   PaginationNext,
   PaginationPrevious,
 };
+export default Pagination;

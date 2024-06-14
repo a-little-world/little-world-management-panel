@@ -2,7 +2,7 @@ import {
   CustomThemeProvider,
   GlobalStyles,
 } from '@a-little-world/little-world-design-system';
-import React, { PropsWithChildren, useMemo } from 'react';
+import React, { PropsWithChildren } from 'react';
 import { RouterProvider, ScrollRestoration } from 'react-router-dom';
 import { Outlet, createBrowserRouter } from 'react-router-dom';
 
@@ -27,6 +27,7 @@ import { GlobalStateProvider } from './store.tsx';
 import Home from './views/Home';
 import Matches from './views/Matches';
 import Matching from './views/Matching';
+import Scores from './views/Scores';
 import Users from './views/Users';
 
 export const Root = ({
@@ -73,7 +74,7 @@ const router = createBrowserRouter(
         },
         {
           path: SCORES_ROUTE,
-          element: <AdminPanelV2_Matches />,
+          element: <Scores />,
         },
         {
           path: EMAILS_ROUTE,

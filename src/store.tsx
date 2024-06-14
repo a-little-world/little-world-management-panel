@@ -64,6 +64,34 @@ export const useUserListData = (searchParams: string) => {
   };
 };
 
+export const useScoresFilterOptions = () => {
+  const { data, error, mutate, isLoading } = useSWR(
+    `/api/matching/scores/filters/`,
+    dataFetcher,
+  );
+
+  return {
+    filterOptions: data,
+    error,
+    mutate,
+    isLoading,
+  };
+};
+
+export const useScoresListData = (searchParams: string) => {
+  const { data, error, mutate, isLoading } = useSWR(
+    `/api/matching/scores/?${searchParams}`,
+    dataFetcher,
+  );
+
+  return {
+    scoresList: data,
+    error,
+    mutate,
+    isLoading,
+  };
+};
+
 const GlobalStateContext = createContext({
   selectedUsers: [],
 });

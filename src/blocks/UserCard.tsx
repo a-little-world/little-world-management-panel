@@ -29,7 +29,6 @@ type UserCardProps = {
 export const UserCard = ({
   user,
   deselectUser,
-  selectUserForDetails,
   partial = true,
   tiny = false,
   horizontal = false,

@@ -1,24 +1,13 @@
 import { Dropdown, Text } from '@a-little-world/little-world-design-system';
-import { get, isEmpty } from 'lodash';
-import React, { useState } from 'react';
+import React from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Link } from 'react-router-dom';
 import { createSearchParams } from 'react-router-dom';
-import { useMatchesFilterOptions } from '../store';
 import styled from 'styled-components';
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '../atoms/Table';
-import UserImage from '../atoms/UserImage';
-// import { SelectedMatchSheet } from '../blocks/SelectedMatchSheet';
-import { useFilterOptions, useGlobalState, useMatchListData, useUserListData } from '../store';
+import Pagination from '../atoms/Pagination';
 import { MatchesTable } from '../blocks/MatchesTable';
+import { useMatchesFilterOptions } from '../store';
+import { useMatchListData } from '../store';
 
 const StyledDropdown = styled(Dropdown)`
   div[data-radix-popper-content-wrapper] {
@@ -26,11 +15,11 @@ const StyledDropdown = styled(Dropdown)`
   }
 `;
 
-
 export function Matches() {
   let [searchParams, setSearchParams] = useSearchParams();
   const list = searchParams.get('list') || 'all';
-  const { filterOptions, isLoading: filtersLoading } = useMatchesFilterOptions();
+  const { filterOptions, isLoading: filtersLoading } =
+    useMatchesFilterOptions();
 
   const { matchList, isLoading: usersLoading } = useMatchListData(
     createSearchParams(searchParams),
@@ -47,15 +36,19 @@ export function Matches() {
         {filtersLoading ? (
           'Loading filters...'
         ) : (
-          <StyledDropdown
-            value={list}
-            options={filterOptions.lists.map(({ name, description }) => ({
-              value: name,
-              label: description,
-            }))}
-            onValueChange={val => changeList(val)}
-            cannotError
-          />
+          <div className="w-full flex items-center w-full gap-4 p-4 justify-between flex-wrap">
+            <StyledDropdown
+              value={list}
+              options={filterOptions.lists.map(({ name, description }) => ({
+                value: name,
+                label: description,
+              }))}
+              onValueChange={val => changeList(val)}
+              placeholder="Select a match list..."
+              cannotError
+            />
+            <Pagination list={matchList} />
+          </div>
         )}
       </div>
       {usersLoading ? (

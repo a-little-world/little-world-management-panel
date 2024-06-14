@@ -12,27 +12,24 @@ import {
 } from '../atoms/Table';
 import Tag, { TagAppearance, TagSizes } from '../atoms/Tag';
 import UserImage from '../atoms/UserImage';
-import { useGlobalState } from '../store';
+import { formatDate, formatTime } from '../helpers/date';
 
-const MATCHES_FIELDS = [
-  { key: 'status', label: 'Status' },
+const SCORES_FIELDS = [
   { key: 'user1', label: 'User 1' },
   { key: 'user2', label: 'User 2' },
-  { key: 'created_at', label: 'Created At' },
-  { key: 'updated_at', label: 'Last Activity' },
+  { key: 'matchable', label: 'Matchable' },
+  { key: 'score', label: 'Score' },
+  { key: 'latest_update', label: 'Last Updated' },
 ];
 
-export function MatchesTable({ matchList, list }) {
-  //const { selectedMatch, selectMatch, deselectMatch } = useGlobalState();
-  const selectedMatch = {};
-  const [fields, setFields] = useState(MATCHES_FIELDS);
+export function ScoresTable({ scoresList }: { scoresList: any }) {
+  const [fields, setFields] = useState(SCORES_FIELDS);
 
   return (
     <>
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[100px]">Selected</TableHead>
             {fields.map(({ key, label }) => (
               <TableHead key={key} className="w-[100px]">
                 {label}
@@ -40,33 +37,19 @@ export function MatchesTable({ matchList, list }) {
             ))}
           </TableRow>
         </TableHeader>
-        {isEmpty(matchList?.results) ? (
+        {isEmpty(scoresList?.results) ? (
           <Text className="p-4 w-full" center>
             No results.
           </Text>
         ) : (
           <TableBody>
-            {matchList?.results.map(match => (
-              <TableRow key={match.uuid}>
-                <TableCell className="w-20">
-                  <input
-                    type="checkbox"
-                    checked={Object.keys(selectedMatch).includes(match.uuid)}
-                    className="checkbox ml-2"
-                    onChange={() => {
-                      if (Object.keys(selectedMatch).includes(match.uuid)) {
-                        //deselectMatch(match.uuid);
-                      } else {
-                        //selectMatch(match);
-                      }
-                    }}
-                  />
-                </TableCell>
+            {scoresList?.results.map(score => (
+              <TableRow key={score.uuid}>
                 {fields.map(({ key }) => {
                   if (key === 'user1' || key === 'user2') {
-                    const user = match[key];
+                    const user = score[key];
                     return (
-                      <TableCell key={match.uuid + key}>
+                      <TableCell key={score.uuid + key}>
                         <Link to={`/user/${user.id}`}>
                           <UserImage
                             alt={
@@ -85,23 +68,31 @@ export function MatchesTable({ matchList, list }) {
                     );
                   }
 
-                  if (key === 'status')
+                  if (key === 'matchable')
                     return (
-                      <TableCell key={match.uuid + key}>
+                      <TableCell key={score.uuid + key}>
                         <Tag
                           appearance={
-                            TagAppearance[match.status ? 'success' : 'error']
+                            TagAppearance[score.matchable ? 'success' : 'error']
                           }
                           size={TagSizes.small}
                         >
-                          {match.status}
+                          {score.matchable ? 'Matchable' : 'Not valid'}
                         </Tag>
                       </TableCell>
                     );
 
+                  if (key === 'latest_update')
+                    return (
+                      <TableCell key={score.uuid + key}>
+                        {formatDate(new Date(score.latest_update))}
+                        {formatTime(new Date(score.latest_update))}
+                      </TableCell>
+                    );
+
                   return (
-                    <TableCell key={match.uuid + key}>
-                      {get(match, key)}
+                    <TableCell key={score.uuid + key}>
+                      {get(score, key)}
                     </TableCell>
                   );
                 })}

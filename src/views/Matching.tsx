@@ -5,6 +5,7 @@ import {
   ButtonVariations,
   Dropdown,
   Text,
+  TextTypes,
 } from '@a-little-world/little-world-design-system';
 import { isEmpty } from 'lodash';
 import React, { useState } from 'react';
@@ -29,7 +30,7 @@ import { useGlobalState } from '../store';
 const MATCHING_OPTIONS = [
   { value: 'match', label: 'Match Users' },
   { value: 'proposal', label: 'Make Proposal' },
-  // { value: 'score', label: 'Calculate Matching Score' },
+  { value: 'score', label: 'Calculate Matching Score' },
 ];
 
 const Matching = () => {
@@ -38,6 +39,7 @@ const Matching = () => {
   const [option, setOption] = useState<string>('');
   const [submitError, setSubmitError] = useState<string>('');
   const [matchSucces, setMatchSuccess] = useState<string>('');
+  const [score, setScore] = useState<string | number>('To Be Calculated');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   let [searchParams, setSearchParams] = useSearchParams();
   const { removeUserFromMatching, addUserToMatching, potentialMatch } =
@@ -112,13 +114,18 @@ const Matching = () => {
               Users panel or directly on a user's profile
             </Text>
           ) : (
-            potentialMatch.map(user => (
-              <UserCard
-                user={user}
-                deselectUser={removeUserFromMatching}
-                horizontal
-              />
-            ))
+            <>
+              <Text type={TextTypes.Body3} bold>
+                Score: {score}
+              </Text>
+              {potentialMatch.map(user => (
+                <UserCard
+                  user={user}
+                  deselectUser={removeUserFromMatching}
+                  horizontal
+                />
+              ))}
+            </>
           )}
         </CardContent>
         <CardFooter>
