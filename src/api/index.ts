@@ -37,7 +37,7 @@ export const sendChatMessage = ({ userId, message, onError, onSuccess }) =>
     .catch(onError);
 
 export const markMessageAsRead = ({ messageId, userId, onError, onSuccess }) =>
-  fetch(`/api/matching/matches/${userId}/message_read/`, {
+  fetch(`/api/matching/users/${userId}/message_mark_read/`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
