@@ -10,11 +10,14 @@ import {
   TableHeader,
   TableRow,
 } from '../atoms/Table';
+import { Text } from '@a-little-world/little-world-design-system';
 import Tag, { TagAppearance, TagSizes } from '../atoms/Tag';
 import UserImage from '../atoms/UserImage';
 import { formatDate, formatTime } from '../helpers/date';
+import { useGlobalState } from '../store';
 
 const SCORES_FIELDS = [
+  { key: 'make_match', label: 'Match' },
   { key: 'user1', label: 'User 1' },
   { key: 'user2', label: 'User 2' },
   { key: 'matchable', label: 'Matchable' },
@@ -22,7 +25,8 @@ const SCORES_FIELDS = [
   { key: 'latest_update', label: 'Last Updated' },
 ];
 
-export function ScoresTable({ scoresList }: { scoresList: any }) {
+export function ScoresTable({ scoresList, openMatchingDialog }: { scoresList: any, openMatchingDialog: any }) {
+  const { removeUserFromMatching, addUserToMatching, potentialMatch } = useGlobalState();
   const [fields, setFields] = useState(SCORES_FIELDS);
 
   return (
@@ -67,6 +71,22 @@ export function ScoresTable({ scoresList }: { scoresList: any }) {
                       </TableCell>
                     );
                   }
+
+                  if (key === 'make_match')
+                    return (
+                      <TableCell key={score.uuid + key}>
+                        <button
+                          onClick={() => {
+                            addUserToMatching(score.user1)
+                            addUserToMatching(score.user2)
+                            openMatchingDialog(true)
+                          }}
+                          className="text-blue-500"
+                        >
+                          Match
+                        </button>
+                      </TableCell>
+                    );
 
                   if (key === 'matchable')
                     return (

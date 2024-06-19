@@ -7,12 +7,22 @@ import {
 import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { createSearchParams } from 'react-router-dom';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../shadcnui/ui/dialog";
+import Matching from "../views/Matching";
 import styled from 'styled-components';
 
 import Pagination from '../atoms/Pagination';
 import { ScoresTable } from '../blocks/ScoresTable';
 import { formatTime } from '../helpers/date';
 import { useScoresFilterOptions, useScoresListData } from '../store';
+
 
 const StyledDropdown = styled(Dropdown)`
   div[data-radix-popper-content-wrapper] {
@@ -22,6 +32,8 @@ const StyledDropdown = styled(Dropdown)`
 
 export function Scores() {
   let [searchParams, setSearchParams] = useSearchParams();
+  const [matchingDialogOpen, setMatchingDialogOpen] = useState(false);
+
   const { isLoading: filtersLoading } = useScoresFilterOptions();
   const [scoresUpdated, setScoresUpdated] = useState(new Date());
 
@@ -43,6 +55,14 @@ export function Scores() {
   console.log({ scoresList });
   return (
     <>
+      <Dialog open={matchingDialogOpen} onOpenChange={setMatchingDialogOpen}>
+        <DialogContent className='z-140 max-w-full w-[1000px]'>
+          <DialogHeader>
+            <DialogTitle>Do you want to perform a matching for these users?</DialogTitle>
+            <Matching />
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
       <div className="flex w-full overflow-scroll gap-2 p-2.5 align-center z-100 justify-center items-center">
         {filtersLoading ? (
           'Loading filters...'
@@ -71,10 +91,13 @@ export function Scores() {
           </div>
         )}
       </div>
-      {scoresLoading ? (
+      {(!scoresLoading && scoresList?.results?.length === 0) && (
+        <Text>No scores found</Text>
+      )}
+      {(scoresLoading && scoresList?.results?.length > 0) ? (
         `Loading scores...`
       ) : (
-        <ScoresTable scoresList={scoresList} />
+        <ScoresTable scoresList={scoresList} openMatchingDialog={setMatchingDialogOpen} />
       )}
     </>
   );
