@@ -22,6 +22,7 @@ import Pagination from '../atoms/Pagination';
 import { ScoresTable } from '../blocks/ScoresTable';
 import { formatTime } from '../helpers/date';
 import { useScoresFilterOptions, useScoresListData } from '../store';
+import { burstUpdateMatchingScores } from '../api/index';
 
 export const TaskMonitorComponent = ({ task_id, finishedCallback }) => {
 
@@ -80,13 +81,20 @@ function BurstUpdateDialog({
   burstUpdateDialogOpen,
   setBurstUpdateDialogOpen
 }) {
+  const [taskIds, setTaskIds] = useState([]);
   return <Dialog open={burstUpdateDialogOpen} onOpenChange={setBurstUpdateDialogOpen}>
     <DialogContent className='z-140 max-w-full w-[1000px]'>
       <DialogHeader>
         <DialogTitle>Do you want to perform a burst update for these users?</DialogTitle>
         <Button appearance={ButtonAppearance.Secondary} onClick={() => {
-
+          console.log("BURST UPDATE")
+          burstUpdateMatchingScores({ parallel_tasks: 10 }).then((results) => {
+            //TODO: returns the task ID's so a progress monitor should be displayed
+            console.log("BURST UPDATE RESULTS", results);
+            setTaskIds(results.task_ids);
+          });
         }}>Burst Update Scores</Button>
+        {JSON.stringify(taskIds)}
       </DialogHeader>
     </DialogContent>
   </Dialog>
@@ -138,9 +146,6 @@ export function Scores() {
               placeholder="Select a score list..."
               cannotError
             />
-            <Button appearance={ButtonAppearance.Secondary} onClick={onUpdate}>
-              Reload Scores
-            </Button>
             <Button appearance={ButtonAppearance.Secondary} onClick={() => {
               setBurstUpdateDialogOpen(true);
             }}>
