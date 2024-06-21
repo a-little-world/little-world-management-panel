@@ -20,8 +20,10 @@ import {
   MATCHES_LIST_ROUTE,
   MATCHING_ROUTE,
   SCORES_ROUTE,
+  STATS_ROUTE,
   USERS_ROUTE,
   USER_DETAILS_ROUTE,
+  VIDEO_CALLS_ROUTE
 } from './routes';
 import { GlobalStateProvider } from './store.tsx';
 import Home from './views/Home';
@@ -29,6 +31,8 @@ import Matches from './views/Matches';
 import Matching from './views/Matching';
 import Scores from './views/Scores';
 import Users from './views/Users';
+import Stats from './views/Stats';
+import VideoCalls from './views/VideoCalls';
 
 export const Root = ({
   children,
@@ -69,8 +73,16 @@ const router = createBrowserRouter(
           element: <Matching />,
         },
         {
+          path: STATS_ROUTE,
+          element: <Stats />,
+        },
+        {
           path: MATCHES_LIST_ROUTE,
           element: <Matches />,
+        },
+        {
+          path: VIDEO_CALLS_ROUTE,
+          element: <VideoCalls />,
         },
         {
           path: SCORES_ROUTE,

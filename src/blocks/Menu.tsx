@@ -16,6 +16,7 @@ import {
   SCORES_ROUTE,
   STATS_ROUTE,
   USERS_ROUTE,
+  VIDEO_CALLS_ROUTE
 } from '../routes';
 
 const Menu = () => {
@@ -61,17 +62,23 @@ const Menu = () => {
           >
             Emails
           </NavigationMenuContentItem>
-          {/* <NavigationMenuContentItem
+          {<NavigationMenuContentItem
             to={STATS_ROUTE}
             active={location.pathname === STATS_ROUTE}
           >
             Stats
-          </NavigationMenuContentItem> */}
+          </NavigationMenuContentItem>}
           <NavigationMenuContentItem
             to={SCORES_ROUTE}
             active={location.pathname === SCORES_ROUTE}
           >
             Scores
+          </NavigationMenuContentItem>
+          <NavigationMenuContentItem
+            to={VIDEO_CALLS_ROUTE}
+            active={location.pathname === VIDEO_CALLS_ROUTE}
+          >
+            VideoCalls
           </NavigationMenuContentItem>
         </NavigationMenuContent>
       </NavigationMenuItem>
