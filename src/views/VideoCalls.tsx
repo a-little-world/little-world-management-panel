@@ -1,5 +1,6 @@
 import { Dropdown, Text } from '@a-little-world/little-world-design-system';
 import { createSearchParams, useSearchParams } from 'react-router-dom';
+import Tag, { TagAppearance, TagSizes } from '../atoms/Tag';
 import { useVideoCallsFilterOptions, useVideoCallsListData } from '../store';
 import { get, isEmpty } from 'lodash';
 import React, { useState } from 'react';
@@ -22,9 +23,11 @@ const StyledDropdown = styled(Dropdown)`
 const DEFAULT_VIDEO_CALL_FIELDS = [
     { key: 'created_at', label: 'Created At' },
     { key: 'end_time', label: 'End Time' },
-    { key: 'u1.profile.first_name', label: 'First User' },
-    { key: 'u2.profile.first_name', label: 'Second User' },
+    { key: 'u1', label: 'First User' },
+    { key: 'u2', label: 'Second User' },
     { key: 'status', label: 'Status' },
+    { key: 'both_have_been_active', label: 'Both Active?' },
+    { key: 'duration', label: 'Duration' },
 ];
 
 export function VideoCallsTable({ videoCallsList }) {
@@ -57,6 +60,20 @@ export function VideoCallsTable({ videoCallsList }) {
                                                 {formatDate(new Date(get(videoCall, key)))}
                                             </TableCell>
                                         );
+                                    }
+
+                                    if (key === 'both_have_been_active') {
+                                        return <TableCell key={videoCall.uuid + key}>
+                                            <Tag
+                                                appearance={
+                                                    TagAppearance[videoCall.both_have_been_active]
+                                                }
+                                                size={TagSizes.small}
+                                            >
+                                                {videoCall.both_have_been_active ? 'Yes' : 'No'}
+                                            </Tag>
+                                        </TableCell>
+
                                     }
 
                                     if (key === 'u1' || key === 'u2') {
