@@ -1,5 +1,6 @@
 import { filter, pull, unset } from 'lodash';
 import React, { createContext, useState } from 'react';
+import { getCookiesAsObject } from './utils';
 import useSWR from 'swr';
 
 export const dataFetcher = (url: string) =>
@@ -7,6 +8,32 @@ export const dataFetcher = (url: string) =>
     if (res.ok) return res.json();
     throw new Error('Error fetching data');
   });
+
+export const cratePostFetcher = (_data: any) => (usr: string, data: any) =>
+  fetch(usr, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookiesAsObject().csrftoken,
+    },
+    body: JSON.stringify(_data),
+  }).then(res => {
+    if (res.ok) return res.json();
+    throw new Error('Error fetching data');
+  });
+
+export const postFetcher = async (url: string, data: any) => {
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookiesAsObject().csrftoken,
+    },
+    body: JSON.stringify(data),
+  });
+
+  return response.json();
+}
 
 export const useFilterOptions = () => {
   const { data, error, mutate, isLoading } = useSWR(
