@@ -29,11 +29,13 @@ import {
   NoMessages,
   SendButton,
   Time,
+  UnreadCheckbox,
   WriteSection,
 } from './UserChat.styles';
 
 const UserChat = ({ user }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [unreadOnly, setUnreadOnly] = useState(false);
   const messagesRef = useRef();
   const theme = useTheme();
 
@@ -41,15 +43,22 @@ const UserChat = ({ user }) => {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
     setError,
   } = useForm();
 
-  const { data, mutate, error, isLoading } = useSWR(
-    `/api/matching/users/${user.id}/messages/`,
-    dataFetcher,
-  );
+  const {
+    data,
+    mutate,
+    error: fetchError,
+    isLoading,
+  } = useSWR(`/api/matching/users/${user.id}/messages/`, dataFetcher, {
+    keepPreviousData: true,
+  });
 
-  const { chat, messages } = data || {};
+  const messages = unreadOnly
+    ? data?.messages?.results.filter(message => message.read)
+    : data?.messages?.results || data;
 
   const onError = error => {
     setError('message', {});
@@ -63,6 +72,7 @@ const UserChat = ({ user }) => {
       message: data.newMessage,
       onError,
       onSuccess: message => {
+        reset();
         mutate({
           ...messages,
           results: [...messages.results, message],
@@ -80,86 +90,94 @@ const UserChat = ({ user }) => {
       onSuccess: () => mutate(),
     });
   };
-
-  if (isLoading) return null;
-  console.log({ messages, chat, user });
-  if ((!messages || !chat) && !isLoading) return <>No Messages to display</>;
+  console.log({ data, messages, user, isLoading, fetchError });
 
   return (
     <ChatContainer>
       <Messages ref={messagesRef}>
-        {messages &&
-          (isEmpty(chat) ? (
-            <NoMessages type={TextTypes.Body4}>
-              {'No messages sent yet'}
-            </NoMessages>
-          ) : (
-            <>
-              {messages?.results?.map(message => (
-                <Message
+        <UnreadCheckbox
+          label={'Unread only'}
+          checked={unreadOnly}
+          value={unreadOnly}
+          onCheckedChange={setUnreadOnly}
+        />
+        {isEmpty(messages) ? (
+          <NoMessages type={TextTypes.Body4}>
+            {fetchError
+              ? 'Error fetching messages'
+              : isLoading
+              ? 'Loading messages'
+              : unreadOnly
+              ? 'No unread messages'
+              : 'No messages sent yet'}
+          </NoMessages>
+        ) : (
+          <>
+            {messages?.map(message => (
+              <Message
+                $isSelf={message.sender !== user.hash}
+                key={message.uuid}
+              >
+                <MessageText
                   $isSelf={message.sender !== user.hash}
-                  key={message.uuid}
+                  disableParser={!message.parsable}
                 >
-                  <MessageText
-                    $isSelf={message.sender !== user.hash}
-                    disableParser={!message.parsable}
+                  {message.text}
+                </MessageText>
+                <div className="flex flex-end justify-end align-center">
+                  <Popover
+                    trigger={
+                      <Button type="button" variation={ButtonVariations.Icon}>
+                        <DotsIcon
+                          circular
+                          height="16px"
+                          width="16px"
+                          label="message menu icon"
+                          labelId="messageMenuIcon"
+                          color={theme.color.surface.quaternary}
+                        />
+                      </Button>
+                    }
                   >
-                    {message.text}
-                  </MessageText>
-                  <div className="flex flex-end justify-end align-center">
-                    <Popover
-                      trigger={
-                        <Button type="button" variation={ButtonVariations.Icon}>
-                          <DotsIcon
-                            circular
-                            height="16px"
-                            width="16px"
-                            label="message menu icon"
-                            labelId="messageMenuIcon"
-                            color={theme.color.surface.quaternary}
-                          />
-                        </Button>
-                      }
+                    <Button
+                      variation={ButtonVariations.Inline}
+                      disabled={message.sender !== user.hash || message.read}
+                      onClick={() => handleReadMessage(message.uuid)}
                     >
-                      <Button
-                        variation={ButtonVariations.Inline}
-                        disabled={message.sender !== user.hash || message.read}
-                        onClick={() => handleReadMessage(message.uuid)}
-                      >
-                        Mark as Read
-                      </Button>
-                      <Button
-                        variation={ButtonVariations.Inline}
-                        disabled={message.sender === user.hash}
-                      >
-                        Delete Message
-                      </Button>
-                    </Popover>
-                    <Time type={TextTypes.Body6}>
-                      {message.read ? (
-                        <TickDoubleIcon
-                          labelId="messageReadIcon"
-                          label="message read icon"
-                          color={theme.color.status.info}
-                          width="16px"
-                          height="16px"
-                        />
-                      ) : (
-                        <TickIcon
-                          labelId="messageUnreadIcon"
-                          label="message unread icon"
-                          width="16px"
-                          height="16px"
-                        />
-                      )}
-                      {formatTimeDistance(message.created, new Date(), 'en')}
-                    </Time>
-                  </div>
-                </Message>
-              ))}
-              {/* <div ref={scrollRef} /> */}
-            </>
-          ))}
+                      Mark as Read
+                    </Button>
+                    <Button
+                      variation={ButtonVariations.Inline}
+                      disabled={message.sender === user.hash}
+                    >
+                      Delete Message
+                    </Button>
+                  </Popover>
+                  <Time type={TextTypes.Body6}>
+                    {message.read ? (
+                      <TickDoubleIcon
+                        labelId="messageReadIcon"
+                        label="message read icon"
+                        color={theme.color.status.info}
+                        width="16px"
+                        height="16px"
+                      />
+                    ) : (
+                      <TickIcon
+                        labelId="messageUnreadIcon"
+                        label="message unread icon"
+                        width="16px"
+                        height="16px"
+                      />
+                    )}
+                    {formatTimeDistance(message.created, new Date(), 'en')}
+                  </Time>
+                </div>
+              </Message>
+            ))}
+            {/* <div ref={scrollRef} /> */}
+          </>
+        )}
       </Messages>
 
       <WriteSection onSubmit={handleSubmit(sendNewMessage)}>

@@ -119,8 +119,8 @@ const UserPanel = () => {
           value={tab.key}
           className="data-[state=active]:flex data-[state=active]:flex-1 overflow-y-auto"
         >
-          <Card className={'border-none shadow-none flex flex-col'}>
-            <CardHeader className="flex-row items-center justify-between px-6 py-4">
+          <Card className={'border-none shadow-none flex flex-col w-full'}>
+            <CardHeader className="flex-row items-center justify-between px-6 py-4 gap-4">
               <div>
                 <CardTitle>{`${
                   user.profile.first_name + user.profile.second_name
@@ -134,6 +134,7 @@ const UserPanel = () => {
                 size={ButtonSizes.Medium}
                 variation={ButtonVariations.Circle}
                 onClick={onAddToMatching}
+                style={{ flexGrow: 0 }}
               >
                 <PlusIcon
                   color={theme.color.surface.primary}
@@ -144,7 +145,7 @@ const UserPanel = () => {
                 />
               </Button>
             </CardHeader>
-            <CardContent className="px-6 py-4 flex flex-col min-h-0 h-full">
+            <CardContent className="px-6 py-4 flex flex-col min-h-0 h-full w-full">
               <UserPanelContent
                 tab={tab.key}
                 user={user}

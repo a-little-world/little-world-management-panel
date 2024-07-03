@@ -1,5 +1,6 @@
 import {
   Button,
+  Checkbox,
   Text,
   TextArea,
 } from '@a-little-world/little-world-design-system';
@@ -34,6 +35,7 @@ export const Messages = styled.div`
   gap: ${({ theme }) => theme.spacing.small};
   padding: ${({ theme }) => theme.spacing.small};
   overflow-y: scroll;
+  position: relative;
 `;
 
 export const Message = styled.div<{ $isSelf: boolean }>`
@@ -112,6 +114,12 @@ export const MessageBox = styled(TextArea)`
   background: ${({ theme }) => theme.color.surface.secondary};
   padding: ${({ theme }) => theme.spacing.xsmall};
   line-height: normal;
+`;
+
+export const UnreadCheckbox = styled(Checkbox)`
+  position: absolute;
+  top: ${({ theme }) => theme.spacing.small};
+  left: ${({ theme }) => theme.spacing.small};
 `;
 
 export const NoMessages = styled(Text)`
