@@ -52,7 +52,7 @@ const DataGraph = ({ data }) => {
     };
 
     return (
-        <div style={{ width: '100%', height: '400px' }}>
+        <div style={{ width: '600px', height: '400px' }}>
             <Line data={chartData} options={options} />
         </div>
     );

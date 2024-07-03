@@ -11,8 +11,9 @@ import {
   PopoverTrigger,
 } from "../shadcnui/ui/popover"
 
-export function DatePickerDemo() {
-  const [date, setDate] = React.useState<Date>()
+export function DatePicker({
+  date, setDate
+}) {
 
   return (
     <Popover>
