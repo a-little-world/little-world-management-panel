@@ -475,7 +475,7 @@ const MatchingScoreTable = ({ data, addUserToSelection }) => {
   </>
 };
 
-const TaskMonitorComponent = ({ task_id, finishedCallback }) => {
+export const TaskMonitorComponent = ({ task_id, finishedCallback }) => {
 
   const fetcher = (...args) => fetch(...args).then(res => res.json());
   const { data, error, mutate, isLoading } = useSWR(`/api/admin/tasks/${task_id}/status/`, fetcher, { refreshInterval: 1000 })
@@ -1319,7 +1319,7 @@ const AdminChatMessagesDisplay = ({
               <li><a>Delete Message</a></li>
             </>}
             <li><a onClick={() => {
-              fetch(`/api/matching/users/${user.id}/message_read/`, {
+              fetch(`/api/matching/users/${user.id}/message_mark_read/`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',

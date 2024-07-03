@@ -122,9 +122,8 @@ const UserPanel = () => {
           <Card className={'border-none shadow-none flex flex-col w-full'}>
             <CardHeader className="flex-row items-center justify-between px-6 py-4 gap-4">
               <div>
-                <CardTitle>{`${
-                  user.profile.first_name + user.profile.second_name
-                } - ${tab.title ?? tab.label}`}</CardTitle>
+                <CardTitle>{`${user.profile.first_name + user.profile.second_name
+                  } - ${tab.title ?? tab.label}`}</CardTitle>
                 {tab.description && (
                   <CardDescription>{tab.description}</CardDescription>
                 )}

@@ -36,8 +36,9 @@ export const sendChatMessage = ({ userId, message, onError, onSuccess }) =>
     })
     .catch(onError);
 
+
 export const markMessageAsRead = ({ messageId, userId, onError, onSuccess }) =>
-  fetch(`/api/matching/matches/${userId}/message_read/`, {
+  fetch(`/api/matching/users/${userId}/message_mark_read/`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -56,7 +57,7 @@ export const markMessageAsRead = ({ messageId, userId, onError, onSuccess }) =>
     })
     .catch(onError);
 
-export const deleteMessage = ({}) => null;
+export const deleteMessage = ({ }) => null;
 
 export const sendSms = ({ userId, message, onError, onSuccess }) =>
   fetch(`/api/admin/quick_actions/send_sms_to_user/`, {
@@ -147,8 +148,32 @@ export const setHadPrematchingCall = async ({
   }
 };
 
+
+export const burstUpdateMatchingScores = async ({
+  parallel_tasks,
+}) => {
+  const res = await fetch(`/api/matching/burst_update_scores/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookiesAsObject().csrftoken,
+    },
+    body: JSON.stringify({
+      parallel_tasks
+    }),
+  });
+
+  if (!res.ok) {
+    throw new Error(await res.text());
+  }
+  const result = await res.json();
+  return result;
+}
+
+
+
 export const matchUsers = ({ data, onError, onSuccess }) =>
-  fetch(`/api/admin/user/match/`, {
+  fetch(`/api/matching/make_match`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

@@ -2,6 +2,7 @@ import {
   Button,
   ButtonAppearance,
   ButtonSizes,
+  Checkbox,
   ButtonVariations,
   Dropdown,
   Text,
@@ -33,10 +34,12 @@ const MATCHING_OPTIONS = [
   { value: 'score', label: 'Calculate Matching Score' },
 ];
 
-const Matching = () => {
+const Matching = ({
+  preselectOption = 'proposal',
+}) => {
   const { userId } = useParams();
   const { state } = useLocation();
-  const [option, setOption] = useState<string>('');
+  const [option, setOption] = useState<string>(preselectOption);
   const [submitError, setSubmitError] = useState<string>('');
   const [matchSucces, setMatchSuccess] = useState<string>('');
   const [score, setScore] = useState<string | number>('To Be Calculated');
@@ -97,6 +100,18 @@ const Matching = () => {
               placeholder="Select an option..."
               cannotError
             />
+            <Checkbox
+              id="completed"
+              name={name}
+              inputRef={null}
+              onCheckedChange={(val) => { }}
+              onBlur={() => { }}
+              value={null}
+              defaultChecked={false}
+              error={null}
+              label={'Force Match'}
+              required={false}
+            />
             <Button
               disabled={isSubmitting || potentialMatch.length !== 2 || !option}
               onClick={onMatchAction}
@@ -130,11 +145,9 @@ const Matching = () => {
         </CardContent>
         <CardFooter>
           <div
-            className={`${
-              matchSucces || submitError ? 'opacity-100' : 'opacity-0'
-            } w-full h-12 p-4 flex flex-column items-center justify-center ${
-              submitError ? 'bg-red-200' : 'bg-green-200'
-            }`}
+            className={`${matchSucces || submitError ? 'opacity-100' : 'opacity-0'
+              } w-full h-12 p-4 flex flex-column items-center justify-center ${submitError ? 'bg-red-200' : 'bg-green-200'
+              }`}
           >
             {matchSucces || submitError}
           </div>

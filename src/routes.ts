@@ -8,3 +8,4 @@ export const STATS_ROUTE = '/stats/';
 export const EMAILS_ROUTE = '/emails/';
 export const EMAIL_ROUTE = '/emails/:emailTemplateName';
 export const DEVKIT_ROUTE = '/devkit/';
+export const VIDEO_CALLS_ROUTE = '/video-calls/';
