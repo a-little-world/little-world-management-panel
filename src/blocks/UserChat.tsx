@@ -57,7 +57,7 @@ const UserChat = ({ user }) => {
   });
 
   const messages = unreadOnly
-    ? data?.messages?.results.filter(message => message.read)
+    ? data?.messages?.results.filter(message => !message.read)
     : data?.messages?.results || data;
 
   const onError = error => {
@@ -94,13 +94,13 @@ const UserChat = ({ user }) => {
 
   return (
     <ChatContainer>
+      <UnreadCheckbox
+        label={'Unread only'}
+        checked={unreadOnly}
+        onCheckedChange={setUnreadOnly}
+        required={false}
+      />
       <Messages ref={messagesRef}>
-        <UnreadCheckbox
-          label={'Unread only'}
-          checked={unreadOnly}
-          value={unreadOnly}
-          onCheckedChange={setUnreadOnly}
-        />
         {isEmpty(messages) ? (
           <NoMessages type={TextTypes.Body4}>
             {fetchError

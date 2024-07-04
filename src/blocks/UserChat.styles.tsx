@@ -11,6 +11,7 @@ export const SendButton = styled(Button)`
 `;
 
 export const ChatContainer = styled.div`
+  position: relative;
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -118,8 +119,14 @@ export const MessageBox = styled(TextArea)`
 
 export const UnreadCheckbox = styled(Checkbox)`
   position: absolute;
-  top: ${({ theme }) => theme.spacing.small};
-  left: ${({ theme }) => theme.spacing.small};
+  top: ${({ theme }) => theme.spacing.medium};
+  left: ${({ theme }) => theme.spacing.medium};
+  z-index: 1;
+  padding: ${({ theme }) =>
+    `${theme.spacing.xxxsmall} ${theme.spacing.xxsmall} 3px`};
+  border: 1px solid ${({ theme }) => theme.color.border.moderate};
+  background: ${({ theme }) => theme.color.surface.primary};
+  border-radius: ${({ theme }) => theme.radius.xxsmall};
 `;
 
 export const NoMessages = styled(Text)`
