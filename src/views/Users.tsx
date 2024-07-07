@@ -1,4 +1,5 @@
 import { Dropdown, Text } from '@a-little-world/little-world-design-system';
+import { createColumnHelper } from '@tanstack/react-table';
 import { get, isEmpty } from 'lodash';
 import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -18,6 +19,7 @@ import {
 } from '../atoms/Table';
 import Tag, { TagAppearance, TagSizes } from '../atoms/Tag';
 import UserImage from '../atoms/UserImage';
+import { DataTable } from '../blocks/DataTable';
 import { formatDate } from '../helpers/date';
 import { useFilterOptions, useGlobalState, useUserListData } from '../store';
 import { SelectedUsersSheet } from './../blocks/SelectedUsersSheet';
@@ -31,17 +33,87 @@ const StyledDropdown = styled(Dropdown)`
 const DEFAULT_FIELDS = [
   { key: 'profile.image', label: 'Image' },
   { key: 'profile.user_type', label: 'Type' },
-  { key: 'profile.first_name', label: 'First Name' },
-  { key: 'profile.second_name', label: 'Second Name' },
+  { key: 'profile.name', label: 'Name' },
   { key: 'profile.target_group', label: 'Target Group' },
   { key: 'matches.unconfirmed', label: 'Unconfirmed' },
   { key: 'matches.confirmed', label: 'Confirmed' },
   { key: 'date_joined', label: 'Joined' },
 ];
 
+const columnHelper = createColumnHelper();
+
+const userColumns = [
+  columnHelper.display({
+    id: 'select',
+    header: 'Selected',
+    cell: props => (
+      <input
+        type="checkbox"
+        checked={Object.keys(props.selectedUsers).includes(props.user.hash)}
+        className="checkbox ml-2"
+        onChange={() => {
+          if (Object.keys(props.selectedUsers).includes(props.user.hash)) {
+            props.deselectUser(user.hash);
+          } else {
+            props.selectUser(user);
+          }
+        }}
+      />
+    ),
+  }),
+  columnHelper.accessor('profile.image', {
+    header: 'Image',
+    cell: ({ row }) => (
+      <Link to={`/user/${row.id}`}>
+        <UserImage
+          alt={'user profile image'}
+          user={row.profile}
+          dimensions={{
+            height: 32,
+            width: 32,
+          }}
+        />
+      </Link>
+    ),
+  }),
+  columnHelper.accessor('profile.name', {
+    header: 'Name',
+    cell: ({ row }) => `${row.profile.first_name} ${row.profile.second_name}`,
+  }),
+  columnHelper.accessor('profile.user_type', {
+    header: 'Type',
+    cell: ({ row }) => (
+      <Tag
+        size={TagSizes.small}
+        appearance={
+          row.profile.user_type === 'volunteer'
+            ? TagAppearance.primary
+            : TagAppearance.secondary
+        }
+      >
+        {row.profile.user_type}
+      </Tag>
+    ),
+  }),
+  columnHelper.accessor('matches.confirmed', {
+    header: 'Confirmed',
+    cell: ({ row }) => <MatchesIcons matches={row.matches.confirmed.items} />,
+  }),
+  columnHelper.accessor('matches.unconfirmed', {
+    header: 'Unconfirmed',
+    cell: ({ row }) => <MatchesIcons matches={row.matches.unconfirmed.items} />,
+  }),
+
+  columnHelper.accessor('date_joined', {
+    cell: ({ row }) => formatDate(new Date(row.date_joined)),
+  }),
+];
+
 export function UsersTable({ userList }) {
   const { selectedUsers, selectUser, deselectUser } = useGlobalState();
   const [fields, setFields] = useState(DEFAULT_FIELDS);
+
+  return <DataTable columns={userColumns} data={userList?.results} />;
   return (
     <>
       <Table>
@@ -125,6 +197,13 @@ export function UsersTable({ userList }) {
                       </TableCell>
                     );
 
+                  if (key === 'profile.name')
+                    return (
+                      <TableCell key={user.hash + key}>
+                        {`${user.profile.first_name} ${user.profile.second_name}`}
+                      </TableCell>
+                    );
+
                   return (
                     <TableCell key={user.hash + key}>
                       {get(user, key)}
@@ -153,6 +232,8 @@ export function Users() {
   const changeList = (list: string) => {
     setSearchParams(createSearchParams({ ...searchParams, list }));
   };
+
+  console.log({ userList });
 
   return (
     <>
