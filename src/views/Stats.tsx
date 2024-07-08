@@ -3,14 +3,39 @@ import { cratePostFetcher } from '../store';
 import useSWR from 'swr';
 import DataGraph from '../blocks/DataGraph';
 import { DatePicker } from '../atoms/DatePicker';
+import styled from 'styled-components';
+import { Dropdown, Text } from '@a-little-world/little-world-design-system';
+
+const StyledDropdown = styled(Dropdown)`
+  div[data-radix-popper-content-wrapper] {
+    z-index: 20 !important;
+  }
+  width: 100%;
+`;
 
 
-function RangedDataGraph({
-    endpoint
-}) {
+
+const graphEndpoints = [{
+    endpoint: "/api/matching/users/statistics/video_calls/",
+    title: "User Video Calls",
+    description: "The amount of video calls made in a given time period."
+}, {
+    endpoint: "/api/matching/users/statistics/signups/",
+    title: "User Signups",
+    description: "The amount of users that signed up in a given time period."
+}, {
+    endpoint: "/api/matching/users/statistics/messages_send/",
+    title: "User Messages",
+    description: "The amount of messages sent in a given time period."
+}]
+
+function RangedDataGraph() {
+
+    const [endpoint, setEndpoint] = React.useState(graphEndpoints[0]);
 
     const [startDate, setStartDate] = React.useState('2024-01-01');
-    const [endDate, setEndDate] = React.useState('2024-05-05');
+    const today = new Date();
+    const [endDate, setEndDate] = React.useState(today.toISOString().split('T')[0]);
     const [dayRange, setDayRange] = React.useState(1); // supports only 1 or 7 atm
 
     const {
@@ -18,7 +43,7 @@ function RangedDataGraph({
         error,
         data,
         isLoading,
-    } = useSWR(endpoint, cratePostFetcher({
+    } = useSWR(endpoint.endpoint, cratePostFetcher({
         start_date: startDate,
         end_date: endDate,
         bucket_size: dayRange,
@@ -30,10 +55,25 @@ function RangedDataGraph({
 
     return (
         <div className="flex flex-col justify-center items-center h-screen">
-            <h2>{endpoint}</h2>
+            <h2>{endpoint.endpoint}</h2>
+            <StyledDropdown
+                value={endpoint.endpoint}
+                options={graphEndpoints.map(({ endpoint, title, description }) => ({
+                    value: endpoint,
+                    label: description,
+                }))}
+                onValueChange={(val) => {
+                    setEndpoint(graphEndpoints.find(({ endpoint }) => endpoint === val) || graphEndpoints[0]);
+                }}
+                placeholder="Select a user list..."
+                cannotError
+            />
+            <span>NOTE: Any statistics are filtered down to the users the current matching user has access too</span>
             <div className='w-full flex flex-row'>
                 <div className='flex flex-col items-center content-center justify-center'>
-                    Start Date:
+                    <div className='flex w-full items-start'>
+                        Start Date:
+                    </div>
                     <DatePicker date={startDate} setDate={(date) => {
                         setStartDate(date);
                         setTimeout(() => {
@@ -42,7 +82,9 @@ function RangedDataGraph({
                     }} />
                 </div>
                 <div className='flex flex-col items-center content-center justify-center'>
-                    End Date:
+                    <div className='flex w-full items-start'>
+                        End Date
+                    </div>
                     <DatePicker date={endDate} setDate={(date) => {
                         setEndDate(date);
                         setTimeout(() => {
@@ -50,17 +92,38 @@ function RangedDataGraph({
                         }, 500);
                     }} />
                 </div>
+                <div className='flex flex-col items-center content-center justify-center'>
+                    <div className='flex w-full items-start'>
+                        Day Range:
+                    </div>
+                    <StyledDropdown
+                        value={dayRange.toString()}
+                        options={[1, 7, 30].map((val) => ({
+                            value: val.toString(),
+                            label: val === 1 ? 'Daily' : val === 7 ? 'Weekly' : 'Monthly',
+                        }))}
+                        onValueChange={(val) => {
+                            setDayRange(parseInt(val));
+                            setTimeout(() => {
+                                mutate();
+                            }, 500);
+                        }}
+                        placeholder="Select a user list..."
+                        cannotError
+                    />
+                </div>
             </div>
-            <DataGraph data={data} />
+            <DataGraph data={data} dataLabel={`${endpoint.title}: `} />
         </div>
     )
 }
 
 function Stats() {
 
+
     return (
-        <div className="flex justify-center items-center h-screen">
-            <RangedDataGraph endpoint="/api/matching/users/statistics/signups/" />
+        <div className="flex flex-col justify-center items-center h-screen">
+            <RangedDataGraph />
         </div>
     )
 }

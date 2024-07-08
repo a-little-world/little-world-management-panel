@@ -1,61 +1,50 @@
 import React from 'react';
-import { Line } from 'react-chartjs-2';
-import { Chart as ChartJS, LineElement, PointElement, LinearScale, TimeScale, Title, Tooltip, Legend } from 'chart.js';
 import 'chartjs-adapter-date-fns';
+import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
 
-ChartJS.register(LineElement, PointElement, LinearScale, TimeScale, Title, Tooltip, Legend);
+import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "../shadcnui/ui/chart"
 
-const DataGraph = ({ data }) => {
-    const chartData = {
-        labels: data.map(item => new Date(item.date)),
-        datasets: [
-            {
-                label: 'User Count Over Time',
-                data: data.map(item => item.count),
-                fill: false,
-                borderColor: 'rgba(75,192,192,1)',
-                tension: 0.1
-            }
-        ]
+const chartData = [
+    { month: "January", desktop: 186, mobile: 80 },
+    { month: "February", desktop: 305, mobile: 200 },
+    { month: "March", desktop: 237, mobile: 120 },
+    { month: "April", desktop: 73, mobile: 190 },
+    { month: "May", desktop: 209, mobile: 130 },
+    { month: "June", desktop: 214, mobile: 140 },
+]
+
+
+export function DataGraph({
+    data,
+    dataLabel
+}) {
+
+    const chartConfig = {
+        count: {
+            label: dataLabel,
+            color: "#2563eb",
+        }
     };
 
-    const options = {
-        scales: {
-            x: {
-                type: 'time',
-                time: {
-                    unit: 'day'
-                },
-                title: {
-                    display: true,
-                    text: 'Date'
-                }
-            },
-            y: {
-                title: {
-                    display: true,
-                    text: 'Count'
-                },
-                min: 0
-            }
-        },
-        plugins: {
-            tooltip: {
-                callbacks: {
-                    label: function (context) {
-                        return `Count: ${context.raw}`;
-                    }
-                }
-            }
-        },
-        maintainAspectRatio: false
-    };
-
-    return (
-        <div style={{ width: '600px', height: '400px' }}>
-            <Line data={chartData} options={options} />
-        </div>
-    );
-};
+    return <ChartContainer config={chartConfig} className='min-h-[400px] mb-10'>
+        <BarChart accessibilityLayer data={data}>
+            <CartesianGrid vertical={false} />
+            <XAxis
+                dataKey="date"
+                tickLine={true}
+                tickMargin={2}
+                axisLine={true}
+                angle={-20}
+                textAnchor='end'
+                tickFormatter={(value) => value.slice(0, 10)}
+            />
+            <ChartTooltip
+                cursor={false}
+                content={<ChartTooltipContent hideLabel />}
+            />
+            <Bar dataKey="count" fill="var(--color-desktop)" radius={8} />
+        </BarChart>
+    </ChartContainer>
+}
 
 export default DataGraph;
