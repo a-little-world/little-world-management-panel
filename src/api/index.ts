@@ -2,18 +2,38 @@ import { getCookiesAsObject } from '../utils.js';
 
 export const addUserByHash = async (
   userHash: string,
-  onError: (error) => void,
+  onError: (error: string) => void,
   onSuccess: (user: string[]) => void,
 ) => {
-  fetch(`/api/admin/user_info/${userHash}/`)
+  fetch(`/api/matching/users/${userHash}/`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookiesAsObject().csrftoken,
+    },
+  })
     .then(res => {
+      console.log({ res });
+
       if (res.ok) {
-        res.json().then(onSuccess);
+        return res
+          .json()
+          .then(onSuccess)
+          .catch(error => {
+            console.error('Error parsing JSON:', error);
+            onError('Failed to parse response as JSON');
+          });
       } else {
-        res.text().then(onError);
+        return res.text().then(text => {
+          console.error('Server returned an error:', text);
+          onError(text);
+        });
       }
     })
-    .catch(onError);
+    .catch(error => {
+      console.error('Fetch error:', error);
+      onError('Network error or server is not reachable');
+    });
 };
 
 export const sendChatMessage = ({ userId, message, onError, onSuccess }) =>
@@ -36,7 +56,6 @@ export const sendChatMessage = ({ userId, message, onError, onSuccess }) =>
     })
     .catch(onError);
 
-
 export const markMessageAsRead = ({ messageId, userId, onError, onSuccess }) =>
   fetch(`/api/matching/users/${userId}/message_mark_read/`, {
     method: 'POST',
@@ -57,7 +76,7 @@ export const markMessageAsRead = ({ messageId, userId, onError, onSuccess }) =>
     })
     .catch(onError);
 
-export const deleteMessage = ({ }) => null;
+export const deleteMessage = ({}) => null;
 
 export const sendSms = ({ userId, message, onError, onSuccess }) =>
   fetch(`/api/admin/quick_actions/send_sms_to_user/`, {
@@ -88,7 +107,7 @@ export const setUserUnresponsive = async ({
 }) => {
   try {
     const response = await fetch(
-      `/api/admin/quick_actions/mark_user_as_unresponsive/`,
+      `/api/matching/users/${userId}/mark_unresponsive/`,
       {
         method: 'POST',
         headers: {
@@ -97,7 +116,6 @@ export const setUserUnresponsive = async ({
         },
         body: JSON.stringify({
           unresponsive,
-          user_id: userId,
         }),
       },
     );
@@ -122,7 +140,7 @@ export const setHadPrematchingCall = async ({
 }) => {
   try {
     const response = await fetch(
-      `/api/admin/quick_actions/mark_pre_matching_call_completed/`,
+      `/api/matching/users/${userId}/mark_pre_matching_call_completed/`,
       {
         method: 'POST',
         headers: {
@@ -130,8 +148,7 @@ export const setHadPrematchingCall = async ({
           'X-CSRFToken': getCookiesAsObject().csrftoken,
         },
         body: JSON.stringify({
-          completed,
-          user_id: userId,
+          had_prematching_call: completed,
         }),
       },
     );
@@ -148,10 +165,7 @@ export const setHadPrematchingCall = async ({
   }
 };
 
-
-export const burstUpdateMatchingScores = async ({
-  parallel_tasks,
-}) => {
+export const burstUpdateMatchingScores = async ({ parallel_tasks }) => {
   const res = await fetch(`/api/matching/burst_update_scores/`, {
     method: 'POST',
     headers: {
@@ -159,7 +173,7 @@ export const burstUpdateMatchingScores = async ({
       'X-CSRFToken': getCookiesAsObject().csrftoken,
     },
     body: JSON.stringify({
-      parallel_tasks
+      parallel_tasks,
     }),
   });
 
@@ -168,9 +182,7 @@ export const burstUpdateMatchingScores = async ({
   }
   const result = await res.json();
   return result;
-}
-
-
+};
 
 export const matchUsers = ({ data, onError, onSuccess }) =>
   fetch(`/api/matching/make_match`, {
