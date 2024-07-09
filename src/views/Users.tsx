@@ -1,7 +1,7 @@
-import { Dropdown, Text } from '@a-little-world/little-world-design-system';
+import { Dropdown } from '@a-little-world/little-world-design-system';
+import { ArrowsUpDownIcon } from '@heroicons/react/20/solid';
 import { createColumnHelper } from '@tanstack/react-table';
-import { get, isEmpty } from 'lodash';
-import React, { useState } from 'react';
+import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { createSearchParams } from 'react-router-dom';
@@ -9,18 +9,11 @@ import styled from 'styled-components';
 
 import MatchesIcons from '../atoms/MatchesIcons';
 import Pagination from '../atoms/Pagination';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '../atoms/Table';
 import Tag, { TagAppearance, TagSizes } from '../atoms/Tag';
 import UserImage from '../atoms/UserImage';
 import { DataTable } from '../blocks/DataTable';
 import { formatDate } from '../helpers/date';
+import { Button } from '../shadcnui/ui/button';
 import { useFilterOptions, useGlobalState, useUserListData } from '../store';
 import { SelectedUsersSheet } from './../blocks/SelectedUsersSheet';
 
@@ -30,32 +23,28 @@ const StyledDropdown = styled(Dropdown)`
   }
 `;
 
-const DEFAULT_FIELDS = [
-  { key: 'profile.image', label: 'Image' },
-  { key: 'profile.user_type', label: 'Type' },
-  { key: 'profile.name', label: 'Name' },
-  { key: 'profile.target_group', label: 'Target Group' },
-  { key: 'matches.unconfirmed', label: 'Unconfirmed' },
-  { key: 'matches.confirmed', label: 'Confirmed' },
-  { key: 'date_joined', label: 'Joined' },
-];
-
 const columnHelper = createColumnHelper();
 
 const userColumns = [
   columnHelper.display({
     id: 'select',
     header: 'Selected',
-    cell: props => (
+    cell: ({ table, row }) => (
       <input
         type="checkbox"
-        checked={Object.keys(props.selectedUsers).includes(props.user.hash)}
+        checked={Object.keys(table.options.meta.selectedUsers).includes(
+          row.original.hash,
+        )}
         className="checkbox ml-2"
         onChange={() => {
-          if (Object.keys(props.selectedUsers).includes(props.user.hash)) {
-            props.deselectUser(user.hash);
+          if (
+            Object.keys(table.options.meta.selectedUsers).includes(
+              row.original.hash,
+            )
+          ) {
+            table.options.meta.deselectUser(row.original.hash);
           } else {
-            props.selectUser(user);
+            table.options.meta.selectUser(row.original);
           }
         }}
       />
@@ -64,10 +53,10 @@ const userColumns = [
   columnHelper.accessor('profile.image', {
     header: 'Image',
     cell: ({ row }) => (
-      <Link to={`/user/${row.id}`}>
+      <Link to={`/user/${row?.original.id}`}>
         <UserImage
           alt={'user profile image'}
-          user={row.profile}
+          user={row?.original.profile}
           dimensions={{
             height: 32,
             width: 32,
@@ -76,145 +65,86 @@ const userColumns = [
       </Link>
     ),
   }),
-  columnHelper.accessor('profile.name', {
-    header: 'Name',
-    cell: ({ row }) => `${row.profile.first_name} ${row.profile.second_name}`,
+  columnHelper.accessor('profile.first_name', {
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Name
+          <ArrowsUpDownIcon className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row, cell }) => {
+      console.log({ row, val: cell.getValue() });
+      return `${row?.original.profile.first_name} ${row?.original.profile.second_name}`;
+    },
   }),
   columnHelper.accessor('profile.user_type', {
-    header: 'Type',
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Type
+          <ArrowsUpDownIcon className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
     cell: ({ row }) => (
       <Tag
         size={TagSizes.small}
         appearance={
-          row.profile.user_type === 'volunteer'
+          row.original.profile.user_type === 'volunteer'
             ? TagAppearance.primary
             : TagAppearance.secondary
         }
       >
-        {row.profile.user_type}
+        {row.original.profile.user_type}
       </Tag>
     ),
   }),
   columnHelper.accessor('matches.confirmed', {
     header: 'Confirmed',
-    cell: ({ row }) => <MatchesIcons matches={row.matches.confirmed.items} />,
+    cell: ({ row }) => {
+      return <MatchesIcons matches={row.original.matches.confirmed.items} />;
+    },
   }),
   columnHelper.accessor('matches.unconfirmed', {
     header: 'Unconfirmed',
-    cell: ({ row }) => <MatchesIcons matches={row.matches.unconfirmed.items} />,
+    cell: ({ row }) => (
+      <MatchesIcons matches={row.original.matches.unconfirmed.items} />
+    ),
   }),
-
   columnHelper.accessor('date_joined', {
-    cell: ({ row }) => formatDate(new Date(row.date_joined)),
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Joined
+          <ArrowsUpDownIcon className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => formatDate(new Date(row.original.date_joined)),
   }),
 ];
 
 export function UsersTable({ userList }) {
   const { selectedUsers, selectUser, deselectUser } = useGlobalState();
-  const [fields, setFields] = useState(DEFAULT_FIELDS);
 
-  return <DataTable columns={userColumns} data={userList?.results} />;
   return (
     <>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[100px]">Selected</TableHead>
-            {fields.map(({ key, label }) => (
-              <TableHead key={key} className="w-[100px]">
-                {label}
-              </TableHead>
-            ))}
-          </TableRow>
-        </TableHeader>
-        {isEmpty(userList?.results) ? (
-          <Text className="p-4 w-full" center>
-            No results.
-          </Text>
-        ) : (
-          <TableBody>
-            {userList?.results.map(user => (
-              <TableRow key={user.hash}>
-                <TableCell className="w-20">
-                  <input
-                    type="checkbox"
-                    checked={Object.keys(selectedUsers).includes(user.hash)}
-                    className="checkbox ml-2"
-                    onChange={() => {
-                      if (Object.keys(selectedUsers).includes(user.hash)) {
-                        deselectUser(user.hash);
-                      } else {
-                        selectUser(user);
-                      }
-                    }}
-                  />
-                </TableCell>
-                {fields.map(({ key }) => {
-                  if (key === 'profile.image') {
-                    return (
-                      <TableCell key={user.hash + key}>
-                        <Link to={`/user/${user.id}`}>
-                          <UserImage
-                            alt={'user profile image'}
-                            user={user.profile}
-                            dimensions={{
-                              height: 32,
-                              width: 32,
-                            }}
-                          />
-                        </Link>
-                      </TableCell>
-                    );
-                  }
-
-                  if (key === 'profile.user_type')
-                    return (
-                      <TableCell key={user.hash + key}>
-                        <Tag
-                          size={TagSizes.small}
-                          appearance={
-                            user.profile.user_type === 'volunteer'
-                              ? TagAppearance.primary
-                              : TagAppearance.secondary
-                          }
-                        >
-                          {user.profile.user_type}
-                        </Tag>
-                      </TableCell>
-                    );
-
-                  if (key.includes('matches.'))
-                    return (
-                      <TableCell key={user.hash + key}>
-                        <MatchesIcons matches={get(user, key).items} />
-                      </TableCell>
-                    );
-
-                  if (key === 'date_joined')
-                    return (
-                      <TableCell key={user.hash + key}>
-                        {formatDate(new Date(user.date_joined))}
-                      </TableCell>
-                    );
-
-                  if (key === 'profile.name')
-                    return (
-                      <TableCell key={user.hash + key}>
-                        {`${user.profile.first_name} ${user.profile.second_name}`}
-                      </TableCell>
-                    );
-
-                  return (
-                    <TableCell key={user.hash + key}>
-                      {get(user, key)}
-                    </TableCell>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableBody>
-        )}
-      </Table>
+      <DataTable
+        columns={userColumns}
+        data={userList?.results}
+        tableMeta={{ selectedUsers, deselectUser, selectUser }}
+      />
       <SelectedUsersSheet />
     </>
   );
