@@ -40,7 +40,8 @@ export function DataTable<TData, TValue>({
     // }
     setSorting(sortingVal);
     const newParams = new URLSearchParams(searchParams);
-    newParams.set('sort', JSON.stringify(sortingVal));
+    // TODO: Doesn't serve any purpose for serverside sorting In my op the search param update here can prob be removed
+    //newParams.set('sort', JSON.stringify(sortingVal));
     setSearchParams(newParams);
   };
 
@@ -68,9 +69,9 @@ export function DataTable<TData, TValue>({
                   {header.isPlaceholder
                     ? null
                     : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
+                      header.column.columnDef.header,
+                      header.getContext(),
+                    )}
                 </TableHead>
               );
             })}
