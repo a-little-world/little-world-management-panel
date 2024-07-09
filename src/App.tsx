@@ -23,15 +23,16 @@ import {
   STATS_ROUTE,
   USERS_ROUTE,
   USER_DETAILS_ROUTE,
-  VIDEO_CALLS_ROUTE
+  VIDEO_CALLS_ROUTE,
 } from './routes';
 import { GlobalStateProvider } from './store.tsx';
+import Emails from './views/Emails';
 import Home from './views/Home';
 import Matches from './views/Matches';
 import Matching from './views/Matching';
 import Scores from './views/Scores';
-import Users from './views/Users';
 import Stats from './views/Stats';
+import Users from './views/Users';
 import VideoCalls from './views/VideoCalls';
 
 export const Root = ({
@@ -90,8 +91,12 @@ const router = createBrowserRouter(
         },
         {
           path: EMAILS_ROUTE,
-          element: <AdminPanelV2_Emails />,
+          element: <Emails />,
         },
+        // {
+        //   path: EMAILS_ROUTE,
+        //   element: <AdminPanelV2_Emails />,
+        // },
         {
           path: EMAIL_ROUTE,
           element: <AdminPanelV2_EmailDetails />,
