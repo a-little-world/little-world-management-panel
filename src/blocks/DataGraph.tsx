@@ -1,5 +1,4 @@
 import React from 'react';
-import 'chartjs-adapter-date-fns';
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
 
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "../shadcnui/ui/chart"
