@@ -22,7 +22,9 @@ const PREMATCH_APPOINTMENT_FIELDS = [
 
 export function PrematchingAppointmentsTable({ appointments, list }) {
   //const { selectedMatch, selectMatch, deselectMatch } = useGlobalState();
-  const selectedMatch = {};
+  const { selectedUsers, selectUser, deselectUser } = useGlobalState();
+  console.log('selectedUsers', selectedUsers);
+
   const [fields, setFields] = useState(PREMATCH_APPOINTMENT_FIELDS);
 
   return (
@@ -49,13 +51,14 @@ export function PrematchingAppointmentsTable({ appointments, list }) {
                 <TableCell className="w-20">
                   <input
                     type="checkbox"
-                    checked={Object.keys(selectedMatch).includes(appointment.uuid)}
+                    checked={Object.keys(selectedUsers).includes(appointment.user.hash)}
                     className="checkbox ml-2"
                     onChange={() => {
-                      if (Object.keys(selectedMatch).includes(appointment.uuid)) {
-                        //deselectMatch(match.uuid);
+                      console.log('appointment', appointment);
+                      if (Object.keys(selectedUsers).includes(appointment.user.hash)) {
+                        deselectUser(appointment.user.hash);
                       } else {
-                        //selectMatch(match);
+                        selectUser(appointment.user);
                       }
                     }}
                   />

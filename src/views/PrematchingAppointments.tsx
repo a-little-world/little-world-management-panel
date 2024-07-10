@@ -4,10 +4,13 @@ import { useSearchParams } from 'react-router-dom';
 import { createSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 
+import { SelectedUsersSheet } from './../blocks/SelectedUsersSheet';
+
 import Pagination from '../atoms/Pagination';
 import { MatchesTable } from '../blocks/MatchesTable';
 import { usePrematchingAppointmentsFilterOptions, usePrematchAppointmentsListData } from '../store';
 import { PrematchingAppointmentsTable } from '../blocks/PrematchingAppointmentsTable';
+import { SelectedUsersActionsSheet } from '../blocks/SelectedUsersActionsSheets';
 
 const StyledDropdown = styled(Dropdown)`
   div[data-radix-popper-content-wrapper] {
@@ -58,7 +61,6 @@ export function PrematchingAppointments() {
               placeholder="Select a match list..."
               cannotError
             />
-
             <StyledDropdown
               value={orderBy}
               options={orderingOptions}
@@ -78,6 +80,8 @@ export function PrematchingAppointments() {
       ) : (
         <PrematchingAppointmentsTable appointments={prematchAppointmentsList} list={list} />
       )}
+      <SelectedUsersActionsSheet />
+      <SelectedUsersSheet />
     </>
   );
 }
