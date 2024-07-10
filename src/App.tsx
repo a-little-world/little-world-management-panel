@@ -19,6 +19,7 @@ import {
   EMAIL_ROUTE,
   MATCHES_LIST_ROUTE,
   MATCHING_ROUTE,
+  PREMATCH_APPOINTMENTS_ROUTE,
   SCORES_ROUTE,
   STATS_ROUTE,
   USERS_ROUTE,
@@ -33,6 +34,7 @@ import Scores from './views/Scores';
 import Users from './views/Users';
 import Stats from './views/Stats';
 import VideoCalls from './views/VideoCalls';
+import PrematchingAppointments from './views/PrematchingAppointments';
 
 export const Root = ({
   children,
@@ -79,6 +81,10 @@ const router = createBrowserRouter(
         {
           path: MATCHES_LIST_ROUTE,
           element: <Matches />,
+        },
+        {
+          path: PREMATCH_APPOINTMENTS_ROUTE,
+          element: <PrematchingAppointments />,
         },
         {
           path: VIDEO_CALLS_ROUTE,

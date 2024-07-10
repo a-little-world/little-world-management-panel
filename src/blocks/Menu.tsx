@@ -13,6 +13,7 @@ import { useLocation } from 'react-router-dom';
 import {
   EMAILS_ROUTE,
   MATCHES_LIST_ROUTE,
+  PREMATCH_APPOINTMENTS_ROUTE,
   SCORES_ROUTE,
   STATS_ROUTE,
   USERS_ROUTE,
@@ -43,7 +44,7 @@ const Menu = () => {
       </NavigationMenuItem>
       <NavigationMenuItem>
         <NavigationMenuTrigger>Menu</NavigationMenuTrigger>
-        <NavigationMenuContent layout={MenuContentLayout.twoColumns}>
+        <NavigationMenuContent layout={MenuContentLayout.callout}>
           <NavigationMenuContentItem
             to={MATCHES_LIST_ROUTE}
             active={location.pathname === MATCHES_LIST_ROUTE}
@@ -79,6 +80,12 @@ const Menu = () => {
             active={location.pathname === VIDEO_CALLS_ROUTE}
           >
             VideoCalls
+          </NavigationMenuContentItem>
+          <NavigationMenuContentItem
+            to={PREMATCH_APPOINTMENTS_ROUTE}
+            active={location.pathname === PREMATCH_APPOINTMENTS_ROUTE}
+          >
+            PreMatchingAppointment
           </NavigationMenuContentItem>
         </NavigationMenuContent>
       </NavigationMenuItem>

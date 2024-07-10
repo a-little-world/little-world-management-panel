@@ -5,6 +5,7 @@ export const MATCHES_LIST_ROUTE = '/matches/';
 export const MATCHING_ROUTE = '/match-info/';
 export const SCORES_ROUTE = '/scores/';
 export const STATS_ROUTE = '/stats/';
+export const PREMATCH_APPOINTMENTS_ROUTE = '/prematch-appointments/';
 export const EMAILS_ROUTE = '/emails/';
 export const EMAIL_ROUTE = '/emails/:emailTemplateName';
 export const DEVKIT_ROUTE = '/devkit/';

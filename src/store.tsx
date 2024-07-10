@@ -49,6 +49,20 @@ export const useFilterOptions = () => {
   };
 };
 
+export const usePrematchingAppointmentsFilterOptions = () => {
+  const { data, error, mutate, isLoading } = useSWR(
+    `/api/matching/prematchingappointments/filters/`,
+    dataFetcher,
+  );
+
+  return {
+    filterOptions: data,
+    error,
+    mutate,
+    isLoading,
+  };
+};
+
 export const useMatchesFilterOptions = () => {
   const { data, error, mutate, isLoading } = useSWR(
     `/api/matching/matches/filters/`,
@@ -85,6 +99,20 @@ export const useMatchListData = (searchParams: string) => {
 
   return {
     matchList: data,
+    error,
+    mutate,
+    isLoading,
+  };
+};
+
+export const usePrematchAppointmentsListData = (searchParams: string) => {
+  const { data, error, mutate, isLoading } = useSWR(
+    `/api/matching/prematchingappointments/?${searchParams}`,
+    dataFetcher,
+  );
+
+  return {
+    prematchAppointmentsList: data,
     error,
     mutate,
     isLoading,

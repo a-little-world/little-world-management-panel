@@ -15,18 +15,15 @@ import Tag, { TagAppearance, TagSizes } from '../atoms/Tag';
 import UserImage from '../atoms/UserImage';
 import { useGlobalState } from '../store';
 
-const MATCHES_FIELDS = [
-  { key: 'status', label: 'Status' },
-  { key: 'user1', label: 'User 1' },
-  { key: 'user2', label: 'User 2' },
-  { key: 'created_at', label: 'Created At' },
-  { key: 'updated_at', label: 'Last Activity' },
+const PREMATCH_APPOINTMENT_FIELDS = [
+  { key: 'user', label: "User" },
+  { key: 'start_time', label: 'Starts At' },
 ];
 
-export function MatchesTable({ matchList, list }) {
+export function PrematchingAppointmentsTable({ appointments, list }) {
   //const { selectedMatch, selectMatch, deselectMatch } = useGlobalState();
   const selectedMatch = {};
-  const [fields, setFields] = useState(MATCHES_FIELDS);
+  const [fields, setFields] = useState(PREMATCH_APPOINTMENT_FIELDS);
 
   return (
     <>
@@ -41,21 +38,21 @@ export function MatchesTable({ matchList, list }) {
             ))}
           </TableRow>
         </TableHeader>
-        {isEmpty(matchList?.results) ? (
+        {isEmpty(appointments?.results) ? (
           <Text className="p-4 w-full" center>
             No results.
           </Text>
         ) : (
           <TableBody>
-            {matchList?.results.map(match => (
-              <TableRow key={match.uuid}>
+            {appointments?.results.map(appointment => (
+              <TableRow key={appointment.uuid}>
                 <TableCell className="w-20">
                   <input
                     type="checkbox"
-                    checked={Object.keys(selectedMatch).includes(match.uuid)}
+                    checked={Object.keys(selectedMatch).includes(appointment.uuid)}
                     className="checkbox ml-2"
                     onChange={() => {
-                      if (Object.keys(selectedMatch).includes(match.uuid)) {
+                      if (Object.keys(selectedMatch).includes(appointment.uuid)) {
                         //deselectMatch(match.uuid);
                       } else {
                         //selectMatch(match);
@@ -64,10 +61,10 @@ export function MatchesTable({ matchList, list }) {
                   />
                 </TableCell>
                 {fields.map(({ key }) => {
-                  if (key === 'user1' || key === 'user2') {
-                    const user = match[key];
+                  if (key === 'user') {
+                    const user = appointment[key];
                     return (
-                      <TableCell key={match.uuid + key}>
+                      <TableCell key={appointment.uuid + key}>
                         <Link to={`/user/${user.id}`}>
                           <UserImage
                             alt={
@@ -86,23 +83,9 @@ export function MatchesTable({ matchList, list }) {
                     );
                   }
 
-                  if (key === 'status')
-                    return (
-                      <TableCell key={match.uuid + key}>
-                        <Tag
-                          appearance={
-                            TagAppearance[match.status ? 'success' : 'error']
-                          }
-                          size={TagSizes.small}
-                        >
-                          {match.status}
-                        </Tag>
-                      </TableCell>
-                    );
-
                   return (
-                    <TableCell key={match.uuid + key}>
-                      {get(match, key)}
+                    <TableCell key={appointment.uuid + key}>
+                      {get(appointment, key)}
                     </TableCell>
                   );
                 })}
