@@ -151,11 +151,17 @@ export function UsersTable({ userList }) {
 }
 
 const orderingOptions = [{
+  value: 'date_joined',
+  label: '(Asc) By Date Joined',
+}, {
   value: '-date_joined',
-  label: 'By Date Joined',
+  label: '(Desc) By Date Joined',
+}, {
+  value: 'last_login',
+  label: '(Asc) By Last Login',
 }, {
   value: '-last_login',
-  label: 'By Last Login',
+  label: '(Desc) By Last Login',
 }]
 
 export function Users() {

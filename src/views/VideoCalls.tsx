@@ -115,10 +115,24 @@ export function VideoCallsTable({ videoCallsList }) {
     );
 }
 
+const orderingOptions = [{
+    value: 'created_at',
+    label: '(Asc) Created At',
+}, {
+    value: '-created_at',
+    label: '(Desc) Created At',
+}, {
+    value: 'end_time',
+    label: '(Asc) End Time',
+}, {
+    value: '-end_time',
+    label: '(Desc) End Time',
+}]
 
 function VideoCalls() {
     let [searchParams, setSearchParams] = useSearchParams();
     const list = searchParams.get('list') || 'all';
+    const orderBy = searchParams.get('order_by') || '-date_joined';
 
     const { filterOptions, isLoading: filtersLoading } = useVideoCallsFilterOptions();
     const { videoCallsList, isLoading: videoCallsLoading } = useVideoCallsListData(
@@ -147,6 +161,14 @@ function VideoCalls() {
                     placeholder="Select a video calls list..."
                     cannotError
                 />
+                <StyledDropdown
+                    value={orderBy}
+                    options={orderingOptions}
+                    onValueChange={val => setSearchParams(createSearchParams({ ...searchParams, order_by: val }))}
+                    placeholder="Select a user list..."
+                    cannotError
+                />
+
                 <Pagination list={videoCallsList} />
             </div>
 
