@@ -56,6 +56,7 @@ export function DataTable<TData, TValue>({
       sorting,
     },
     meta: tableMeta,
+    manualPagination: true,
   });
 
   return (
