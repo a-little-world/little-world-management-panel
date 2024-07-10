@@ -140,7 +140,8 @@ function VideoCalls() {
     );
 
     const changeList = (list) => {
-        setSearchParams(createSearchParams({ ...searchParams, list }));
+        searchParams.set('list', list);
+        setSearchParams(searchParams);
     };
 
     if (filtersLoading) {
@@ -164,7 +165,10 @@ function VideoCalls() {
                 <StyledDropdown
                     value={orderBy}
                     options={orderingOptions}
-                    onValueChange={val => setSearchParams(createSearchParams({ ...searchParams, order_by: val }))}
+                    onValueChange={val => {
+                        searchParams.set('order_by', val);
+                        setSearchParams(searchParams);
+                    }}
                     placeholder="Select a user list..."
                     cannotError
                 />

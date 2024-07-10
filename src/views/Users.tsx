@@ -175,7 +175,8 @@ export function Users() {
   );
 
   const changeList = (list: string) => {
-    setSearchParams(createSearchParams({ ...searchParams, list }));
+    searchParams.set('list', list);
+    setSearchParams(searchParams);
   };
 
   console.log({ userList });
@@ -201,7 +202,10 @@ export function Users() {
           <StyledDropdown
             value={orderBy}
             options={orderingOptions}
-            onValueChange={val => setSearchParams(createSearchParams({ ...searchParams, order_by: val }))}
+            onValueChange={val => {
+              searchParams.set('order_by', val);
+              setSearchParams(searchParams);
+            }}
             placeholder="Select a user list..."
             cannotError
           />

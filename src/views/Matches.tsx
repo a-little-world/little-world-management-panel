@@ -15,8 +15,18 @@ const StyledDropdown = styled(Dropdown)`
   }
 `;
 
+const orderingOptions = [{
+  value: 'created_at',
+  label: '(Asc) Created At',
+}, {
+  value: '-created_at',
+  label: '(Desc) Created At',
+}];
+
+
 export function Matches() {
   let [searchParams, setSearchParams] = useSearchParams();
+  const orderBy = searchParams.get('order_by') || '-date_joined';
   const list = searchParams.get('list') || 'all';
   const { filterOptions, isLoading: filtersLoading } =
     useMatchesFilterOptions();
@@ -26,7 +36,8 @@ export function Matches() {
   );
 
   const changeList = (list: string) => {
-    setSearchParams(createSearchParams({ ...searchParams, list }));
+    searchParams.set('list', list)
+    setSearchParams(searchParams)
   };
 
   return (
@@ -45,6 +56,17 @@ export function Matches() {
               }))}
               onValueChange={val => changeList(val)}
               placeholder="Select a match list..."
+              cannotError
+            />
+
+            <StyledDropdown
+              value={orderBy}
+              options={orderingOptions}
+              onValueChange={val => {
+                searchParams.set('order_by', val)
+                setSearchParams(searchParams)
+              }}
+              placeholder="Select a user list..."
               cannotError
             />
             <Pagination list={matchList} />
