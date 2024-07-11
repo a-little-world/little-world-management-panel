@@ -10,7 +10,13 @@ import styled from 'styled-components';
 
 import { EMAIL_TEMPLATES } from './Email';
 
-const Templates = styled.ul``;
+const Container = styled.div`
+  padding: ${({ theme }) => theme.spacing.small};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.small};
+`;
+
 const Template = styled(Link)`
   background: ${({ theme }) => theme.color.surface.primary};
   border: 1px solid ${({ theme }) => theme.color.border.bold};
@@ -30,7 +36,7 @@ const GROUPED_TEMPLATES = {
 
 const Emails = () => {
   return (
-    <div>
+    <Container>
       <Text type={TextTypes.Heading4}>Email Templates</Text>
 
       <Accordion
@@ -45,7 +51,7 @@ const Emails = () => {
           };
         })}
       />
-    </div>
+    </Container>
   );
 };
 

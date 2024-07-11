@@ -12,6 +12,8 @@ import {
 } from '@react-email/components';
 import * as React from 'react';
 
+import Logo from '../assets/logoWithText.png';
+
 export interface WelcomeEmailProps {
   verificationCode?: string;
 }
@@ -28,9 +30,9 @@ export const WelcomeEmail = ({ verificationCode }: WelcomeEmailProps) => (
     <Body style={main}>
       <Container style={container}>
         <Img
-          src={`../assets/logoWithText.png`}
-          width="32"
-          height="32"
+          src={Logo}
+          width="144px"
+          height="40.35"
           alt="Little World's Logo"
         />
         <Heading style={h1}>Willkommen bei Little World</Heading>
@@ -46,27 +48,17 @@ export const WelcomeEmail = ({ verificationCode }: WelcomeEmailProps) => (
         <Text
           style={{
             ...text,
-            marginTop: '14px',
             marginBottom: '16px',
           }}
         >
           auf unserer Website ein.
         </Text>
-        <Button
-          href="https://notion.so"
-          target="_blank"
-          style={{
-            ...link,
-            display: 'block',
-            marginBottom: '16px',
-          }}
-        >
+        <Button href="https://notion.so" target="_blank" style={button}>
           E-mail bestätigen
         </Button>
         <Text
           style={{
             ...text,
-            marginTop: '12px',
             marginBottom: '38px',
           }}
         >
@@ -76,7 +68,6 @@ export const WelcomeEmail = ({ verificationCode }: WelcomeEmailProps) => (
         <Text
           style={{
             ...text,
-            marginTop: '12px',
             marginBottom: '38px',
           }}
         >
@@ -126,7 +117,7 @@ const h1 = {
 };
 
 const link = {
-  color: '#2754C5',
+  color: '#0063AF',
   fontFamily:
     "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
   fontSize: '14px',
@@ -134,9 +125,16 @@ const link = {
 };
 
 const button = {
-  color: 'blue',
+  fontFamily:
+    "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
+  color: '#0063AF',
   padding: '8px',
-  border: '1px',
+  border: '2px solid #0063AF',
+  borderRadius: '90px',
+  textAlign: 'center',
+  width: '172px',
+  fontSize: '16px',
+  marginBottom: '24px',
 };
 
 const text = {
@@ -153,7 +151,6 @@ const footer = {
     "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
   fontSize: '12px',
   lineHeight: '22px',
-  marginTop: '12px',
   marginBottom: '24px',
 };
 

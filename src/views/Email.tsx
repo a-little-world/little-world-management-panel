@@ -3,6 +3,7 @@ import {
   ButtonAppearance,
   ButtonSizes,
   ButtonVariations,
+  Label,
   Link,
   Text,
   TextInput,
@@ -23,9 +24,7 @@ const Toolbar = styled.div`
   gap: ${({ theme }) => theme.spacing.small};
 `;
 const Content = styled.div`
-  background: ${({ theme }) => theme.color.surface.secondary};
-  border: 1px solid ${({ theme }) => theme.color.border.subtle};
-  padding: ${({ theme }) => theme.spacing.small};
+  //   padding: ${({ theme }) => theme.spacing.small};
   gap: ${({ theme }) => theme.spacing.small};
   display: flex;
 `;
@@ -42,11 +41,15 @@ const Variables = styled.form`
   width: 100%;
   max-width: 400px;
   padding: ${({ theme }) => theme.spacing.small};
+  background: ${({ theme }) => theme.color.surface.secondary};
+  border-radius: ${({ theme }) => theme.radius.xxsmall};
 `;
 
 const TemplateWrapper = styled.div`
   background: ${({ theme }) => theme.color.surface.primary};
   padding: ${({ theme }) => theme.spacing.small};
+  border: 1px solid ${({ theme }) => theme.color.border.subtle};
+  border-radius: ${({ theme }) => theme.radius.xxsmall};
 `;
 
 export const EMAIL_TEMPLATES = {
@@ -55,6 +58,7 @@ export const EMAIL_TEMPLATES = {
     id: 'welcome',
     Component: WelcomeEmail,
     options: [{ name: 'verificationCode', label: 'Verification Code' }],
+    subject: 'Wilkommen bei Little World',
   },
   'reset-password': {
     label: 'Reset Password',
@@ -65,30 +69,51 @@ export const EMAIL_TEMPLATES = {
 
 const Container = styled.div`
   padding: ${({ theme }) => theme.spacing.small};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.small};
+`;
+
+const PageHeading = styled(Text)`
+  text-transform: capitalize;
 `;
 
 const Email = () => {
   const { emailTemplateName, ...rest } = useParams();
+  const email = EMAIL_TEMPLATES[emailTemplateName];
   const {
-    getValues,
+    watch,
     register,
     handleSubmit,
     formState: { errors },
     setError,
-  } = useForm();
+  } = useForm({
+    defaultValues: {
+      subject: email.subject || '',
+    },
+  });
   const navigate = useNavigate();
-  const onSaveVariables = data => {
+  const onRenderHtml = data => {
     const queryString = new URLSearchParams(data).toString();
     navigate(`rendered?${queryString}`);
   };
-  const email = EMAIL_TEMPLATES[emailTemplateName];
-  console.log({ ...rest, email });
+
+  const onPrepareSend = data => {
+    const queryString = new URLSearchParams(data).toString();
+    navigate(`rendered?${queryString}`);
+  };
 
   return (
     <Container>
-      <Text type={TextTypes.Heading4}>{emailTemplateName} Template</Text>
+      <PageHeading type={TextTypes.Heading4}>
+        {emailTemplateName} Template
+      </PageHeading>
       <Content>
-        <Variables onSubmit={handleSubmit(onSaveVariables)}>
+        <Variables onSubmit={handleSubmit(onRenderHtml)}>
+          <Text type={TextTypes.Body3} bold>
+            Email Template Parameters
+          </Text>
+
           {email.options.map((option: { name: string; label: string }) => (
             <Option key={option.name}>
               <TextInput
@@ -104,10 +129,39 @@ const Email = () => {
               />
             </Option>
           ))}
-
+          <Text type={TextTypes.Body3} bold>
+            Send Email
+          </Text>
+          <TextInput
+            {...registerInput({
+              register,
+              name: 'subject',
+              options: { required: 'error.required' },
+            })}
+            id={'subject'}
+            label={'Subject'}
+            error={errors?.subject?.message}
+            placeholder="Enter the subject"
+          />
+          <TextInput
+            {...registerInput({
+              register,
+              name: 'recipients',
+              options: { required: 'error.required' },
+            })}
+            id={'recipients'}
+            label={'Send Email to:'}
+            labelTooltip="To send to multiple recipients at once, enter emails separated by a comma but without any spaces inbetween email address and comma."
+            error={errors?.recipients?.message}
+            placeholder="Enter emails of the recipients"
+          />
           <Toolbar>
-            <Button type="submit" size={ButtonSizes.Small}>
-              Go to Send
+            <Button
+              type="submit"
+              size={ButtonSizes.Small}
+              onClick={onPrepareSend}
+            >
+              Send
             </Button>
             <Button
               type="submit"
@@ -118,7 +172,7 @@ const Email = () => {
             </Button>
           </Toolbar>
         </Variables>
-        <TemplateWrapper>{<email.Component {...getValues} />}</TemplateWrapper>
+        <TemplateWrapper>{<email.Component {...watch()} />}</TemplateWrapper>
       </Content>
     </Container>
   );
