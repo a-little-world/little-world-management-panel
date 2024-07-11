@@ -16,15 +16,16 @@ import UserImage from '../atoms/UserImage';
 import { useGlobalState } from '../store';
 
 const PREMATCH_APPOINTMENT_FIELDS = [
-  { key: 'user', label: "User" },
   { key: 'had_prematching_call', label: 'Had Prematching Call' },
+  { key: 'user', label: "User" },
+  { key: 'name', label: "Name" },
+  { key: 'email', label: "Email" },
   { key: 'start_time', label: 'Starts At' },
 ];
 
 export function PrematchingAppointmentsTable({ appointments, list }) {
   //const { selectedMatch, selectMatch, deselectMatch } = useGlobalState();
   const { selectedUsers, selectUser, deselectUser } = useGlobalState();
-  console.log('selectedUsers', selectedUsers);
 
   const [fields, setFields] = useState(PREMATCH_APPOINTMENT_FIELDS);
 
@@ -101,7 +102,13 @@ export function PrematchingAppointmentsTable({ appointments, list }) {
 
                   }
 
+                  if (key === 'name') {
+                    return <TableCell key={appointment.uuid + key}>{appointment.user.profile.first_name} {appointment.user.profile.second_name}</TableCell>
+                  }
 
+                  if (key === 'email') {
+                    return <TableCell key={appointment.uuid + key}>{appointment.user.email}</TableCell>
+                  }
 
                   return (
                     <TableCell key={appointment.uuid + key}>
