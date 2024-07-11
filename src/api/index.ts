@@ -76,7 +76,7 @@ export const markMessageAsRead = ({ messageId, userId, onError, onSuccess }) =>
     })
     .catch(onError);
 
-export const deleteMessage = ({}) => null;
+export const deleteMessage = ({ }) => null;
 
 export const sendSms = ({ userId, message, onError, onSuccess }) =>
   fetch(`/api/admin/quick_actions/send_sms_to_user/`, {

@@ -40,6 +40,7 @@ const Matching = ({
   const { userId } = useParams();
   const { state } = useLocation();
   const [option, setOption] = useState<string>(preselectOption);
+  const [forceMatch, setForceMatch] = useState<boolean>(false);
   const [submitError, setSubmitError] = useState<string>('');
   const [matchSucces, setMatchSuccess] = useState<string>('');
   const [score, setScore] = useState<string | number>('To Be Calculated');
@@ -72,6 +73,7 @@ const Matching = ({
       const data = {
         user1: potentialMatch[0].id,
         user2: potentialMatch[1].id,
+        force: forceMatch,
         proposal: option === MATCHING_OPTIONS[1].value ? true : false,
       };
 
@@ -104,9 +106,9 @@ const Matching = ({
               id="completed"
               name={name}
               inputRef={null}
-              onCheckedChange={(val) => { }}
+              onCheckedChange={setForceMatch}
               onBlur={() => { }}
-              value={null}
+              value={forceMatch}
               defaultChecked={false}
               error={null}
               label={'Force Match'}
