@@ -17,6 +17,7 @@ import { Button } from '../shadcnui/ui/button';
 import { useFilterOptions, useGlobalState, useUserListData } from '../store';
 import { SelectedUsersSheet } from './../blocks/SelectedUsersSheet';
 import { User } from 'lucide-react';
+import { PageSizeDropdown } from '../atoms/PageSizeDropdown';
 
 const StyledDropdown = styled(Dropdown)`
   div[data-radix-popper-content-wrapper] {
@@ -165,37 +166,6 @@ const orderingOptions = [{
   label: '(Desc) By Last Login',
 }]
 
-const pageSizeOptions = [{
-  value: 10,
-  label: '10',
-}, {
-  value: 25,
-  label: '25',
-}, {
-  value: 50,
-  label: '50',
-}, {
-  value: 99,
-  label: '99',
-}];
-
-export function PageSizeDropdown() {
-  let [searchParams, setSearchParams] = useSearchParams();
-  const pageSize = searchParams.get('page_size') || 10;
-
-  const onChangePageSize = (val) => {
-    searchParams.set('page_size', val);
-    setSearchParams(searchParams);
-  }
-
-  return <StyledDropdown
-    value={pageSize}
-    options={pageSizeOptions}
-    onValueChange={val => onChangePageSize(val)}
-    placeholder="Page Size:"
-    cannotError
-  />
-}
 
 export function Users() {
   let [searchParams, setSearchParams] = useSearchParams();

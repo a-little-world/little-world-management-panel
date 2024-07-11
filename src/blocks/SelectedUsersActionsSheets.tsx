@@ -45,7 +45,9 @@ export const registerInput = ({
   };
 };
 
-export function SelectedUsersActionsSheet() {
+export function SelectedUsersActionsSheet({
+  mutateBaseList
+}) {
   const { selectedUsers, selectUser, deselectUser } = useGlobalState();
 
   const [progress, setProgress] = useState(0);
@@ -70,7 +72,7 @@ export function SelectedUsersActionsSheet() {
         success: res.ok,
       }
       setResults((prevResults) => [...prevResults, result]);
-
+      mutateBaseList();
     }
   }
 

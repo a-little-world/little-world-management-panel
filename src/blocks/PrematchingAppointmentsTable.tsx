@@ -17,6 +17,7 @@ import { useGlobalState } from '../store';
 
 const PREMATCH_APPOINTMENT_FIELDS = [
   { key: 'user', label: "User" },
+  { key: 'had_prematching_call', label: 'Had Prematching Call' },
   { key: 'start_time', label: 'Starts At' },
 ];
 
@@ -85,6 +86,22 @@ export function PrematchingAppointmentsTable({ appointments, list }) {
                       </TableCell>
                     );
                   }
+
+                  if (key === 'had_prematching_call') {
+                    return <TableCell key={appointment.uuid + key}>
+                      <Tag
+                        appearance={
+                          TagAppearance[appointment.had_prematching_call]
+                        }
+                        size={TagSizes.small}
+                      >
+                        {appointment.had_prematching_call ? 'Yes' : 'No'}
+                      </Tag>
+                    </TableCell>
+
+                  }
+
+
 
                   return (
                     <TableCell key={appointment.uuid + key}>

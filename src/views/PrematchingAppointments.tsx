@@ -11,6 +11,8 @@ import { MatchesTable } from '../blocks/MatchesTable';
 import { usePrematchingAppointmentsFilterOptions, usePrematchAppointmentsListData } from '../store';
 import { PrematchingAppointmentsTable } from '../blocks/PrematchingAppointmentsTable';
 import { SelectedUsersActionsSheet } from '../blocks/SelectedUsersActionsSheets';
+import { PageSizeDropdown } from '../atoms/PageSizeDropdown';
+
 
 const StyledDropdown = styled(Dropdown)`
   div[data-radix-popper-content-wrapper] {
@@ -19,11 +21,11 @@ const StyledDropdown = styled(Dropdown)`
 `;
 
 const orderingOptions = [{
-  value: 'created_at',
-  label: '(Asc) Created At',
+  value: 'start_time',
+  label: '(Asc) Starts At',
 }, {
-  value: '-created_at',
-  label: '(Desc) Created At',
+  value: '-start_time',
+  label: '(Desc) Starts At',
 }];
 
 
@@ -34,7 +36,7 @@ export function PrematchingAppointments() {
   const { filterOptions, isLoading: filtersLoading } =
     usePrematchingAppointmentsFilterOptions();
 
-  const { prematchAppointmentsList, isLoading: usersLoading } = usePrematchAppointmentsListData(
+  const { prematchAppointmentsList, isLoading: usersLoading, mutate } = usePrematchAppointmentsListData(
     createSearchParams(searchParams),
   );
 
@@ -71,6 +73,7 @@ export function PrematchingAppointments() {
               placeholder="Select a user list..."
               cannotError
             />
+            <PageSizeDropdown />
             <Pagination list={prematchAppointmentsList} />
           </div>
         )}
@@ -80,7 +83,7 @@ export function PrematchingAppointments() {
       ) : (
         <PrematchingAppointmentsTable appointments={prematchAppointmentsList} list={list} />
       )}
-      <SelectedUsersActionsSheet />
+      <SelectedUsersActionsSheet mutateBaseList={mutate} />
       <SelectedUsersSheet />
     </>
   );
