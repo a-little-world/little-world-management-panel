@@ -7,5 +7,6 @@ export const SCORES_ROUTE = '/scores/';
 export const STATS_ROUTE = '/stats/';
 export const EMAILS_ROUTE = '/emails/';
 export const EMAIL_ROUTE = '/emails/:emailTemplateName';
+export const EMAIL_HTML_ROUTE = '/emails/:emailTemplateName/rendered';
 export const DEVKIT_ROUTE = '/devkit/';
 export const VIDEO_CALLS_ROUTE = '/video-calls/';

@@ -16,6 +16,7 @@ import { AdminPanelV2_Matches } from './panel_v2/AdminPanelMatches.jsx';
 import {
   BASE_ROUTE,
   EMAILS_ROUTE,
+  EMAIL_HTML_ROUTE,
   EMAIL_ROUTE,
   MATCHES_LIST_ROUTE,
   MATCHING_ROUTE,
@@ -26,6 +27,8 @@ import {
   VIDEO_CALLS_ROUTE,
 } from './routes';
 import { GlobalStateProvider } from './store.tsx';
+import Email from './views/Email';
+import EmailHtml from './views/EmailHtml';
 import Emails from './views/Emails';
 import Home from './views/Home';
 import Matches from './views/Matches';
@@ -99,9 +102,13 @@ const router = createBrowserRouter(
         // },
         {
           path: EMAIL_ROUTE,
-          element: <AdminPanelV2_EmailDetails />,
+          element: <Email />,
         },
       ],
+    },
+    {
+      path: EMAIL_HTML_ROUTE,
+      element: <EmailHtml />,
     },
   ],
   { basename: BASE_ROUTE },
