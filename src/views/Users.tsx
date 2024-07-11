@@ -150,9 +150,18 @@ export function UsersTable({ userList }) {
   );
 }
 
+const orderingOptions = [{
+  value: '-date_joined',
+  label: 'By Date Joined',
+}, {
+  value: '-last_login',
+  label: 'By Last Login',
+}]
+
 export function Users() {
   let [searchParams, setSearchParams] = useSearchParams();
   const list = searchParams.get('list') || 'all';
+  const orderBy = searchParams.get('order_by') || '-date_joined';
   const { filterOptions, isLoading: filtersLoading } = useFilterOptions();
 
   const { userList, isLoading: usersLoading } = useUserListData(
@@ -180,6 +189,13 @@ export function Users() {
               label: description,
             }))}
             onValueChange={val => changeList(val)}
+            placeholder="Select a user list..."
+            cannotError
+          />
+          <StyledDropdown
+            value={orderBy}
+            options={orderingOptions}
+            onValueChange={val => setSearchParams(createSearchParams({ ...searchParams, order_by: val }))}
             placeholder="Select a user list..."
             cannotError
           />
