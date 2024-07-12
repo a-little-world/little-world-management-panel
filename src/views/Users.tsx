@@ -107,6 +107,22 @@ const userColumns = [
       </Tag>
     ),
   }),
+  columnHelper.accessor('profile.target_groups', {
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Group
+          <ArrowsUpDownIcon className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => (
+      <div>{row.original.profile.target_groups?.join(', ')}</div>
+    ),
+  }),
   columnHelper.accessor('matches.confirmed', {
     header: 'Confirmed',
     cell: ({ row }) => {
@@ -154,13 +170,16 @@ export function UsersTable({ userList }) {
   );
 }
 
-const orderingOptions = [{
-  value: '-date_joined',
-  label: 'By Date Joined',
-}, {
-  value: '-last_login',
-  label: 'By Last Login',
-}]
+const orderingOptions = [
+  {
+    value: '-date_joined',
+    label: 'By Date Joined',
+  },
+  {
+    value: '-last_login',
+    label: 'By Last Login',
+  },
+];
 
 export function Users() {
   let [searchParams, setSearchParams] = useSearchParams();
@@ -199,7 +218,11 @@ export function Users() {
           <StyledDropdown
             value={orderBy}
             options={orderingOptions}
-            onValueChange={val => setSearchParams(createSearchParams({ ...searchParams, order_by: val }))}
+            onValueChange={val =>
+              setSearchParams(
+                createSearchParams({ ...searchParams, order_by: val }),
+              )
+            }
             placeholder="Select a user list..."
             cannotError
           />
