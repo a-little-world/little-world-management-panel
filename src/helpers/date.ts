@@ -1,7 +1,7 @@
 import { format, formatDistance } from 'date-fns';
 import { de, enGB } from 'date-fns/locale';
 
-import { LANGUAGES } from '../constants.js'
+import { LANGUAGES } from '../constants.js';
 
 const two = (n: number) => (n < 10 ? `0${n}` : n);
 
@@ -11,7 +11,7 @@ export const formatTime = (date: Date) => {
 
 export const formatDate = (
   date: Date,
-  formatStr: string = 'cccc, LLLL do',
+  formatStr: string = 'dd.MM.yy',
   locale?: string,
 ) => {
   return format(date, formatStr, {
@@ -19,7 +19,7 @@ export const formatDate = (
   });
 };
 
-export const formatTimeDistance = (from: Date, to: Date, locale: string) => {
+export const formatTimeDistance = (from: Date, to: Date, locale?: string) => {
   return formatDistance(from, to, {
     addSuffix: true,
     locale: locale === LANGUAGES.de ? de : enGB,
