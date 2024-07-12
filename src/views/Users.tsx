@@ -12,7 +12,7 @@ import Pagination from '../atoms/Pagination';
 import Tag, { TagAppearance, TagSizes } from '../atoms/Tag';
 import UserImage from '../atoms/UserImage';
 import { DataTable } from '../blocks/DataTable';
-import { formatDate } from '../helpers/date';
+import { formatDate, formatTimeDistance } from '../helpers/date';
 import { Button } from '../shadcnui/ui/button';
 import { useFilterOptions, useGlobalState, useUserListData } from '../store';
 import { SelectedUsersSheet } from './../blocks/SelectedUsersSheet';
@@ -109,6 +109,22 @@ const userColumns = [
       </Tag>
     ),
   }),
+  columnHelper.accessor('profile.target_groups', {
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Group
+          <ArrowsUpDownIcon className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => (
+      <div>{row.original.profile.target_groups?.join(', ')}</div>
+    ),
+  }),
   columnHelper.accessor('matches.confirmed', {
     header: 'Confirmed',
     cell: ({ row }) => {
@@ -133,7 +149,11 @@ const userColumns = [
         </Button>
       );
     },
-    cell: ({ row }) => formatDate(new Date(row.original.date_joined)),
+    cell: ({ row }) =>
+      `${formatDate(new Date(row.original.date_joined))} (${formatTimeDistance(
+        new Date(row.original.date_joined),
+        new Date(),
+      )})`,
   }),
 ];
 
