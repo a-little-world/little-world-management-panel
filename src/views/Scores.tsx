@@ -4,6 +4,7 @@ import {
   Dropdown,
   Text,
 } from '@a-little-world/little-world-design-system';
+import { Button as ShadcnButton } from '../shadcnui/ui/button';
 import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { createSearchParams } from 'react-router-dom';
@@ -21,8 +22,10 @@ import styled from 'styled-components';
 import Pagination from '../atoms/Pagination';
 import { ScoresTable } from '../blocks/ScoresTable';
 import { formatTime } from '../helpers/date';
-import { useScoresFilterOptions, useScoresListData } from '../store';
+import { dataFetcher, useScoresFilterOptions, useScoresListData } from '../store';
 import { burstUpdateMatchingScores } from '../api/index';
+import useSWR from 'swr';
+import { cn } from '../lib/utils';
 
 export const TaskMonitorComponent = ({ task_id, finishedCallback }) => {
 
@@ -79,9 +82,14 @@ function MatchingDialog({
 
 function BurstUpdateDialog({
   burstUpdateDialogOpen,
-  setBurstUpdateDialogOpen
+  setBurstUpdateDialogOpen,
+  burstMatchingState,
+  taskIds,
+  setTaskIds
 }) {
-  const [taskIds, setTaskIds] = useState([]);
+
+  const activeScoreCalculation = burstMatchingState?.active || true;
+
   return <Dialog open={burstUpdateDialogOpen} onOpenChange={setBurstUpdateDialogOpen}>
     <DialogContent className='z-140 max-w-full w-[1000px]'>
       <DialogHeader>
@@ -102,9 +110,26 @@ function BurstUpdateDialog({
 
 export function Scores() {
   let [searchParams, setSearchParams] = useSearchParams();
-  const [matchingDialogOpen, setMatchingDialogOpen] = useState(false);
-  const [burstUpdateDialogOpen, setBurstUpdateDialogOpen] = useState(false);
 
+  // Score calculation
+  const [burstUpdateDialogOpen, setBurstUpdateDialogOpen] = useState(false);
+  const [burstMatchingTasks, setBurstMatchingTasks] = useState([]);
+
+  const { data: burstMatchingState, error, mutate: mutateBurstUpdateState, isLoading } = useSWR(
+    `/api/matching/get_active_burst_calculation/`,
+    dataFetcher, { refreshInterval: 1000 }
+  );
+  const activeScoreCalculation = burstMatchingState?.active
+
+
+
+  console.log({ burstMatchingState, error, isLoading });
+
+
+  // Quick matching
+  const [matchingDialogOpen, setMatchingDialogOpen] = useState(false);
+
+  // Score api lookup
   const { isLoading: filtersLoading } = useScoresFilterOptions();
   const [scoresUpdated, setScoresUpdated] = useState(new Date());
 
@@ -120,14 +145,17 @@ export function Scores() {
     );
   };
 
-  const onUpdate = () => {
-    mutate().then(() => setScoresUpdated(new Date()));
-  };
   console.log({ scoresList });
+
   return (
     <>
       <MatchingDialog matchingDialogOpen={matchingDialogOpen} setMatchingDialogOpen={setMatchingDialogOpen} />
-      <BurstUpdateDialog burstUpdateDialogOpen={burstUpdateDialogOpen} setBurstUpdateDialogOpen={setBurstUpdateDialogOpen} />
+      <BurstUpdateDialog
+        burstMatchingState={burstMatchingState}
+        burstUpdateDialogOpen={burstUpdateDialogOpen}
+        setBurstUpdateDialogOpen={setBurstUpdateDialogOpen}
+        taskIds={burstMatchingTasks}
+        setTaskIds={setBurstMatchingTasks} />
       <div className="flex w-full overflow-scroll gap-2 p-2.5 align-center z-100 justify-center items-center">
         {filtersLoading ? (
           'Loading filters...'
@@ -146,11 +174,14 @@ export function Scores() {
               placeholder="Select a score list..."
               cannotError
             />
-            <Button appearance={ButtonAppearance.Secondary} onClick={() => {
+            <ShadcnButton variant="outline" onClick={() => {
               setBurstUpdateDialogOpen(true);
-            }}>
-              Burst Update Scores
-            </Button>
+            }} className={cn('', {
+              'bg-success': activeScoreCalculation,
+              'bg-error': !activeScoreCalculation,
+            })}>
+              {activeScoreCalculation ? 'Scores are being updated...' : 'Burst Update Scores'}
+            </ShadcnButton>
             {scoresUpdated && (
               <Text>Scores Updated at {formatTime(scoresUpdated)}</Text>
             )}
