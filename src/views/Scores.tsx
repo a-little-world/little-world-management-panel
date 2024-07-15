@@ -22,7 +22,7 @@ import styled from 'styled-components';
 import Pagination from '../atoms/Pagination';
 import { ScoresTable } from '../blocks/ScoresTable';
 import { formatTime } from '../helpers/date';
-import { dataFetcher, useScoresFilterOptions, useScoresListData } from '../store';
+import { dataFetcher, useGlobalState, useScoresFilterOptions, useScoresListData } from '../store';
 import { burstUpdateMatchingScores } from '../api/index';
 import useSWR from 'swr';
 import { cn } from '../lib/utils';
@@ -68,13 +68,21 @@ const StyledDropdown = styled(Dropdown)`
 
 function MatchingDialog({
   matchingDialogOpen,
-  setMatchingDialogOpen
+  setMatchingDialogOpen,
+  mutateResults,
 }) {
+  const { clearMatching } = useGlobalState();
+
   return <Dialog open={matchingDialogOpen} onOpenChange={setMatchingDialogOpen}>
     <DialogContent className='z-140 max-w-full w-[1000px]'>
       <DialogHeader>
         <DialogTitle>Do you want to perform a matching for these users?</DialogTitle>
-        <Matching />
+        <Matching onPerformedMatch={() => {
+          setTimeout(() => {
+            clearMatching();
+            setMatchingDialogOpen(false);
+          }, 500);
+        }} />
       </DialogHeader>
     </DialogContent>
   </Dialog>
@@ -149,7 +157,7 @@ export function Scores() {
 
   return (
     <>
-      <MatchingDialog matchingDialogOpen={matchingDialogOpen} setMatchingDialogOpen={setMatchingDialogOpen} />
+      <MatchingDialog matchingDialogOpen={matchingDialogOpen} setMatchingDialogOpen={setMatchingDialogOpen} mutateResults={mutate} />
       <BurstUpdateDialog
         burstMatchingState={burstMatchingState}
         burstUpdateDialogOpen={burstUpdateDialogOpen}

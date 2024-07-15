@@ -36,6 +36,7 @@ const MATCHING_OPTIONS = [
 
 const Matching = ({
   preselectOption = 'proposal',
+  onPerformedMatch = () => { },
 }) => {
   const { userId } = useParams();
   const { state } = useLocation();
@@ -81,7 +82,10 @@ const Matching = ({
         data,
         onError: error =>
           setSubmitError(error?.message || 'Issue with request'),
-        onSuccess: setMatchSuccess,
+        onSuccess: (message) => {
+          setMatchSuccess(message);
+          onPerformedMatch();
+        },
       });
     }
   };
