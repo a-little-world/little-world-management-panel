@@ -210,6 +210,10 @@ export function GlobalStateProvider(props) {
     );
   };
 
+  const clearMatching = () => {
+    setPotentialMatch([]);
+  }
+
   const value = React.useMemo(
     () => ({
       addUserToMatching,
@@ -218,6 +222,7 @@ export function GlobalStateProvider(props) {
       selectedUsers,
       selectUser,
       deselectUser,
+      clearMatching,
       apiOptions,
       apiTranslations,
     }),
@@ -228,6 +233,7 @@ export function GlobalStateProvider(props) {
       selectedUsers,
       selectUser,
       deselectUser,
+      clearMatching,
       apiOptions,
       apiTranslations,
     ],
