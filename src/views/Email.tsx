@@ -9,13 +9,14 @@ import {
   TextInput,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
+import { render as renderEmail } from '@react-email/render';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { registerInput } from '../blocks/SelectedUsersSheet';
-import WelcomeEmail from '../emails/WelcomeEmail';
+import WelcomeEmail from '../emails/templates/welcome';
 
 const Toolbar = styled.div`
   display: flex;
@@ -57,7 +58,7 @@ export const EMAIL_TEMPLATES = {
     label: 'Welcome Email',
     id: 'welcome',
     Component: WelcomeEmail,
-    options: [{ name: 'verificationCode', label: 'Verification Code' }],
+    options: [],
     subject: 'Wilkommen bei Little World',
   },
   'reset-password': {
@@ -92,16 +93,16 @@ const Email = () => {
       subject: email.subject || '',
     },
   });
-  const navigate = useNavigate();
-  const onRenderHtml = data => {
-    const queryString = new URLSearchParams(data).toString();
-    navigate(`rendered?${queryString}`);
-  };
 
-  const onPrepareSend = data => {
-    const queryString = new URLSearchParams(data).toString();
-    navigate(`rendered?${queryString}`);
-  };
+  const onDownload = () => {
+    const html = renderEmail(<email.Component {...watch()} />);
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${emailTemplateName}.html`;
+    a.click();
+  }
 
   return (
     <Container>
@@ -109,11 +110,10 @@ const Email = () => {
         {emailTemplateName} Template
       </PageHeading>
       <Content>
-        <Variables onSubmit={handleSubmit(onRenderHtml)}>
+        <Variables onSubmit={() => { }}>
           <Text type={TextTypes.Body3} bold>
             Email Template Parameters
           </Text>
-
           {email.options.map((option: { name: string; label: string }) => (
             <Option key={option.name}>
               <TextInput
@@ -130,45 +130,15 @@ const Email = () => {
             </Option>
           ))}
           <Text type={TextTypes.Body3} bold>
-            Send Email
+            Export Email
           </Text>
-          <TextInput
-            {...registerInput({
-              register,
-              name: 'subject',
-              options: { required: 'error.required' },
-            })}
-            id={'subject'}
-            label={'Subject'}
-            error={errors?.subject?.message}
-            placeholder="Enter the subject"
-          />
-          <TextInput
-            {...registerInput({
-              register,
-              name: 'recipients',
-              options: { required: 'error.required' },
-            })}
-            id={'recipients'}
-            label={'Send Email to:'}
-            labelTooltip="To send to multiple recipients at once, enter emails separated by a comma but without any spaces inbetween email address and comma."
-            error={errors?.recipients?.message}
-            placeholder="Enter emails of the recipients"
-          />
           <Toolbar>
             <Button
               type="submit"
               size={ButtonSizes.Small}
-              onClick={onPrepareSend}
+              onClick={onDownload}
             >
-              Send
-            </Button>
-            <Button
-              type="submit"
-              size={ButtonSizes.Small}
-              appearance={ButtonAppearance.Secondary}
-            >
-              Render Html
+              Download Django Template
             </Button>
           </Toolbar>
         </Variables>

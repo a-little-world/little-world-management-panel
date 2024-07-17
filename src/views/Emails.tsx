@@ -30,7 +30,7 @@ const Template = styled(Link)`
 `;
 
 const GROUPED_TEMPLATES = {
-  Account: [EMAIL_TEMPLATES.welcome],
+  "Backend Templates": [EMAIL_TEMPLATES.welcome],
   Marketing: [],
 };
 
@@ -38,7 +38,6 @@ const Emails = () => {
   return (
     <Container>
       <Text type={TextTypes.Heading4}>Email Templates</Text>
-
       <Accordion
         items={map(GROUPED_TEMPLATES, (item, header) => {
           return {
