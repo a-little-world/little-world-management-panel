@@ -27,4 +27,27 @@ const EmailHtml = () => {
   });
 };
 
+export const EmailHtmlRenderer = ({
+  template,
+  params,
+}) => {
+  const Component = EMAIL_TEMPLATES[template]?.Component;
+
+  if (!Component) return 'Invalid Email Path';
+  const emailHtml = renderEmail(<Component {...params} />, {
+    pretty: true,
+  });
+
+  return <><div dangerouslySetInnerHTML={{ __html: emailHtml }} />
+    <button onClick={() => {
+      const blob = new Blob([emailHtml], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${template}.html`;
+      a.click();
+    }}>Dowload as django template</button>
+  </>;
+}
+
 export default EmailHtml;
