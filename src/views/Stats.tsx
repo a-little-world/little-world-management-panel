@@ -5,14 +5,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../shadcnui/ui/tabs";
 import { Dropdown, Text } from '@a-little-world/little-world-design-system';
 import { RangedDataGraph } from '../blocks/RangedDataGraph';
 import { BarChartTimeRanged } from '../blocks/BarChartTimeRanged';
+import { BucketTable, UserCountsBucketTable } from '../blocks/JourneyBucketTable';
+import { useSearchParams } from 'react-router-dom';
 
 
 function Stats() {
 
-    const [tab, setTab] = useState("graphs");
+    let [searchParams, setSearchParams] = useSearchParams();
+    const tab = searchParams.get('tab') || 'graphs';
 
     const onTabChange = (value: string) => {
-        setTab(value);
+        searchParams.set('tab', value);
+        setSearchParams(searchParams);
     };
 
     return (
@@ -30,7 +34,7 @@ function Stats() {
                     <BarChartTimeRanged />
                 </TabsContent>}
                 {tab === "numbers" && <TabsContent value="numbers" className='flex flex-col content-center justify-center items-center flex-grow'>
-                    Hello?
+                    <UserCountsBucketTable />
                 </TabsContent>}
             </Tabs>
         </div>
