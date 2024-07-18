@@ -26,6 +26,14 @@ const graphEndpoints = [{
     endpoint: "/api/matching/users/statistics/messages_send/",
     title: "User Messages",
     description: "The amount of messages sent in a given time period."
+}, {
+    endpoint: "/api/matching/users/statistics/video_calls/?aggregation=total_time",
+    title: "Summed Minutes Spent in Video Calls",
+    description: "The total amount of minutes spent in video calls in a given time period."
+}, {
+    endpoint: "/api/matching/users/statistics/video_calls/?aggregation=average_time",
+    title: "Average Time Per Video Call in Minutes",
+    description: "The average time spent in video calls in a given time period."
 }]
 
 export function RangedDataGraph() {
