@@ -30,7 +30,10 @@ const Template = styled(Link)`
 `;
 
 const GROUPED_TEMPLATES = {
-  "Backend Templates": [EMAIL_TEMPLATES.welcome],
+  'Backend Templates': [
+    EMAIL_TEMPLATES.welcome,
+    EMAIL_TEMPLATES['reset-password'],
+  ],
   Marketing: [],
 };
 
