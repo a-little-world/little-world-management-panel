@@ -75,7 +75,7 @@ const EmailBuilder = ({ content, preview }: Props) => {
         //       {text}
         //     </Text>
         //   );
-
+        console.log({ centred, text });
         if (type === ContentTypes.Paragraph)
           return (
             <Text style={centred ? centredParagraph : paragraph} key={text}>

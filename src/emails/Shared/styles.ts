@@ -17,7 +17,8 @@ export const contentContainer = {
 export const content = {
   borderCollapse: 'separate',
   background: '#ffffff',
-  padding: '32px 32px 64px',
+  padding: '32px 32px 56px',
+  borderRadius: '32px 32px 0 0',
 };
 
 export const title = {
@@ -56,10 +57,9 @@ export const button = {
   minWidth: '172px',
   maxWidth: '204px',
   fontSize: '14px',
-  marginBottom: '24px',
   padding: '12px 16px',
   height: '49px',
-  margin: '0 auto 24px',
+  margin: '32px auto',
   lineHeight: '1.5',
 };
 

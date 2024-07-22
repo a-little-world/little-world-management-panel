@@ -8,7 +8,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { EMAIL_TEMPLATES } from './Email';
+import automatedEmails from '../emails/data/automated';
+import marketingEmails from '../emails/data/marketing';
+import partnershipsEmails from '../emails/data/partnerships';
 
 const Container = styled.div`
   padding: ${({ theme }) => theme.spacing.small};
@@ -30,18 +32,22 @@ const Template = styled(Link)`
 `;
 
 const GROUPED_TEMPLATES = {
-  'Backend Templates': [
-    EMAIL_TEMPLATES.welcome,
-    EMAIL_TEMPLATES['reset-password'],
-  ],
-  Marketing: [],
+  Automated: map(automatedEmails),
+  Marketing: map(marketingEmails),
+  Partnerships: map(partnershipsEmails),
 };
 
 const Emails = () => {
+  const GROUPED_TEMPLATES = {
+    Automated: map(automatedEmails),
+    Marketing: map(marketingEmails),
+    Partnerships: map(partnershipsEmails),
+  };
   return (
     <Container>
       <Text type={TextTypes.Heading4}>Email Templates</Text>
       <Accordion
+        contentClassName={'emailGroup'}
         items={map(GROUPED_TEMPLATES, (item, header) => {
           return {
             header,

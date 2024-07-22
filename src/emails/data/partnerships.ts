@@ -1,0 +1,76 @@
+import { ContentTypes } from '../Builder';
+import { BackendVars } from '../templates/backendVars';
+
+const partnershipsEmails = {
+  'babbel-subscription-winner': {
+    id: 'babbel-subscription-winner',
+    label: 'Babbel Subscription Winner',
+    preview:
+      'Herzlichen Glückwunsch! Du hast ein 6-monatiges Babbel-Abonnement gewonnen',
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: 'Herzlichen Glückwunsch! Du hast ein 6-monatiges Babbel-Abonnement gewonnen',
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: `${BackendVars.firstName}, du hast einen Babbel-Gutschein gewonnen!`,
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: 'Alle tollen Funktionen und Inhalte von Babbel kannst du jetzt 6 Monate lang kostenlos nutzen.',
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: 'Nochmals vielen Dank, dass du an unserer Umfrage teilgenommen hast. Um einen kleinen Gefallen möchten wir dich noch bitten: bei Aktivierung des Codes, müsstest du die gleiche Umfrage in 3 Monaten nochmal ausfüllen. Nur so können wir die Auswirkungen der Nutzung von Babbel und Little World messen.',
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: 'Du erhältst eine weitere E-Mail von Babbel mit deinem Code und Anweisungen, wie du ihn aktivieren kannst.',
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: 'Wenn du Schwierigkeiten mit der Validierung deines Codes hast, melde dich bei uns und wir helfen dir weiter',
+      },
+    ],
+  },
+  'babbel-precode-survey': {
+    id: 'babbel-precode-survey',
+    label: 'Babbel Precode Survey',
+    preview:
+      'Verbessere dein Deutsch mit einem kostenloser 6-monatiger Babbel Code',
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: 'Verbessere dein Deutsch mit einem kostenloser 6-monatiger Babbel Code',
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: `Hallo ${BackendVars.firstName},`,
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: 'Ein Schwerpunkt bei Little World ist es, dir zu helfen, selbstbewusster Deutsch zu sprechen, und wir sind immer auf der Suche nach Möglichkeiten, das zu erreichen... Nun, wir haben uns mit Babbel, einer der führenden Sprach-Apps, zusammengetan und können unseren Nutzern eine Reihe von Gutscheinen kostenlos zur Verfügung stellen.',
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: 'Mit diesem Gutschein erhältst du 6 Monate lang Zugang zum Deutschkurs von Babbel. Um einen dieser Gutscheine zu gewinnen, musst du nur diese kurze 3-Minuten-Umfrage ausfüllen.',
+      },
+      {
+        type: ContentTypes.Button,
+        text: 'Zur Umfrage',
+        href: BackendVars.linkUrl,
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: 'Was wollen wir wissen? Wir stellen Fragen, um einen Einblick von deinen derzeitigen Erfahrungen beim Deutschlernen und deinem Leben in Deutschland zu erhalten.',
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: 'Warum wollen wir das wissen? Wir wollen eine Plattform aufbauen, die sich an deinen Bedürfnissen und Erfahrungen orientiert, und dazu möchten wir dir zuhören, um das umzusetzen, was benötigt wird.',
+      },
+    ],
+  },
+};
+
+export default partnershipsEmails;

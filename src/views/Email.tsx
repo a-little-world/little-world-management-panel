@@ -1,10 +1,6 @@
 import {
   Button,
-  ButtonAppearance,
   ButtonSizes,
-  ButtonVariations,
-  Label,
-  Link,
   Text,
   TextInput,
   TextTypes,
@@ -17,9 +13,7 @@ import styled from 'styled-components';
 
 import { registerInput } from '../blocks/SelectedUsersSheet';
 import EmailBuilder from '../emails/Builder';
-import emailsData from '../emails/data';
-import ResetPasswordEmail from '../emails/templates/ResetPassword';
-import WelcomeEmail from '../emails/templates/Welcome';
+import emailsData from '../emails/data/';
 
 const Container = styled.div`
   padding: ${({ theme }) => theme.spacing.small};
@@ -70,28 +64,12 @@ const TemplateWrapper = styled.div`
   width: 100%;
 `;
 
-export const EMAIL_TEMPLATES = {
-  welcome: {
-    label: 'Welcome Email',
-    id: 'welcome',
-    Component: WelcomeEmail,
-    options: [],
-    subject: 'Wilkommen bei Little World',
-  },
-  'reset-password': {
-    label: 'Reset Password',
-    id: 'reset-password',
-    Component: ResetPasswordEmail,
-    options: [],
-  },
-};
-
 const PageHeading = styled(Text)`
   text-transform: capitalize;
 `;
 
 const Email = () => {
-  const { emailTemplateName, ...rest } = useParams();
+  const { emailTemplateName } = useParams();
   const email = emailsData[emailTemplateName ?? 'undefined'];
   const {
     watch,

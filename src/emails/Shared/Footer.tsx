@@ -13,10 +13,12 @@ import footerBannerImage from '../../assets/email-footer-banner.png';
 import facebook from '../../assets/facebook.png';
 import instagram from '../../assets/instagram.png';
 import linkedin from '../../assets/linkedin.png';
-import { footer, link, text } from '../shared/styles';
+import { footer, link, sentence } from '../shared/styles';
 
 const bannerImage = {
   maxWidth: '100%',
+  borderBottomLeftRadius: '32px',
+  borderBottomRightRadius: '32px',
 };
 
 const footerLink = {
@@ -31,7 +33,7 @@ const footerActions = {
 };
 
 const footerText = {
-  ...text,
+  ...sentence,
   color: 'rgb(156 163 175)',
 };
 
