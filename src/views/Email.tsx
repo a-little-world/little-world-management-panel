@@ -84,7 +84,7 @@ const Email = () => {
   });
 
   const onDownload = () => {
-    const html = renderEmail(<email.Component />);
+    const html = renderEmail(<EmailBuilder content={email.content} preview={email.preview} />);
     const blob = new Blob([html], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -100,7 +100,7 @@ const Email = () => {
       </PageHeading>
       {email ? (
         <Content>
-          <Variables onSubmit={() => {}}>
+          <Variables onSubmit={() => { }}>
             <Text type={TextTypes.Body3} bold>
               Email Template Parameters
             </Text>
@@ -124,7 +124,6 @@ const Email = () => {
             </Text>
             <Toolbar>
               <Button
-                type="submit"
                 size={ButtonSizes.Small}
                 onClick={onDownload}
               >
