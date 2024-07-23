@@ -29,7 +29,7 @@ function Stats() {
                     <TabsTrigger value="charts">Charts</TabsTrigger>
                     <TabsTrigger value="numbers">Numbers</TabsTrigger>
                 </TabsList>
-                {tab === "overview" && <TabsContent value="overview" className='flex flex-col content-center justify-center items-center flex-grow'>
+                {tab === "overview" && <TabsContent value="overview" className='flex flex-col content-center justify-center items-center flex-grow relative'>
                     <MatchUserJourneyOverview />
                 </TabsContent>}
                 {tab === "graphs" && <TabsContent value="graphs" className='flex flex-col content-center justify-center items-center flex-grow'>
