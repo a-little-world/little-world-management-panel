@@ -1,13 +1,15 @@
 import {
   Accordion,
   Button,
+  ButtonAppearance,
+  ButtonSizes,
+  Link,
   Text,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
 import { render as renderEmail } from '@react-email/render';
 import { map } from 'lodash';
 import React from 'react';
-import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
 import automatedEmails from '../emails/data/automated';
@@ -18,12 +20,21 @@ import { dataFetcher } from '../store';
 import useSWR from 'swr';
 import EmailBuilder from '../emails/Builder';
 import { getCookiesAsObject } from '../utils';
+import { CREATE_NEW_EMAIL_ROUTE } from '../routes';
 
 const Container = styled.div`
   padding: ${({ theme }) => theme.spacing.small};
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.small};
+`;
+
+const TopBar = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.small};
+  flex-wrap: wrap;
 `;
 
 const Template = styled(Link)`
@@ -128,7 +139,16 @@ const Emails = () => {
 
   return (
     <Container>
-      <Text type={TextTypes.Heading4}>Email Templates</Text>
+      <TopBar>
+        <Text type={TextTypes.Heading4}>Email Templates</Text>
+        <Link
+          buttonSize={ButtonSizes.Small}
+          buttonAppearance={ButtonAppearance.Primary}
+          to={CREATE_NEW_EMAIL_ROUTE}
+        >
+          Create New
+        </Link>
+      </TopBar>
       <Accordion
         contentClassName={'emailGroup'}
         items={map(GROUPED_TEMPLATES, (item, header) => {

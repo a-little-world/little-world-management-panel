@@ -17,7 +17,7 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["src"],
+  "include": ["src", "src/emails/templates/.tsx"],
   "exclude": ["node_modules", "dist"],
   "types": ["@testing-library/jest-dom"],
   "typeRoots": ["./node_modules/@types"]
