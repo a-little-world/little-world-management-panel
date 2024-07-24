@@ -17,6 +17,7 @@ import EmailBuilder from '../emails/Builder';
 import emailsData from '../emails/data/';
 import useSWR from 'swr';
 import { dataFetcher } from '../store';
+import { getCookiesAsObject } from '../utils';
 
 const Container = styled.div`
   padding: ${({ theme }) => theme.spacing.small};
@@ -100,6 +101,18 @@ const Email = () => {
     setBackendPreviewHTML(html);
   }
 
+  const onSendEmail = async () => {
+    const url = `/api/matching/emails/templates/${emailTemplateName}/send/`
+    await fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(watch()),
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookiesAsObject().csrftoken,
+      },
+    });
+  }
+
   const onDownload = () => {
     const html = renderEmail(<EmailBuilder content={email.content} preview={email.preview} />);
     const blob = new Blob([html], { type: 'text/html' });
@@ -153,12 +166,20 @@ const Email = () => {
                 placeholder="Enter a value" />
               </>
             ))}
-            <Button
-              size={ButtonSizes.Small}
-              onClick={fetchBackendPreview}
-            >
-              Update Backend Email Preview
-            </Button>
+            <Toolbar>
+              <Button
+                size={ButtonSizes.Small}
+                onClick={fetchBackendPreview}
+              >
+                Update Backend Email Preview
+              </Button>
+              <Button
+                size={ButtonSizes.Small}
+                onClick={onSendEmail}
+              >
+                Send Email
+              </Button>
+            </Toolbar>
             <Text type={TextTypes.Body4} bold>
               Email Subject:
             </Text>
