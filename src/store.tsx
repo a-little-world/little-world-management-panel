@@ -1,7 +1,8 @@
 import { filter, pull, unset } from 'lodash';
 import React, { createContext, useState } from 'react';
-import { getCookiesAsObject } from './utils';
 import useSWR from 'swr';
+
+import { getCookiesAsObject } from './utils';
 
 export const dataFetcher = (url: string) =>
   fetch(url).then(res => {
@@ -33,7 +34,7 @@ export const postFetcher = async (url: string, data: any) => {
   });
 
   return response.json();
-}
+};
 
 export const useFilterOptions = () => {
   const { data, error, mutate, isLoading } = useSWR(
@@ -89,7 +90,7 @@ export const useVideoCallsFilterOptions = () => {
     mutate,
     isLoading,
   };
-}
+};
 
 export const useMatchListData = (searchParams: string) => {
   const { data, error, mutate, isLoading } = useSWR(
@@ -145,8 +146,7 @@ export const useVideoCallsListData = (searchParams: string) => {
     mutate,
     isLoading,
   };
-
-}
+};
 
 export const useScoresFilterOptions = () => {
   const { data, error, mutate, isLoading } = useSWR(
@@ -212,7 +212,7 @@ export function GlobalStateProvider(props) {
 
   const clearMatching = () => {
     setPotentialMatch([]);
-  }
+  };
 
   const value = React.useMemo(
     () => ({

@@ -15,6 +15,7 @@ import {
 import { AdminPanelV2_Matches } from './panel_v2/AdminPanelMatches.jsx';
 import {
   BASE_ROUTE,
+  CREATE_NEW_EMAIL_ROUTE,
   EMAILS_ROUTE,
   EMAIL_HTML_ROUTE,
   EMAIL_ROUTE,
@@ -28,17 +29,18 @@ import {
   VIDEO_CALLS_ROUTE,
 } from './routes';
 import { GlobalStateProvider } from './store.tsx';
+import CreateNewEmail from './views/CreateNewEmail';
 import Email from './views/Email';
 import EmailHtml from './views/EmailHtml';
 import Emails from './views/Emails';
 import Home from './views/Home';
 import Matches from './views/Matches';
 import Matching from './views/Matching';
+import PrematchingAppointments from './views/PrematchingAppointments';
 import Scores from './views/Scores';
 import Stats from './views/Stats';
 import Users from './views/Users';
 import VideoCalls from './views/VideoCalls';
-import PrematchingAppointments from './views/PrematchingAppointments';
 
 export const Root = ({
   children,
@@ -102,10 +104,10 @@ const router = createBrowserRouter(
           path: EMAILS_ROUTE,
           element: <Emails />,
         },
-        // {
-        //   path: EMAILS_ROUTE,
-        //   element: <AdminPanelV2_Emails />,
-        // },
+        {
+          path: CREATE_NEW_EMAIL_ROUTE,
+          element: <CreateNewEmail />,
+        },
         {
           path: EMAIL_ROUTE,
           element: <Email />,
