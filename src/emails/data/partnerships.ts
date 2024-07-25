@@ -1,73 +1,74 @@
 import { ContentTypes } from '../Builder';
 import { BackendVars } from '../templates/backendVars';
+import partnershipsText from './text/partnerships.json';
 
 const partnershipsEmails = {
   'babbel-subscription-winner': {
     id: 'babbel-subscription-winner',
     label: 'Babbel Subscription Winner',
-    preview:
-      'Herzlichen Glückwunsch! Du hast ein 6-monatiges Babbel-Abonnement gewonnen',
+    preview: partnershipsText['babbel-subscription-winner.preview'],
+    subject: partnershipsText['babbel-subscription-winner.subject'],
     content: [
       {
         type: ContentTypes.Title,
-        text: 'Herzlichen Glückwunsch! Du hast ein 6-monatiges Babbel-Abonnement gewonnen',
+        text: partnershipsText['babbel-subscription-winner.block-1'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: `${BackendVars.firstName}, du hast einen Babbel-Gutschein gewonnen!`,
+        text: partnershipsText['babbel-subscription-winner.block-2'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: 'Alle tollen Funktionen und Inhalte von Babbel kannst du jetzt 6 Monate lang kostenlos nutzen.',
+        text: partnershipsText['babbel-subscription-winner.block-3'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: 'Nochmals vielen Dank, dass du an unserer Umfrage teilgenommen hast. Um einen kleinen Gefallen möchten wir dich noch bitten: bei Aktivierung des Codes, müsstest du die gleiche Umfrage in 3 Monaten nochmal ausfüllen. Nur so können wir die Auswirkungen der Nutzung von Babbel und Little World messen.',
+        text: partnershipsText['babbel-subscription-winner.block-4'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: 'Du erhältst eine weitere E-Mail von Babbel mit deinem Code und Anweisungen, wie du ihn aktivieren kannst.',
+        text: partnershipsText['babbel-subscription-winner.block-5'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: 'Wenn du Schwierigkeiten mit der Validierung deines Codes hast, melde dich bei uns und wir helfen dir weiter',
+        text: partnershipsText['babbel-subscription-winner.block-6'],
       },
     ],
   },
   'babbel-precode-survey': {
     id: 'babbel-precode-survey',
     label: 'Babbel Precode Survey',
-    preview:
-      'Verbessere dein Deutsch mit einem kostenloser 6-monatiger Babbel Code',
+    preview: partnershipsText['babbel-precode-survey.preview'],
+    subject: partnershipsText['babbel-precode-survey.subject'],
     content: [
       {
         type: ContentTypes.Title,
-        text: 'Verbessere dein Deutsch mit einem kostenloser 6-monatiger Babbel Code',
+        text: partnershipsText['babbel-precode-survey.block-1'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: `Hallo ${BackendVars.firstName},`,
+        text: partnershipsText['babbel-precode-survey.block-2'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: 'Ein Schwerpunkt bei Little World ist es, dir zu helfen, selbstbewusster Deutsch zu sprechen, und wir sind immer auf der Suche nach Möglichkeiten, das zu erreichen... Nun, wir haben uns mit Babbel, einer der führenden Sprach-Apps, zusammengetan und können unseren Nutzern eine Reihe von Gutscheinen kostenlos zur Verfügung stellen.',
+        text: partnershipsText['babbel-precode-survey.block-3'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: 'Mit diesem Gutschein erhältst du 6 Monate lang Zugang zum Deutschkurs von Babbel. Um einen dieser Gutscheine zu gewinnen, musst du nur diese kurze 3-Minuten-Umfrage ausfüllen.',
+        text: partnershipsText['babbel-precode-survey.block-4'],
       },
       {
         type: ContentTypes.Button,
-        text: 'Zur Umfrage',
+        text: partnershipsText['babbel-precode-survey.block-5'],
         href: BackendVars.linkUrl,
       },
       {
         type: ContentTypes.Paragraph,
-        text: 'Was wollen wir wissen? Wir stellen Fragen, um einen Einblick von deinen derzeitigen Erfahrungen beim Deutschlernen und deinem Leben in Deutschland zu erhalten.',
+        text: partnershipsText['babbel-precode-survey.block-6'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: 'Warum wollen wir das wissen? Wir wollen eine Plattform aufbauen, die sich an deinen Bedürfnissen und Erfahrungen orientiert, und dazu möchten wir dir zuhören, um das umzusetzen, was benötigt wird.',
+        text: partnershipsText['babbel-precode-survey.block-7'],
       },
     ],
   },
