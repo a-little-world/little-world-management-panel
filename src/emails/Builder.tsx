@@ -5,11 +5,12 @@ import {
   PencilIcon,
   TrashIcon,
 } from '@a-little-world/little-world-design-system';
-import { Button, Heading, Img, Link, Text } from '@react-email/components';
+import { Heading, Img, Link, Text } from '@react-email/components';
 import React, { useCallback, useState } from 'react';
 import styled from 'styled-components';
 
 import EditableText from '../atoms/EditableText';
+import ButtonLink from './shared/ButtonLink';
 import { EmailLayout } from './shared/Layout';
 import {
   button,
@@ -54,8 +55,8 @@ type Props = {
   content: BlockDataType[];
   editable?: boolean;
   preview?: string;
-  deleteBlock: (index: number) => void;
-  moveBlock: (index1: number, index2: number) => void;
+  deleteBlock?: (index: number) => void;
+  moveBlock?: (index1: number, index2: number) => void;
 };
 
 const EditActions = styled.div`
@@ -157,7 +158,7 @@ const EmailBlock = ({
       <EditableText
         key={text}
         defaultText={text}
-        Component={Button}
+        Component={ButtonLink}
         componentProps={{ style: button, target: '_blank' }}
       />
     );

@@ -13,12 +13,27 @@ import footerBannerImage from '../../assets/email-footer-banner.png';
 import facebook from '../../assets/facebook.png';
 import instagram from '../../assets/instagram.png';
 import linkedin from '../../assets/linkedin.png';
-import { footer, link, sentence } from '../shared/styles';
+import { link, sentence } from '../shared/styles';
+
+export const footer = {
+  borderCollapse: 'separate',
+  backgroundColor: '#fafbfb',
+  color: 'rgb(156 163 175)',
+  fontFamily: 'Open Sans,Helvetica,Arial,sans serif',
+  lineHeight: '22px',
+  marginBottom: '40px',
+  padding: '8px',
+  paddingTop: '0px',
+  margin: '0 auto',
+};
 
 const bannerImage = {
   maxWidth: '100%',
   borderBottomLeftRadius: '32px',
   borderBottomRightRadius: '32px',
+  display: 'block',
+  margin: '0 auto',
+  width: '100%',
 };
 
 const footerLink = {
@@ -30,6 +45,7 @@ const footerActions = {
   padding: '24px 0px',
   borderCollapse: 'separate',
   tableLayout: 'fixed',
+  width: '100%',
 };
 
 const footerText = {
@@ -46,20 +62,23 @@ const socials = {
 export const Footer = () => (
   <Container style={footer}>
     <Section>
-      <Img style={bannerImage} width={650} src={footerBannerImage} />
+      <Img style={bannerImage} src={footerBannerImage} />
     </Section>
     <Section>
       <Row style={footerActions}>
-        <Column style={{ textAlign: 'right' }}>
-          <Link style={footerLink}>Unsubscribe</Link>
+        <Column style={{ textAlign: 'right', width: '50%' }}>
+          <Link style={{ ...footerLink, marginRight: '8px' }}>Unsubscribe</Link>
         </Column>
-        <Column style={{ textAlign: 'center' }}>
+        {/* <Column style={{ textAlign: 'center', width: '33%' }}>
           <Link style={{ ...footerLink, margin: '0 16px' }}>
             Manage Preferences
           </Link>
-        </Column>
-        <Column>
-          <Link style={footerLink} href="https://home.little-world.com/kontakt">
+        </Column> */}
+        <Column style={{ width: '50%' }}>
+          <Link
+            style={{ ...footerLink, marginLeft: '8px' }}
+            href="https://home.little-world.com/kontakt"
+          >
             Kontakt
           </Link>
         </Column>

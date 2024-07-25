@@ -10,46 +10,23 @@ import {
   ToolTip,
 } from '@a-little-world/little-world-design-system';
 import { render as renderEmail } from '@react-email/render';
-import { forIn, isEmpty, map, mapKeys, pullAt } from 'lodash';
+import { isEmpty, map, pullAt } from 'lodash';
 import React, { useCallback, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 import styled, { useTheme } from 'styled-components';
 
-import { registerInput } from '../blocks/SelectedUsersSheet';
-import EmailBuilder, { ContentTypes } from '../emails/Builder';
-import emailsData from '../emails/data';
-import communityEmails from '../emails/data/community';
-import { BackendVars } from '../emails/templates/backendVars';
-
-const Container = styled.div`
-  padding: ${({ theme }) => theme.spacing.small};
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.small};
-  height: 100%;
-  min-height: 0px;
-`;
-
-const Toolbar = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.spacing.small};
-  width: 100%;
-  flex-wrap: wrap;
-`;
-const Content = styled.div`
-  gap: ${({ theme }) => theme.spacing.small};
-  display: flex;
-  height: 100%;
-  min-height: 0px;
-  flex-wrap: wrap;
-
-  @media (min-width: ${({ theme }) => theme.breakpoints.medium}) {
-    flex-wrap: nowrap;
-  }
-`;
+import EmailBuilder, { ContentTypes } from '../../emails/Builder';
+import communityEmails from '../../emails/data/community';
+import { BackendVars } from '../../emails/templates/backendVars';
+import {
+  Container,
+  Content,
+  OptionsContainer,
+  PageHeading,
+  TemplateWrapper,
+  Toolbar,
+} from './styles';
 
 const BlockOption = styled.button`
   display: flex;
@@ -60,20 +37,6 @@ const BlockOption = styled.button`
   background: ${({ theme }) => theme.color.surface.accent};
   padding: ${({ theme }) => theme.spacing.small};
   text-transform: capitalize;
-`;
-
-const BlocksContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  padding: ${({ theme }) => theme.spacing.small};
-  background: ${({ theme }) => theme.color.surface.secondary};
-  border-radius: ${({ theme }) => theme.radius.xxsmall};
-  gap: ${({ theme }) => theme.spacing.small};
-  width: 100%;
-
-  @media (min-width: ${({ theme }) => theme.breakpoints.medium}) {
-    max-width: 400px;
-  }
 `;
 
 const Blocks = styled.form`
@@ -87,21 +50,6 @@ const Blocks = styled.form`
   @media (min-width: ${({ theme }) => theme.breakpoints.medium}) {
     height: unset;
   }
-`;
-
-const TemplateWrapper = styled.div`
-  background: ${({ theme }) => theme.color.surface.primary};
-  padding: ${({ theme }) => theme.spacing.small};
-  border: 1px solid ${({ theme }) => theme.color.border.subtle};
-  border-radius: ${({ theme }) => theme.radius.xxsmall};
-  overflow: scroll;
-  width: 100%;
-  min-height: 0;
-  height: 100%;
-`;
-
-const PageHeading = styled(Text)`
-  text-transform: capitalize;
 `;
 
 const NothingSelected = styled.div`
@@ -269,7 +217,7 @@ const CreateNewEmail = () => {
         </ButtonsContainer>
       </Toolbar>
       <Content>
-        <BlocksContainer>
+        <OptionsContainer>
           <Text type={TextTypes.Body3} bold>
             Building Blocks
           </Text>
@@ -284,7 +232,7 @@ const CreateNewEmail = () => {
               </BlockOption>
             ))}
           </Blocks>
-        </BlocksContainer>
+        </OptionsContainer>
         <TemplateWrapper>
           {isEmpty(newEmail) ? (
             <NothingSelected>

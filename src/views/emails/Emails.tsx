@@ -10,10 +10,10 @@ import { map } from 'lodash';
 import React from 'react';
 import styled from 'styled-components';
 
-import automatedEmails from '../emails/data/automated';
-import marketingEmails from '../emails/data/marketing';
-import partnershipsEmails from '../emails/data/partnerships';
-import { CREATE_NEW_EMAIL_ROUTE } from '../routes';
+import automatedEmails from '../../emails/data/automated';
+import marketingEmails from '../../emails/data/marketing';
+import partnershipsEmails from '../../emails/data/partnerships';
+import { CREATE_NEW_EMAIL_ROUTE } from '../../routes';
 
 const Container = styled.div`
   padding: ${({ theme }) => theme.spacing.small};

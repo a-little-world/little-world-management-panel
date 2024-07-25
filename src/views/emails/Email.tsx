@@ -11,61 +11,22 @@ import { useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { registerInput } from '../blocks/SelectedUsersSheet';
-import EmailBuilder from '../emails/Builder';
-import emailsData from '../emails/data/';
-
-const Container = styled.div`
-  padding: ${({ theme }) => theme.spacing.small};
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.small};
-  height: 100%;
-  min-height: 0px;
-`;
-
-const Toolbar = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: ${({ theme }) => theme.spacing.small};
-  padding: ${({ theme }) => theme.spacing.small};
-`;
-const Content = styled.div`
-  //   padding: ${({ theme }) => theme.spacing.small};
-  gap: ${({ theme }) => theme.spacing.small};
-  display: flex;
-  height: 100%;
-  min-height: 0px;
-`;
+import { registerInput } from '../../blocks/SelectedUsersSheet';
+import EmailBuilder from '../../emails/Builder';
+import emailsData from '../../emails/data';
+import {
+  Container,
+  Content,
+  OptionsContainer,
+  PageHeading,
+  TemplateWrapper,
+  Toolbar,
+} from './styles';
 
 const Option = styled.div`
   display: flex;
   align-items: center;
   flex-direction: column;
-`;
-
-const Variables = styled.form`
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  max-width: 400px;
-  padding: ${({ theme }) => theme.spacing.small};
-  background: ${({ theme }) => theme.color.surface.secondary};
-  border-radius: ${({ theme }) => theme.radius.xxsmall};
-`;
-
-const TemplateWrapper = styled.div`
-  background: ${({ theme }) => theme.color.surface.primary};
-  padding: ${({ theme }) => theme.spacing.small};
-  border: 1px solid ${({ theme }) => theme.color.border.subtle};
-  border-radius: ${({ theme }) => theme.radius.xxsmall};
-  overflow: scroll;
-  width: 100%;
-`;
-
-const PageHeading = styled(Text)`
-  text-transform: capitalize;
 `;
 
 const Email = () => {
@@ -100,10 +61,10 @@ const Email = () => {
       </PageHeading>
       {email ? (
         <Content>
-          <Variables onSubmit={() => {}}>
-            <Text type={TextTypes.Body3} bold>
+          <OptionsContainer onSubmit={() => {}}>
+            {/* <Text type={TextTypes.Body3} bold>
               Email Template Parameters
-            </Text>
+            </Text> */}
             {email.options?.map((option: { name: string; label: string }) => (
               <Option key={option.name}>
                 <TextInput
@@ -131,7 +92,7 @@ const Email = () => {
                 Download Django Template
               </Button>
             </Toolbar>
-          </Variables>
+          </OptionsContainer>
           <TemplateWrapper>
             <EmailBuilder content={email.content} preview={email.preview} />
           </TemplateWrapper>
