@@ -23,6 +23,9 @@ import {
   TemplateWrapper,
   Toolbar,
 } from './styles';
+import useSWR from 'swr';
+import { dataFetcher } from '../../store';
+import { getCookiesAsObject } from '../../utils';
 
 const Option = styled.div`
   display: flex;
