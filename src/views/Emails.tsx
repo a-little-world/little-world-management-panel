@@ -140,15 +140,10 @@ const Emails = () => {
   return (
     <Container>
       <TopBar>
-        <Text type={TextTypes.Heading4}>Email Templates</Text>
-        <Link
-          buttonSize={ButtonSizes.Small}
-          buttonAppearance={ButtonAppearance.Primary}
-          to={CREATE_NEW_EMAIL_ROUTE}
-        >
-          Create New
-        </Link>
+        <Text type={TextTypes.Heading4}>Backend Templates</Text>
+        <Button appearance={ButtonAppearance.Secondary} onClick={onSyncBackendEmails}> [DEVELOPMENT] Sync Emails </Button>
       </TopBar>
+      <Text type={TextTypes.Body4}>These are automated backend emails that must be updated in the backend. You may edit all of them in emails.json.</Text>
       <Accordion
         contentClassName={'emailGroup'}
         items={map(GROUPED_TEMPLATES, (item, header) => {
@@ -162,7 +157,17 @@ const Emails = () => {
           };
         })}
       />
-      <Button onClick={onSyncBackendEmails}> Sync Backend Emails ( Only For Development! )</Button>
+      <TopBar>
+        <Text type={TextTypes.Heading4}>Dynamic Templates</Text>
+        <Link
+          buttonSize={ButtonSizes.Small}
+          buttonAppearance={ButtonAppearance.Primary}
+          to={CREATE_NEW_EMAIL_ROUTE}
+        >
+          Create New
+        </Link>
+      </TopBar>
+      <Text type={TextTypes.Body4}>These are automated backend emails that must be updated in the backend. You may edit all of them in emails.json.</Text>
     </Container>
   );
 };
