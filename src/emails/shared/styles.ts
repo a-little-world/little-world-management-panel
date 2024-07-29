@@ -47,7 +47,7 @@ export const link = {
 };
 
 export const button = {
-  display: 'block',
+  display: 'inline-block',
   fontFamily: 'Open Sans,Helvetica,Arial,sans serif',
   color: '#0063AF',
   fontWeight: 'bold',
@@ -55,10 +55,9 @@ export const button = {
   borderRadius: '90px',
   textAlign: 'center',
   minWidth: '172px',
-  maxWidth: '204px',
+  width: 'auto',
   fontSize: '14px',
-  padding: '12px 16px',
-  height: '49px',
+  padding: '14px 16px',
   margin: '32px auto',
   lineHeight: '1.5',
 };
@@ -83,17 +82,6 @@ export const paragraph = {
 export const centredParagraph = {
   ...paragraph,
   textAlign: 'center',
-};
-
-export const footer = {
-  borderCollapse: 'separate',
-  backgroundColor: '#fafbfb',
-  color: 'rgb(156 163 175)',
-  fontFamily: 'Open Sans,Helvetica,Arial,sans serif',
-  lineHeight: '22px',
-  marginBottom: '40px',
-  padding: '8px',
-  paddingTop: '0px',
 };
 
 export const codeBlock = {

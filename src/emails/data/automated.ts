@@ -1,52 +1,57 @@
 import { ContentTypes } from '../Builder';
 import { BackendVars } from '../templates/backendVars';
+import automatedText from './text/automated.json';
 
+// const text = JSON.parse(automatedJson);
+console.log({ automatedText });
 const automatedEmails = {
   'account-deleted': {
     id: 'account-deleted',
     label: 'Account Deleted',
-    preview: '',
+    preview: automatedText['account-deleted.preview'],
+    subject: automatedText['account-deleted.subject'],
     content: [
-      { type: ContentTypes.Title, text: 'Account erfolgreich gelöscht' },
       {
-        type: ContentTypes.Paragraph,
-        text: 'Wir möchten dich darüber informieren, dass dein Account erfolgreich gelöscht wurde.',
+        type: ContentTypes.Title,
+        text: automatedText['account-deleted.block-1'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: `Bitte beachte, dass diese Aktion nicht rückgängig gemacht werden kann und alle deine verbleibenden Benutzerdaten dauerhaft gelöscht wurden.`,
+        text: automatedText['account-deleted.block-2'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: 'Falls du dich entscheidest, einen neuen Account zu registrieren, beachte bitte, dass du einen neuen Account von Grund auf erstellen musst.',
+        text: automatedText['account-deleted.block-3'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['account-deleted.block-4'],
       },
       {
         type: ContentTypes.Button,
-        text: 'Neuen Account erstellen',
+        text: automatedText['account-deleted.block-5'],
         href: 'https://little-world.com/sign-up/',
       },
       {
         type: ContentTypes.Paragraph,
-        text: 'Bei Fragen oder Anliegen wende dich bitte an unser Support-Team.',
+        text: automatedText['account-deleted.block-6'],
       },
     ],
   },
   welcome: {
     id: 'welcome',
     label: 'Welcome',
-    preview: 'Willkommen bei Little World',
-    subject: '',
+    preview: automatedText['welcome.preview'],
+    subject: automatedText['welcome.subject'],
     content: [
-      { type: ContentTypes.Title, text: 'Willkommen bei Little World' },
+      { type: ContentTypes.Title, text: automatedText['welcome.block-1'] },
       {
         type: ContentTypes.Paragraph,
-        text: 'Wir freuen uns, dass du dich bei Little World registriert hast!',
+        text: automatedText['welcome.block-2'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: `Damit wir wissen, dass deine E-Mail-Adresse wirklich dir gehört,
-            bestätige diese bitte mit einem Klick auf den Knopf unten, oder gib
-            den Code:`,
+        text: automatedText['welcome.block-3'],
       },
       {
         type: ContentTypes.Code,
@@ -54,158 +59,160 @@ const automatedEmails = {
       },
       {
         type: ContentTypes.Paragraph,
-        text: `auf unserer Website ein.`,
+        text: automatedText['welcome.block-4'],
       },
       {
         type: ContentTypes.Button,
-        text: 'E-mail bestätigen',
+        text: automatedText['welcome.block-5'],
         href: BackendVars.confirmationUrl,
       },
       {
         type: ContentTypes.Paragraph,
-        text: 'Solltest du dich nicht bei Little World registriert haben, kannst du diese E-Mail ignorieren.',
+        text: automatedText['welcome.block-6'],
       },
     ],
   },
   'confirm-match-1': {
     id: 'confirm-match-1',
     label: 'Confirm Match 1',
-    preview: 'Match gefunden - jetzt bestätigen',
-    subject: '',
+    preview: automatedText['confirm-match-1.preview'],
+    subject: automatedText['confirm-match-1.subject'],
     content: [
       {
         type: ContentTypes.Title,
-        text: 'Match gefunden - jetzt bestätigen',
+        text: automatedText['confirm-match-1.block-1'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: `Hallo ${BackendVars.firstName},`,
+        text: automatedText['confirm-match-1.block-2'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: `${BackendVars.partnerName} freut sich schon darauf, dich kennenzulernen! Ihr scheint auch schon eine Menge gemeinsam zu haben. Was das ist, erfährst Du hier:`,
+        text: automatedText['confirm-match-1.block-3'],
       },
       {
         type: ContentTypes.Button,
-        text: 'Jetzt match bestätigen',
-        href: BackendVars.confirmMatchUrl,
+        text: automatedText['confirm-match-1.block-4'],
+        href: BackendVars.acceptMatchUrl,
       },
       {
         type: ContentTypes.Paragraph,
-        text: `Dort kannst du auch den Gesprächsvorschlag mit ${BackendVars.partnerName} annehmen.`,
+        text: automatedText['confirm-match-1.block-5'],
       },
     ],
   },
   'confirm-match-2': {
     id: 'confirm-match-2',
     label: 'Confirm Match 2',
-    preview: 'Dein match wartet - höchste Zeit zu bestätigen',
-    subject: '',
+    preview: automatedText['confirm-match-2.preview'],
+    subject: automatedText['confirm-match-2.subject'],
     content: [
       {
         type: ContentTypes.Title,
-        text: 'Dein match wartet - höchste Zeit zu bestätigen',
+        text: automatedText['confirm-match-2.block-1'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: `Hallo ${BackendVars.firstName},`,
+        text: automatedText['confirm-match-2.block-2'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: `du hattest vor Kurzem eine Übereinstimmung auf der Plattform Little World. Gerne würde sich ${BackendVars.partnerName} mit dir unterhalten! Um ihn/sie allerdings nicht zu lange warten zu lassen, werden wir ${BackendVars.partnerName} weitervermitteln, sollten wir nichts von dir hören. Du möchtest mehr über ${BackendVars.partnerName} erfahren? Dann klicke hier:`,
+        text: automatedText['confirm-match-2.block-3'],
       },
       {
         type: ContentTypes.Button,
-        text: 'Jetzt match bestätigen',
-        href: BackendVars.confirmMatchUrl,
+        text: automatedText['confirm-match-2.block-4'],
+        href: BackendVars.acceptMatchUrl,
       },
       {
         type: ContentTypes.Paragraph,
-        text: `Dort kannst du auch den Gesprächsvorschlag mit ${BackendVars.partnerName} annehmen.`,
+        text: automatedText['confirm-match-2.block-5'],
       },
     ],
   },
   'expired-match': {
     id: 'expired-match',
     label: 'Match Expired',
-    preview: 'Dein Match ist abgelaufen - Finde einen neuen Partner',
-    subject: '',
+    preview: automatedText['expired-match.preview'],
+    subject: automatedText['expired-match.subject'],
     content: [
       {
         type: ContentTypes.Title,
-        text: 'Dein Match ist abgelaufen - Finde einen neuen Partner',
+        text: automatedText['expired-match.block-1'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: `Hallo ${BackendVars.firstName},`,
+        text: automatedText['expired-match.block-2'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: `leider ist die Zeit abgelaufen, um ${BackendVars.partnerName} auf der Plattform Little World zu bestätigen. Aber keine Sorge, du kannst dich einloggen und nach einem neuen Match suchen.`,
+        text: automatedText['expired-match.block-3'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: 'Möchtest du jetzt nach einem neuen Match suchen? Dann klicke hier:',
+        text: automatedText['expired-match.block-4'],
       },
       {
         type: ContentTypes.Button,
-        text: 'Jetzt match bestätigen',
-        href: BackendVars.confirmMatchUrl,
+        text: automatedText['expired-match.block-5'],
+        href: BackendVars.acceptMatchUrl,
       },
     ],
   },
   'new-match': {
     id: 'new-match',
     label: 'New Match',
-    subject: '',
+    preview: automatedText['new-match.block-5'],
+    subject: automatedText['new-match.subject'],
     content: [
       {
         type: ContentTypes.Title,
-        text: `Glückwunsch! Lerne jetzt ${BackendVars.partnerName} kennen,`,
+        text: automatedText['new-match.block-1'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: `Hallo ${BackendVars.firstName},`,
+        text: automatedText['new-match.block-2'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: `wir freuen uns, dir mitteilen zu können, dass wir ${BackendVars.partnerName} als Gesprächspartner:in für dich gefunden haben!`,
+        text: automatedText['new-match.block-3'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: `Kontaktiere ${BackendVars.partnerName} einfach über Little World um ein erstes Gespräch zum Kennenlernen zu vereinbaren.`,
+        text: automatedText['new-match.block-4'],
       },
       {
         type: ContentTypes.Button,
-        text: `${BackendVars.partnerName} kennenlernen`,
-        href: BackendVars.profileLinkUrl,
+        text: automatedText['new-match.block-5'],
+        href: BackendVars.partnerProfileUrl,
       },
       {
         type: ContentTypes.Paragraph,
-        text: 'Eines unserer Teammitglieder kann euch dabei gerne begleiten. Schreib Oliver (Support) dafür einfach eine kurze Nachricht.',
+        text: automatedText['new-match.block-6'],
       },
     ],
   },
   'new-messages': {
     id: 'new-messages',
     label: 'New Messages',
-    subject: '',
+    preview: automatedText['new-messages.preview'],
+    subject: automatedText['new-messages.subject'],
     content: [
       {
         type: ContentTypes.Title,
-        text: 'Neue Nachrichten',
+        text: automatedText['new-messages.block-1'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: `Hallo ${BackendVars.firstName},`,
+        text: automatedText['new-messages.block-2'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: 'Du hast neue Nachricht(en) auf Little World erhalten. Du kannst deine Nachrichten in dem Chat von Little World ansehen, indem du auf folgenden Knopf drückst:',
+        text: automatedText['new-messages.block-3'],
       },
       {
         type: ContentTypes.Button,
-        text: 'Neue Nachrichten anzeigen',
+        text: automatedText['new-messages.block-4'],
         href: BackendVars.messagesUrl,
       },
     ],
@@ -213,27 +220,28 @@ const automatedEmails = {
   'match-resolved': {
     id: 'match-resolved',
     label: 'Match Resolved',
-    subject: '',
+    subject: automatedText['match-resolved.subject'],
+    preview: automatedText['match-resolved.preview'],
     content: [
       {
         type: ContentTypes.Title,
-        text: 'Neue Bekanntschaften suchen auf Little World',
+        text: automatedText['match-resolved.block-1'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: `Hallo ${BackendVars.firstName},`,
+        text: automatedText['match-resolved.block-2'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: 'Du hast dich entschieden, deinen aktuellen Vorschlag nicht anzunehmen. Kein Problem! Es warten noch viele andere interessante Bekanntschaften auf dich. Melde dich einfach wieder bei Little World an und starte deine Suche nach neuen Bekanntschaften aus aller Welt.',
+        text: automatedText['match-resolved.block-3'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: 'Kontaktiere {match_first_name} einfach über Little World um ein erstes Gespräch zum Kennenlernen zu vereinbaren.',
+        text: automatedText['match-resolved.block-4'],
       },
       {
         type: ContentTypes.Button,
-        text: 'Neue Suche starten',
+        text: automatedText['match-resolved.block-5'],
         href: BackendVars.restartSearchUrl,
       },
     ],
@@ -241,10 +249,13 @@ const automatedEmails = {
   'reset-password': {
     id: 'reset-password',
     label: 'Reset Password',
-    preview: 'Passwort zurücksetzen',
-    subject: '',
+    subject: automatedText['reset-password.subject'],
+    preview: automatedText['reset-password.preview'],
     content: [
-      { type: ContentTypes.Title, text: 'Passwort Vergessen?' },
+      {
+        type: ContentTypes.Title,
+        text: automatedText['reset-password.block-1'],
+      },
       {
         type: ContentTypes.Illustration,
         imgProps: {
@@ -255,71 +266,71 @@ const automatedEmails = {
       },
       {
         type: ContentTypes.Sentence,
-        text: 'Macht doch nichts!',
+        text: automatedText['reset-password.block-2'],
         centred: true,
       },
       {
         type: ContentTypes.Paragraph,
-        text: 'Hier kannst du dein Passwort zurück setzen',
+        text: automatedText['reset-password.block-3'],
         centred: true,
       },
       {
         type: ContentTypes.Button,
-        text: 'Passwort zurücksetzen',
+        text: automatedText['reset-password.block-4'],
         href: BackendVars.passwordResetUrl,
       },
       {
         type: ContentTypes.Paragraph,
-        text: 'Solltest du dich nicht bei Little World registriert haben, kannst du diese E-Mail ignorieren.',
+        text: automatedText['reset-password.block-5'],
       },
     ],
   },
   'still-in-contact': {
     id: 'still-in-contact',
     label: 'Still in Contact?',
-    preview: `Noch in Kontakt mit ${BackendVars.partnerName}?`,
-    subject: '',
+    subject: automatedText['still-in-contact.subject'],
+    preview: automatedText['still-in-contact.preview'],
     content: [
       {
         type: ContentTypes.Title,
-        text: `Noch in Kontakt mit ${BackendVars.partnerName}?`,
+        text: automatedText['still-in-contact.block-1'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: `Hallo ${BackendVars.firstName},`,
+        text: automatedText['still-in-contact.block-2'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: `wie geht es dir und ${BackendVars.partnerName}? Wir hoffen, eure Gespräche bereiten euch weiterhin viel Freude. Bitte gib uns eine kurze Rückmeldung für unsere Wirkungsmessung: Unterhältst du dich noch mit ${BackendVars.partnerName}?`,
+        text: automatedText['still-in-contact.block-3'],
       },
       {
         type: ContentTypes.Button,
-        text: 'Ja',
-        href: 'https://little-world.com/contact-yes/',
+        text: automatedText['still-in-contact.block-4'],
+        href: BackendVars.confirmContactUrl,
       },
     ],
   },
   unfinished_user_form_1: {
     id: 'unfinished_user_form_1',
     label: 'User Form Reminder 1',
-    preview: 'Umfrage beenden für Bekanntschaften aus aller Welt',
-    subject: '',
+    subject: automatedText['unfinished_user_form_1.subject'],
+    preview: automatedText['unfinished_user_form_1.preview'],
     content: [
       {
         type: ContentTypes.Title,
-        text: 'Umfrage beenden für Bekanntschaften aus aller Welt',
+        text: automatedText['unfinished_user_form_1.block-1'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: `Hallo ${BackendVars.firstName},`,
+        text: automatedText['unfinished_user_form_1.block-2'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: 'nur fünf weitere Minuten trennen dich von neuen Bekanntschaften und interessanten Geschichten aus aller Welt. Beende jetzt deine Umfrage auf Little World. Dann kannst du kostenlos und flexibel mitmachen! Schon 30 Minuten pro Woche machen einen großen Unterschied.',
+        text: automatedText['unfinished_user_form_1.block-3'],
       },
       {
         type: ContentTypes.Button,
-        text: 'Umfrage abschließen',
+        text: automatedText['unfinished_user_form_1.block-4'],
         href: BackendVars.userFormUrl,
       },
     ],
@@ -327,53 +338,53 @@ const automatedEmails = {
   unfinished_user_form_2: {
     id: 'unfinished_user_form_2',
     label: 'User Form Reminder 2',
-    preview: 'Mit 30 Minuten helfen - Umfrage beenden',
-    subject: '',
+    preview: automatedText['unfinished_user_form_2.preview'],
+    subject: automatedText['unfinished_user_form_2.subject'],
     content: [
       {
         type: ContentTypes.Title,
-        text: 'Mit 30 Minuten helfen - Umfrage beenden',
+        text: automatedText['unfinished_user_form_2.block-1'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: `Hallo ${BackendVars.firstName},`,
+        text: automatedText['unfinished_user_form_2.block-2'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: 'Dein Engagement zählt! Willst du Teil der Gemeinschaft von Little World werden und tolle Menschen aus aller Welt kennenlernen? Beende dafür in nur 5 Minuten unsere Umfrage:',
+        text: automatedText['unfinished_user_form_2.block-3'],
       },
       {
         type: ContentTypes.Button,
-        text: 'Umfrage abschließen',
+        text: automatedText['unfinished_user_form_2.block-4'],
         href: BackendVars.userFormUrl,
       },
       {
         type: ContentTypes.Paragraph,
-        text: 'Du hast Fragen? Wir sind für dich da! Kontaktiere uns, indem du unten auf Kontakt klickst',
+        text: automatedText['unfinished_user_form_2.block-5'],
       },
     ],
   },
   'verify-email': {
     id: 'verify-email',
     label: 'Verify Email',
-    preview: 'Bitte bestätige deine E-Mail-Adresse für Little World',
-    subject: '',
+    preview: automatedText['verify-email.preview'],
+    subject: automatedText['verify-email.subject'],
     content: [
       {
         type: ContentTypes.Title,
-        text: 'Bitte bestätige deine E-Mail-Adresse für Little World',
+        text: automatedText['verify-email.block-1'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: `Hallo ${BackendVars.firstName},`,
+        text: automatedText['verify-email.block-2'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: 'du hast dich kürzlich bei Little World registriert, aber deine E-Mail-Adresse noch nicht bestätigt. Um alle Funktionen unserer Plattform nutzen zu können und mit Menschen aus aller Welt in Kontakt zu treten, bitten wir dich, deine E-Mail-Adresse zu bestätigen.',
+        text: automatedText['verify-email.block-3'],
       },
       {
         type: ContentTypes.Button,
-        text: 'E-mail bestätigen',
+        text: automatedText['verify-email.block-4'],
         href: BackendVars.confirmationUrl,
       },
     ],
