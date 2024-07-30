@@ -5,24 +5,33 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../shadcnui/ui/tabs";
 import { Dropdown, Text } from '@a-little-world/little-world-design-system';
 import { RangedDataGraph } from '../blocks/RangedDataGraph';
 import { BarChartTimeRanged } from '../blocks/BarChartTimeRanged';
+import { BucketTable, UserCountsBucketTable } from '../blocks/JourneyBucketTable';
+import { useSearchParams } from 'react-router-dom';
+import { MatchUserJourneyOverview } from '../blocks/MatchUserJourneyOverview';
 
 
 function Stats() {
 
-    const [tab, setTab] = useState("graphs");
+    let [searchParams, setSearchParams] = useSearchParams();
+    const tab = searchParams.get('tab') || 'graphs';
 
     const onTabChange = (value: string) => {
-        setTab(value);
+        searchParams.set('tab', value);
+        setSearchParams(searchParams);
     };
 
     return (
         <div className="flex flex-col justify-center items-center h-screen w-full relative">
             <Tabs value={tab} onValueChange={onTabChange} className="flex flex-col w-full h-full">
                 <TabsList>
+                    <TabsTrigger value="overview">User & Match Journey</TabsTrigger>
                     <TabsTrigger value="graphs">Graphs</TabsTrigger>
                     <TabsTrigger value="charts">Charts</TabsTrigger>
                     <TabsTrigger value="numbers">Numbers</TabsTrigger>
                 </TabsList>
+                {tab === "overview" && <TabsContent value="overview" className='flex flex-col content-center justify-center items-center flex-grow relative'>
+                    <MatchUserJourneyOverview />
+                </TabsContent>}
                 {tab === "graphs" && <TabsContent value="graphs" className='flex flex-col content-center justify-center items-center flex-grow'>
                     <RangedDataGraph />
                 </TabsContent>}
@@ -30,7 +39,7 @@ function Stats() {
                     <BarChartTimeRanged />
                 </TabsContent>}
                 {tab === "numbers" && <TabsContent value="numbers" className='flex flex-col content-center justify-center items-center flex-grow'>
-                    Hello?
+                    <UserCountsBucketTable />
                 </TabsContent>}
             </Tabs>
         </div>

@@ -6,8 +6,8 @@ import React, { PropsWithChildren } from 'react';
 import { RouterProvider, ScrollRestoration } from 'react-router-dom';
 import { Outlet, createBrowserRouter } from 'react-router-dom';
 
-import Layout from './blocks/Layout.tsx';
-import UserPanel from './blocks/UserPanel.tsx';
+import Layout from './blocks/Layout';
+import UserPanel from './blocks/UserPanel';
 import {
   AdminPanelV2_EmailDetails,
   AdminPanelV2_Emails,
@@ -15,7 +15,10 @@ import {
 import { AdminPanelV2_Matches } from './panel_v2/AdminPanelMatches.jsx';
 import {
   BASE_ROUTE,
+  CREATE_NEW_EMAIL_ROUTE,
+  SEND_DYNAMIC_EMAIL_ROUTE,
   EMAILS_ROUTE,
+  EMAIL_HTML_ROUTE,
   EMAIL_ROUTE,
   MATCHES_LIST_ROUTE,
   MATCHING_ROUTE,
@@ -24,17 +27,22 @@ import {
   STATS_ROUTE,
   USERS_ROUTE,
   USER_DETAILS_ROUTE,
-  VIDEO_CALLS_ROUTE
+  VIDEO_CALLS_ROUTE,
 } from './routes';
-import { GlobalStateProvider } from './store.tsx';
+import { GlobalStateProvider } from './store';
 import Home from './views/Home';
 import Matches from './views/Matches';
 import Matching from './views/Matching';
-import Scores from './views/Scores';
-import Users from './views/Users';
-import Stats from './views/Stats';
-import VideoCalls from './views/VideoCalls';
 import PrematchingAppointments from './views/PrematchingAppointments';
+import Scores from './views/Scores';
+import Stats from './views/Stats';
+import Users from './views/Users';
+import VideoCalls from './views/VideoCalls';
+import CreateNewEmail from './views/emails/CreateNewEmail';
+import Email from './views/emails/Email';
+import EmailHtml from './views/emails/EmailHtml';
+import Emails from './views/emails/Emails';
+import { SendDynamicTemplateView } from './views/emails/SendDynamicTemplate';
 
 export const Root = ({
   children,
@@ -96,13 +104,25 @@ const router = createBrowserRouter(
         },
         {
           path: EMAILS_ROUTE,
-          element: <AdminPanelV2_Emails />,
+          element: <Emails />,
+        },
+        {
+          path: CREATE_NEW_EMAIL_ROUTE,
+          element: <CreateNewEmail />,
+        },
+        {
+          path: SEND_DYNAMIC_EMAIL_ROUTE,
+          element: <SendDynamicTemplateView />,
         },
         {
           path: EMAIL_ROUTE,
-          element: <AdminPanelV2_EmailDetails />,
+          element: <Email />,
         },
       ],
+    },
+    {
+      path: EMAIL_HTML_ROUTE,
+      element: <EmailHtml />,
     },
   ],
   { basename: BASE_ROUTE },
