@@ -16,6 +16,7 @@ import { AdminPanelV2_Matches } from './panel_v2/AdminPanelMatches.jsx';
 import {
   BASE_ROUTE,
   CREATE_NEW_EMAIL_ROUTE,
+  SEND_DYNAMIC_EMAIL_ROUTE,
   EMAILS_ROUTE,
   EMAIL_HTML_ROUTE,
   EMAIL_ROUTE,
@@ -41,6 +42,7 @@ import CreateNewEmail from './views/emails/CreateNewEmail';
 import Email from './views/emails/Email';
 import EmailHtml from './views/emails/EmailHtml';
 import Emails from './views/emails/Emails';
+import { SendDynamicTemplateView } from './views/emails/SendDynamicTemplate';
 
 export const Root = ({
   children,
@@ -107,6 +109,10 @@ const router = createBrowserRouter(
         {
           path: CREATE_NEW_EMAIL_ROUTE,
           element: <CreateNewEmail />,
+        },
+        {
+          path: SEND_DYNAMIC_EMAIL_ROUTE,
+          element: <SendDynamicTemplateView />,
         },
         {
           path: EMAIL_ROUTE,
