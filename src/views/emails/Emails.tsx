@@ -20,7 +20,7 @@ import { dataFetcher } from '../../store';
 import useSWR from 'swr';
 import EmailBuilder from '../../emails/Builder';
 import { getCookiesAsObject } from '../../utils';
-import { CREATE_NEW_EMAIL_ROUTE } from '../../routes';
+import { CREATE_NEW_EMAIL_ROUTE, SEND_DYNAMIC_EMAIL_ROUTE } from '../../routes';
 
 const Container = styled.div`
   padding: ${({ theme }) => theme.spacing.small};
@@ -128,6 +128,10 @@ const Emails = () => {
     data: backendEmailConfiguration,
   } = useSWR("/api/matching/emails/config/", dataFetcher, {});
 
+  const {
+    data: dynamicEmails,
+  } = useSWR("/api/matching/emails/dynamic_templates/", dataFetcher, {});
+
   const onSyncBackendEmails = () => {
     // 1 - fetches the current email confirguration from the backend
     // 2 - injects all the new email templates into the json
@@ -168,6 +172,11 @@ const Emails = () => {
         </Link>
       </TopBar>
       <Text type={TextTypes.Body4}>These are automated backend emails that must be updated in the backend. You may edit all of them in emails.json.</Text>
+      {dynamicEmails?.results.map(template => (
+        <Template key={template.template_name} to={SEND_DYNAMIC_EMAIL_ROUTE.replace(":emailTemplateName", template.template_name)}>
+          <Text>{template.template_name}</Text>
+        </Template>
+      ))}
     </Container>
   );
 };

@@ -6,6 +6,7 @@ import {
   Dropdown,
   InfoIcon,
   Text,
+  TextInput,
   TextTypes,
   ToolTip,
 } from '@a-little-world/little-world-design-system';
@@ -27,6 +28,8 @@ import {
   TemplateWrapper,
   Toolbar,
 } from './styles';
+import { getCookiesAsObject } from '../../utils';
+import { registerInput } from '../../blocks/SelectedUsersSheet';
 
 const BlockOption = styled.button`
   display: flex;
@@ -117,15 +120,22 @@ const CreateNewEmail = () => {
     },
   });
 
-  const onDownload = () => {
-    const html = renderEmail(<email.Component />);
-    const blob = new Blob([html], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${emailTemplateName}.html`;
-    a.click();
-  };
+  const onSaveDynamicTemplate = () => {
+    fetch(`/api/matching/emails/dynamic_templates/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookiesAsObject().csrftoken,
+      },
+      body: JSON.stringify({
+        template_name: watch('template_name'),
+        template: renderEmail(<EmailBuilder content={newEmail} preview={''} />),
+        subject: "Test Subject",
+        category_id: "dynamic",
+        sender_id: "noreply",
+      }),
+    })
+  }
 
   const handleTemplateSelect = value => {
     setSelectedTemplate(communityEmails[value]);
@@ -183,7 +193,7 @@ const CreateNewEmail = () => {
           trigger={
             <Button
               appearance={ButtonAppearance.Secondary}
-              // color={theme.color.surface.bold}
+            // color={theme.color.surface.bold}
             >
               Dynamic Variables Info
               {/* <InfoIcon
@@ -199,21 +209,22 @@ const CreateNewEmail = () => {
         />
 
         <ButtonsContainer>
-          <Button
-            type="submit"
-            size={ButtonSizes.Small}
-            onClick={onSendTemplate}
-          >
-            Send Email
-          </Button>
-          <Button
-            type="submit"
-            appearance={ButtonAppearance.Secondary}
-            size={ButtonSizes.Small}
-            onClick={onDownload}
-          >
-            Download Django Template
-          </Button>
+          <form>
+            <TextInput id={'template_name'} type={''}
+              {...registerInput({
+                register,
+                name: "template_name",
+                options: { required: 'error.required' },
+              })}
+              placeholder="Template Name" label='Template Name' />
+            <Button
+              appearance={ButtonAppearance.Secondary}
+              size={ButtonSizes.Small}
+              onClick={onSaveDynamicTemplate}
+            >
+              Save Dynamic Template
+            </Button>
+          </form>
         </ButtonsContainer>
       </Toolbar>
       <Content>
@@ -221,7 +232,7 @@ const CreateNewEmail = () => {
           <Text type={TextTypes.Body3} bold>
             Building Blocks
           </Text>
-          <Blocks onSubmit={() => {}}>
+          <Blocks onSubmit={() => { }}>
             {map(ContentTypes, key => (
               <BlockOption
                 key={key}

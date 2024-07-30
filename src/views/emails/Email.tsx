@@ -94,7 +94,6 @@ const Email = () => {
       {email ? (
         <Content>
           <OptionsContainer onSubmit={() => { }}>
-
             <Text type={TextTypes.Body3} bold>
               Email Template Parameters
             </Text>
