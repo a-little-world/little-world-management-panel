@@ -20,7 +20,7 @@ const Header = () => {
       <div className="flex gap-4 items-center">
         <img className="h-9 md:h-12" alt="little world logo" src={logo} />
         <HeaderTitle
-          className="max-md:text-xl text-xl"
+          className="max-md:hidden max-md:text-xl text-xl"
           tag="h1"
           type={TextTypes.Heading4}
         >

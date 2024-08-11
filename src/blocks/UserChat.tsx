@@ -18,8 +18,7 @@ import useSWR from 'swr';
 
 import { markMessageAsRead, sendChatMessage } from '../api/index';
 import { formatTimeDistance } from '../helpers/date';
-import { dataFetcher } from '../store';
-import { registerInput } from './SelectedUsersSheet';
+import { dataFetcher, registerInput } from '../store';
 import {
   ChatContainer,
   Message,

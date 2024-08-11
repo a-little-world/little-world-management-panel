@@ -5,7 +5,8 @@ import {
   DotsIcon,
   Text,
 } from '@a-little-world/little-world-design-system';
-import React from 'react';
+import { isEmpty } from 'lodash';
+import React, { useEffect, useState } from 'react';
 import { Link, LinkProps, useSearchParams } from 'react-router-dom';
 
 const PaginationRoot = ({
@@ -141,44 +142,50 @@ const PaginationEllipsis = ({
 PaginationEllipsis.displayName = 'PaginationEllipsis';
 
 const Pagination = ({ list }: { list: any }) => {
+  const [internalList, setInternalList] = useState(null);
   let [searchParams, setSearchParams] = useSearchParams();
   const handlePagination = newPage => {
     const newParams = new URLSearchParams(searchParams);
     newParams.set('page', newPage);
     setSearchParams(newParams);
   };
+
+  useEffect(() => {
+    if (!isEmpty(list)) setInternalList(list);
+  }, [list]);
+
   return (
     <PaginationRoot>
       <PaginationContent>
-        <Text>{list?.count ? `${list?.count} items` : ''}</Text>
+        <Text>{internalList?.count ? `${internalList?.count} items` : ''}</Text>
         <PaginationItem>
           <PaginationPrevious
-            disabled={!list?.previous_page}
-            onClick={() => handlePagination(list?.previous_page)}
+            disabled={!internalList?.previous_page}
+            onClick={() => handlePagination(internalList?.previous_page)}
           />
         </PaginationItem>
-        {list?.previous_page && (
+        {internalList?.previous_page && (
           <PaginationItem>
             <PaginationButton
-              onClick={() => handlePagination(list?.previous_page)}
+              onClick={() => handlePagination(internalList?.previous_page)}
             >
-              {list?.previous_page}
+              {internalList?.previous_page}
             </PaginationButton>
           </PaginationItem>
         )}
         <PaginationItem>
-          <PaginationButton isActive>{list?.page}</PaginationButton>
+          <PaginationButton isActive>{internalList?.page}</PaginationButton>
         </PaginationItem>
-        {list?.page !== list?.last_page && (
+        {internalList?.page !== internalList?.last_page && (
           <>
             <PaginationItem>
               <PaginationEllipsis />
             </PaginationItem>
             <PaginationItem>
               <PaginationButton
-                onClick={() => handlePagination(list?.last_page)}
+                onClick={() => handlePagination(internalList?.last_page)}
               >
-                {list?.last_page}
+                {internalList?.last_page}
               </PaginationButton>
             </PaginationItem>
           </>
@@ -186,8 +193,8 @@ const Pagination = ({ list }: { list: any }) => {
 
         <PaginationItem>
           <PaginationNext
-            disabled={!list?.next_page}
-            onClick={() => handlePagination(list?.next_page)}
+            disabled={!internalList?.next_page}
+            onClick={() => handlePagination(internalList?.next_page)}
           />
         </PaginationItem>
       </PaginationContent>

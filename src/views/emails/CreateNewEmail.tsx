@@ -20,6 +20,8 @@ import styled, { useTheme } from 'styled-components';
 import EmailBuilder, { ContentTypes } from '../../emails/Builder';
 import communityEmails from '../../emails/data/community';
 import { BackendVars } from '../../emails/templates/backendVars';
+import { registerInput } from '../../store';
+import { getCookiesAsObject } from '../../utils';
 import {
   Container,
   Content,
@@ -28,8 +30,6 @@ import {
   TemplateWrapper,
   Toolbar,
 } from './styles';
-import { getCookiesAsObject } from '../../utils';
-import { registerInput } from '../../blocks/SelectedUsersSheet';
 
 const BlockOption = styled.button`
   display: flex;
@@ -130,12 +130,12 @@ const CreateNewEmail = () => {
       body: JSON.stringify({
         template_name: watch('template_name'),
         template: renderEmail(<EmailBuilder content={newEmail} preview={''} />),
-        subject: "Test Subject",
-        category_id: "dynamic",
-        sender_id: "noreply",
+        subject: 'Test Subject',
+        category_id: 'dynamic',
+        sender_id: 'noreply',
       }),
-    })
-  }
+    });
+  };
 
   const handleTemplateSelect = value => {
     setSelectedTemplate(communityEmails[value]);
@@ -143,7 +143,6 @@ const CreateNewEmail = () => {
   };
 
   const addBlock = (value: string) => {
-    console.log({ value });
     setNewEmail(current => [
       ...current,
       {
@@ -193,7 +192,7 @@ const CreateNewEmail = () => {
           trigger={
             <Button
               appearance={ButtonAppearance.Secondary}
-            // color={theme.color.surface.bold}
+              // color={theme.color.surface.bold}
             >
               Dynamic Variables Info
               {/* <InfoIcon
@@ -210,13 +209,17 @@ const CreateNewEmail = () => {
 
         <ButtonsContainer>
           <form>
-            <TextInput id={'template_name'} type={''}
+            <TextInput
+              id={'template_name'}
+              type={''}
               {...registerInput({
                 register,
-                name: "template_name",
+                name: 'template_name',
                 options: { required: 'error.required' },
               })}
-              placeholder="Template Name" label='Template Name' />
+              placeholder="Template Name"
+              label="Template Name"
+            />
             <Button
               appearance={ButtonAppearance.Secondary}
               size={ButtonSizes.Small}
@@ -232,7 +235,7 @@ const CreateNewEmail = () => {
           <Text type={TextTypes.Body3} bold>
             Building Blocks
           </Text>
-          <Blocks onSubmit={() => { }}>
+          <Blocks onSubmit={() => {}}>
             {map(ContentTypes, key => (
               <BlockOption
                 key={key}

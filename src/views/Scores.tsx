@@ -4,10 +4,18 @@ import {
   Dropdown,
   Text,
 } from '@a-little-world/little-world-design-system';
-import { Button as ShadcnButton } from '../shadcnui/ui/button';
 import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { createSearchParams } from 'react-router-dom';
+import styled from 'styled-components';
+import useSWR from 'swr';
+
+import { burstUpdateMatchingScores } from '../api/index';
+import Pagination from '../atoms/Pagination';
+import { ScoresTable } from '../blocks/ScoresTable';
+import { formatTime } from '../helpers/date';
+import { cn } from '../lib/utils';
+import { Button as ShadcnButton } from '../shadcnui/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -15,50 +23,61 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "../shadcnui/ui/dialog";
-import Matching from "../views/Matching";
-import styled from 'styled-components';
-
-import Pagination from '../atoms/Pagination';
-import { ScoresTable } from '../blocks/ScoresTable';
-import { formatTime } from '../helpers/date';
-import { dataFetcher, useGlobalState, useScoresFilterOptions, useScoresListData } from '../store';
-import { burstUpdateMatchingScores } from '../api/index';
-import useSWR from 'swr';
-import { cn } from '../lib/utils';
+} from '../shadcnui/ui/dialog';
+import {
+  dataFetcher,
+  useGlobalState,
+  useScoresFilterOptions,
+  useScoresListData,
+} from '../store';
+import Matching from '../views/Matching';
 
 export const TaskMonitorComponent = ({ task_id, finishedCallback }) => {
-
   const fetcher = (...args) => fetch(...args).then(res => res.json());
-  const { data, error, mutate, isLoading } = useSWR(`/api/admin/tasks/${task_id}/status/`, fetcher, { refreshInterval: 1000 })
+  const { data, error, mutate, isLoading } = useSWR(
+    `/api/admin/tasks/${task_id}/status/`,
+    fetcher,
+    { refreshInterval: 1000 },
+  );
 
-  if (error) return <div>failed to load</div>
-  if (isLoading) return <div>loading...</div>
+  if (error) return <div>failed to load</div>;
+  if (isLoading) return <div>loading...</div>;
 
-
-  let progressInfo = null
-  console.log("INFO", data.info)
+  let progressInfo = null;
+  console.log('INFO', data.info);
   if (data && data?.info && data.info.progress) {
-    progressInfo = data.info.progress
-    console.log("MANGED TO PARSE", progressInfo);
+    progressInfo = data.info.progress;
+    console.log('MANGED TO PARSE', progressInfo);
   }
 
-  if (data && data?.state && data.state === "SUCCESS") {
-    console.log("FINISHED")
+  if (data && data?.state && data.state === 'SUCCESS') {
+    console.log('FINISHED');
     finishedCallback();
   }
 
-  return <div className='flex flex-row flex-grow rounded-xl content-center justify-center'>
-    {data?.state && <div className='bg-base-300 p-1 rounded-xl'>{data.state}</div>}
-    {progressInfo && <div className='flex h-full flex-col items-start content-start justify-start w-52'>
-      <div className='text-xs'>{progressInfo.progress}/{progressInfo.total_considered_users}</div>
-      <progress className="progress progress-primary w-full" value={progressInfo.progress} max={progressInfo.total_considered_users}></progress>
-    </div>}
-    {progressInfo && <div className='p-1 bg-success'>
-      {progressInfo.state}
-    </div>}
-  </div>
-}
+  return (
+    <div className="flex flex-row flex-grow rounded-xl content-center justify-center">
+      {data?.state && (
+        <div className="bg-base-300 p-1 rounded-xl">{data.state}</div>
+      )}
+      {progressInfo && (
+        <div className="flex h-full flex-col items-start content-start justify-start w-52">
+          <div className="text-xs">
+            {progressInfo.progress}/{progressInfo.total_considered_users}
+          </div>
+          <progress
+            className="progress progress-primary w-full"
+            value={progressInfo.progress}
+            max={progressInfo.total_considered_users}
+          ></progress>
+        </div>
+      )}
+      {progressInfo && (
+        <div className="p-1 bg-success">{progressInfo.state}</div>
+      )}
+    </div>
+  );
+};
 
 const StyledDropdown = styled(Dropdown)`
   div[data-radix-popper-content-wrapper] {
@@ -73,19 +92,25 @@ function MatchingDialog({
 }) {
   const { clearMatching } = useGlobalState();
 
-  return <Dialog open={matchingDialogOpen} onOpenChange={setMatchingDialogOpen}>
-    <DialogContent className='z-140 max-w-full w-[1000px]'>
-      <DialogHeader>
-        <DialogTitle>Do you want to perform a matching for these users?</DialogTitle>
-        <Matching onPerformedMatch={() => {
-          setTimeout(() => {
-            clearMatching();
-            setMatchingDialogOpen(false);
-          }, 500);
-        }} />
-      </DialogHeader>
-    </DialogContent>
-  </Dialog>
+  return (
+    <Dialog open={matchingDialogOpen} onOpenChange={setMatchingDialogOpen}>
+      <DialogContent className="z-140 max-w-full w-[1000px]">
+        <DialogHeader>
+          <DialogTitle>
+            Do you want to perform a matching for these users?
+          </DialogTitle>
+          <Matching
+            onPerformedMatch={() => {
+              setTimeout(() => {
+                clearMatching();
+                setMatchingDialogOpen(false);
+              }, 500);
+            }}
+          />
+        </DialogHeader>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 function BurstUpdateDialog({
@@ -93,27 +118,40 @@ function BurstUpdateDialog({
   setBurstUpdateDialogOpen,
   burstMatchingState,
   taskIds,
-  setTaskIds
+  setTaskIds,
 }) {
-
   const activeScoreCalculation = burstMatchingState?.active || true;
 
-  return <Dialog open={burstUpdateDialogOpen} onOpenChange={setBurstUpdateDialogOpen}>
-    <DialogContent className='z-140 max-w-full w-[1000px]'>
-      <DialogHeader>
-        <DialogTitle>Do you want to perform a burst update for these users?</DialogTitle>
-        <Button appearance={ButtonAppearance.Secondary} onClick={() => {
-          console.log("BURST UPDATE")
-          burstUpdateMatchingScores({ parallel_tasks: 10 }).then((results) => {
-            //TODO: returns the task ID's so a progress monitor should be displayed
-            console.log("BURST UPDATE RESULTS", results);
-            setTaskIds(results.task_ids);
-          });
-        }}>Burst Update Scores</Button>
-        {JSON.stringify(taskIds)}
-      </DialogHeader>
-    </DialogContent>
-  </Dialog>
+  return (
+    <Dialog
+      open={burstUpdateDialogOpen}
+      onOpenChange={setBurstUpdateDialogOpen}
+    >
+      <DialogContent className="z-140 max-w-full w-[1000px]">
+        <DialogHeader>
+          <DialogTitle>
+            Do you want to perform a burst update for these users?
+          </DialogTitle>
+          <Button
+            appearance={ButtonAppearance.Secondary}
+            onClick={() => {
+              console.log('BURST UPDATE');
+              burstUpdateMatchingScores({ parallel_tasks: 10 }).then(
+                results => {
+                  //TODO: returns the task ID's so a progress monitor should be displayed
+                  console.log('BURST UPDATE RESULTS', results);
+                  setTaskIds(results.task_ids);
+                },
+              );
+            }}
+          >
+            Burst Update Scores
+          </Button>
+          {JSON.stringify(taskIds)}
+        </DialogHeader>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 export function Scores() {
@@ -123,16 +161,17 @@ export function Scores() {
   const [burstUpdateDialogOpen, setBurstUpdateDialogOpen] = useState(false);
   const [burstMatchingTasks, setBurstMatchingTasks] = useState([]);
 
-  const { data: burstMatchingState, error, mutate: mutateBurstUpdateState, isLoading } = useSWR(
-    `/api/matching/get_active_burst_calculation/`,
-    dataFetcher, { refreshInterval: 1000 }
-  );
-  const activeScoreCalculation = burstMatchingState?.active
-
-
+  const {
+    data: burstMatchingState,
+    error,
+    mutate: mutateBurstUpdateState,
+    isLoading,
+  } = useSWR(`/api/matching/get_active_burst_calculation/`, dataFetcher, {
+    refreshInterval: 1000,
+  });
+  const activeScoreCalculation = burstMatchingState?.active;
 
   console.log({ burstMatchingState, error, isLoading });
-
 
   // Quick matching
   const [matchingDialogOpen, setMatchingDialogOpen] = useState(false);
@@ -157,13 +196,18 @@ export function Scores() {
 
   return (
     <>
-      <MatchingDialog matchingDialogOpen={matchingDialogOpen} setMatchingDialogOpen={setMatchingDialogOpen} mutateResults={mutate} />
+      <MatchingDialog
+        matchingDialogOpen={matchingDialogOpen}
+        setMatchingDialogOpen={setMatchingDialogOpen}
+        mutateResults={mutate}
+      />
       <BurstUpdateDialog
         burstMatchingState={burstMatchingState}
         burstUpdateDialogOpen={burstUpdateDialogOpen}
         setBurstUpdateDialogOpen={setBurstUpdateDialogOpen}
         taskIds={burstMatchingTasks}
-        setTaskIds={setBurstMatchingTasks} />
+        setTaskIds={setBurstMatchingTasks}
+      />
       <div className="flex w-full overflow-scroll gap-2 p-2.5 align-center z-100 justify-center items-center">
         {filtersLoading ? (
           'Loading filters...'
@@ -182,13 +226,19 @@ export function Scores() {
               placeholder="Select a score list..."
               cannotError
             />
-            <ShadcnButton variant="outline" onClick={() => {
-              setBurstUpdateDialogOpen(true);
-            }} className={cn('', {
-              'bg-success': activeScoreCalculation,
-              'bg-error': !activeScoreCalculation,
-            })}>
-              {activeScoreCalculation ? 'Scores are being updated...' : 'Burst Update Scores'}
+            <ShadcnButton
+              variant="outline"
+              onClick={() => {
+                setBurstUpdateDialogOpen(true);
+              }}
+              className={cn('', {
+                'bg-success': activeScoreCalculation,
+                'bg-error': !activeScoreCalculation,
+              })}
+            >
+              {activeScoreCalculation
+                ? 'Scores are being updated...'
+                : 'Burst Update Scores'}
             </ShadcnButton>
             {scoresUpdated && (
               <Text>Scores Updated at {formatTime(scoresUpdated)}</Text>
@@ -197,13 +247,16 @@ export function Scores() {
           </div>
         )}
       </div>
-      {(!scoresLoading && scoresList?.results?.length === 0) && (
+      {!scoresLoading && scoresList?.results?.length === 0 && (
         <Text>No scores found</Text>
       )}
-      {(scoresLoading && scoresList?.results?.length > 0) ? (
+      {scoresLoading && scoresList?.results?.length > 0 ? (
         `Loading scores...`
       ) : (
-        <ScoresTable scoresList={scoresList} openMatchingDialog={setMatchingDialogOpen} />
+        <ScoresTable
+          scoresList={scoresList?.results ?? []}
+          onMatchClick={() => setMatchingDialogOpen(true)}
+        />
       )}
     </>
   );

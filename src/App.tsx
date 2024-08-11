@@ -16,7 +16,6 @@ import { AdminPanelV2_Matches } from './panel_v2/AdminPanelMatches.jsx';
 import {
   BASE_ROUTE,
   CREATE_NEW_EMAIL_ROUTE,
-  SEND_DYNAMIC_EMAIL_ROUTE,
   EMAILS_ROUTE,
   EMAIL_HTML_ROUTE,
   EMAIL_ROUTE,
@@ -24,6 +23,7 @@ import {
   MATCHING_ROUTE,
   PREMATCH_APPOINTMENTS_ROUTE,
   SCORES_ROUTE,
+  SEND_DYNAMIC_EMAIL_ROUTE,
   STATS_ROUTE,
   USERS_ROUTE,
   USER_DETAILS_ROUTE,
@@ -123,6 +123,14 @@ const router = createBrowserRouter(
     {
       path: EMAIL_HTML_ROUTE,
       element: <EmailHtml />,
+    },
+    {
+      path: 'old-emails',
+      element: <AdminPanelV2_Emails />,
+    },
+    {
+      path: 'old-emails/:emailTemplateName',
+      element: <AdminPanelV2_EmailDetails />,
     },
   ],
   { basename: BASE_ROUTE },

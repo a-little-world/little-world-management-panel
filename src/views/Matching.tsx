@@ -3,19 +3,18 @@ import {
   ButtonAppearance,
   ButtonSizes,
   Checkbox,
-  ButtonVariations,
   Dropdown,
   Text,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
 import { isEmpty } from 'lodash';
 import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { useLocation, useParams } from 'react-router-dom';
-import { useSearchParams } from 'react-router-dom';
-import useSWR from 'swr';
 
-import { calculateScoreBetweenUsers, matchUsers } from '../api/index';
+import {
+  calculateAllScoresForUser,
+  calculateScoreBetweenUsers,
+  matchUsers,
+} from '../api/index';
 import {
   Card,
   CardContent,
@@ -24,6 +23,7 @@ import {
   CardHeader,
   CardTitle,
 } from '../atoms/Card';
+import { ScoresTable } from '../blocks/ScoresTable';
 import { SelectedUsersSheet } from '../blocks/SelectedUsersSheet';
 import UserCard from '../blocks/UserCard';
 import { useGlobalState } from '../store';
@@ -36,39 +36,54 @@ const MATCHING_OPTIONS = [
 
 const Matching = ({
   preselectOption = 'proposal',
-  onPerformedMatch = () => { },
+  onPerformedMatch = () => {},
 }) => {
-  const { userId } = useParams();
-  const { state } = useLocation();
   const [option, setOption] = useState<string>(preselectOption);
   const [forceMatch, setForceMatch] = useState<boolean>(false);
   const [submitError, setSubmitError] = useState<string>('');
   const [matchSucces, setMatchSuccess] = useState<string>('');
   const [score, setScore] = useState<string | number>('To Be Calculated');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  let [searchParams, setSearchParams] = useSearchParams();
+  const [loadingScore, setLoadingScore] = useState<boolean>(false);
+
   const { removeUserFromMatching, addUserToMatching, potentialMatch } =
     useGlobalState();
+  const [scoresList, setScoresList] = useState(null);
+  const [loadingPotentialMatches, setLoadingPotentialMatches] = useState(false);
 
-  // if (isLoading && !error)
-  //   return <div className="w-full p-3 text-center">Loading</div>;
-  // if (error)
-  //   return (
-  //     <div className="w-full p-3 text-center">
-  //       Issue fetching this user. Please ensure the user id is correct
-  //     </div>
-  //   );
+  const calculateScores = () => {
+    setLoadingPotentialMatches(true);
+    calculateAllScoresForUser({
+      user1Id: potentialMatch[0].id,
+      onError: error => {
+        setLoadingPotentialMatches(false);
+        setSubmitError(error?.message || 'Issue with request');
+      },
+      onSuccess: response => {
+        setLoadingPotentialMatches(false);
+        setScoresList(response?.results || []);
+      },
+    });
+  };
 
   const onMatchAction = () => {
     setSubmitError('');
     setMatchSuccess('');
+
     if (option === MATCHING_OPTIONS[2]?.value) {
+      setLoadingScore(true);
       calculateScoreBetweenUsers({
         user1Id: potentialMatch[0].id,
         user2Id: potentialMatch[1].id,
-        onError: error =>
-          setSubmitError(error?.message || 'Issue with request'),
-        onSuccess: setMatchSuccess,
+        onError: error => {
+          setSubmitError(error?.message || 'Issue with request');
+          setLoadingScore(false);
+        },
+        onSuccess: res => {
+          setLoadingScore(false);
+          setScore(res.score);
+          setMatchSuccess('Score Calculated');
+        },
       });
     } else {
       const data = {
@@ -82,12 +97,16 @@ const Matching = ({
         data,
         onError: error =>
           setSubmitError(error?.message || 'Issue with request'),
-        onSuccess: (message) => {
+        onSuccess: message => {
           setMatchSuccess(message);
           onPerformedMatch();
         },
       });
     }
+  };
+
+  const handlePotentialMatchClick = score => {
+    addUserToMatching(score.to_usr);
   };
 
   return (
@@ -111,7 +130,7 @@ const Matching = ({
               name={name}
               inputRef={null}
               onCheckedChange={setForceMatch}
-              onBlur={() => { }}
+              onBlur={() => {}}
               value={forceMatch}
               defaultChecked={false}
               error={null}
@@ -119,16 +138,33 @@ const Matching = ({
               required={false}
             />
             <Button
-              disabled={isSubmitting || potentialMatch.length !== 2 || !option}
+              disabled={
+                loadingPotentialMatches ||
+                isSubmitting ||
+                potentialMatch.length !== 2 ||
+                !option
+              }
               onClick={onMatchAction}
               size={ButtonSizes.Small}
               appearance={ButtonAppearance.Secondary}
             >
               Submit
             </Button>
+            <Button
+              disabled={
+                loadingPotentialMatches ||
+                isSubmitting ||
+                potentialMatch.length !== 1 ||
+                !option
+              }
+              onClick={calculateScores}
+              size={ButtonSizes.Small}
+            >
+              Calculate Scores for first user
+            </Button>
           </div>
         </CardHeader>
-        <CardContent className="space-y-2 flex flex-col">
+        <CardContent className="space-y-2 flex flex-col gap-4">
           {isEmpty(potentialMatch) ? (
             <Text>
               No users selected for Match. This can be done via the Selected
@@ -137,7 +173,7 @@ const Matching = ({
           ) : (
             <>
               <Text type={TextTypes.Body3} bold>
-                Score: {score}
+                Score: {loadingScore ? 'Loading Score...' : score}
               </Text>
               {potentialMatch.map(user => (
                 <UserCard
@@ -148,12 +184,36 @@ const Matching = ({
               ))}
             </>
           )}
+          {(scoresList || loadingPotentialMatches) && (
+            <div>
+              {loadingPotentialMatches ? (
+                <Text center>Loading scores...</Text>
+              ) : (
+                <div>
+                  <Text type={TextTypes.Body3}>
+                    Matching Scores for {potentialMatch[0]?.profile?.first_name}
+                  </Text>
+                  {isEmpty(scoresList) ? (
+                    <Text center>No available matches.</Text>
+                  ) : (
+                    <ScoresTable
+                      scoresList={scoresList}
+                      onMatchClick={handlePotentialMatchClick}
+                    />
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </CardContent>
+
         <CardFooter>
           <div
-            className={`${matchSucces || submitError ? 'opacity-100' : 'opacity-0'
-              } w-full h-12 p-4 flex flex-column items-center justify-center ${submitError ? 'bg-red-200' : 'bg-green-200'
-              }`}
+            className={`${
+              matchSucces || submitError ? 'opacity-100' : 'opacity-0'
+            } w-full h-12 p-4 flex flex-column items-center justify-center ${
+              submitError ? 'bg-red-200' : 'bg-green-200'
+            }`}
           >
             {matchSucces || submitError}
           </div>

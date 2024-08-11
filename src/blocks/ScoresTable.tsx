@@ -1,4 +1,5 @@
-import { get, isEmpty } from 'lodash';
+import { Text } from '@a-little-world/little-world-design-system';
+import { get, isEmpty, isObject } from 'lodash';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -10,7 +11,6 @@ import {
   TableHeader,
   TableRow,
 } from '../atoms/Table';
-import { Text } from '@a-little-world/little-world-design-system';
 import Tag, { TagAppearance, TagSizes } from '../atoms/Tag';
 import UserImage from '../atoms/UserImage';
 import { formatDate, formatTime } from '../helpers/date';
@@ -25,35 +25,47 @@ const SCORES_FIELDS = [
   { key: 'latest_update', label: 'Last Updated' },
 ];
 
-export function ScoresTable({ scoresList, openMatchingDialog }: { scoresList: any, openMatchingDialog: any }) {
-  const { removeUserFromMatching, addUserToMatching, potentialMatch } = useGlobalState();
+export function ScoresTable({
+  scoresList,
+  onMatchClick,
+}: {
+  scoresList: any;
+  onMatchClick: (user: any) => void;
+}) {
+  const { removeUserFromMatching, addUserToMatching, potentialMatch } =
+    useGlobalState();
   const [fields, setFields] = useState(SCORES_FIELDS);
-
+  console.log({ scoresList });
   return (
     <>
       <Table>
         <TableHeader>
           <TableRow>
             {fields.map(({ key, label }) => (
-              <TableHead key={key} className="w-[100px]">
+              <TableHead key={key + label} className="w-[100px]">
                 {label}
               </TableHead>
             ))}
           </TableRow>
         </TableHeader>
-        {isEmpty(scoresList?.results) ? (
+        {isEmpty(scoresList) ? (
           <Text className="p-4 w-full" center>
             No results.
           </Text>
         ) : (
           <TableBody>
-            {scoresList?.results.map(score => (
-              <TableRow key={score.uuid}>
+            {scoresList?.map(score => (
+              <TableRow key={score.id}>
                 {fields.map(({ key }) => {
                   if (key === 'user1' || key === 'user2') {
-                    const user = score[key];
+                    const user = isObject(score[key])
+                      ? score[key]
+                      : key === 'user1'
+                      ? score['from_usr']
+                      : score['to_usr'];
+
                     return (
-                      <TableCell key={score.uuid + key}>
+                      <TableCell key={score.id + key}>
                         <Link to={`/user/${user.id}`}>
                           <UserImage
                             alt={
@@ -74,12 +86,12 @@ export function ScoresTable({ scoresList, openMatchingDialog }: { scoresList: an
 
                   if (key === 'make_match')
                     return (
-                      <TableCell key={score.uuid + key}>
+                      <TableCell key={score.id + key}>
                         <button
                           onClick={() => {
-                            addUserToMatching(score.user1)
-                            addUserToMatching(score.user2)
-                            openMatchingDialog(true)
+                            addUserToMatching(score.user1);
+                            addUserToMatching(score.user2);
+                            onMatchClick(score);
                           }}
                           className="text-blue-500"
                         >
@@ -90,7 +102,7 @@ export function ScoresTable({ scoresList, openMatchingDialog }: { scoresList: an
 
                   if (key === 'matchable')
                     return (
-                      <TableCell key={score.uuid + key}>
+                      <TableCell key={score.id + key}>
                         <Tag
                           appearance={
                             TagAppearance[score.matchable ? 'success' : 'error']
@@ -104,14 +116,14 @@ export function ScoresTable({ scoresList, openMatchingDialog }: { scoresList: an
 
                   if (key === 'latest_update')
                     return (
-                      <TableCell key={score.uuid + key}>
+                      <TableCell key={score.id + key}>
                         {formatDate(new Date(score.latest_update))}
                         {formatTime(new Date(score.latest_update))}
                       </TableCell>
                     );
 
                   return (
-                    <TableCell key={score.uuid + key}>
+                    <TableCell key={score.id + key}>
                       {get(score, key)}
                     </TableCell>
                   );

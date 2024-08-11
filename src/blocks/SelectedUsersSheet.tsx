@@ -5,11 +5,10 @@ import {
 } from '@a-little-world/little-world-design-system';
 import { ScrollArea } from '@radix-ui/react-scroll-area';
 import { isEmpty, map, size } from 'lodash';
-import React, { useState } from 'react';
+import React from 'react';
 import { useForm } from 'react-hook-form';
 import styled from 'styled-components';
 
-import { addUserByHash } from '../api/index';
 import {
   Sheet,
   SheetContent,
@@ -19,29 +18,14 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '../atoms/Sheet';
-import { useGlobalState } from '../store';
+import useSelectUser from '../hooks/useSelectUser';
+import { registerInput, useGlobalState } from '../store';
+import SearchBar from './SearchBar';
 import UserDetailsCard from './UserCard';
 
 const StyledSheetButton = styled(Button)`
   position: fixed;
 `;
-
-export const registerInput = ({
-  register,
-  name,
-  options,
-}: {
-  register: any;
-  name: string;
-  options?: any;
-}) => {
-  const { ref, ...rest } = register(name, options);
-
-  return {
-    ...rest,
-    inputRef: ref,
-  };
-};
 
 export function SelectedUsersSheet() {
   const {
@@ -50,22 +34,9 @@ export function SelectedUsersSheet() {
     formState: { errors },
     setError,
   } = useForm();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { selectedUsers, selectUser, deselectUser } = useGlobalState();
 
-  const onError = error => {
-    setError('userHash', {});
-    setIsSubmitting(false);
-  };
-
-  const onAddUser = formData => {
-    setIsSubmitting(true);
-
-    addUserByHash(formData.userHash, onError, res => {
-      setIsSubmitting(false);
-      selectUser(res);
-    });
-  };
+  const { selectedUsers, deselectUser } = useGlobalState();
+  const { isSubmitting, onSelectUser, error } = useSelectUser();
 
   return (
     <Sheet>
@@ -95,28 +66,13 @@ export function SelectedUsersSheet() {
           })}
         </ScrollArea>
         <SheetFooter>
-          <form
-            className="flex w-full gap-2"
-            onSubmit={handleSubmit(onAddUser)}
-          >
-            <TextInput
-              {...registerInput({
-                register,
-                name: 'userHash',
-                options: { required: 'error.required' },
-              })}
-              id="addUserHashInput"
-              error={errors?.userHash?.message}
-              placeholder="Enter the user hash"
-            />
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              size={ButtonSizes.Small}
-            >
-              Add
-            </Button>
-          </form>
+          <SearchBar
+            name="userHash"
+            isSubmitting={isSubmitting}
+            onSubmit={onSelectUser}
+            error={error}
+            placeholder="Enter user hash"
+          />
         </SheetFooter>
       </SheetContent>
     </Sheet>

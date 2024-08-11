@@ -1,28 +1,55 @@
-import { Dropdown } from '@a-little-world/little-world-design-system';
+import {
+  ButtonSizes,
+  Button as DSButton,
+  Dropdown,
+} from '@a-little-world/little-world-design-system';
 import { ArrowsUpDownIcon } from '@heroicons/react/20/solid';
 import { createColumnHelper } from '@tanstack/react-table';
-import React from 'react';
+import { isEmpty } from 'lodash';
+import { SlidersHorizontalIcon } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { createSearchParams } from 'react-router-dom';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
 import MatchesIcons from '../atoms/MatchesIcons';
+import { PageSizeDropdown } from '../atoms/PageSizeDropdown';
 import Pagination from '../atoms/Pagination';
 import Tag, { TagAppearance, TagSizes } from '../atoms/Tag';
 import UserImage from '../atoms/UserImage';
 import { DataTable } from '../blocks/DataTable';
+import Filters, { containsFilterKey } from '../blocks/Filters';
+import SearchBar from '../blocks/SearchBar';
 import { formatDate, formatTimeDistance } from '../helpers/date';
 import { Button } from '../shadcnui/ui/button';
-import { useFilterOptions, useGlobalState, useUserListData } from '../store';
+import { useGlobalState, useUserListData } from '../store';
 import { SelectedUsersSheet } from './../blocks/SelectedUsersSheet';
-import { User } from 'lucide-react';
-import { PageSizeDropdown } from '../atoms/PageSizeDropdown';
 
 const StyledDropdown = styled(Dropdown)`
   div[data-radix-popper-content-wrapper] {
     z-index: 20 !important;
   }
+`;
+
+const FilterButton = styled(DSButton)<{ $active: boolean }>`
+  ${({ $active, theme }) =>
+    $active &&
+    css`
+      border: 1px solid ${theme.color.border.selected};
+      &:before {
+        content: '';
+        display: inline-block;
+        position: absolute;
+        top: -1px;
+        right: -2px;
+        width: 15px;
+        height: 15px;
+        border-radius: ${theme.radius.full};
+        background-color: ${theme.color.surface.highlight};
+        color: ${theme.color.text.primary};
+      }
+    `}
 `;
 
 const columnHelper = createColumnHelper();
@@ -80,7 +107,6 @@ const userColumns = [
       );
     },
     cell: ({ row, cell }) => {
-      console.log({ row, val: cell.getValue() });
       return `${row?.original.profile.first_name} ${row?.original.profile.second_name}`;
     },
   }),
@@ -172,73 +198,118 @@ export function UsersTable({ userList }) {
   );
 }
 
-const orderingOptions = [{
-  value: 'date_joined',
-  label: '(Asc) By Date Joined',
-}, {
-  value: '-date_joined',
-  label: '(Desc) By Date Joined',
-}, {
-  value: 'last_login',
-  label: '(Asc) By Last Login',
-}, {
-  value: '-last_login',
-  label: '(Desc) By Last Login',
-}]
-
+const orderingOptions = [
+  {
+    value: 'date_joined',
+    label: '(Asc) By Date Joined',
+  },
+  {
+    value: '-date_joined',
+    label: '(Desc) By Date Joined',
+  },
+  {
+    value: 'last_login',
+    label: '(Asc) By Last Login',
+  },
+  {
+    value: '-last_login',
+    label: '(Desc) By Last Login',
+  },
+];
 
 export function Users() {
   let [searchParams, setSearchParams] = useSearchParams();
   const list = searchParams.get('list') || 'all';
   const orderBy = searchParams.get('order_by') || '-date_joined';
-  const { filterOptions, isLoading: filtersLoading } = useFilterOptions();
 
-  const { userList, isLoading: usersLoading, error } = useUserListData(
-    createSearchParams(searchParams),
-  );
+  const [filters, setFilters] = useState({});
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
-  const changeList = (list: string) => {
-    searchParams.set('list', list);
+  const {
+    userList,
+    isLoading: usersLoading,
+    error,
+  } = useUserListData(createSearchParams(searchParams));
+
+  // Sync searchParams with filters state
+  useEffect(() => {
+    const paramsObject = Object.fromEntries([...searchParams]);
+    setFilters(paramsObject);
+  }, [searchParams]);
+
+  const removeSearchParam = (key: string) => {
+    searchParams.delete(key);
     setSearchParams(searchParams);
+    setFilters(prevFilters => {
+      const newFilters = { ...prevFilters };
+      delete newFilters[key];
+      return newFilters;
+    });
   };
 
-  console.log({ userList });
+  const updateSearchParams = (key: string, value: string) => {
+    if (!value) {
+      removeSearchParam(key);
+    } else {
+      searchParams.set(key, value);
+      setSearchParams(searchParams);
+      setFilters(prevFilters => ({
+        ...prevFilters,
+        [key]: value,
+      }));
+    }
+  };
 
   return (
     <>
-      {filtersLoading ? (
-        <div className="flex w-full overflow-scroll gap-2 p-4 align-center justify-center items-center">
-          Loading filters...
+      <div className="w-full flex items-end gap-5 p-4 justify-between flex-wrap">
+        <div className="flex items-center gap-2">
+          <SearchBar
+            name="search"
+            hideSubmitBtn
+            isSubmitting={false}
+            onSubmit={({ search }) => updateSearchParams('search', search)}
+            error={null}
+            placeholder="Filter by user hash"
+          />
+          <FilterButton
+            backgroundColor={'black'}
+            onClick={() => setFiltersOpen(true)}
+            size={ButtonSizes.Small}
+            $active={containsFilterKey(filters)}
+          >
+            <SlidersHorizontalIcon width={16} height={16} /> Filters
+          </FilterButton>
         </div>
-      ) : (
-        <div className="w-full flex items-center w-full gap-4 p-4 justify-between flex-wrap">
-          <StyledDropdown
-            value={list}
-            options={filterOptions.lists.map(({ name, description }) => ({
-              value: name,
-              label: description,
-            }))}
-            onValueChange={val => changeList(val)}
-            placeholder="Select a user list..."
-            cannotError
-          />
-          <StyledDropdown
-            value={orderBy}
-            options={orderingOptions}
-            onValueChange={val => {
-              searchParams.set('order_by', val);
-              setSearchParams(searchParams);
-            }}
-            placeholder="Select a user list..."
-            cannotError
-          />
-          <PageSizeDropdown />
+        <div className="flex items-end gap-6 flex-wrap">
+          <div className="flex items-center gap-2">
+            <StyledDropdown
+              label={'Sort'}
+              value={orderBy}
+              options={orderingOptions}
+              onValueChange={val => updateSearchParams('order_by', val)}
+              placeholder="Select a user list..."
+              cannotError
+              maxWidth="160px"
+            />
+            <PageSizeDropdown />
+          </div>
           <Pagination list={userList} />
         </div>
+      </div>
+
+      {usersLoading && (
+        <div className="p-4 text-center">Loading users list '${list}'...</div>
       )}
-      {usersLoading && <div className="p-4 text-center">Loading users list '${list}'...</div>}
       {error && <div className="p-4 text-center">Error: {error.message}</div>}
       {!usersLoading && !error && <UsersTable userList={userList} />}
+      <Filters
+        defaultValues={filters}
+        open={filtersOpen}
+        onClose={() => setFiltersOpen(false)}
+        onUpdateFilters={updateSearchParams}
+        onRemoveFilter={removeSearchParam}
+      />
     </>
   );
 }

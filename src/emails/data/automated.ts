@@ -2,8 +2,6 @@ import { ContentTypes } from '../Builder';
 import { BackendVars } from '../templates/backendVars';
 import automatedText from './text/automated.json';
 
-// const text = JSON.parse(automatedJson);
-console.log({ automatedText });
 const automatedEmails = {
   'account-deleted': {
     id: 'account-deleted',

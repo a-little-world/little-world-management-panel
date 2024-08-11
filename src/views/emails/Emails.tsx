@@ -149,6 +149,7 @@ const Emails = () => {
       </TopBar>
       <Text type={TextTypes.Body4}>These are automated backend emails that must be updated in the backend. You may edit all of them in emails.json.</Text>
       <Accordion
+        // contentCss={'emailGroup'}
         contentClassName={'emailGroup'}
         items={map(GROUPED_TEMPLATES, (item, header) => {
           return {

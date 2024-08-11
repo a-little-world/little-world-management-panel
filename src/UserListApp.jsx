@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import './withTailwind.css';
+
 import { getCookiesAsObject } from './utils';
+import './withTailwind.css';
 
 const THEMES = [
   'light',
@@ -36,8 +37,6 @@ const THEMES = [
 
 function DetailedTable({ users }) {
   const headers = ['Name', 'Email', 'Hash'];
-
-  console.log('users', users);
 
   return (
     <div className="overflow-x-auto w-full">
@@ -209,8 +208,6 @@ function UserListApp({ inputData }) {
     table: 'detailed',
   });
 
-  console.log('Input list: ', inputData, inputData.state, inputData.user_lists);
-
   useEffect(() => {
     const inList = inputData.user_lists || [[]];
     const inStateInfo = inputData.state || {};
@@ -226,8 +223,6 @@ function UserListApp({ inputData }) {
   if (userLists.length === 0) {
     return <div>Loading...</div>;
   }
-
-  console.log('state info: ', stateInfo, userLists);
 
   const fetchPredefinedUserList = label => {
     fetch(`/api/admin/user_list/get/`, {

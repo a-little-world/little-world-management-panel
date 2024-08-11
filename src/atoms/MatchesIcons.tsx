@@ -12,7 +12,6 @@ const MatchesIcons = ({
   matches: any[];
   label?: string;
 }) => {
-  console.log({ matches });
   return (
     <div className="h-fit flex flex-row items-center content-center gap-2">
       {label && (

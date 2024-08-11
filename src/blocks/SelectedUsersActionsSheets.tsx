@@ -1,15 +1,9 @@
-import {
-  Button,
-  ButtonSizes,
-  TextInput,
-} from '@a-little-world/little-world-design-system';
+import { Button } from '@a-little-world/little-world-design-system';
 import { ScrollArea } from '@radix-ui/react-scroll-area';
-import { isEmpty, map, size } from 'lodash';
+import { isEmpty, size } from 'lodash';
 import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
 import styled from 'styled-components';
 
-import { addUserByHash } from '../api/index';
 import {
   Sheet,
   SheetContent,
@@ -19,35 +13,15 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '../atoms/Sheet';
-import { useGlobalState } from '../store';
-import UserDetailsCard from './UserCard';
 import { Progress } from '../shadcnui/ui/progress';
+import { useGlobalState } from '../store';
 import { getCookiesAsObject } from '../utils';
 
 const StyledSheetButton = styled(Button)`
   position: fixed;
 `;
 
-export const registerInput = ({
-  register,
-  name,
-  options,
-}: {
-  register: any;
-  name: string;
-  options?: any;
-}) => {
-  const { ref, ...rest } = register(name, options);
-
-  return {
-    ...rest,
-    inputRef: ref,
-  };
-};
-
-export function SelectedUsersActionsSheet({
-  mutateBaseList
-}) {
+export function SelectedUsersActionsSheet({ mutateBaseList }) {
   const { selectedUsers, selectUser, deselectUser } = useGlobalState();
 
   const [progress, setProgress] = useState(0);
@@ -59,22 +33,25 @@ export function SelectedUsersActionsSheet({
     for (const hash in selectedUsers) {
       const user = selectedUsers[hash];
       c += 1;
-      const res = await fetch(`/api/matching/users/${user.id}/mark_prematching_call_completed/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': getCookiesAsObject().csrftoken,
-        }
-      })
-      setProgress(c / size(selectedUsers) * 100);
+      const res = await fetch(
+        `/api/matching/users/${user.id}/mark_prematching_call_completed/`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookiesAsObject().csrftoken,
+          },
+        },
+      );
+      setProgress((c / size(selectedUsers)) * 100);
       const result = {
         user,
         success: res.ok,
-      }
-      setResults((prevResults) => [...prevResults, result]);
+      };
+      setResults(prevResults => [...prevResults, result]);
       mutateBaseList();
     }
-  }
+  };
 
   return (
     <Sheet>
@@ -89,7 +66,8 @@ export function SelectedUsersActionsSheet({
         <SheetHeader>
           <SheetTitle>Selected Users</SheetTitle>
           <SheetDescription>
-            Perform actions on the {Object.keys(selectedUsers).length} selected users
+            Perform actions on the {Object.keys(selectedUsers).length} selected
+            users
           </SheetDescription>
           <Progress value={progress} />
         </SheetHeader>
@@ -98,15 +76,18 @@ export function SelectedUsersActionsSheet({
             Mark users as had_prematching_call=True
           </Button>
           Results:
-          <div className='flex flex-col gap-2 w-full'>
-            {results.map((result) => (
-              <div>{result.user.profile.first_name} {result.user.profile.second_name}: {result.success ? 'Success' : 'Failed'}{result.error && `: ${result.error}`}</div>
+          <div className="flex flex-col gap-2 w-full">
+            {results.map(result => (
+              <div>
+                {result.user.profile.first_name}{' '}
+                {result.user.profile.second_name}:{' '}
+                {result.success ? 'Success' : 'Failed'}
+                {result.error && `: ${result.error}`}
+              </div>
             ))}
           </div>
         </ScrollArea>
-        <SheetFooter>
-          Footer
-        </SheetFooter>
+        <SheetFooter>Footer</SheetFooter>
       </SheetContent>
     </Sheet>
   );

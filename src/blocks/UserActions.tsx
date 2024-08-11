@@ -7,11 +7,10 @@ import {
   TextArea,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
-import { isEmpty, map, mapKeys } from 'lodash';
+import { isEmpty, map } from 'lodash';
 import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTheme } from 'styled-components';
-import useSWR from 'swr';
 
 import {
   sendSms,
@@ -19,8 +18,7 @@ import {
   setUserUnresponsive,
 } from '../api/index';
 import { Card, CardFooter, CardHeader, CardTitle } from '../atoms/Card';
-import { dataFetcher } from '../store';
-import { registerInput } from './SelectedUsersSheet';
+import { registerInput } from '../store';
 
 function SendSms({ userId }) {
   const [isSubmitting, setIsSubmitting] = useState(false);

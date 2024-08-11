@@ -4,12 +4,12 @@ import {
   NavigationMenuContent,
   NavigationMenuContentItem,
   NavigationMenuItem,
-  NavigationMenuLink,
   NavigationMenuTrigger,
 } from '@a-little-world/little-world-design-system';
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 
+import useSelectUser from '../hooks/useSelectUser';
 import {
   EMAILS_ROUTE,
   MATCHES_LIST_ROUTE,
@@ -17,31 +17,23 @@ import {
   SCORES_ROUTE,
   STATS_ROUTE,
   USERS_ROUTE,
-  VIDEO_CALLS_ROUTE
+  VIDEO_CALLS_ROUTE,
 } from '../routes';
+import SearchBar from './SearchBar';
 
 const Menu = () => {
   const location = useLocation();
-
+  const { isSubmitting, onSelectUser, error } = useSelectUser({});
   return (
     <NavigationMenu withShadow>
-      <NavigationMenuItem className="max-sm:hidden">
-        <NavigationMenuLink
-          className="text-sky-900"
-          to={USERS_ROUTE}
-          active={location.pathname === USERS_ROUTE}
-        >
-          Users
-        </NavigationMenuLink>
-      </NavigationMenuItem>
-      <NavigationMenuItem className="max-sm:hidden">
-        <NavigationMenuLink
-          to={MATCHES_LIST_ROUTE}
-          active={location.pathname === MATCHES_LIST_ROUTE}
-        >
-          Matches
-        </NavigationMenuLink>
-      </NavigationMenuItem>
+      <SearchBar
+        name="userHash"
+        hideSubmitBtn
+        isSubmitting={isSubmitting}
+        onSubmit={onSelectUser}
+        error={error}
+        placeholder="Enter user hash"
+      />
       <NavigationMenuItem>
         <NavigationMenuTrigger>Menu</NavigationMenuTrigger>
         <NavigationMenuContent layout={MenuContentLayout.callout}>
@@ -63,12 +55,20 @@ const Menu = () => {
           >
             Emails
           </NavigationMenuContentItem>
-          {<NavigationMenuContentItem
-            to={STATS_ROUTE}
-            active={location.pathname === STATS_ROUTE}
+          <NavigationMenuContentItem
+            to={'/old-emails'}
+            active={location.pathname === '/old-emails'}
           >
-            Stats
-          </NavigationMenuContentItem>}
+            Old Emails
+          </NavigationMenuContentItem>
+          {
+            <NavigationMenuContentItem
+              to={STATS_ROUTE}
+              active={location.pathname === STATS_ROUTE}
+            >
+              Stats
+            </NavigationMenuContentItem>
+          }
           <NavigationMenuContentItem
             to={SCORES_ROUTE}
             active={location.pathname === SCORES_ROUTE}

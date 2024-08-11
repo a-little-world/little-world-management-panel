@@ -1,8 +1,25 @@
-import { filter, pull, unset } from 'lodash';
+import { filter, unset } from 'lodash';
 import React, { createContext, useState } from 'react';
 import useSWR from 'swr';
 
 import { getCookiesAsObject } from './utils';
+
+export const registerInput = ({
+  register,
+  name,
+  options,
+}: {
+  register: any;
+  name: string;
+  options?: any;
+}) => {
+  const { ref, ...rest } = register(name, options);
+
+  return {
+    ...rest,
+    inputRef: ref,
+  };
+};
 
 export const dataFetcher = (url: string) =>
   fetch(url).then(res => {
