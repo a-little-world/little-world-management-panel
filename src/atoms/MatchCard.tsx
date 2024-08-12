@@ -1,4 +1,5 @@
 import {
+  Button,
   ButtonAppearance,
   Link,
   Text,
@@ -6,14 +7,59 @@ import {
 } from '@a-little-world/little-world-design-system';
 import { isEmpty } from 'lodash';
 import React from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '../shadcnui/ui/dialog';
+
 
 import { formatTimeDistance } from '../helpers/date';
 import Tag, { TagAppearance } from './Tag';
 import UserImage from './UserImage';
 
+const ConfirmRemoveMatchDialog = ({ 
+  dialogOpen,
+  setDialogOpen,
+  match,
+}) => {
+  return <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+    <DialogTrigger>
+    </DialogTrigger>
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>Do you want to remove this match?</DialogTitle>
+        <DialogDescription>
+          This will remove the match between you and {match.partner.first_name}{' '}
+          {match.partner.second_name}
+        </DialogDescription>
+        <Button
+          appearance={ButtonAppearance.Secondary}
+          onClick={() => {
+            console.log('REMOVE MATCH');
+            fetch(`api/matching/matches/${match.uuid}/resolve/`).then((res) => {
+              if (res.ok) {
+                setDialogOpen(false);
+              }
+            })
+          }}
+        >
+          Remove Match
+        </Button>
+      </DialogHeader>
+    </DialogContent>
+  </Dialog>
+};
+
+
 const MatchCard = ({ match }: { match: any }) => {
+  const [dialogOpen, setDialogOpen] = React.useState(false);
   return (
     <div className="w-full max-w-[320px] flex flex-col bg-white h-fit relative items-center justify-center rounded-xl p-4 gap-2 border border-border-slate-400">
+    <ConfirmRemoveMatchDialog dialogOpen={dialogOpen} setDialogOpen={setDialogOpen} match={match} />
       <Link
         to={'/user/' + match.partner?.id}
         key={match.id}
@@ -40,6 +86,11 @@ const MatchCard = ({ match }: { match: any }) => {
       >
         {match.partner.user_type}
       </Tag>
+      <div className='absolute top-2 right-2'>
+        <Button appearance={ButtonAppearance.Secondary} onClick={() => {
+          setDialogOpen(true);
+        }}>Remove</Button>
+      </div>
       <p>
         {match.partner.first_name} {match.partner.second_name}
       </p>
