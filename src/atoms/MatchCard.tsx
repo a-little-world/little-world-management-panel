@@ -20,8 +20,9 @@ import {
 import { formatTimeDistance } from '../helpers/date';
 import Tag, { TagAppearance } from './Tag';
 import UserImage from './UserImage';
+import { getCookiesAsObject } from '../utils';
 
-const ConfirmRemoveMatchDialog = ({ 
+const ConfirmRemoveMatchDialog = ({
   dialogOpen,
   setDialogOpen,
   match,
@@ -40,11 +41,18 @@ const ConfirmRemoveMatchDialog = ({
           appearance={ButtonAppearance.Secondary}
           onClick={() => {
             console.log('REMOVE MATCH');
-            fetch(`api/matching/matches/${match.uuid}/resolve/`).then((res) => {
+            fetch(`/api/matching/matches/${match.id}/resolve/`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookiesAsObject().csrftoken,
+              },
+            }).then((res) => {
               if (res.ok) {
                 setDialogOpen(false);
               }
             })
+            // TODO: mutate matches and reload so the UI updates!
           }}
         >
           Remove Match
@@ -59,7 +67,7 @@ const MatchCard = ({ match }: { match: any }) => {
   const [dialogOpen, setDialogOpen] = React.useState(false);
   return (
     <div className="w-full max-w-[320px] flex flex-col bg-white h-fit relative items-center justify-center rounded-xl p-4 gap-2 border border-border-slate-400">
-    <ConfirmRemoveMatchDialog dialogOpen={dialogOpen} setDialogOpen={setDialogOpen} match={match} />
+      <ConfirmRemoveMatchDialog dialogOpen={dialogOpen} setDialogOpen={setDialogOpen} match={match} />
       <Link
         to={'/user/' + match.partner?.id}
         key={match.id}
