@@ -20,8 +20,12 @@ const graphEndpoints = [{
     description: "The amount of video calls made in a given time period."
 }, {
     endpoint: "/api/matching/users/statistics/signups/",
-    title: "User Signups",
-    description: "The amount of users that signed up in a given time period."
+    title: "user signups",
+    description: "the amount of users that signed up in a given time period."
+}, {
+    endpoint: "/api/matching/users/statistics/signups/?cumulative=true",
+    title: "cummulative user signups",
+    description: "the total amount of users that where registered up to a given time period."
 }, {
     endpoint: "/api/matching/users/statistics/messages_send/",
     title: "User Messages",
