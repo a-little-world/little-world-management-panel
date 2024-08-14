@@ -15,8 +15,8 @@ import useSWR from 'swr';
 
 import EmailBuilder from '../../emails/Builder';
 import emailsData from '../../emails/data';
+import { getCookiesAsObject } from '../../lib/utils';
 import { dataFetcher, registerInput } from '../../store';
-import { getCookiesAsObject } from '../../utils';
 import {
   Container,
   Content,

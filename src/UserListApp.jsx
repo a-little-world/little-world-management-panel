@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { getCookiesAsObject } from './utils';
+import { getCookiesAsObject } from './lib/utils.ts';
 import './withTailwind.css';
 
 const THEMES = [

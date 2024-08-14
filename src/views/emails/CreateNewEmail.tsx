@@ -20,8 +20,8 @@ import styled, { useTheme } from 'styled-components';
 import EmailBuilder, { ContentTypes } from '../../emails/Builder';
 import communityEmails from '../../emails/data/community';
 import { BackendVars } from '../../emails/templates/backendVars';
+import { getCookiesAsObject } from '../../lib/utils';
 import { registerInput } from '../../store';
-import { getCookiesAsObject } from '../../utils';
 import {
   Container,
   Content,

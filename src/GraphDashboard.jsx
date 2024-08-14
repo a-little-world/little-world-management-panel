@@ -1,6 +1,6 @@
 import Plot from 'react-plotly.js';
 import { useEffect, useState } from 'react';
-import { getCookiesAsObject } from './utils';
+import { getCookiesAsObject } from './lib/utils.ts';
 
 const asInputSelctorString = (date) => {
     console.log("Date", date)

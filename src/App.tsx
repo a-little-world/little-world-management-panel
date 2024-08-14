@@ -12,7 +12,6 @@ import {
   AdminPanelV2_EmailDetails,
   AdminPanelV2_Emails,
 } from './panel_v2/AdminPanelEmails.jsx';
-import { AdminPanelV2_Matches } from './panel_v2/AdminPanelMatches.jsx';
 import {
   BASE_ROUTE,
   CREATE_NEW_EMAIL_ROUTE,

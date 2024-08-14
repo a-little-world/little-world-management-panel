@@ -5,7 +5,6 @@ import {
 } from '@a-little-world/little-world-design-system';
 import { ArrowsUpDownIcon } from '@heroicons/react/20/solid';
 import { createColumnHelper } from '@tanstack/react-table';
-import { isEmpty } from 'lodash';
 import { SlidersHorizontalIcon } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -13,6 +12,7 @@ import { Link } from 'react-router-dom';
 import { createSearchParams } from 'react-router-dom';
 import styled, { css } from 'styled-components';
 
+import { Button } from '../atoms/Button';
 import MatchesIcons from '../atoms/MatchesIcons';
 import { PageSizeDropdown } from '../atoms/PageSizeDropdown';
 import Pagination from '../atoms/Pagination';
@@ -22,7 +22,6 @@ import { DataTable } from '../blocks/DataTable';
 import Filters, { containsFilterKey } from '../blocks/Filters';
 import SearchBar from '../blocks/SearchBar';
 import { formatDate, formatTimeDistance } from '../helpers/date';
-import { Button } from '../shadcnui/ui/button';
 import { useGlobalState, useUserListData } from '../store';
 import { SelectedUsersSheet } from './../blocks/SelectedUsersSheet';
 
@@ -265,12 +264,12 @@ export function Users() {
       <div className="w-full flex items-end gap-5 p-4 justify-between flex-wrap">
         <div className="flex items-center gap-2">
           <SearchBar
-            name="search"
+            name="email"
             hideSubmitBtn
             isSubmitting={false}
-            onSubmit={({ search }) => updateSearchParams('search', search)}
+            onSubmit={({ email }) => updateSearchParams('email', email)}
             error={null}
-            placeholder="Filter by user hash"
+            placeholder="Filter by email"
           />
           <FilterButton
             backgroundColor={'black'}

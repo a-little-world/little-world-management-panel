@@ -19,13 +19,3 @@
     --chart-5: 340 75% 55%;
   }
 }
-
-.emailGroup {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.emailGroup[hidden] {
-  display: none;
-}

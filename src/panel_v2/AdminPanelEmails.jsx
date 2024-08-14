@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import useSWR from 'swr';
 
-import { getCookiesAsObject } from '../utils';
+import { getCookiesAsObject } from '../lib/utils.ts';
 import { UserDetailsCard } from './AdminPanel.jsx';
 
 export function AdminPanelV2_Emails(props) {

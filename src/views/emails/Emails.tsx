@@ -10,17 +10,17 @@ import {
 import { render as renderEmail } from '@react-email/render';
 import { map } from 'lodash';
 import React from 'react';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
+import useSWR from 'swr';
 
+import EmailBuilder from '../../emails/Builder';
+import emailData from '../../emails/data/';
 import automatedEmails from '../../emails/data/automated';
 import marketingEmails from '../../emails/data/marketing';
 import partnershipsEmails from '../../emails/data/partnerships';
-import emailData from '../../emails/data/';
-import { dataFetcher } from '../../store';
-import useSWR from 'swr';
-import EmailBuilder from '../../emails/Builder';
-import { getCookiesAsObject } from '../../utils';
+import { getCookiesAsObject } from '../../lib/utils';
 import { CREATE_NEW_EMAIL_ROUTE, SEND_DYNAMIC_EMAIL_ROUTE } from '../../routes';
+import { dataFetcher } from '../../store';
 
 const Container = styled.div`
   padding: ${({ theme }) => theme.spacing.small};
@@ -49,6 +49,16 @@ const Template = styled(Link)`
   width: fit-content;
 `;
 
+const EMAIL_GROUPING_CSS = css`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.xxsmall};
+  flex-wrap: wrap;
+
+  &[hidden] {
+    display: none;
+  }
+`;
+
 const GROUPED_TEMPLATES = {
   Automated: map(automatedEmails),
   Marketing: map(marketingEmails),
@@ -60,16 +70,16 @@ function developmentUpdateBackendEmailTemplatesAndConfiguration({
 }) {
   console.log('Syncing backend emails');
 
-  const updateBackendEmailConfig = (newConfig) => {
+  const updateBackendEmailConfig = newConfig => {
     return fetch(`/api/matching/emails/config/overwrite/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'X-CSRFToken': getCookiesAsObject().csrftoken,
       },
-      body: JSON.stringify(newConfig)
+      body: JSON.stringify(newConfig),
     });
-  }
+  };
 
   const overwriteBackendEmailTemplate = (key, html) => {
     return fetch(`/api/matching/emails/templates/${key}/overwrite/`, {
@@ -82,22 +92,23 @@ function developmentUpdateBackendEmailTemplatesAndConfiguration({
         html: html,
       }),
     });
-  }
-
+  };
 
   const newEmailConfig = backendEmailConfig;
-  const templateToUpload = []
+  const templateToUpload = [];
   for (const [key, value] of Object.entries(emailData)) {
     console.log(`TEMPLATE: ${key}: ${value}`);
     const email = value;
-    const html = renderEmail(<EmailBuilder content={email.content} preview={email.preview} />);
+    const html = renderEmail(
+      <EmailBuilder content={email.content} preview={email.preview} />,
+    );
     const templateDict = {
       id: key,
-      sender_id: "noreply",
-      category_id: "automated",
-      subject: backendEmailConfig?.emails?.[key]?.subject ?? "No Subject",
-      template: "react_emails/" + key + ".html",
-    }
+      sender_id: 'noreply',
+      category_id: 'automated',
+      subject: backendEmailConfig?.emails?.[key]?.subject ?? 'No Subject',
+      template: 'react_emails/' + key + '.html',
+    };
     templateToUpload.push({
       key: key,
       html: html,
@@ -106,9 +117,9 @@ function developmentUpdateBackendEmailTemplatesAndConfiguration({
     newEmailConfig.emails[key] = templateDict;
   }
 
-  const promises = []
+  const promises = [];
   promises.push(updateBackendEmailConfig(newEmailConfig));
-  templateToUpload.forEach((template) => {
+  templateToUpload.forEach(template => {
     promises.push(overwriteBackendEmailTemplate(template.key, template.html));
   });
 
@@ -116,21 +127,17 @@ function developmentUpdateBackendEmailTemplatesAndConfiguration({
 }
 
 const Emails = () => {
-  const GROUPED_TEMPLATES = {
-    Automated: map(automatedEmails),
-    Marketing: map(marketingEmails),
-    Partnerships: map(partnershipsEmails),
-  };
+  const { data: backendEmailConfiguration } = useSWR(
+    '/api/matching/emails/config/',
+    dataFetcher,
+    {},
+  );
 
-
-
-  const {
-    data: backendEmailConfiguration,
-  } = useSWR("/api/matching/emails/config/", dataFetcher, {});
-
-  const {
-    data: dynamicEmails,
-  } = useSWR("/api/matching/emails/dynamic_templates/", dataFetcher, {});
+  const { data: dynamicEmails } = useSWR(
+    '/api/matching/emails/dynamic_templates/',
+    dataFetcher,
+    {},
+  );
 
   const onSyncBackendEmails = () => {
     // 1 - fetches the current email confirguration from the backend
@@ -145,12 +152,20 @@ const Emails = () => {
     <Container>
       <TopBar>
         <Text type={TextTypes.Heading4}>Backend Templates</Text>
-        <Button appearance={ButtonAppearance.Secondary} onClick={onSyncBackendEmails}> [DEVELOPMENT] Sync Emails </Button>
+        <Button
+          appearance={ButtonAppearance.Secondary}
+          onClick={onSyncBackendEmails}
+        >
+          {' '}
+          [DEVELOPMENT] Sync Emails{' '}
+        </Button>
       </TopBar>
-      <Text type={TextTypes.Body4}>These are automated backend emails that must be updated in the backend. You may edit all of them in emails.json.</Text>
+      <Text type={TextTypes.Body4}>
+        These are automated backend emails that must be updated in the backend.
+        You may edit all of them in emails.json.
+      </Text>
       <Accordion
-        // contentCss={'emailGroup'}
-        contentClassName={'emailGroup'}
+        contentCss={EMAIL_GROUPING_CSS}
         items={map(GROUPED_TEMPLATES, (item, header) => {
           return {
             header,
@@ -172,9 +187,18 @@ const Emails = () => {
           Create New
         </Link>
       </TopBar>
-      <Text type={TextTypes.Body4}>These are automated backend emails that must be updated in the backend. You may edit all of them in emails.json.</Text>
+      <Text type={TextTypes.Body4}>
+        These are automated backend emails that must be updated in the backend.
+        You may edit all of them in emails.json.
+      </Text>
       {dynamicEmails?.results.map(template => (
-        <Template key={template.template_name} to={SEND_DYNAMIC_EMAIL_ROUTE.replace(":emailTemplateName", template.template_name)}>
+        <Template
+          key={template.template_name}
+          to={SEND_DYNAMIC_EMAIL_ROUTE.replace(
+            ':emailTemplateName',
+            template.template_name,
+          )}
+        >
           <Text>{template.template_name}</Text>
         </Template>
       ))}

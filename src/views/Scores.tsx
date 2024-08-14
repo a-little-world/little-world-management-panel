@@ -11,19 +11,17 @@ import styled from 'styled-components';
 import useSWR from 'swr';
 
 import { burstUpdateMatchingScores } from '../api/index';
+import { Button as ShadcnButton } from '../atoms/Button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '../atoms/Dialog';
 import Pagination from '../atoms/Pagination';
 import { ScoresTable } from '../blocks/ScoresTable';
 import { formatTime } from '../helpers/date';
 import { cn } from '../lib/utils';
-import { Button as ShadcnButton } from '../shadcnui/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '../shadcnui/ui/dialog';
 import {
   dataFetcher,
   useGlobalState,

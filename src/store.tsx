@@ -2,7 +2,7 @@ import { filter, unset } from 'lodash';
 import React, { createContext, useState } from 'react';
 import useSWR from 'swr';
 
-import { getCookiesAsObject } from './utils';
+import { getCookiesAsObject } from './lib/utils';
 
 export const registerInput = ({
   register,

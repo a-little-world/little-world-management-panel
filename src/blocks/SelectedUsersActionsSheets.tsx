@@ -4,6 +4,7 @@ import { isEmpty, size } from 'lodash';
 import React, { useState } from 'react';
 import styled from 'styled-components';
 
+import { Progress } from '../atoms/Progress';
 import {
   Sheet,
   SheetContent,
@@ -13,9 +14,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '../atoms/Sheet';
-import { Progress } from '../shadcnui/ui/progress';
+import { getCookiesAsObject } from '../lib/utils';
 import { useGlobalState } from '../store';
-import { getCookiesAsObject } from '../utils';
 
 const StyledSheetButton = styled(Button)`
   position: fixed;

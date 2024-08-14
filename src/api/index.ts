@@ -1,4 +1,4 @@
-import { getCookiesAsObject } from '../utils.js';
+import { getCookiesAsObject } from '../lib/utils';
 
 export const addUserByHash = async (
   userHash: string,

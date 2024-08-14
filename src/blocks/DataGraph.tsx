@@ -1,43 +1,68 @@
 import React from 'react';
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
+import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
+import styled from 'styled-components';
 
-import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "../shadcnui/ui/chart"
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '../atoms/Chart';
+
+const StyledChartContainer = styled(ChartContainer)<{
+  $minHeight?: string;
+  $maxHeight?: string;
+}>`
+  max-height: ${({ $maxHeight }) => $maxHeight || '640px'};
+  min-height: ${({ $minHeight }) => $minHeight || '400px'};
+`;
+
+interface DataGraphProps {
+  data: any;
+  dataLabel: string;
+  minHeight?: string;
+  maxHeight?: string;
+}
 
 export function DataGraph({
-    data,
-    dataLabel
-}) {
+  data,
+  dataLabel,
+  maxHeight,
+  minHeight,
+}: DataGraphProps) {
+  const chartConfig = {
+    count: {
+      label: dataLabel,
+      color: '#2563eb',
+    },
+    date: {
+      label: 'Date',
+      color: '#000',
+    },
+  };
 
-    const chartConfig = {
-        count: {
-            label: dataLabel,
-            color: "#2563eb",
-        },
-        date: {
-            label: "Date",
-            color: "#000",
-        }
-    };
-
-    return <ChartContainer config={chartConfig} className='min-h-[400px] mb-10'>
-        <BarChart accessibilityLayer data={data}>
-            <CartesianGrid vertical={false} />
-            <XAxis
-                dataKey="date"
-                tickLine={true}
-                tickMargin={2}
-                axisLine={true}
-                angle={-20}
-                textAnchor='end'
-                tickFormatter={(value) => value.slice(0, 10)}
-            />
-            <ChartTooltip
-                cursor={false}
-                content={<ChartTooltipContent />}
-            />
-            <Bar dataKey="count" fill="var(--color-desktop)" radius={8} />
-        </BarChart>
-    </ChartContainer>
+  return (
+    <StyledChartContainer
+      config={chartConfig}
+      $maxHeight={maxHeight}
+      $minHeight={minHeight}
+    >
+      <BarChart accessibilityLayer data={data}>
+        <CartesianGrid vertical={false} />
+        <XAxis
+          dataKey="date"
+          tickLine={true}
+          tickMargin={2}
+          axisLine={true}
+          angle={-20}
+          textAnchor="end"
+          tickFormatter={value => value.slice(0, 10)}
+        />
+        <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+        <Bar dataKey="count" fill="var(--color-desktop)" radius={8} />
+      </BarChart>
+    </StyledChartContainer>
+  );
 }
 
 export default DataGraph;

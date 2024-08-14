@@ -1,6 +1,5 @@
 import {
   Button,
-  ButtonAppearance,
   ButtonSizes,
   ButtonVariations,
   PlusIcon,
@@ -98,10 +97,7 @@ const UserPanel = () => {
     );
 
   return (
-    <Tabs
-      defaultValue={state?.openTab ?? USER_TABS[0].key}
-      className="w-full flex-1 flex flex-col overflow-hidden"
-    >
+    <Tabs defaultValue={state?.openTab ?? USER_TABS[0].key}>
       <TabsList className="grid w-full grid-cols-6">
         {USER_TABS.map(tab => (
           <TabsTrigger
@@ -115,10 +111,7 @@ const UserPanel = () => {
         ))}
       </TabsList>
       {USER_TABS.map(tab => (
-        <TabsContent
-          value={tab.key}
-          className="data-[state=active]:flex data-[state=active]:flex-1 overflow-y-auto"
-        >
+        <TabsContent value={tab.key}>
           <Card className={'border-none shadow-none flex flex-col w-full'}>
             <CardHeader className="flex-row items-center justify-between px-6 py-4 gap-4">
               <div>
