@@ -14,11 +14,11 @@ import { isEmpty } from 'lodash';
 import React, { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTheme } from 'styled-components';
-import useSWR from 'swr';
 
 import { markMessageAsRead, sendChatMessage } from '../api/index';
 import { formatTimeDistance } from '../helpers/date';
-import { dataFetcher, registerInput } from '../store';
+import useInfiniteScroll from '../hooks/useInfiniteScroll';
+import { registerInput } from '../store';
 import {
   ChatContainer,
   Message,
@@ -46,36 +46,37 @@ const UserChat = ({ user }) => {
     setError,
   } = useForm();
 
-  const {
-    data,
-    mutate,
-    error: fetchError,
-    isLoading,
-  } = useSWR(`/api/matching/users/${user.id}/messages/`, dataFetcher, {
-    keepPreviousData: true,
-  });
-
-  const messages = unreadOnly
-    ? data?.messages?.results.filter(message => !message.read)
-    : data?.messages?.results || data;
-
   const onError = error => {
     setError('message', {});
     setIsSubmitting(false);
   };
 
-  const sendNewMessage = data => {
+  const {
+    data,
+    results,
+    setResults,
+    loading: isLoading,
+    mutate,
+    scrollRef,
+    fetchError,
+  } = useInfiniteScroll({
+    url: `/api/matching/users/${user.id}/messages/`,
+  });
+
+  const messages = unreadOnly
+    ? results?.filter(message => !message.read)
+    : results;
+
+  const sendNewMessage = payload => {
     setIsSubmitting(true);
     sendChatMessage({
       userId: user.id,
-      message: data.newMessage,
+      message: payload.newMessage,
       onError,
       onSuccess: message => {
+        console.log({ message });
         reset();
-        mutate({
-          ...messages,
-          results: [...messages.results, message],
-        });
+        setResults([message, ...results]);
         setIsSubmitting(false);
       },
     });
@@ -89,7 +90,6 @@ const UserChat = ({ user }) => {
       onSuccess: () => mutate(),
     });
   };
-  console.log({ data, messages, user, isLoading, fetchError });
 
   return (
     <ChatContainer>
@@ -174,7 +174,7 @@ const UserChat = ({ user }) => {
                 </div>
               </Message>
             ))}
-            {/* <div ref={scrollRef} /> */}
+            <div ref={scrollRef} />
           </>
         )}
       </Messages>

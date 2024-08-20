@@ -112,7 +112,11 @@ const UserPanel = () => {
       </TabsList>
       {USER_TABS.map(tab => (
         <TabsContent value={tab.key}>
-          <Card className={'border-none shadow-none flex flex-col w-full'}>
+          <Card
+            className={`border-none shadow-none flex flex-col w-full ${
+              tab.key === 'chat' ? 'h-full' : ''
+            }`}
+          >
             <CardHeader className="flex-row items-center justify-between px-6 py-4 gap-4">
               <div>
                 <CardTitle>{`${

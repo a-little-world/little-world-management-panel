@@ -111,7 +111,7 @@ export const MessageText = styled(Text)<{ $isSelf: boolean }>`
 
 export const MessageBox = styled(TextArea)`
   height: 44px;
-  border-radius: 100px;
+  border-radius: ${({ theme }) => theme.radius.large};
   background: ${({ theme }) => theme.color.surface.secondary};
   padding: ${({ theme }) => theme.spacing.xsmall};
   line-height: normal;
