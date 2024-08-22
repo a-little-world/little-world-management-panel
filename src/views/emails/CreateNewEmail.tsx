@@ -190,17 +190,8 @@ const CreateNewEmail = () => {
         />
         <ToolTip
           trigger={
-            <Button
-              appearance={ButtonAppearance.Secondary}
-              // color={theme.color.surface.bold}
-            >
+            <Button appearance={ButtonAppearance.Secondary}>
               Dynamic Variables Info
-              {/* <InfoIcon
-                label={'vars info'}
-                labelId={'varsInfo'}
-                width={16}
-                height={16}
-              /> */}
             </Button>
           }
           text={`Available dynamic variables:

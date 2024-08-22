@@ -25,6 +25,7 @@ export const footer = {
   padding: '8px',
   paddingTop: '0px',
   margin: '0 auto',
+  maxWidth: '37.5em',
 };
 
 const bannerImage = {
@@ -42,47 +43,49 @@ const footerLink = {
 };
 
 const footerActions = {
-  padding: '24px 0px',
-  borderCollapse: 'separate',
-  tableLayout: 'fixed',
+  textAlign: 'center',
   width: '100%',
+  margin: '24px 0',
 };
 
 const footerText = {
   ...sentence,
   color: 'rgb(156 163 175)',
+  marginTop: '24px',
+  padding: 0,
+  textAlign: 'center',
+  width: '100%',
 };
 
 const socials = {
   width: '202px',
-  padding: '0px 0px 24px',
+  padding: '0px',
   borderCollapse: 'separate',
 };
 
-export const Footer = () => (
+export const Footer = ({ canUnsubscribe }: { canUnsubscribe?: boolean }) => (
   <Container style={footer}>
     <Section>
       <Img style={bannerImage} src={footerBannerImage} />
     </Section>
-    <Section>
-      <Row style={footerActions}>
-        <Column style={{ textAlign: 'right', width: '50%' }}>
-          <Link style={{ ...footerLink, marginRight: '8px' }}>Unsubscribe</Link>
-        </Column>
-        {/* <Column style={{ textAlign: 'center', width: '33%' }}>
+    <Text style={footerActions}>
+      {canUnsubscribe && (
+        <Link style={{ ...footerLink, marginRight: '8px' }}>Unsubscribe</Link>
+      )}
+      {/* <Column style={{ textAlign: 'center', width: '33%' }}>
           <Link style={{ ...footerLink, margin: '0 16px' }}>
             Manage Preferences
           </Link>
         </Column> */}
-        <Column style={{ width: '50%' }}>
-          <Link
-            style={{ ...footerLink, marginLeft: '8px' }}
-            href="https://home.little-world.com/kontakt"
-          >
-            Kontakt
-          </Link>
-        </Column>
-      </Row>
+      ・
+      <Link
+        style={{ ...footerLink, marginLeft: canUnsubscribe ? '8px' : '0' }}
+        href="https://home.little-world.com/kontakt"
+      >
+        Kontakt
+      </Link>
+    </Text>
+    <Section>
       <Row style={socials}>
         <Column style={{ width: '32px' }}>
           <Link

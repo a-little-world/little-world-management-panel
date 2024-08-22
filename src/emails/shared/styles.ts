@@ -1,9 +1,12 @@
 export const body = {
   backgroundColor: '#fafbfb',
+  padding: '0',
 };
 
 export const header = {
   backgroundColor: '#fafbfb',
+  msoHeightLineRule: 'exactly',
+  margin: 0,
 };
 
 export const contentContainer = {
@@ -17,7 +20,7 @@ export const contentContainer = {
 export const content = {
   borderCollapse: 'separate',
   background: '#ffffff',
-  padding: '32px 32px 56px',
+  padding: '32px 32px 40px',
   borderRadius: '32px 32px 0 0',
 };
 
@@ -33,6 +36,9 @@ export const title = {
 
 export const logo = {
   margin: '20px auto',
+  width: '144px',
+  height: '40.35px',
+  maxWidth: '144px',
 };
 
 export const illustration = {
@@ -58,7 +64,7 @@ export const button = {
   width: 'auto',
   fontSize: '14px',
   padding: '14px 16px',
-  margin: '32px auto',
+  margin: '0 auto 24px',
   lineHeight: '1.5',
 };
 
