@@ -39,6 +39,7 @@ export const OptionsContainer = styled.div`
   border-radius: ${({ theme }) => theme.radius.xxsmall};
   gap: ${({ theme }) => theme.spacing.small};
   width: 100%;
+  overflow: scroll;
 
   @media (min-width: ${({ theme }) => theme.breakpoints.medium}) {
     max-width: 400px;

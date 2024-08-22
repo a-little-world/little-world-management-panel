@@ -7,6 +7,7 @@ import {
   TextTypes,
 } from '@a-little-world/little-world-design-system';
 import { MessageTypes } from '@a-little-world/little-world-design-system/dist/esm/components/StatusMessage/StatusMessage';
+import { isNumber } from 'lodash';
 import React from 'react';
 import styled from 'styled-components';
 import useSWR from 'swr';
@@ -73,6 +74,12 @@ const Bucket = styled.li`
   flex-direction: column;
 `;
 
+const SubBucket = styled.li`
+  gap: ${({ theme }) => theme.spacing.xxsmall};
+  display: flex;
+  align-items: center;
+`;
+
 const StatsGrouping = styled.ul`
   display: flex;
   gap: ${({ theme }) => theme.spacing.small};
@@ -100,7 +107,7 @@ const StyledChevron = styled(ChevronRightIcon)`
 `;
 
 const LoadingSpinner = React.forwardRef((props, ref) => {
-  const { className = '', ...rest } = props;
+  const { className = '', inline, ...rest } = props;
   const size = '1em';
   return (
     <svg
@@ -115,28 +122,51 @@ const LoadingSpinner = React.forwardRef((props, ref) => {
       strokeLinecap="round"
       strokeLinejoin="round"
       className={cn('animate-spin', className)}
+      style={{ display: inline ? 'inline-flex' : 'block' }}
     >
       <path d="M21 12a9 9 0 1 1-6.219-8.56" />
     </svg>
   );
 });
 
+const Count = ({ count, label }) => (
+  <>
+    {isNumber(count) ? (
+      <Text tag="span" bold={!!label}>
+        {label ? `${label}: ${count}` : `(${count})`}
+      </Text>
+    ) : (
+      <LoadingSpinner inline />
+    )}
+  </>
+);
+
 export function HoverableLiveListDescription({
   title,
   description,
   linkTo,
-  count = -1,
+  count,
   showCount = true,
 }) {
   return (
     <HoverCard>
-      <HoverCardTrigger className="flex flex-row w-fit">
-        <Link to={linkTo} className={'flex flex-row text-nowrap'}>
-          {title}
+      <HoverCardTrigger asChild>
+        <Link to={linkTo} className="flex ">
+          <>
+            <span>{title}</span>
+            {showCount && (
+              <>
+                {' '}
+                <Count count={count} />
+              </>
+            )}
+          </>
         </Link>
-        {/* {showCount && <>{count === -1 ? <LoadingSpinner /> : count}</>},{' '} */}
       </HoverCardTrigger>
-      <HoverCardContent>{description}</HoverCardContent>
+      <HoverCardContent>
+        <Text>{description}</Text>
+        <Count count={count} label={'Current users'} />
+      </HoverCardContent>
     </HoverCard>
   );
 }
@@ -169,18 +199,19 @@ export function DynamicBuckets({
                 <Bucket key={bucket.id}>
                   <Text bold>{`${index + 1} ${bucket.title}:`}</Text>
                   {bucket.sub_buckets.map(sub_bucket => {
-                    const count =
-                      listCounts?.find(item => item.name === sub_bucket.id)
-                        ?.count ?? -1;
+                    const count = listCounts?.find(
+                      item => item.name === sub_bucket.id,
+                    )?.count;
                     return (
-                      <>
+                      <SubBucket>
+                        •
                         <HoverableLiveListDescription
-                          title={`• ${sub_bucket.title}`}
+                          title={`${sub_bucket.title}`}
                           description={sub_bucket.description}
                           linkTo={`${bucketLink}=${sub_bucket.id}`}
                           count={count}
                         />
-                      </>
+                      </SubBucket>
                     );
                   })}
                 </Bucket>
@@ -319,8 +350,6 @@ export function MatchUserJourneyOverview() {
           matchJourneyListCounts[i];
     }
   }
-
-  console.log({ extraCounts });
 
   return (
     <Container>

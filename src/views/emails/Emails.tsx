@@ -59,6 +59,10 @@ const EMAIL_GROUPING_CSS = css`
   }
 `;
 
+const DynamicEmails = styled.div`
+  ${EMAIL_GROUPING_CSS}
+`;
+
 const GROUPED_TEMPLATES = {
   Automated: map(automatedEmails),
   Marketing: map(marketingEmails),
@@ -170,7 +174,11 @@ const Emails = () => {
           return {
             header,
             content: item.map(template => (
-              <Template key={template.id} to={template.id}>
+              <Template
+                key={template.id}
+                to={template.id}
+                textDecoration={false}
+              >
                 <Text>{template.label}</Text>
               </Template>
             )),
@@ -183,6 +191,7 @@ const Emails = () => {
           buttonSize={ButtonSizes.Small}
           buttonAppearance={ButtonAppearance.Primary}
           to={CREATE_NEW_EMAIL_ROUTE}
+          style={{ maxWidth: '200px' }}
         >
           Create New
         </Link>
@@ -191,17 +200,20 @@ const Emails = () => {
         These are automated backend emails that must be updated in the backend.
         You may edit all of them in emails.json.
       </Text>
-      {dynamicEmails?.results.map(template => (
-        <Template
-          key={template.template_name}
-          to={SEND_DYNAMIC_EMAIL_ROUTE.replace(
-            ':emailTemplateName',
-            template.template_name,
-          )}
-        >
-          <Text>{template.template_name}</Text>
-        </Template>
-      ))}
+      <DynamicEmails>
+        {dynamicEmails?.results.map(template => (
+          <Template
+            key={template.template_name}
+            to={SEND_DYNAMIC_EMAIL_ROUTE.replace(
+              ':emailTemplateName',
+              template.template_name,
+            )}
+            textDecoration={false}
+          >
+            <Text>{template.template_name}</Text>
+          </Template>
+        ))}
+      </DynamicEmails>
     </Container>
   );
 };

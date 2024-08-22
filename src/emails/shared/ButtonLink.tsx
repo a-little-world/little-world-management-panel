@@ -3,9 +3,11 @@ import React from 'react';
 
 import { button } from './styles';
 
-const ButtonLink: React.FC = ({ children }) => (
+const ButtonLink: React.FC = ({ href, children }) => (
   <div style={{ width: '100%', textAlign: 'center' }}>
-    <Button style={button}>{children}</Button>
+    <Button href={href} style={button} target="_blank">
+      {children}
+    </Button>
   </div>
 );
 

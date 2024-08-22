@@ -94,6 +94,7 @@ const ChevronUpIcon = styled(ChevronDownIcon)`
 
 const EmailBlock = ({
   centred,
+  href,
   text,
   type,
   imgProps,
@@ -159,7 +160,7 @@ const EmailBlock = ({
         key={text}
         defaultText={text}
         Component={ButtonLink}
-        componentProps={{ style: button, target: '_blank' }}
+        componentProps={{ style: button, href }}
       />
     );
 
@@ -169,7 +170,7 @@ const EmailBlock = ({
         key={text}
         defaultText={text}
         Component={Link}
-        componentProps={{ style: link }}
+        componentProps={{ style: link, target: '_blank', href }}
       />
     );
 

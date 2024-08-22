@@ -1,4 +1,5 @@
 import {
+  ArrowLeftIcon,
   Button,
   ButtonAppearance,
   ButtonSizes,
@@ -7,6 +8,7 @@ import {
   TextTypes,
 } from '@a-little-world/little-world-design-system';
 import { render as renderEmail } from '@react-email/render';
+import { some } from 'lodash';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
@@ -63,6 +65,7 @@ const Email = () => {
     );
     const html = await response.text();
     setBackendPreviewHTML(html);
+    setShowBackendPreview(true);
   };
 
   const onSendEmail = async () => {
@@ -88,6 +91,9 @@ const Email = () => {
     a.download = `${emailTemplateName}.html`;
     a.click();
   };
+
+  console.log({ watch: watch() });
+  const cannotPreview = some(watch(), val => !val);
 
   return (
     <Container>
@@ -136,8 +142,13 @@ const Email = () => {
               </>
             ))}
             <Toolbar>
-              <Button size={ButtonSizes.Small} onClick={fetchBackendPreview}>
-                Update Backend Email Preview
+              <Button
+                appearance={ButtonAppearance.Secondary}
+                size={ButtonSizes.Small}
+                onClick={fetchBackendPreview}
+                disabled={cannotPreview}
+              >
+                Preview Email
               </Button>
               <Button size={ButtonSizes.Small} onClick={onSendEmail}>
                 Send Email
@@ -194,16 +205,16 @@ const Email = () => {
           </OptionsContainer>
           <TemplateWrapper>
             <div className="relative">
-              <div className="absolute top-0 right-0">
-                <Button
-                  appearance={ButtonAppearance.Secondary}
-                  size={ButtonSizes.Small}
-                  onClick={() => setShowBackendPreview(!showBackendPreview)}
-                >
-                  {showBackendPreview
-                    ? 'Back to Email Builder'
-                    : 'Show Backend Preview'}
-                </Button>
+              <div className="absolute top-2 left-2">
+                {showBackendPreview && (
+                  <Button
+                    appearance={ButtonAppearance.Secondary}
+                    size={ButtonSizes.Small}
+                    onClick={() => setShowBackendPreview(!showBackendPreview)}
+                  >
+                    <ArrowLeftIcon /> Back to Email Builder
+                  </Button>
+                )}
               </div>
             </div>
             {showBackendPreview && (
