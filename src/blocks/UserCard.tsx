@@ -1,6 +1,7 @@
 import {
   Button,
   ButtonAppearance,
+  ButtonSizes,
   ButtonVariations,
   Link,
   Tags,
@@ -240,6 +241,7 @@ export const UserCard = ({
             href={`https://little-world.com/app/profile/${user.hash}`}
             target="_blank"
             buttonAppearance={ButtonAppearance.Secondary}
+            buttonSize={ButtonSizes.Stretch}
           >
             View App Profile
           </Link>

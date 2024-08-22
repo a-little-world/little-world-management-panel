@@ -1,6 +1,7 @@
 import {
   Button,
   ButtonAppearance,
+  ButtonSizes,
   Link,
 } from '@a-little-world/little-world-design-system';
 import React from 'react';
@@ -112,6 +113,7 @@ const MatchCard = ({ match }: { match: any }) => {
       <div className="flex gap-2">
         <Link
           buttonAppearance={ButtonAppearance.Secondary}
+          buttonSize={ButtonSizes.Stretch}
           to={`/user/${match.partner.id}`}
         >
           View profile
