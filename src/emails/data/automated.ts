@@ -1,3 +1,4 @@
+import KeyImage from '../../assets/key.png';
 import { ContentTypes } from '../Builder';
 import { BackendVars } from '../templates/backendVars';
 import automatedText from './text/automated.json';
@@ -257,7 +258,7 @@ const automatedEmails = {
       {
         type: ContentTypes.Illustration,
         imgProps: {
-          src: 'https://little-world-production-bucket.s3.eu-central-1.amazonaws.com/static/img/email/icon_key.png',
+          src: KeyImage,
           width: '72',
           alt: 'Key picture',
         },

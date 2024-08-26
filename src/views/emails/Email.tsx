@@ -92,7 +92,6 @@ const Email = () => {
     a.click();
   };
 
-  console.log({ watch: watch() });
   const cannotPreview = some(watch(), val => !val);
 
   return (
@@ -102,7 +101,7 @@ const Email = () => {
       </PageHeading>
       {email ? (
         <Content>
-          <OptionsContainer onSubmit={() => { }}>
+          <OptionsContainer onSubmit={() => {}}>
             <Text type={TextTypes.Body3} bold>
               Email Template Parameters
             </Text>
@@ -153,10 +152,13 @@ const Email = () => {
               <Button size={ButtonSizes.Small} onClick={onSendEmail}>
                 Send Email
               </Button>
-              <Button size={ButtonSizes.Small} onClick={() => {
-                const url = `/api/matching/emails/templates/${emailTemplateName}/test/`;
-                window.open(url, '_blank');
-              }}>
+              <Button
+                size={ButtonSizes.Small}
+                onClick={() => {
+                  const url = `/api/matching/emails/templates/${emailTemplateName}/test/`;
+                  window.open(url, '_blank');
+                }}
+              >
                 View Rendered Example with placeholders
               </Button>
             </Toolbar>

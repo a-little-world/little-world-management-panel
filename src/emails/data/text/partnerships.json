@@ -1,6 +1,6 @@
 {
-  "babbel-subscription-winner.preview": "Herzlichen Glückwunsch! Du hast ein 6-monatiges Babbel-Abonnement gewonnen",
-  "babbel-subscription-winner.subject": "",
+  "babbel-subscription-winner.preview": "Alle tollen Funktionen und Inhalte von Babbel kannst du jetzt 6 Monate lang kostenlos nutzen.",
+  "babbel-subscription-winner.subject": "Herzlichen Glückwunsch! Du hast ein 6-monatiges Babbel-Abonnement gewonnen",
   "babbel-subscription-winner.block-1": "Herzlichen Glückwunsch! Du hast ein 6-monatiges Babbel-Abonnement gewonnen",
   "babbel-subscription-winner.block-2": "{{ first_name }}, du hast einen Babbel-Gutschein gewonnen!",
   "babbel-subscription-winner.block-3": "Alle tollen Funktionen und Inhalte von Babbel kannst du jetzt 6 Monate lang kostenlos nutzen.",
@@ -9,7 +9,7 @@
   "babbel-subscription-winner.block-6": "Wenn du Schwierigkeiten mit der Validierung deines Codes hast, melde dich bei uns und wir helfen dir weiter",
 
   "babbel-precode-survey.preview": "Verbessere dein Deutsch mit einem kostenloser 6-monatiger Babbel Code",
-  "babbel-precode-survey.subject": "",
+  "babbel-precode-survey.subject": "Kostenloser 6-monatiger Babbel Code - Verbessere dein Deutsch!",
   "babbel-precode-survey.block-1": "Verbessere dein Deutsch mit einem kostenloser 6-monatiger Babbel Code",
   "babbel-precode-survey.block-2": "Hallo {{ first_name }},",
   "babbel-precode-survey.block-3": "Ein Schwerpunkt bei Little World ist es, dir zu helfen, selbstbewusster Deutsch zu sprechen, und wir sind immer auf der Suche nach Möglichkeiten, das zu erreichen... Nun, wir haben uns mit Babbel, einer der führenden Sprach-Apps, zusammengetan und können unseren Nutzern eine Reihe von Gutscheinen kostenlos zur Verfügung stellen.",
