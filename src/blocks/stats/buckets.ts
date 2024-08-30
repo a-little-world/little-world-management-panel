@@ -141,6 +141,12 @@ export const matchJourneyBuckets = [
     title: 'Pre-Matching',
     sub_buckets: [
       {
+        id: 'match_journey_v2__proposed_matches',
+        title: 'Proposed Matches',
+        description:
+          'Matches that are proposed to users based on their preferences.',
+      },
+      {
         id: 'match_journey_v2__unviewed',
         title: 'Unviewed',
         description:
@@ -230,6 +236,12 @@ export const matchJourneyBuckets = [
         description:
           'Matches older than the desired match duration where users interacted but their interaction stopped before the desired duration.',
       },
+      {
+        id: 'match_journey_v2__expired_proposals',
+        title: 'Expired Proposals',
+        description:
+          'Matches that are proposed but not confirmed within a specified number of days.',
+      }
     ],
   },
 ];
