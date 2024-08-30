@@ -1,4 +1,8 @@
 import {
+  BarChartCounts
+} from "../BarChartCounts"
+
+import {
   Card,
   ChevronRightIcon,
   Link,
@@ -272,13 +276,11 @@ const MatchingOverview = ({ extraCounts, extraMatchCounts }) => (
           <KeyStat stat={extraCounts['needs_matching']?.count} />
           <StatDescription>
             {`No. of users that need matching.
-            <bold>${
-              (extraCounts['needs_matching']?.count ?? 0) -
+            <bold>${(extraCounts['needs_matching']?.count ?? 0) -
               (extraCounts['needs_matching_volunteers']?.count ?? 0)
-            } Learners</bold>
-            <bold>${
-              extraCounts['needs_matching_volunteers']?.count ?? 0
-            } Volunteers</bold>`}
+              } Learners</bold>
+            <bold>${extraCounts['needs_matching_volunteers']?.count ?? 0
+              } Volunteers</bold>`}
           </StatDescription>
         </Stat>
         <Stat>
@@ -304,10 +306,67 @@ const MatchingOverview = ({ extraCounts, extraMatchCounts }) => (
   </Section>
 );
 
+export function LossStatisticSignUp({
+  userListCounts
+}) {
+  if (!userListCounts) return <LoadingSpinner />;
+
+  const allUserCount = userListCounts.find((item) => item.name === 'all')?.count;
+
+  const signupLossCounts = [
+    'journey_v2__user_created',
+    'journey_v2__email_verified',
+    'journey_v2__user_form_completed',
+    'journey_v2__booked_onboarding_call',
+    'journey_v2__first_search'
+  ]
+
+  const colors = [
+    '#3498db', // chrome
+    '#f1c40f', // safari
+    '#e74c3c', // firefox
+    '#3498db', // chrome
+    '#3498db', // chrome
+  ]
+
+  const chartData = signupLossCounts.map((bucket, index) => {
+    const count = userListCounts.find((item) => item.name === bucket)?.count;
+    return { tag: bucket, count, fill: colors[index] };
+  })
+
+  const totalCounts = chartData.reduce((acc, curr) => acc + curr.count, 0);
+  const becameActiveUsers = allUserCount - totalCounts;
+
+  chartData.push({ tag: 'became_active', count: becameActiveUsers, fill: '#2ecc71' });
+
+  let chartConfig = {
+    count: {
+      label: 'Count'
+    },
+  }
+
+  chartData.forEach((dp, i) => {
+    chartConfig[dp.tag] = {
+      label: dp.tag,
+      color: dp.fill
+    }
+  })
+
+  console.log(chartConfig)
+
+  return <BarChartCounts
+    title="User Sign-Up Loss Statistics"
+    description="This is a bar chart showing the loss of users in the sign-up process"
+    chartData={chartData}
+    chartConfig={chartConfig}
+  />;
+}
+
+
 export function MatchUserJourneyOverview() {
   const allBuckets = userJourneyBuckets.flatMap(bucket => bucket.sub_buckets);
   const allBucketIds = allBuckets.map(bucket => bucket.id);
-  const extraBucketIds = ['needs_matching', 'needs_matching_volunteers'];
+  const extraBucketIds = ['needs_matching', 'needs_matching_volunteers', 'all'];
 
   const { data: userListCounts } = useSWR(
     '/api/matching/users/statistics/user_journey_buckets/',
@@ -383,6 +442,9 @@ export function MatchUserJourneyOverview() {
           description="We currently define our match journey in the following buckets:"
         />
       </Sections>
+      <Section>
+        <LossStatisticSignUp userListCounts={userListCounts} />
+      </Section>
     </Container>
   );
 }
