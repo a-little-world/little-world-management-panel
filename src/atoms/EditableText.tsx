@@ -21,16 +21,18 @@ const EditableText: React.FC = ({
   const [text, setText] = useState<string>(defaultText);
 
   const handleDoubleClick = () => {
+    console.log('onDoubleClick');
     setIsEditing(true);
   };
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     setText(event.target.value);
-    updateText(event.target.value);
   };
 
   const handleBlur = (event: FocusEvent<HTMLInputElement>) => {
+    console.log('handleBlur');
     setIsEditing(false);
+    updateText(event.target.value);
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {

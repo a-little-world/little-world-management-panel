@@ -2,10 +2,13 @@ import {
   ButtonVariations,
   ChevronDownIcon,
   Button as DSButton,
+  Modal,
   PencilIcon,
+  TextInput,
   TrashIcon,
 } from '@a-little-world/little-world-design-system';
 import { Heading, Img, Link, Text } from '@react-email/components';
+import { LinkIcon } from 'lucide-react';
 import React, { useCallback, useState } from 'react';
 import styled from 'styled-components';
 
@@ -28,11 +31,7 @@ export enum ContentTypes {
   Title = 'title',
   Paragraph = 'paragraph',
   Sentence = 'sentence',
-  //   List = 'list',
   Code = 'code',
-  //   Subtitle = 'subtitle',
-  //   Heading = 'heading',
-  //   Emphasize = 'emphasize',
   Illustration = 'illustration',
   Button = 'button',
   Link = 'link',
@@ -57,6 +56,8 @@ type Props = {
   preview?: string;
   deleteBlock?: (index: number) => void;
   moveBlock?: (index1: number, index2: number) => void;
+  updateText?: ({ index, text }: { index: number; text: string }) => void;
+  openHrefEditor?: (index: number) => void;
 };
 
 const EditActions = styled.div`
@@ -92,21 +93,16 @@ const ChevronUpIcon = styled(ChevronDownIcon)`
   transform: rotate(180deg);
 `;
 
+export const BlocksWithLink = [ContentTypes.Button, ContentTypes.Link];
+
 const EmailBlock = ({
   centred,
   href,
   text,
   type,
   imgProps,
-  listItems,
+  updateText,
 }: BlockDataType) => {
-  // if (type === ContentTypes.Heading)
-  //   return (
-  //     <Text style={heading} key={text}>
-  //       {text}
-  //     </Text>
-  //   );
-
   if (type === ContentTypes.Title)
     return (
       <EditableText
@@ -114,6 +110,7 @@ const EmailBlock = ({
         defaultText={text}
         Component={Heading}
         componentProps={{ style: title }}
+        updateText={updateText}
       />
     );
 
@@ -122,23 +119,18 @@ const EmailBlock = ({
       <EditableText
         key={text}
         defaultText={text}
+        updateText={updateText}
         Component={'code'}
         componentProps={{ style: codeBlock }}
       />
     );
-
-  // if (type === ContentTypes.Subtitle)
-  //   return (
-  //     <Text style={subtitle} key={text}>
-  //       {text}
-  //     </Text>
-  //   );
 
   if (type === ContentTypes.Paragraph)
     return (
       <EditableText
         key={text}
         defaultText={text}
+        updateText={updateText}
         Component={Text}
         componentProps={{ style: centred ? centredParagraph : paragraph }}
       />
@@ -149,6 +141,7 @@ const EmailBlock = ({
       <EditableText
         key={text}
         defaultText={text}
+        updateText={updateText}
         Component={Text}
         componentProps={{ style: centred ? centredSentence : sentence }}
       />
@@ -169,6 +162,7 @@ const EmailBlock = ({
       <EditableText
         key={text}
         defaultText={text}
+        updateText={updateText}
         Component={Link}
         componentProps={{ style: link, target: '_blank', href }}
       />
@@ -180,24 +174,6 @@ const EmailBlock = ({
         {text}
       </Img>
     );
-
-  // if (type === ContentTypes.List)
-  //   return (
-  //     <List key={listItems?.[0]}>
-  //       {listItems?.map(item => (
-  //         <ListItem key={item} tag="li">
-  //           {item}
-  //         </ListItem>
-  //       ))}
-  //     </List>
-  //   );
-
-  // if (type === ContentTypes.Emphasize)
-  //   return (
-  //     <Text key={text} bold>
-  //       {text}
-  //     </Text>
-  //   );
 };
 
 const EditableEmailBlock: React.FC = ({
@@ -206,6 +182,8 @@ const EditableEmailBlock: React.FC = ({
   moveBlock,
   deleteBlock,
   totalBlocks,
+  updateText,
+  openHrefEditor,
 }) => {
   const [isVisible, setIsVisible] = useState<boolean>(false);
 
@@ -213,15 +191,16 @@ const EditableEmailBlock: React.FC = ({
   const hideComponent = useCallback(() => setIsVisible(false), []);
 
   return (
-    <EditWrapper
-      onMouseEnter={showComponent}
-      onMouseLeave={hideComponent}
-      onTouchStart={showComponent}
-      onTouchEnd={hideComponent}
-    >
-      {isVisible && (
-        <EditActions>
-          <DSButton
+    <>
+      <EditWrapper
+        onMouseEnter={showComponent}
+        onMouseLeave={hideComponent}
+        onTouchStart={showComponent}
+        onTouchEnd={hideComponent}
+      >
+        {isVisible && (
+          <EditActions>
+            {/* <DSButton
             variation={ButtonVariations.Icon}
             onClick={() => deleteBlock(index)}
           >
@@ -231,47 +210,56 @@ const EditableEmailBlock: React.FC = ({
               width={16}
               height={16}
             />
-          </DSButton>
-          <DSButton
-            variation={ButtonVariations.Icon}
-            onClick={() => deleteBlock(index)}
-          >
-            <TrashIcon
-              label="delete block"
-              labelId="deleteBlockIcon"
-              width={16}
-              height={16}
-            />
-          </DSButton>
-          <DSButton
-            variation={ButtonVariations.Icon}
-            onClick={() => moveBlock(index, index + 1)}
-            disabled={index === totalBlocks - 1}
-          >
-            <ChevronDownIcon
-              label="shift block down"
-              labelId="moveBlockDownIcon"
-              width={16}
-              height={16}
-            />
-          </DSButton>
-          <DSButton
-            variation={ButtonVariations.Icon}
-            onClick={() => moveBlock(index, index - 1)}
-            disabled={Boolean(!index)}
-          >
-            <ChevronUpIcon
-              label="shift block up"
-              labelId="moveBlockUpIcon"
-              width={16}
-              height={16}
-            />
-          </DSButton>
-        </EditActions>
-      )}
+          </DSButton> */}
+            {BlocksWithLink.includes(blockData.type) && (
+              <DSButton
+                variation={ButtonVariations.Icon}
+                onClick={openHrefEditor}
+              >
+                <LinkIcon height={16} width={16} />
+              </DSButton>
+            )}
+            <DSButton
+              variation={ButtonVariations.Icon}
+              onClick={() => deleteBlock(index)}
+            >
+              <TrashIcon
+                label="delete block"
+                labelId="deleteBlockIcon"
+                width={16}
+                height={16}
+              />
+            </DSButton>
+            <DSButton
+              variation={ButtonVariations.Icon}
+              onClick={() => moveBlock(index, index + 1)}
+              disabled={index === totalBlocks - 1}
+            >
+              <ChevronDownIcon
+                label="shift block down"
+                labelId="moveBlockDownIcon"
+                width={16}
+                height={16}
+              />
+            </DSButton>
+            <DSButton
+              variation={ButtonVariations.Icon}
+              onClick={() => moveBlock(index, index - 1)}
+              disabled={Boolean(!index)}
+            >
+              <ChevronUpIcon
+                label="shift block up"
+                labelId="moveBlockUpIcon"
+                width={16}
+                height={16}
+              />
+            </DSButton>
+          </EditActions>
+        )}
 
-      <EmailBlock {...blockData} />
-    </EditWrapper>
+        <EmailBlock {...blockData} updateText={updateText} />
+      </EditWrapper>
+    </>
   );
 };
 
@@ -281,6 +269,8 @@ const EmailBuilder = ({
   editable,
   deleteBlock,
   moveBlock,
+  updateText,
+  openHrefEditor,
 }: Props) => {
   return (
     <EmailLayout previewText={preview}>
@@ -293,6 +283,8 @@ const EmailBuilder = ({
             moveBlock={moveBlock}
             deleteBlock={deleteBlock}
             totalBlocks={content.length}
+            updateText={(text: string) => updateText({ text, index })}
+            openHrefEditor={() => openHrefEditor(index)}
           />
         ) : (
           <EmailBlock key={index + blockData.type} {...blockData} />

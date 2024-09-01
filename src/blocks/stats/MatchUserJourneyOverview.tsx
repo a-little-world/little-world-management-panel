@@ -21,14 +21,11 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from '../../atoms/HoverCard';
-import { cn } from '../../lib/utils';
+import LoadingSpinner from '../../atoms/LoadingSpinner';
 import { cratePostFetcher } from '../../store';
 import DataGraph from '../DataGraph';
 import { graphEndpoints } from './RangedDataGraph';
 import { matchJourneyBuckets, userJourneyBuckets } from './buckets';
-
-const spinnerVariants =
-  'w-[10px] h-[10px] border-4 border-t-4 border-gray-200 border-t-gray-600 rounded-full animate-spin';
 
 const SectionTitle = styled(Text)`
   font-weight: bold;
@@ -109,29 +106,6 @@ const Number = styled(Text)`
 const StyledChevron = styled(ChevronRightIcon)`
   color: ${({ theme }) => theme.color.text.accent};
 `;
-
-const LoadingSpinner = React.forwardRef((props, ref) => {
-  const { className = '', inline, ...rest } = props;
-  const size = '1em';
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width={size}
-      height={size}
-      {...props}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={cn('animate-spin', className)}
-      style={{ display: inline ? 'inline-flex' : 'block' }}
-    >
-      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-    </svg>
-  );
-});
 
 const Count = ({ count, label }) => (
   <>
