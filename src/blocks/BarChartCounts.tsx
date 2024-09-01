@@ -32,7 +32,8 @@ export function BarChartCounts({
             label: 'Count Name',
             color: 'hsl(var(--chart-1))'
         }
-    }
+    },
+    extraHeader = null
 }) {
 
     const totalVisitors = chartData.reduce((acc, { count }) => acc + count, 0)
@@ -45,6 +46,7 @@ export function BarChartCounts({
             <CardHeader className="items-center pb-0">
                 <CardTitle>{title}</CardTitle>
                 <CardDescription>{description}</CardDescription>
+                {extraHeader}
             </CardHeader>
             <CardContent className="flex-1 pb-0">
                 <ChartContainer
