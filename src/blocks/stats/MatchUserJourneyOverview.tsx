@@ -306,12 +306,7 @@ const MatchingOverview = ({ extraCounts, extraMatchCounts }) => (
   </Section>
 );
 
-export function LossStatisticSignUp({
-  userListCounts
-}) {
-  if (!userListCounts) return <LoadingSpinner />;
-
-  const allUserCount = userListCounts.find((item) => item.name === 'all')?.count;
+export function LossStatisticSignUp() {
 
   const signupLossCounts = [
     'journey_v2__user_created',
@@ -320,6 +315,17 @@ export function LossStatisticSignUp({
     'journey_v2__booked_onboarding_call',
     'journey_v2__first_search'
   ]
+
+  const { data: allUserCount } = useSWR(
+    '/api/matching/users/statistics/user_journey_buckets/',
+    cratePostFetcher({
+      selected_filters: signupLossCounts
+    }),
+    {},
+  );
+
+  if (!allUserCount) return <LoadingSpinner />;
+
 
   const colors = [
     '#3498db', // chrome
@@ -330,7 +336,7 @@ export function LossStatisticSignUp({
   ]
 
   const chartData = signupLossCounts.map((bucket, index) => {
-    const count = userListCounts.find((item) => item.name === bucket)?.count;
+    const count = allUserCount[bucket]
     return { tag: bucket, count, fill: colors[index] };
   })
 
@@ -352,7 +358,7 @@ export function LossStatisticSignUp({
     }
   })
 
-  console.log(chartConfig)
+  console.log("CHARTDATA", chartConfig)
 
   return <BarChartCounts
     title="User Sign-Up Loss Statistics"
@@ -443,7 +449,7 @@ export function MatchUserJourneyOverview() {
         />
       </Sections>
       <Section>
-        <LossStatisticSignUp userListCounts={userListCounts} />
+        <LossStatisticSignUp />
       </Section>
     </Container>
   );
