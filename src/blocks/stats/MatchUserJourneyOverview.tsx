@@ -114,7 +114,7 @@ const Count = ({ count, label }) => (
         {label ? `${label}: ${count}` : `(${count})`}
       </Text>
     ) : (
-      <LoadingSpinner inline />
+      <LoadingSpinner inline="true" />
     )}
   </>
 );
@@ -280,33 +280,40 @@ const MatchingOverview = ({ extraCounts, extraMatchCounts }) => (
   </Section>
 );
 
-export function LossStatisticSignUp() {
+export function LossStatisticSignUp({
+  userListCounts,
+}) {
 
   const signupLossCounts = [
     'journey_v2__user_created',
     'journey_v2__email_verified',
     'journey_v2__user_form_completed',
     'journey_v2__booked_onboarding_call',
-    'journey_v2__first_search'
+    'journey_v2__first_search',
   ]
 
-  const { data: allUserCount } = useSWR(
-    '/api/matching/users/statistics/user_journey_buckets/',
-    cratePostFetcher({
-      selected_filters: signupLossCounts
-    }),
-    {},
-  );
+  const allUserCount = userListCounts?.reduce((acc, curr) => {
+    acc[curr.name] = curr.count;
+    return acc;
+  }, {});
 
-  if (!allUserCount) return <LoadingSpinner />;
+
+
+  if (!allUserCount || !userListCounts || typeof allUserCount !== 'object')
+    return <LoadingSpinner />;
+
+  console.log("ALLUSERCOUNT", allUserCount, userListCounts['all'])
 
 
   const colors = [
-    '#3498db', // chrome
-    '#f1c40f', // safari
-    '#e74c3c', // firefox
-    '#3498db', // chrome
-    '#3498db', // chrome
+    '#3498db',
+    '#f1c40f',
+    '#e74c3c',
+    '#3498db',
+    '#f1c40f',
+    '#e74c3c',
+    '#3498db',
+    '#f1c40f',
   ]
 
   const chartData = signupLossCounts.map((bucket, index) => {
@@ -315,7 +322,12 @@ export function LossStatisticSignUp() {
   })
 
   const totalCounts = chartData.reduce((acc, curr) => acc + curr.count, 0);
-  const becameActiveUsers = allUserCount - totalCounts;
+
+  const becameActiveUsers = totalCounts - allUserCount['journey_v2__first_search']
+  const totalVisitors = allUserCount['all']
+
+  // chat that becameActiveUsers is a number
+  if (!becameActiveUsers) return <LoadingSpinner />
 
   chartData.push({ tag: 'became_active', count: becameActiveUsers, fill: '#2ecc71' });
 
@@ -332,13 +344,22 @@ export function LossStatisticSignUp() {
     }
   })
 
-  console.log("CHARTDATA", chartConfig)
+  console.log("CHARTDATA", chartConfig, totalCounts)
+
+  const percentageUsersBecomeActive = (becameActiveUsers / totalVisitors) * 100;
+  const percentageUsersCompleFormButDontBookOnboarding = ((allUserCount['journey_v2__user_form_completed'] - allUserCount['journey_v2__booked_onboarding_call']) / totalVisitors) * 100;
+
+
+  const text1 = `Out of ${totalVisitors} users, ${becameActiveUsers} users became active users after signing up. This is ${percentageUsersBecomeActive.toFixed(2)}% of all users.`
+  const text2 = `Out of ${totalVisitors} users, ${allUserCount['journey_v2__user_form_completed'] - allUserCount['journey_v2__booked_onboarding_call']} users completed the form but did not book an onboarding call. This is ${percentageUsersCompleFormButDontBookOnboarding.toFixed(2)}% of all users.`
 
   return <BarChartCounts
     title="User Sign-Up Loss Statistics"
     description="This is a bar chart showing the loss of users in the sign-up process"
     chartData={chartData}
     chartConfig={chartConfig}
+    subtitle1={text1}
+    subtitle2={text2}
   />;
 }
 
@@ -423,7 +444,7 @@ export function MatchUserJourneyOverview() {
         />
       </Sections>
       <Section>
-        <LossStatisticSignUp />
+        <LossStatisticSignUp userListCounts={userListCounts} />
       </Section>
     </Container>
   );

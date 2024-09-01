@@ -34,9 +34,11 @@ export function BarChartCounts({
         }
     }
 }) {
-    const totalVisitors = React.useMemo(() => {
-        return chartData.reduce((acc, curr) => acc + curr.count, 0)
-    }, [])
+
+    const totalVisitors = chartData.reduce((acc, { count }) => acc + count, 0)
+
+    console.log("TOTAL VISITORS", totalVisitors, chartData)
+
 
     return (
         <Card className="flex flex-col">
