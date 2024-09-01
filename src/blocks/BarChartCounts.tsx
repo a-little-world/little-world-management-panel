@@ -21,6 +21,8 @@ import { fill } from "lodash"
 export function BarChartCounts({
     title = "Bar Chart - Counts",
     description = "This is a bar chart showing the counts of visitors for the last 6 months",
+    subtitle1 = "fill me 1",
+    subtitle2 = "fill me 2",
     chartData = [{ tag: 'count_name', count: 8, fill: 'var(--color-chrome)' }],
     chartConfig = {
         count: {
@@ -94,10 +96,10 @@ export function BarChartCounts({
             </CardContent>
             <CardFooter className="flex-col gap-2 text-sm">
                 <div className="flex items-center gap-2 font-medium leading-none">
-                    Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
+                    {subtitle1}
                 </div>
                 <div className="leading-none text-muted-foreground">
-                    Showing total visitors for the last 6 months
+                    {subtitle2}
                 </div>
             </CardFooter>
         </Card>
