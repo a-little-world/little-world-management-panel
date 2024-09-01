@@ -113,6 +113,37 @@ const swapArrayElements = ({
   return array;
 };
 
+const HrefEditor = ({ handleHrefUpdate, href, text }) => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
+  return (
+    <Card width={CardSizes.Small}>
+      <form onSubmit={handleSubmit(handleHrefUpdate)}>
+        <TextInput label={'Displayed Text'} value={text} readOnly />
+        <TextInput
+          key={href}
+          {...registerInput({
+            register,
+            name: 'url',
+            options: { required: 'Required' },
+          })}
+          id="edit_url"
+          label="Edit url"
+          error={errors?.url?.message}
+          placeholder={'url of link or button'}
+          defaultValue={href ?? null}
+        />
+        <Button type="submit" size={ButtonSizes.Stretch}>
+          Update Url
+        </Button>
+      </form>
+    </Card>
+  );
+};
+
 const CreateNewEmail = () => {
   const { emailTemplateName } = useParams();
   const [newEmail, setNewEmail] = useState([]);
@@ -127,10 +158,9 @@ const CreateNewEmail = () => {
 
   const {
     watch,
-    register,
-    handleSubmit,
-    formState: { errors },
-    setError,
+    register: registerTemplate,
+    handleSubmit: submitTemplate,
+    formState: { errors: errorsTemplate },
   } = useForm();
 
   const onSaveDynamicTemplate = () => {
@@ -171,6 +201,7 @@ const CreateNewEmail = () => {
   const handleHrefUpdate = data => {
     const dataCopy = [...newEmail];
     dataCopy[showHrefEditor].href = data.url;
+
     setNewEmail(dataCopy);
     setShowHrefEditor(null);
   };
@@ -208,7 +239,11 @@ const CreateNewEmail = () => {
   const onSendTemplate = () => {
     setEmailSenderOpen(true);
   };
-  console.log({ showHrefEditor });
+  console.log({
+    showHrefEditor,
+    poo: newEmail[showHrefEditor]?.href,
+    con: newEmail,
+  });
 
   return (
     <Container>
@@ -224,17 +259,17 @@ const CreateNewEmail = () => {
           placeholder="pick a template"
         />
         <ButtonsContainer>
-          <SaveTemplateForm onSubmit={handleSubmit(onSaveDynamicTemplate)}>
+          <SaveTemplateForm onSubmit={submitTemplate(onSaveDynamicTemplate)}>
             <TextInput
               id={'template_name'}
               {...registerInput({
-                register,
+                register: registerTemplate,
                 name: 'template_name',
                 options: { required: 'Required' },
               })}
               placeholder="Template Name"
               label="Template Name"
-              error={errors.template_name?.message}
+              error={errorsTemplate.template_name?.message}
             />
             <Button size={ButtonSizes.Small} type="submit">
               Save Template
@@ -300,31 +335,11 @@ const CreateNewEmail = () => {
         open={isNumber(showHrefEditor)}
         onClose={() => setShowHrefEditor(null)}
       >
-        <Card width={CardSizes.Small}>
-          <form onSubmit={handleHrefUpdate}>
-            <TextInput
-              label={'Displayed Text'}
-              value={newEmail[showHrefEditor]?.text}
-              readOnly
-            />
-            <TextInput
-              key={showHrefEditor}
-              {...registerInput({
-                register,
-                name: 'url',
-                options: { required: 'Required' },
-              })}
-              id="edit_url"
-              label="Edit url"
-              error={errors?.url?.message}
-              placeholder={'url of link or button'}
-              defaultValue={newEmail[showHrefEditor]?.href ?? null}
-            />
-            <Button type="submit" size={ButtonSizes.Stretch}>
-              Update Url
-            </Button>
-          </form>
-        </Card>
+        <HrefEditor
+          handleHrefUpdate={handleHrefUpdate}
+          href={newEmail?.[showHrefEditor]?.href}
+          text={newEmail?.[showHrefEditor]?.text}
+        />
       </Modal>
     </Container>
   );
