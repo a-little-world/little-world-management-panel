@@ -101,7 +101,7 @@ function developmentUpdateBackendEmailTemplatesAndConfiguration({
   const newEmailConfig = backendEmailConfig;
   const templateToUpload = [];
   for (const [key, value] of Object.entries(emailData)) {
-    console.log(`TEMPLATE: ${key}: ${value}`);
+    console.log(`TEMPLATE: ${key}: ${value}`, value);
     const email = value;
     const html = renderEmail(
       <EmailBuilder content={email.content} preview={email.preview} />,
@@ -110,7 +110,7 @@ function developmentUpdateBackendEmailTemplatesAndConfiguration({
       id: key,
       sender_id: 'noreply',
       category_id: 'automated',
-      subject: backendEmailConfig?.emails?.[key]?.subject ?? 'No Subject',
+      subject: value?.subject ?? 'No Subject',
       template: 'react_emails/' + key + '.html',
     };
     templateToUpload.push({
