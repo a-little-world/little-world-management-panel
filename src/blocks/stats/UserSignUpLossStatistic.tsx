@@ -74,6 +74,7 @@ export function UserSignUpLossStatisticBase({
         'journey_v2__booked_onboarding_call',
         'journey_v2__first_search',
         'journey_v2__user_deleted',
+        'journey_v2__no_show',
         'all'
     ]
 
@@ -84,6 +85,7 @@ export function UserSignUpLossStatisticBase({
         'journey_v2__booked_onboarding_call',
         'journey_v2__first_search',
         'journey_v2__user_deleted',
+        'journey_v2__no_show'
     ]
 
     const random = React.useRef(Date.now() + Math.random());
