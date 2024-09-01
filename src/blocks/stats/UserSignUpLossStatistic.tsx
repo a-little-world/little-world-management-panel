@@ -10,13 +10,62 @@ import useSWR from 'swr';
 import LoadingSpinner from '../../atoms/LoadingSpinner';
 import { cratePostFetcher } from '../../store';
 
-export function UserSignUpLossStatistic() {
+export function DynamicUserSignUpLossStatistic() { }
+
+export function UserSignUpLossStatisticMonthly({
+    showDatePickers = false,
+    useSubtitles = true,
+    startingMonth = '2024-01-01',
+    title = "User Sign-Up Loss Statistics"
+}) {
+
+    const [startDate, setStartDate] = React.useState(startingMonth);
+    const oneMonthAfterStartingMonth = new Date(new Date(startingMonth).setMonth(new Date(startingMonth).getMonth() + 1))
+    const [endDate, setEndDate] = React.useState(oneMonthAfterStartingMonth.toISOString().split('T')[0]);
+
+    return <UserSignUpLossStatisticBase
+        title={title}
+        showDatePickers={showDatePickers}
+        startDate={startDate}
+        endDate={endDate}
+        useSubtitles={useSubtitles}
+        setStartDate={setStartDate}
+        setEndDate={setEndDate}
+    />
+}
+
+export function UserSignUpLossStatistic({
+    showDatePickers = true,
+    useSubtitles = true,
+    title = "User Sign-Up Loss Statistics"
+}) {
 
     const [startDate, setStartDate] = React.useState('2021-01-01');
     const today = new Date();
     const [endDate, setEndDate] = React.useState(
         today.toISOString().split('T')[0],
     );
+
+    return <UserSignUpLossStatisticBase
+        title={title}
+        showDatePickers={showDatePickers}
+        startDate={startDate}
+        endDate={endDate}
+        useSubtitles={useSubtitles}
+        setStartDate={setStartDate}
+        setEndDate={setEndDate}
+    />
+}
+
+export function UserSignUpLossStatisticBase({
+    showDatePickers,
+    startDate,
+    endDate,
+    setStartDate,
+    setEndDate,
+    title = "User Sign-Up Loss Statistics",
+    useSubtitles = true
+}) {
 
     const requiredCounts = [
         'journey_v2__user_created',
@@ -37,7 +86,7 @@ export function UserSignUpLossStatistic() {
         'journey_v2__user_deleted',
     ]
 
-    const random = React.useRef(Date.now())
+    const random = React.useRef(Date.now() + Math.random());
     const { data: userListCounts, mutate } = useSWR(
         '/api/matching/users/statistics/user_journey_buckets/?random=' + random.current,
         cratePostFetcher({
@@ -114,7 +163,8 @@ export function UserSignUpLossStatistic() {
 
     return <div>
         <BarChartCounts
-            extraHeader={<>
+            useSubtitles={useSubtitles}
+            extraHeader={<>{showDatePickers &&
                 <div className="flex flex-row items-center content-center justify-center">
                     <div className="flex w-full items-start">Start Date:</div>
                     <DatePicker
@@ -137,8 +187,8 @@ export function UserSignUpLossStatistic() {
                         }}
                     />
                 </div>
-            </>}
-            title="User Sign-Up Loss Statistics"
+            }</>}
+            title={title}
             description="This is a bar chart showing the loss of users in the sign-up process"
             chartData={chartData}
             chartConfig={chartConfig}

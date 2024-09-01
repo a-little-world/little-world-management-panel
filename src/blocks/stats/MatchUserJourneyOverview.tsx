@@ -28,7 +28,7 @@ import { cratePostFetcher } from '../../store';
 import DataGraph from '../DataGraph';
 import { graphEndpoints } from './RangedDataGraph';
 import { matchJourneyBuckets, userJourneyBuckets } from './buckets';
-import { UserSignUpLossStatistic } from './UserSignUpLossStatistic';
+import { UserSignUpLossStatistic, UserSignUpLossStatisticMonthly } from './UserSignUpLossStatistic';
 
 const SectionTitle = styled(Text)`
   font-weight: bold;
@@ -49,6 +49,19 @@ const Section = styled.div<{ $fullWidth?: boolean }>`
   margin-bottom: ${({ theme }) => theme.spacing.small};
   display: flex;
   flex-direction: column;
+  flex: 1;
+
+  ${({ $fullWidth }) =>
+    $fullWidth &&
+    `
+    flex: 1 0 100%;
+    width: 100%`}
+`;
+
+const SectionR = styled.div<{ $fullWidth?: boolean }>`
+  margin-bottom: ${({ theme }) => theme.spacing.small};
+  display: flex;
+  flex-direction: row;
   flex: 1;
 
   ${({ $fullWidth }) =>
@@ -279,6 +292,14 @@ const MatchingOverview = ({ extraCounts, extraMatchCounts }) => (
             their first 10 weeks.
           </StatDescription>
         </Stat>
+        <Stat>
+          <KeyStat
+            stat={extraMatchCounts['match_journey_v2__completed_match']?.count}
+          />
+          <StatDescription>
+            Completed Matchings
+          </StatDescription>
+        </Stat>
       </StatsGrouping>
     </SectionCard>
   </Section>
@@ -289,7 +310,12 @@ const MatchingOverview = ({ extraCounts, extraMatchCounts }) => (
 export function MatchUserJourneyOverview() {
   const allBuckets = userJourneyBuckets.flatMap(bucket => bucket.sub_buckets);
   const allBucketIds = allBuckets.map(bucket => bucket.id);
-  const extraBucketIds = ['needs_matching', 'needs_matching_volunteers', 'all'];
+  const extraBucketIds = [
+    'needs_matching',
+    'needs_matching_volunteers',
+    'all',
+    'journey_v2__active_matching'
+  ];
 
   const { data: userListCounts } = useSWR(
     '/api/matching/users/statistics/user_journey_buckets/',
@@ -306,6 +332,7 @@ export function MatchUserJourneyOverview() {
   const extraMatchBucketIds = [
     'match_journey_v2__match_ongoing',
     'match_journey_v2__match_free_play',
+    'match_journey_v2__completed_match'
   ];
 
   const { data: matchJourneyListCounts } = useSWR(
@@ -347,7 +374,6 @@ export function MatchUserJourneyOverview() {
           extraCounts={extraCounts}
           extraMatchCounts={extraMatchCounts}
         />
-
         <DynamicBuckets
           buckets={userJourneyBuckets}
           bucketLink="/users/?list"
@@ -356,7 +382,6 @@ export function MatchUserJourneyOverview() {
           showStatus
           description="We currently define our user journey in the following buckets:"
         />
-
         <DynamicBuckets
           buckets={matchJourneyBuckets}
           bucketLink="/matches/?list"
@@ -365,9 +390,21 @@ export function MatchUserJourneyOverview() {
           description="We currently define our match journey in the following buckets:"
         />
       </Sections>
-      <Section>
+      <SectionR>
         <UserSignUpLossStatistic />
-      </Section>
+      </SectionR>
+      <SectionR>
+        <UserSignUpLossStatisticMonthly startingMonth="2024-01-01" title="January 2024" />
+        <UserSignUpLossStatisticMonthly startingMonth="2024-02-01" title="Feb 2024" />
+        <UserSignUpLossStatisticMonthly startingMonth="2024-03-01" title="March 2024" />
+        <UserSignUpLossStatisticMonthly startingMonth="2024-04-01" title="April 2024" />
+      </SectionR>
+      <SectionR>
+        <UserSignUpLossStatisticMonthly startingMonth="2024-05-01" title="May 2024" />
+        <UserSignUpLossStatisticMonthly startingMonth="2024-06-01" title="June 2024" />
+        <UserSignUpLossStatisticMonthly startingMonth="2024-07-01" title="July 2024" />
+        <UserSignUpLossStatisticMonthly startingMonth="2024-08-01" title="August 2024" />
+      </SectionR>
     </Container>
   );
 }
