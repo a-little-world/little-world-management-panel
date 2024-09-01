@@ -33,7 +33,8 @@ export function BarChartCounts({
             color: 'hsl(var(--chart-1))'
         }
     },
-    extraHeader = null
+    extraHeader = null,
+    useSubtitles = true
 }) {
 
     const totalVisitors = chartData.reduce((acc, { count }) => acc + count, 0)
@@ -45,7 +46,7 @@ export function BarChartCounts({
         <Card className="flex flex-col">
             <CardHeader className="items-center pb-0">
                 <CardTitle>{title}</CardTitle>
-                <CardDescription>{description}</CardDescription>
+                {useSubtitles && <CardDescription>{description}</CardDescription>}
                 {extraHeader}
             </CardHeader>
             <CardContent className="flex-1 pb-0">
@@ -87,7 +88,7 @@ export function BarChartCounts({
                                                     y={(viewBox.cy || 0) + 24}
                                                     className="fill-muted-foreground"
                                                 >
-                                                    Visitors
+                                                    Sign-Ups
                                                 </tspan>
                                             </text>
                                         )
@@ -98,14 +99,14 @@ export function BarChartCounts({
                     </PieChart>
                 </ChartContainer>
             </CardContent>
-            <CardFooter className="flex-col gap-2 text-sm">
+            {useSubtitles && <CardFooter className="flex-col gap-2 text-sm">
                 <div className="flex items-center gap-2 font-medium leading-none">
                     {subtitle1}
                 </div>
                 <div className="leading-none text-muted-foreground">
                     {subtitle2}
                 </div>
-            </CardFooter>
+            </CardFooter>}
         </Card>
     )
 }
