@@ -24,7 +24,7 @@ export const Content = styled.div`
 
 export const Toolbar = styled.div`
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   gap: ${({ theme }) => theme.spacing.small};
   width: 100%;

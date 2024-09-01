@@ -152,7 +152,7 @@ const UserPanel = () => {
           </Card>
         </TabsContent>
       ))}
-      <SelectedUsersSheet />
+      {state?.openTab !== USER_TABS[0].key && <SelectedUsersSheet />}
     </Tabs>
   );
 };

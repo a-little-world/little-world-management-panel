@@ -3,21 +3,28 @@ import {
   ButtonAppearance,
   ButtonSizes,
   ButtonVariations,
+  Card,
+  CardSizes,
   Dropdown,
   InfoIcon,
+  Modal,
   Text,
   TextInput,
   TextTypes,
   ToolTip,
 } from '@a-little-world/little-world-design-system';
 import { render as renderEmail } from '@react-email/render';
-import { isEmpty, map, pullAt } from 'lodash';
+import { isEmpty, isNumber, map, pullAt } from 'lodash';
 import React, { useCallback, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 import styled, { useTheme } from 'styled-components';
 
-import EmailBuilder, { ContentTypes } from '../../emails/Builder';
+import SendEmailSheet from '../../blocks/SendEmailSheet';
+import EmailBuilder, {
+  BlocksWithLink,
+  ContentTypes,
+} from '../../emails/Builder';
 import communityEmails from '../../emails/data/community';
 import { BackendVars } from '../../emails/templates/backendVars';
 import { getCookiesAsObject } from '../../lib/utils';
@@ -55,6 +62,13 @@ const Blocks = styled.form`
   }
 `;
 
+const SaveTemplateForm = styled.form`
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${({ theme }) => theme.spacing.xsmall};
+  flex: 1;
+`;
+
 const NothingSelected = styled.div`
   padding: ${({ theme }) => theme.spacing.small};
   display: flex;
@@ -71,6 +85,7 @@ const ButtonsContainer = styled.div`
   align-items: center;
   justify-content: center;
   gap: ${({ theme }) => theme.spacing.small};
+  flex: 1;
 `;
 
 const swapArrayElements = ({
@@ -103,10 +118,12 @@ const CreateNewEmail = () => {
   const [newEmail, setNewEmail] = useState([]);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [editActionsVisible, setIsVisible] = useState<boolean>(false);
+  const [emailSenderOpen, setEmailSenderOpen] = useState(false);
   const theme = useTheme();
 
   const showComponent = useCallback(() => setIsVisible(true), []);
   const hideComponent = useCallback(() => setIsVisible(false), []);
+  const [showHrefEditor, setShowHrefEditor] = useState<null | number>(null);
 
   const {
     watch,
@@ -114,11 +131,7 @@ const CreateNewEmail = () => {
     handleSubmit,
     formState: { errors },
     setError,
-  } = useForm({
-    defaultValues: {
-      subject: newEmail?.subject || '',
-    },
-  });
+  } = useForm();
 
   const onSaveDynamicTemplate = () => {
     fetch(`/api/matching/emails/dynamic_templates/`, {
@@ -142,6 +155,26 @@ const CreateNewEmail = () => {
     setNewEmail(communityEmails[value]?.content);
   };
 
+  const handleTextUpdate = ({
+    text,
+    index,
+  }: {
+    text: string;
+    index: number;
+  }) => {
+    const dataCopy = [...newEmail];
+    dataCopy[index].text = text;
+
+    setNewEmail(dataCopy);
+  };
+
+  const handleHrefUpdate = data => {
+    const dataCopy = [...newEmail];
+    dataCopy[showHrefEditor].href = data.url;
+    setNewEmail(dataCopy);
+    setShowHrefEditor(null);
+  };
+
   const addBlock = (value: string) => {
     setNewEmail(current => [
       ...current,
@@ -150,6 +183,7 @@ const CreateNewEmail = () => {
         type: value,
       },
     ]);
+    if (BlocksWithLink.includes(value)) setShowHrefEditor(newEmail.length);
   };
 
   const deleteBlock = (index: number) => {
@@ -172,8 +206,9 @@ const CreateNewEmail = () => {
   };
 
   const onSendTemplate = () => {
-    // addNewTemplate({ content:  })
+    setEmailSenderOpen(true);
   };
+  console.log({ showHrefEditor });
 
   return (
     <Container>
@@ -188,38 +223,40 @@ const CreateNewEmail = () => {
           onValueChange={handleTemplateSelect}
           placeholder="pick a template"
         />
+        <ButtonsContainer>
+          <SaveTemplateForm onSubmit={handleSubmit(onSaveDynamicTemplate)}>
+            <TextInput
+              id={'template_name'}
+              {...registerInput({
+                register,
+                name: 'template_name',
+                options: { required: 'Required' },
+              })}
+              placeholder="Template Name"
+              label="Template Name"
+              error={errors.template_name?.message}
+            />
+            <Button size={ButtonSizes.Small} type="submit">
+              Save Template
+            </Button>
+            <SendEmailSheet />
+          </SaveTemplateForm>
+        </ButtonsContainer>
         <ToolTip
           trigger={
-            <Button appearance={ButtonAppearance.Secondary}>
-              Dynamic Variables Info
+            <Button
+              appearance={ButtonAppearance.Secondary}
+              variation={ButtonVariations.Icon}
+              size={ButtonSizes.Small}
+              color={theme.color.surface.bold}
+              borderColor={theme.color.surface.bold}
+            >
+              <InfoIcon circular width="16" height="16" />
             </Button>
           }
           text={`Available dynamic variables:
             ${map(BackendVars, variable => variable).join('\n')}`}
         />
-
-        <ButtonsContainer>
-          <form>
-            <TextInput
-              id={'template_name'}
-              type={''}
-              {...registerInput({
-                register,
-                name: 'template_name',
-                options: { required: 'error.required' },
-              })}
-              placeholder="Template Name"
-              label="Template Name"
-            />
-            <Button
-              appearance={ButtonAppearance.Secondary}
-              size={ButtonSizes.Small}
-              onClick={onSaveDynamicTemplate}
-            >
-              Save Dynamic Template
-            </Button>
-          </form>
-        </ButtonsContainer>
       </Toolbar>
       <Content>
         <OptionsContainer>
@@ -253,10 +290,42 @@ const CreateNewEmail = () => {
               preview={''}
               deleteBlock={deleteBlock}
               moveBlock={moveBlock}
+              openHrefEditor={setShowHrefEditor}
+              updateText={handleTextUpdate}
             />
           )}
         </TemplateWrapper>
       </Content>
+      <Modal
+        open={isNumber(showHrefEditor)}
+        onClose={() => setShowHrefEditor(null)}
+      >
+        <Card width={CardSizes.Small}>
+          <form onSubmit={handleHrefUpdate}>
+            <TextInput
+              label={'Displayed Text'}
+              value={newEmail[showHrefEditor]?.text}
+              readOnly
+            />
+            <TextInput
+              key={showHrefEditor}
+              {...registerInput({
+                register,
+                name: 'url',
+                options: { required: 'Required' },
+              })}
+              id="edit_url"
+              label="Edit url"
+              error={errors?.url?.message}
+              placeholder={'url of link or button'}
+              defaultValue={newEmail[showHrefEditor]?.href ?? null}
+            />
+            <Button type="submit" size={ButtonSizes.Stretch}>
+              Update Url
+            </Button>
+          </form>
+        </Card>
+      </Modal>
     </Container>
   );
 };
