@@ -35,7 +35,7 @@ export function SendEmailSheet() {
   const { userList, isLoading: userListLoading } = useUserListData(
     `list=${watch('user_list')}`,
   );
-  console.log({ userList });
+  //   console.log({ userList });
   const recipients = userList?.count ?? 0;
 
   const onSendEmail = data => {
