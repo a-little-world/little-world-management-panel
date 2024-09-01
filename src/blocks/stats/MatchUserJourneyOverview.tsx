@@ -2,6 +2,8 @@ import {
   BarChartCounts
 } from "../BarChartCounts"
 
+import { DatePicker } from '../../atoms/DatePicker';
+
 import {
   Card,
   ChevronRightIcon,
@@ -280,9 +282,23 @@ const MatchingOverview = ({ extraCounts, extraMatchCounts }) => (
   </Section>
 );
 
-export function LossStatisticSignUp({
-  userListCounts,
-}) {
+export function LossStatisticSignUp() {
+
+  const [startDate, setStartDate] = React.useState('2021-01-01');
+  const today = new Date();
+  const [endDate, setEndDate] = React.useState(
+    today.toISOString().split('T')[0],
+  );
+
+  const requiredCounts = [
+    'journey_v2__user_created',
+    'journey_v2__email_verified',
+    'journey_v2__user_form_completed',
+    'journey_v2__booked_onboarding_call',
+    'journey_v2__first_search',
+    'journey_v2__user_deleted',
+    'all'
+  ]
 
   const signupLossCounts = [
     'journey_v2__user_created',
@@ -290,7 +306,23 @@ export function LossStatisticSignUp({
     'journey_v2__user_form_completed',
     'journey_v2__booked_onboarding_call',
     'journey_v2__first_search',
+    'journey_v2__user_deleted',
   ]
+
+  const random = React.useRef(Date.now())
+  const { data: userListCounts, mutate } = useSWR(
+    '/api/matching/users/statistics/user_journey_buckets/?random=' + random.current,
+    cratePostFetcher({
+      selected_filters: requiredCounts,
+      start_date: startDate,
+      end_date: endDate,
+    }),
+    {},
+  );
+
+  if (!userListCounts) return <LoadingSpinner />;
+
+  const totalUserCount = userListCounts?.find(item => item.name === 'all')?.count;
 
   const allUserCount = userListCounts?.reduce((acc, curr) => {
     acc[curr.name] = curr.count;
@@ -323,8 +355,7 @@ export function LossStatisticSignUp({
 
   const totalCounts = chartData.reduce((acc, curr) => acc + curr.count, 0);
 
-  const becameActiveUsers = totalCounts - allUserCount['journey_v2__first_search']
-  const totalVisitors = allUserCount['all']
+  const becameActiveUsers = totalUserCount - totalCounts;
 
   // chat that becameActiveUsers is a number
   if (!becameActiveUsers) return <LoadingSpinner />
@@ -344,23 +375,46 @@ export function LossStatisticSignUp({
     }
   })
 
-  console.log("CHARTDATA", chartConfig, totalCounts)
+  console.log("CHARTDATA", chartConfig, totalCounts, becameActiveUsers, totalUserCount)
 
-  const percentageUsersBecomeActive = (becameActiveUsers / totalVisitors) * 100;
-  const percentageUsersCompleFormButDontBookOnboarding = ((allUserCount['journey_v2__user_form_completed'] - allUserCount['journey_v2__booked_onboarding_call']) / totalVisitors) * 100;
+  const percentageUsersBecomeActive = (becameActiveUsers / totalUserCount) * 100;
+  const percentageUsersCompleFormButDontBookOnboarding = ((allUserCount['journey_v2__user_form_completed'] - allUserCount['journey_v2__booked_onboarding_call']) / totalUserCount) * 100;
 
 
-  const text1 = `Out of ${totalVisitors} users, ${becameActiveUsers} users became active users after signing up. This is ${percentageUsersBecomeActive.toFixed(2)}% of all users.`
-  const text2 = `Out of ${totalVisitors} users, ${allUserCount['journey_v2__user_form_completed'] - allUserCount['journey_v2__booked_onboarding_call']} users completed the form but did not book an onboarding call. This is ${percentageUsersCompleFormButDontBookOnboarding.toFixed(2)}% of all users.`
+  const text1 = `Out of ${totalUserCount} users, ${becameActiveUsers} users became active users after signing up. This is ${percentageUsersBecomeActive.toFixed(2)}% of all users.`
+  const text2 = `Out of ${totalUserCount} users, ${allUserCount['journey_v2__user_form_completed'] - allUserCount['journey_v2__booked_onboarding_call']} users completed the form but did not book an onboarding call. This is ${percentageUsersCompleFormButDontBookOnboarding.toFixed(2)}% of all users.`
 
-  return <BarChartCounts
-    title="User Sign-Up Loss Statistics"
-    description="This is a bar chart showing the loss of users in the sign-up process"
-    chartData={chartData}
-    chartConfig={chartConfig}
-    subtitle1={text1}
-    subtitle2={text2}
-  />;
+  return <div>
+    <div className="flex flex-row items-center content-center justify-center">
+      <div className="flex w-full items-start">Start Date:</div>
+      <DatePicker
+        date={startDate}
+        setDate={date => {
+          setStartDate(date);
+          setTimeout(() => {
+            mutate();
+          }, 500);
+        }}
+      />
+      <div className="flex w-full items-start">End Date</div>
+      <DatePicker
+        date={endDate}
+        setDate={date => {
+          setEndDate(date);
+          setTimeout(() => {
+            mutate();
+          }, 500);
+        }}
+      />
+    </div>
+    <BarChartCounts
+      title="User Sign-Up Loss Statistics"
+      description="This is a bar chart showing the loss of users in the sign-up process"
+      chartData={chartData}
+      chartConfig={chartConfig}
+      subtitle1={text1}
+      subtitle2={text2}
+    /></div>;
 }
 
 
@@ -444,7 +498,7 @@ export function MatchUserJourneyOverview() {
         />
       </Sections>
       <Section>
-        <LossStatisticSignUp userListCounts={userListCounts} />
+        <LossStatisticSignUp />
       </Section>
     </Container>
   );
