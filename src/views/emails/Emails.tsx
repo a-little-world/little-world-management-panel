@@ -13,6 +13,7 @@ import React from 'react';
 import styled, { css } from 'styled-components';
 import useSWR from 'swr';
 
+import LoadingSpinner from '../../atoms/LoadingSpinner';
 import EmailBuilder from '../../emails/Builder';
 import emailData from '../../emails/data/';
 import automatedEmails from '../../emails/data/automated';
@@ -137,7 +138,7 @@ const Emails = () => {
     {},
   );
 
-  const { data: dynamicEmails } = useSWR(
+  const { data: dynamicEmails, isLoading } = useSWR(
     '/api/matching/emails/dynamic_templates/',
     dataFetcher,
     {},
@@ -201,18 +202,22 @@ const Emails = () => {
         You may edit all of them in emails.json.
       </Text>
       <DynamicEmails>
-        {dynamicEmails?.results.map(template => (
-          <Template
-            key={template.template_name}
-            to={SEND_DYNAMIC_EMAIL_ROUTE.replace(
-              ':emailTemplateName',
-              template.template_name,
-            )}
-            textDecoration={false}
-          >
-            <Text>{template.template_name}</Text>
-          </Template>
-        ))}
+        {isLoading ? (
+          <LoadingSpinner />
+        ) : (
+          dynamicEmails?.results.map(template => (
+            <Template
+              key={template.template_name}
+              to={SEND_DYNAMIC_EMAIL_ROUTE.replace(
+                ':emailTemplateName',
+                template.template_name,
+              )}
+              textDecoration={false}
+            >
+              <Text>{template.template_name}</Text>
+            </Template>
+          ))
+        )}
       </DynamicEmails>
     </Container>
   );

@@ -21,7 +21,6 @@ const EditableText: React.FC = ({
   const [text, setText] = useState<string>(defaultText);
 
   const handleDoubleClick = () => {
-    console.log('onDoubleClick');
     setIsEditing(true);
   };
 
@@ -30,7 +29,6 @@ const EditableText: React.FC = ({
   };
 
   const handleBlur = (event: FocusEvent<HTMLInputElement>) => {
-    console.log('handleBlur');
     setIsEditing(false);
     updateText(event.target.value);
   };

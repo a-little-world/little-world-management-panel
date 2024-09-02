@@ -15,10 +15,11 @@ import {
 } from '@a-little-world/little-world-design-system';
 import { render as renderEmail } from '@react-email/render';
 import { isEmpty, isNumber, map, pullAt } from 'lodash';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import styled, { useTheme } from 'styled-components';
 
+import LoadingSpinner from '../../atoms/LoadingSpinner';
 import SendEmailSheet from '../../blocks/SendEmailSheet';
 import EmailBuilder, {
   BlocksWithLink,
@@ -34,7 +35,6 @@ import {
   OptionsContainer,
   PageHeading,
   TemplateWrapper,
-  Toolbar,
 } from './styles';
 
 const BlockOption = styled.button`
@@ -114,7 +114,7 @@ const swapArrayElements = ({
   return array;
 };
 
-const HrefEditor = ({ handleHrefUpdate, href, text }) => {
+const HrefEditor = ({ handleUpdate, href, text }) => {
   const {
     register,
     handleSubmit,
@@ -122,8 +122,19 @@ const HrefEditor = ({ handleHrefUpdate, href, text }) => {
   } = useForm();
   return (
     <Card width={CardSizes.Small}>
-      <form onSubmit={handleSubmit(handleHrefUpdate)}>
-        <TextInput label={'Displayed Text'} value={text} readOnly />
+      <form onSubmit={handleSubmit(handleUpdate)}>
+        <TextInput
+          {...registerInput({
+            register,
+            name: 'text',
+            options: { required: 'Required' },
+          })}
+          id="edit_text"
+          error={errors?.text?.message}
+          placeholder="Enter text to be displayed"
+          label={'Displayed Text'}
+          defaultValue={text ?? null}
+        />
         <TextInput
           key={href}
           {...registerInput({
@@ -148,6 +159,8 @@ const HrefEditor = ({ handleHrefUpdate, href, text }) => {
 const CreateNewEmail = () => {
   const [newEmail, setNewEmail] = useState([]);
   const [_, setSelectedTemplate] = useState(null);
+  const [templateSaved, setTemplateSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const theme = useTheme();
 
@@ -161,6 +174,7 @@ const CreateNewEmail = () => {
   } = useForm();
 
   const onSaveDynamicTemplate = () => {
+    setSaving(true);
     fetch(`/api/matching/emails/dynamic_templates/`, {
       method: 'POST',
       headers: {
@@ -174,13 +188,22 @@ const CreateNewEmail = () => {
         category_id: 'dynamic',
         sender_id: 'noreply',
       }),
-    });
+    })
+      .then(() => {
+        setSaving(false);
+        setTemplateSaved(true);
+      })
+      .catch(() => setSaving(false));
   };
 
   const handleTemplateSelect = value => {
     setSelectedTemplate(communityEmails[value]);
     setNewEmail(communityEmails[value]?.content);
   };
+
+  useEffect(() => {
+    setTemplateSaved(false);
+  }, [newEmail]);
 
   const handleTextUpdate = ({
     text,
@@ -198,6 +221,7 @@ const CreateNewEmail = () => {
   const handleHrefUpdate = data => {
     const dataCopy = [...newEmail];
     dataCopy[showHrefEditor].href = data.url;
+    dataCopy[showHrefEditor].text = data.text;
 
     setNewEmail(dataCopy);
     setShowHrefEditor(null);
@@ -262,8 +286,9 @@ const CreateNewEmail = () => {
             appearance={ButtonAppearance.Secondary}
             size={ButtonSizes.Small}
             type="submit"
+            {...(templateSaved ? { color: theme.color.surface.on } : {})}
           >
-            Save Template
+            {saving ? <LoadingSpinner /> : 'Save Template'}
           </Button>
           <SendEmailSheet />
 
@@ -331,7 +356,7 @@ const CreateNewEmail = () => {
         onClose={() => setShowHrefEditor(null)}
       >
         <HrefEditor
-          handleHrefUpdate={handleHrefUpdate}
+          handleUpdate={handleHrefUpdate}
           href={newEmail?.[showHrefEditor]?.href}
           text={newEmail?.[showHrefEditor]?.text}
         />

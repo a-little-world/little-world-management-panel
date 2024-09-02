@@ -70,14 +70,16 @@ export const Footer = ({ canUnsubscribe }: { canUnsubscribe?: boolean }) => (
     </Section>
     <Text style={footerActions}>
       {canUnsubscribe && (
-        <Link style={{ ...footerLink, marginRight: '8px' }}>Unsubscribe</Link>
+        <>
+          <Link style={{ ...footerLink, marginRight: '8px' }}>Unsubscribe</Link>{' '}
+          ・
+        </>
       )}
       {/* <Column style={{ textAlign: 'center', width: '33%' }}>
           <Link style={{ ...footerLink, margin: '0 16px' }}>
             Manage Preferences
           </Link>
         </Column> */}
-      ・
       <Link
         style={{ ...footerLink, marginLeft: canUnsubscribe ? '8px' : '0' }}
         href="https://home.little-world.com/kontakt"
