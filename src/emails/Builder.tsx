@@ -32,7 +32,7 @@ export enum ContentTypes {
   Paragraph = 'paragraph',
   Sentence = 'sentence',
   Code = 'code',
-  Illustration = 'illustration',
+  // Illustration = 'illustration',
   Button = 'button',
   Link = 'link',
 }

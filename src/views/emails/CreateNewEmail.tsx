@@ -15,9 +15,8 @@ import {
 } from '@a-little-world/little-world-design-system';
 import { render as renderEmail } from '@react-email/render';
 import { isEmpty, isNumber, map, pullAt } from 'lodash';
-import React, { useCallback, useState } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useParams } from 'react-router-dom';
 import styled, { useTheme } from 'styled-components';
 
 import SendEmailSheet from '../../blocks/SendEmailSheet';
@@ -67,6 +66,8 @@ const SaveTemplateForm = styled.form`
   flex-wrap: wrap;
   gap: ${({ theme }) => theme.spacing.xsmall};
   flex: 1;
+  align-items: flex-end;
+  width: 100%;
 `;
 
 const NothingSelected = styled.div`
@@ -83,9 +84,9 @@ const NothingSelected = styled.div`
 const ButtonsContainer = styled.div`
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: ${({ theme }) => theme.spacing.small};
   flex: 1;
+  margin-bottom: 14px;
 `;
 
 const swapArrayElements = ({
@@ -145,15 +146,11 @@ const HrefEditor = ({ handleHrefUpdate, href, text }) => {
 };
 
 const CreateNewEmail = () => {
-  const { emailTemplateName } = useParams();
   const [newEmail, setNewEmail] = useState([]);
-  const [selectedTemplate, setSelectedTemplate] = useState(null);
-  const [editActionsVisible, setIsVisible] = useState<boolean>(false);
-  const [emailSenderOpen, setEmailSenderOpen] = useState(false);
+  const [_, setSelectedTemplate] = useState(null);
+
   const theme = useTheme();
 
-  const showComponent = useCallback(() => setIsVisible(true), []);
-  const hideComponent = useCallback(() => setIsVisible(false), []);
   const [showHrefEditor, setShowHrefEditor] = useState<null | number>(null);
 
   const {
@@ -236,19 +233,10 @@ const CreateNewEmail = () => {
     });
   };
 
-  const onSendTemplate = () => {
-    setEmailSenderOpen(true);
-  };
-  console.log({
-    showHrefEditor,
-    poo: newEmail[showHrefEditor]?.href,
-    con: newEmail,
-  });
-
   return (
     <Container>
       <PageHeading type={TextTypes.Heading4}>New Email Creator</PageHeading>
-      <Toolbar>
+      <SaveTemplateForm onSubmit={submitTemplate(onSaveDynamicTemplate)}>
         <Dropdown
           label={'Start with a pre-existing template'}
           options={map(communityEmails, template => ({
@@ -258,41 +246,48 @@ const CreateNewEmail = () => {
           onValueChange={handleTemplateSelect}
           placeholder="pick a template"
         />
-        <ButtonsContainer>
-          <SaveTemplateForm onSubmit={submitTemplate(onSaveDynamicTemplate)}>
-            <TextInput
-              id={'template_name'}
-              {...registerInput({
-                register: registerTemplate,
-                name: 'template_name',
-                options: { required: 'Required' },
-              })}
-              placeholder="Template Name"
-              label="Template Name"
-              error={errorsTemplate.template_name?.message}
-            />
-            <Button size={ButtonSizes.Small} type="submit">
-              Save Template
-            </Button>
-            <SendEmailSheet />
-          </SaveTemplateForm>
-        </ButtonsContainer>
-        <ToolTip
-          trigger={
-            <Button
-              appearance={ButtonAppearance.Secondary}
-              variation={ButtonVariations.Icon}
-              size={ButtonSizes.Small}
-              color={theme.color.surface.bold}
-              borderColor={theme.color.surface.bold}
-            >
-              <InfoIcon circular width="16" height="16" />
-            </Button>
-          }
-          text={`Available dynamic variables:
-            ${map(BackendVars, variable => variable).join('\n')}`}
+        <TextInput
+          id={'template_name'}
+          {...registerInput({
+            register: registerTemplate,
+            name: 'template_name',
+            options: { required: 'Required' },
+          })}
+          placeholder="Template Name"
+          label="Template Name"
+          error={errorsTemplate.template_name?.message}
         />
-      </Toolbar>
+        <ButtonsContainer>
+          <Button
+            appearance={ButtonAppearance.Secondary}
+            size={ButtonSizes.Small}
+            type="submit"
+          >
+            Save Template
+          </Button>
+          <SendEmailSheet />
+
+          <ToolTip
+            trigger={
+              <Button
+                variation={ButtonVariations.Circle}
+                size={ButtonSizes.Large}
+                color={theme.color.surface.bold}
+              >
+                <InfoIcon
+                  width="20"
+                  height="20"
+                  label="infoIcon"
+                  labelId="infoIcon"
+                />
+              </Button>
+            }
+            text={`Available dynamic variables:
+            ${map(BackendVars, variable => variable).join('\n')}`}
+          />
+        </ButtonsContainer>
+      </SaveTemplateForm>
+
       <Content>
         <OptionsContainer>
           <Text type={TextTypes.Body3} bold>

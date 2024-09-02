@@ -139,7 +139,7 @@ export const usePrematchAppointmentsListData = (searchParams: string) => {
 
 export const useUserListData = (searchParams: string) => {
   const { data, error, mutate, isLoading } = useSWR(
-    `/api/matching/users/?${searchParams}`,
+    searchParams ? `/api/matching/users/?${searchParams}` : null,
     dataFetcher,
   );
 

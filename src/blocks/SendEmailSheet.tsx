@@ -5,7 +5,6 @@ import {
   TextInput,
 } from '@a-little-world/little-world-design-system';
 import { ScrollArea } from '@radix-ui/react-scroll-area';
-import { isEmpty, map, size } from 'lodash';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import styled from 'styled-components';
@@ -22,6 +21,10 @@ import {
 } from '../atoms/Sheet';
 import { registerInput, useFilterOptions, useUserListData } from '../store';
 
+const Recipients = styled(Text)`
+  margin-bottom: ${({ theme }) => theme.spacing.small};
+`;
+
 export function SendEmailSheet() {
   const { filterOptions, isLoading } = useFilterOptions();
   const {
@@ -29,13 +32,12 @@ export function SendEmailSheet() {
     handleSubmit,
     formState: { errors },
     control,
-    setError,
     watch,
   } = useForm();
   const { userList, isLoading: userListLoading } = useUserListData(
-    `list=${watch('user_list')}`,
+    watch('user_list') ? `list=${watch('user_list')}` : '',
   );
-  //   console.log({ userList });
+
   const recipients = userList?.count ?? 0;
 
   const onSendEmail = data => {
@@ -94,10 +96,10 @@ export function SendEmailSheet() {
                 )}
               />
             )}
-            <Text>
+            <Recipients>
               Number of recipients:{' '}
               {userListLoading ? <LoadingSpinner inline /> : recipients}
-            </Text>
+            </Recipients>
             <Button type="submit" disabled={userListLoading}>
               Send Email
             </Button>
