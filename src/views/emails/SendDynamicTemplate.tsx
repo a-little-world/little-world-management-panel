@@ -1,3 +1,4 @@
+import SendEmailSheet from '../../blocks/SendEmailSheet';
 import { dataFetcher } from '../../store';
 import React from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
@@ -10,5 +11,8 @@ export function SendDynamicTemplateView() {
     } = useSWR(`/api/matching/emails/dynamic_templates/${emailTemplateName}/`, dataFetcher, {});
     let [searchParams, setSearchParams] = useSearchParams();
 
-    return <div dangerouslySetInnerHTML={{ __html: dynamicEmail?.template }} />;
+    return <>
+        <SendEmailSheet emailTemplateName={emailTemplateName}/>
+        <div dangerouslySetInnerHTML={{ __html: dynamicEmail?.template }} />
+    </>;
 }

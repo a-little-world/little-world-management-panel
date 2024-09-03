@@ -20,12 +20,15 @@ import {
   SheetTrigger,
 } from '../atoms/Sheet';
 import { registerInput, useFilterOptions, useUserListData } from '../store';
+import { getCookiesAsObject } from '../utils';
 
 const Recipients = styled(Text)`
   margin-bottom: ${({ theme }) => theme.spacing.small};
 `;
 
-export function SendEmailSheet() {
+export function SendEmailSheet({
+  emailTemplateName
+}) {
   const { filterOptions, isLoading } = useFilterOptions();
   const {
     register,
@@ -40,9 +43,18 @@ export function SendEmailSheet() {
 
   const recipients = userList?.count ?? 0;
 
-  const onSendEmail = data => {
-    console.log({ data });
-  };
+  const onSendEmail = () => {
+    fetch(`/api/matching/emails/dynamic_templates/${emailTemplateName}/send/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': getCookiesAsObject().csrftoken,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        user_list: watch('user_list')
+      }),
+    })
+  }
 
   return (
     <Sheet>
