@@ -1,40 +1,51 @@
 import {
   Button,
   Dropdown,
+  MessageTypes,
+  StatusMessage,
   Text,
   TextInput,
 } from '@a-little-world/little-world-design-system';
 import { ScrollArea } from '@radix-ui/react-scroll-area';
-import React from 'react';
+import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import styled from 'styled-components';
 
+import { sendBulkEmail } from '../api/index';
 import LoadingSpinner from '../atoms/LoadingSpinner';
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
-  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
 } from '../atoms/Sheet';
-import { registerInput, useFilterOptions, useUserListData } from '../store';
-import { getCookiesAsObject } from '../utils';
+import {
+  onFormError,
+  registerInput,
+  useFilterOptions,
+  useUserListData,
+} from '../store';
 
 const Recipients = styled(Text)`
   margin-bottom: ${({ theme }) => theme.spacing.small};
 `;
 
 export function SendEmailSheet({
-  emailTemplateName
+  emailTemplateName,
+}: {
+  emailTemplateName?: string;
 }) {
+  const [emailSent, setEmailSent] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { filterOptions, isLoading } = useFilterOptions();
   const {
     register,
     handleSubmit,
+    getValues,
     formState: { errors },
     control,
+    setError,
     watch,
   } = useForm();
   const { userList, isLoading: userListLoading } = useUserListData(
@@ -42,24 +53,32 @@ export function SendEmailSheet({
   );
 
   const recipients = userList?.count ?? 0;
+  const [, ...optionsWithoutAll] = isLoading ? [[], []] : filterOptions?.lists;
+
+  const onError = e => {
+    setIsSubmitting(false);
+    onFormError({ e, formFields: getValues(), setError });
+  };
+
+  const onSuccess = () => {
+    setIsSubmitting(false);
+    setEmailSent(true);
+  };
 
   const onSendEmail = () => {
-    fetch(`/api/matching/emails/dynamic_templates/${emailTemplateName}/send/`, {
-      method: 'POST',
-      headers: {
-        'X-CSRFToken': getCookiesAsObject().csrftoken,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ 
-        user_list: watch('user_list')
-      }),
-    })
-  }
+    setIsSubmitting(true);
+    sendBulkEmail({
+      userList: watch('user_list'),
+      emailTemplate: emailTemplateName,
+      onError,
+      onSuccess,
+    });
+  };
 
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button>Send Email</Button>
+        <Button disabled={!Boolean(emailTemplateName)}>Send Email</Button>
       </SheetTrigger>
 
       <SheetContent>
@@ -98,12 +117,10 @@ export function SendEmailSheet({
                     error={error?.message}
                     label={'User List'}
                     placeholder="Select a user list..."
-                    options={filterOptions?.lists?.map(
-                      ({ name, description }) => ({
-                        value: name,
-                        label: description,
-                      }),
-                    )}
+                    options={optionsWithoutAll.map(({ name, description }) => ({
+                      value: name,
+                      label: description,
+                    }))}
                   />
                 )}
               />
@@ -112,7 +129,18 @@ export function SendEmailSheet({
               Number of recipients:{' '}
               {userListLoading ? <LoadingSpinner inline /> : recipients}
             </Recipients>
-            <Button type="submit" disabled={userListLoading}>
+            <StatusMessage
+              $visible={emailSent || !!errors?.root?.serverError}
+              $type={emailSent ? MessageTypes.Success : MessageTypes.Error}
+            >
+              {emailSent
+                ? 'Email successfully sent'
+                : errors?.root?.serverError?.message}
+            </StatusMessage>
+            <Button
+              type="submit"
+              disabled={userListLoading || emailSent || isSubmitting}
+            >
               Send Email
             </Button>
           </form>

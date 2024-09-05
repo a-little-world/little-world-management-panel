@@ -1,18 +1,43 @@
-import SendEmailSheet from '../../blocks/SendEmailSheet';
-import { dataFetcher } from '../../store';
 import React from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import styled from 'styled-components';
 import useSWR from 'swr';
 
-export function SendDynamicTemplateView() {
-    const { emailTemplateName } = useParams();
-    const {
-        data: dynamicEmail,
-    } = useSWR(`/api/matching/emails/dynamic_templates/${emailTemplateName}/`, dataFetcher, {});
-    let [searchParams, setSearchParams] = useSearchParams();
+import SendEmailSheet from '../../blocks/SendEmailSheet';
+import { dataFetcher } from '../../store';
 
-    return <>
-        <SendEmailSheet emailTemplateName={emailTemplateName}/>
-        <div dangerouslySetInnerHTML={{ __html: dynamicEmail?.template }} />
-    </>;
+const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.small};
+`;
+
+const SendWrapper = styled.div`
+  background: ${({ theme }) => theme.color.surface.primary};
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding: ${({ theme }) => theme.spacing.small};
+  justify-content: flex-end;
+`;
+
+export function SendDynamicTemplateView() {
+  const { emailTemplateName } = useParams();
+  const { data: dynamicEmail } = useSWR(
+    `/api/matching/emails/dynamic_templates/${emailTemplateName}/`,
+    dataFetcher,
+    {},
+  );
+
+  return (
+    <Container>
+      <SendWrapper>
+        <SendEmailSheet emailTemplateName={emailTemplateName} />
+      </SendWrapper>
+      <div
+        dangerouslySetInnerHTML={{ __html: dynamicEmail?.template }}
+        style={{ overflow: 'scroll' }}
+      />
+    </Container>
+  );
 }

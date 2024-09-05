@@ -171,12 +171,14 @@ const CreateNewEmail = () => {
     register: registerTemplate,
     handleSubmit: submitTemplate,
     formState: { errors: errorsTemplate },
+    setError,
   } = useForm();
 
   const onSaveDynamicTemplate = () => {
     setSaving(true);
+    console.log({ newEmail });
     fetch(`/api/matching/emails/dynamic_templates/`, {
-      method: 'POST',
+      method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
         'X-CSRFToken': getCookiesAsObject().csrftoken,
@@ -189,11 +191,18 @@ const CreateNewEmail = () => {
         sender_id: 'noreply',
       }),
     })
-      .then(() => {
-        setSaving(false);
-        setTemplateSaved(true);
+      .then(response => {
+        if (response?.ok) {
+          setSaving(false);
+          setTemplateSaved(true);
+        } else {
+          throw new Error();
+        }
       })
-      .catch(() => setSaving(false));
+      .catch(() => {
+        setSaving(false);
+        setError('template_name', { message: 'Error saving' });
+      });
   };
 
   const handleTemplateSelect = value => {
@@ -290,7 +299,7 @@ const CreateNewEmail = () => {
           >
             {saving ? <LoadingSpinner /> : 'Save Template'}
           </Button>
-          <SendEmailSheet />
+          <SendEmailSheet emailTemplateName={watch('template_name')} />
 
           <ToolTip
             trigger={

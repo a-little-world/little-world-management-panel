@@ -1,23 +1,18 @@
 import {
-  BarChartCounts
-} from "../BarChartCounts"
-
-import { DatePicker } from '../../atoms/DatePicker';
-
-import {
   Card,
   ChevronRightIcon,
   Link,
+  MessageTypes,
   StatusMessage,
   Text,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
-import { MessageTypes } from '@a-little-world/little-world-design-system/dist/esm/components/StatusMessage/StatusMessage';
 import { isNumber } from 'lodash';
 import React from 'react';
 import styled from 'styled-components';
 import useSWR from 'swr';
 
+import { DatePicker } from '../../atoms/DatePicker';
 import {
   HoverCard,
   HoverCardContent,
@@ -25,10 +20,14 @@ import {
 } from '../../atoms/HoverCard';
 import LoadingSpinner from '../../atoms/LoadingSpinner';
 import { cratePostFetcher } from '../../store';
+import { BarChartCounts } from '../BarChartCounts';
 import DataGraph from '../DataGraph';
 import { graphEndpoints } from './RangedDataGraph';
+import {
+  UserSignUpLossStatistic,
+  UserSignUpLossStatisticMonthly,
+} from './UserSignUpLossStatistic';
 import { matchJourneyBuckets, userJourneyBuckets } from './buckets';
-import { UserSignUpLossStatistic, UserSignUpLossStatisticMonthly } from './UserSignUpLossStatistic';
 
 const SectionTitle = styled(Text)`
   font-weight: bold;
@@ -267,11 +266,13 @@ const MatchingOverview = ({ extraCounts, extraMatchCounts }) => (
           <KeyStat stat={extraCounts['needs_matching']?.count} />
           <StatDescription>
             {`No. of users that need matching.
-            <bold>${(extraCounts['needs_matching']?.count ?? 0) -
+            <bold>${
+              (extraCounts['needs_matching']?.count ?? 0) -
               (extraCounts['needs_matching_volunteers']?.count ?? 0)
-              } Learners</bold>
-            <bold>${extraCounts['needs_matching_volunteers']?.count ?? 0
-              } Volunteers</bold>`}
+            } Learners</bold>
+            <bold>${
+              extraCounts['needs_matching_volunteers']?.count ?? 0
+            } Volunteers</bold>`}
           </StatDescription>
         </Stat>
         <Stat>
@@ -296,16 +297,12 @@ const MatchingOverview = ({ extraCounts, extraMatchCounts }) => (
           <KeyStat
             stat={extraMatchCounts['match_journey_v2__completed_match']?.count}
           />
-          <StatDescription>
-            Completed Matchings
-          </StatDescription>
+          <StatDescription>Completed Matchings</StatDescription>
         </Stat>
       </StatsGrouping>
     </SectionCard>
   </Section>
 );
-
-
 
 export function MatchUserJourneyOverview() {
   const allBuckets = userJourneyBuckets.flatMap(bucket => bucket.sub_buckets);
@@ -314,7 +311,7 @@ export function MatchUserJourneyOverview() {
     'needs_matching',
     'needs_matching_volunteers',
     'all',
-    'journey_v2__active_matching'
+    'journey_v2__active_matching',
   ];
 
   const { data: userListCounts } = useSWR(
@@ -332,7 +329,7 @@ export function MatchUserJourneyOverview() {
   const extraMatchBucketIds = [
     'match_journey_v2__match_ongoing',
     'match_journey_v2__match_free_play',
-    'match_journey_v2__completed_match'
+    'match_journey_v2__completed_match',
   ];
 
   const { data: matchJourneyListCounts } = useSWR(
@@ -394,16 +391,40 @@ export function MatchUserJourneyOverview() {
         <UserSignUpLossStatistic />
       </SectionR>
       <SectionR>
-        <UserSignUpLossStatisticMonthly startingMonth="2024-01-01" title="January 2024" />
-        <UserSignUpLossStatisticMonthly startingMonth="2024-02-01" title="Feb 2024" />
-        <UserSignUpLossStatisticMonthly startingMonth="2024-03-01" title="March 2024" />
-        <UserSignUpLossStatisticMonthly startingMonth="2024-04-01" title="April 2024" />
+        <UserSignUpLossStatisticMonthly
+          startingMonth="2024-01-01"
+          title="January 2024"
+        />
+        <UserSignUpLossStatisticMonthly
+          startingMonth="2024-02-01"
+          title="Feb 2024"
+        />
+        <UserSignUpLossStatisticMonthly
+          startingMonth="2024-03-01"
+          title="March 2024"
+        />
+        <UserSignUpLossStatisticMonthly
+          startingMonth="2024-04-01"
+          title="April 2024"
+        />
       </SectionR>
       <SectionR>
-        <UserSignUpLossStatisticMonthly startingMonth="2024-05-01" title="May 2024" />
-        <UserSignUpLossStatisticMonthly startingMonth="2024-06-01" title="June 2024" />
-        <UserSignUpLossStatisticMonthly startingMonth="2024-07-01" title="July 2024" />
-        <UserSignUpLossStatisticMonthly startingMonth="2024-08-01" title="August 2024" />
+        <UserSignUpLossStatisticMonthly
+          startingMonth="2024-05-01"
+          title="May 2024"
+        />
+        <UserSignUpLossStatisticMonthly
+          startingMonth="2024-06-01"
+          title="June 2024"
+        />
+        <UserSignUpLossStatisticMonthly
+          startingMonth="2024-07-01"
+          title="July 2024"
+        />
+        <UserSignUpLossStatisticMonthly
+          startingMonth="2024-08-01"
+          title="August 2024"
+        />
       </SectionR>
     </Container>
   );

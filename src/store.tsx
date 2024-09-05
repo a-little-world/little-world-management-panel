@@ -21,6 +21,28 @@ export const registerInput = ({
   };
 };
 
+const ROOT_SERVER_ERROR = 'Server Error';
+const TRY_AGAIN_ERROR = 'Error with request. Please try again';
+
+export const onFormError = ({ e, formFields, setError }) => {
+  const cause = Object.keys(formFields).includes(e.cause)
+    ? e.cause
+    : ROOT_SERVER_ERROR;
+
+  if (e.message) {
+    setError(
+      cause,
+      { type: 'custom', message: e.message },
+      { shouldFocus: true },
+    );
+  } else {
+    setError(cause, {
+      type: 'custom',
+      message: e.message || TRY_AGAIN_ERROR,
+    });
+  }
+};
+
 export const dataFetcher = (url: string) =>
   fetch(url).then(res => {
     if (res.ok) return res.json();
