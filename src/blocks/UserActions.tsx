@@ -72,7 +72,13 @@ function SendSms({ userId }: { userId: string }) {
   );
 }
 
-const UserActions = ({ user }) => {
+const UserActions = ({
+  user,
+  onUpdate,
+}: {
+  user: any;
+  onUpdate: () => void;
+}) => {
   const theme = useTheme();
   const [deleteUserModalOpen, setDeleteUserModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -117,6 +123,7 @@ const UserActions = ({ user }) => {
       .then(() => {
         setIsSubmitting(false);
         setChangesSaved(true);
+        onUpdate();
       })
       .catch(() => {
         setIsSubmitting(false);
