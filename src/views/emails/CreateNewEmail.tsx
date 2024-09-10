@@ -166,11 +166,11 @@ const CreateNewEmail = () => {
 
   const [showHrefEditor, setShowHrefEditor] = useState<null | number>(null);
 
-  const { data: dynamicTemplates, isLoading: templatesLoading } = useSWR(
-    '/api/matching/emails/dynamic_templates/',
-    dataFetcher,
-    {},
-  );
+  const {
+    data: dynamicTemplates,
+    isLoading: templatesLoading,
+    mutate,
+  } = useSWR('/api/matching/emails/dynamic_templates/', dataFetcher, {});
   console.log({ dynamicTemplates });
 
   const {
@@ -212,6 +212,7 @@ const CreateNewEmail = () => {
           setSaving(false);
           setTemplateSaved(true);
           setIsFirstSave(false);
+          mutate();
         } else {
           throw new Error();
         }
