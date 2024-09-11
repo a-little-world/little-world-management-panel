@@ -305,7 +305,79 @@ const MatchingOverview = ({ extraCounts, extraMatchCounts }) => (
   </Section>
 );
 
+export function DownloadCenter() {
+  const [startDate, setStartDate] = React.useState('2021-01-01');
+  const today = new Date();
+  const [endDate, setEndDate] = React.useState(
+      today.toISOString().split('T')[0],
+  );
 
+  const { data: userSignUpLossStatisticData, mutate } = useSWR(
+      '/api/matching/users/statistics/user_signup_loss/',
+        cratePostFetcher({
+          start_date: startDate,
+          end_date: endDate,
+        }),
+    {},
+  );
+  
+  const onDownload = () => {
+    // should start a json Download
+    console.log('Download');
+    
+    const downloadData = JSON.stringify(userSignUpLossStatisticData);
+    const blob = new Blob([downloadData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'user_signup_loss.json';
+    a.click();
+  }
+  
+  return (
+      <div className="flex flex-col">
+        <SectionTitle type={TextTypes.Body4} tag="h2">
+          Download Center
+        </SectionTitle>
+        <div className="w-full flex flex-row">
+          <div>
+            <SectionTitle type={TextTypes.Body4} tag="h2">
+              User Sign-Up Loss Statistics
+            </SectionTitle>
+            <Text tag="p">This data is cleaned and buckets should be 'destinct' there is a duplication check performed by the backend, found duplicates would be outputted in 'intersecting_ids_lists' some lists maybe be ignored like 'all' they are also listed.</Text>
+            <button onClick={onDownload} className="btn btn-primary">Download</button>
+          </div>
+          <div>
+            <SectionTitle type={TextTypes.Body4} tag="h2">
+              User Sign-Up Loss Statistics
+            </SectionTitle>
+            <Text tag="p">This data is cleaned and buckets should be 'destinct' there is a duplication check performed by the backend, found duplicates would be outputted in 'intersecting_ids_lists' some lists maybe be ignored like 'all' they are also listed.</Text>
+            <button onClick={onDownload} className="btn btn-primary">Download</button>
+            <div className="flex flex-row">
+              <DatePicker
+                  date={startDate}
+                  setDate={date => {
+                      setStartDate(date);
+                      setTimeout(() => {
+                          mutate();
+                      }, 500);
+                  }}
+              />
+              <DatePicker
+                  date={endDate}
+                  setDate={date => {
+                      setEndDate(date);
+                      setTimeout(() => {
+                          mutate();
+                      }, 500);
+                  }}
+              />
+            </div>
+          </div>
+        </div>
+    </div>
+  )
+}
 
 export function MatchUserJourneyOverview() {
   const allBuckets = userJourneyBuckets.flatMap(bucket => bucket.sub_buckets);
@@ -405,6 +477,7 @@ export function MatchUserJourneyOverview() {
         <UserSignUpLossStatisticMonthly startingMonth="2024-07-01" title="July 2024" />
         <UserSignUpLossStatisticMonthly startingMonth="2024-08-01" title="August 2024" />
       </SectionR>
+      <DownloadCenter />
     </Container>
   );
 }
