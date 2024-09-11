@@ -304,7 +304,8 @@ const MatchingOverview = ({ extraCounts, extraMatchCounts }) => (
   </Section>
 );
 
-export function DownloadCenter() {
+export function UserLossStatisticDownloadBlock(){
+
   const [startDate, setStartDate] = React.useState('2021-01-01');
   const today = new Date();
   const [endDate, setEndDate] = React.useState(
@@ -333,20 +334,7 @@ export function DownloadCenter() {
     a.click();
   }
   
-  return (
-      <div className="flex flex-col">
-        <SectionTitle type={TextTypes.Body4} tag="h2">
-          Download Center
-        </SectionTitle>
-        <div className="w-full flex flex-row">
-          <div>
-            <SectionTitle type={TextTypes.Body4} tag="h2">
-              User Sign-Up Loss Statistics
-            </SectionTitle>
-            <Text tag="p">This data is cleaned and buckets should be 'destinct' there is a duplication check performed by the backend, found duplicates would be outputted in 'intersecting_ids_lists' some lists maybe be ignored like 'all' they are also listed.</Text>
-            <button onClick={onDownload} className="btn btn-primary">Download</button>
-          </div>
-          <div>
+  return <div>
             <SectionTitle type={TextTypes.Body4} tag="h2">
               User Sign-Up Loss Statistics
             </SectionTitle>
@@ -373,6 +361,114 @@ export function DownloadCenter() {
               />
             </div>
           </div>
+}
+
+export function AccentureReportDownloadBloack(){
+
+  const [startDate, setStartDate] = React.useState('2021-01-01');
+  const today = new Date();
+  const [endDate, setEndDate] = React.useState(
+      today.toISOString().split('T')[0],
+  );
+
+  const { data: accentureReport, mutate } = useSWR(
+      '/api/matching/users/statistics/company_report/accenture/',
+        cratePostFetcher({}),
+    {},
+  );
+
+  const onDownload = () => {
+    // should start a json Download
+    console.log('Download');
+    
+    const text = accentureReport?.report ?? '';
+    const blob = new Blob([text], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    
+    a.download = 'accenture_report.txt';
+    a.click();
+  }
+    
+  
+  return <div>
+      <SectionTitle type={TextTypes.Body4} tag="h2">
+        Accenture Report
+      </SectionTitle>
+      <button onClick={onDownload} className="btn btn-primary">Download</button>
+    </div>
+}
+
+export function MatchQualitySatisticDownloadBlock(){
+  const [startDate, setStartDate] = React.useState('2021-01-01');
+  const today = new Date();
+  const [endDate, setEndDate] = React.useState(
+      today.toISOString().split('T')[0],
+  );
+
+  const { data: matchQualityStatistic, mutate } = useSWR(
+      '/api/matching/users/statistics/match_quality/',
+        cratePostFetcher({
+          start_date: startDate,
+          end_date: endDate,
+        }),
+    {},
+  );
+  
+  const onDownload = () => {
+    // should start a json Download
+    console.log('Download');
+
+    const downloadData = JSON.stringify(accentureReport);
+    const blob = new Blob([downloadData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'match_quality.json';
+    a.click();
+  }
+
+  return <div>
+      <SectionTitle type={TextTypes.Body4} tag="h2">
+        Match Quality Statistic
+      </SectionTitle>
+      <Text tag="p">This data is cleaned and buckets should be 'destinct' there is a duplication check performed by the backend, found duplicates would be outputted in 'intersecting_ids_lists' some lists maybe be ignored like 'all' they are also listed.</Text>
+      <button onClick={onDownload} className="btn btn-primary">Download</button>
+      <div className="flex flex-row">
+        <DatePicker
+            date={startDate}
+            setDate={date => {
+                setStartDate(date);
+                setTimeout(() => {
+                    mutate();
+                }, 500);
+            }}
+        />
+        <DatePicker
+            date={endDate}
+            setDate={date => {
+                setEndDate(date);
+                setTimeout(() => {
+                    mutate();
+                }, 500);
+            }}
+        />
+      </div>
+    </div>
+}
+
+export function DownloadCenter() {
+  
+  return (
+      <div className="flex flex-col">
+        <SectionTitle type={TextTypes.Body4} tag="h2">
+          Download Center
+        </SectionTitle>
+        <div className="w-full flex flex-row">
+          <MatchQualitySatisticDownloadBlock />
+          <UserLossStatisticDownloadBlock />
+          <AccentureReportDownloadBloack />
         </div>
     </div>
   )
