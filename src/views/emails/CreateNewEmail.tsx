@@ -14,10 +14,11 @@ import {
   ToolTip,
 } from '@a-little-world/little-world-design-system';
 import { render as renderEmail } from '@react-email/render';
-import { isEmpty, isNumber, map, pullAt } from 'lodash';
+import { filter, isEmpty, isNumber, map, pullAt } from 'lodash';
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import styled, { useTheme } from 'styled-components';
+import useSWR from 'swr';
 
 import LoadingSpinner from '../../atoms/LoadingSpinner';
 import SendEmailSheet from '../../blocks/SendEmailSheet';
@@ -25,10 +26,9 @@ import EmailBuilder, {
   BlocksWithLink,
   ContentTypes,
 } from '../../emails/Builder';
-import communityEmails from '../../emails/data/community';
 import { BackendVars } from '../../emails/templates/backendVars';
 import { getCookiesAsObject } from '../../lib/utils';
-import { registerInput } from '../../store';
+import { dataFetcher, registerInput } from '../../store';
 import {
   Container,
   Content,
@@ -158,52 +158,93 @@ const HrefEditor = ({ handleUpdate, href, text }) => {
 
 const CreateNewEmail = () => {
   const [newEmail, setNewEmail] = useState([]);
-  const [_, setSelectedTemplate] = useState(null);
   const [templateSaved, setTemplateSaved] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [isFirstSave, setIsFirstSave] = useState(true);
 
   const theme = useTheme();
 
   const [showHrefEditor, setShowHrefEditor] = useState<null | number>(null);
 
   const {
+    data: dynamicTemplates,
+    isLoading: templatesLoading,
+    mutate,
+  } = useSWR('/api/matching/emails/dynamic_templates/', dataFetcher, {});
+  console.log({ dynamicTemplates });
+
+  const {
     watch,
     register: registerTemplate,
     handleSubmit: submitTemplate,
     formState: { errors: errorsTemplate },
+    setError,
+    setValue,
   } = useForm();
+  const templateName = watch('template_name');
 
   const onSaveDynamicTemplate = () => {
     setSaving(true);
-    fetch(`/api/matching/emails/dynamic_templates/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCookiesAsObject().csrftoken,
+    fetch(
+      `/api/matching/emails/dynamic_templates/${
+        isFirstSave ? '' : `${templateName}/`
+      }`,
+      {
+        method: isFirstSave ? 'POST' : 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookiesAsObject().csrftoken,
+        },
+        body: JSON.stringify({
+          template_name: templateName,
+          template: renderEmail(
+            <EmailBuilder content={newEmail} preview={''} />,
+          ),
+          subject: 'Test Subject',
+          category_id: 'dynamic',
+          sender_id: 'noreply',
+          content: newEmail,
+        }),
       },
-      body: JSON.stringify({
-        template_name: watch('template_name'),
-        template: renderEmail(<EmailBuilder content={newEmail} preview={''} />),
-        subject: 'Test Subject',
-        category_id: 'dynamic',
-        sender_id: 'noreply',
-      }),
-    })
-      .then(() => {
-        setSaving(false);
-        setTemplateSaved(true);
+    )
+      .then(response => {
+        if (response?.ok) {
+          setSaving(false);
+          setTemplateSaved(true);
+          setIsFirstSave(false);
+          mutate();
+        } else {
+          throw new Error();
+        }
       })
-      .catch(() => setSaving(false));
+      .catch(() => {
+        setSaving(false);
+        setError('template_name', { message: 'Error saving' });
+      });
   };
 
   const handleTemplateSelect = value => {
-    setSelectedTemplate(communityEmails[value]);
-    setNewEmail(communityEmails[value]?.content);
+    const dynamicTemplate = dynamicTemplates?.results.find(
+      template => template.uuid === value,
+    );
+    setValue('template_name', `${dynamicTemplate?.template_name} - COPY` ?? '');
+    setNewEmail(dynamicTemplate.content);
   };
 
   useEffect(() => {
     setTemplateSaved(false);
   }, [newEmail]);
+
+  useEffect(() => {
+    if (templateName) {
+      // check if template name already exists
+      setIsFirstSave(
+        !dynamicTemplates?.results.some(
+          template => template.template_name === templateName,
+        ),
+      );
+    }
+  }, [templateName, dynamicTemplates]);
 
   const handleTextUpdate = ({
     text,
@@ -263,12 +304,16 @@ const CreateNewEmail = () => {
       <SaveTemplateForm onSubmit={submitTemplate(onSaveDynamicTemplate)}>
         <Dropdown
           label={'Start with a pre-existing template'}
-          options={map(communityEmails, template => ({
-            value: template.id,
-            label: template.label,
-          }))}
+          options={map(
+            filter(dynamicTemplates?.results, item => !isEmpty(item.content)),
+            template => ({
+              value: template.uuid,
+              label: template.template_name,
+            }),
+          )}
           onValueChange={handleTemplateSelect}
           placeholder="pick a template"
+          disabled={templatesLoading || isEmpty(dynamicTemplates?.results)}
         />
         <TextInput
           id={'template_name'}
@@ -290,7 +335,7 @@ const CreateNewEmail = () => {
           >
             {saving ? <LoadingSpinner /> : 'Save Template'}
           </Button>
-          <SendEmailSheet />
+          <SendEmailSheet emailTemplateName={templateName} />
 
           <ToolTip
             trigger={

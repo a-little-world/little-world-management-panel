@@ -40,10 +40,12 @@ const UserPanelContent = ({
   preMatchingAppointment,
   tab,
   user,
+  onUpdate,
 }: {
   preMatchingAppointment: string;
   tab: string;
   user: any;
+  onUpdate: () => void;
 }) => {
   if (tab === 'profile') return <UserDetailsCard user={user} partial={false} />;
 
@@ -59,7 +61,7 @@ const UserPanelContent = ({
       />
     );
 
-  if (tab === 'actions') return <UserActions user={user} />;
+  if (tab === 'actions') return <UserActions user={user} onUpdate={onUpdate} />;
   return null;
 };
 
@@ -76,6 +78,7 @@ const UserPanel = () => {
     data: user,
     error,
     isLoading,
+    mutate,
   } = useSWR(`/api/matching/users/${userId}/?messages=include`, dataFetcher);
 
   const onAddToMatching = () => {
@@ -147,6 +150,7 @@ const UserPanel = () => {
                 tab={tab.key}
                 user={user}
                 preMatchingAppointment={preMatchingAppointment?.start_time}
+                onUpdate={mutate}
               />
             </CardContent>
           </Card>

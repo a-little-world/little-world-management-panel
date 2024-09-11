@@ -1,5 +1,15 @@
 import { getCookiesAsObject } from '../lib/utils';
 
+export const formatApiError = responseBody => {
+  console.log({ responseBody });
+  if (typeof responseBody === 'string') return new Error(responseBody);
+  const errorTypeApi = Object.keys(responseBody)?.[0];
+  const errorTags = Object.values(responseBody)?.[0];
+  const errorTag = Array.isArray(errorTags) ? errorTags[0] : errorTags;
+
+  return new Error(errorTag, { cause: errorTypeApi ?? null });
+};
+
 export const addUserByHash = async (
   userHash: string,
   onError: (error: string) => void,
@@ -13,8 +23,6 @@ export const addUserByHash = async (
     },
   })
     .then(res => {
-      console.log({ res });
-
       if (res.ok) {
         return res
           .json()
@@ -121,11 +129,45 @@ export const setUserUnresponsive = async ({
     );
 
     if (response.ok) {
+      const responseBody = await response?.json();
+      onSuccess(responseBody);
+    } else {
+      const responseBody = await response?.json();
+      const error = formatApiError(responseBody);
+      throw error;
+    }
+  } catch (error) {
+    onError(error);
+  }
+};
+
+export const sendBulkEmail = async ({
+  emailTemplate,
+  userList,
+  onError,
+  onSuccess,
+}) => {
+  try {
+    const response = await fetch(
+      `/api/matching/emails/dynamic_templates/${emailTemplate}/send/`,
+      {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': getCookiesAsObject().csrftoken,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_list: userList,
+        }),
+      },
+    );
+
+    if (response.ok) {
       const result = await response.json();
       onSuccess(result);
     } else {
       const errorText = await response.text();
-      onError(new Error(errorText));
+      throw new Error(errorText);
     }
   } catch (error) {
     onError(error);
@@ -140,7 +182,7 @@ export const setHadPrematchingCall = async ({
 }) => {
   try {
     const response = await fetch(
-      `/api/matching/users/${userId}/mark_pre_matching_call_completed/`,
+      `/api/matching/users/${userId}/mark_prematching_call_completed/`,
       {
         method: 'POST',
         headers: {
@@ -154,11 +196,12 @@ export const setHadPrematchingCall = async ({
     );
 
     if (response.ok) {
-      const result = await response.json();
-      onSuccess(result);
+      const responseBody = await response?.json();
+      onSuccess(responseBody);
     } else {
-      const errorText = await response.text();
-      onError(new Error(errorText));
+      const responseBody = await response?.json();
+      const error = formatApiError(responseBody);
+      throw error;
     }
   } catch (error) {
     onError(error);

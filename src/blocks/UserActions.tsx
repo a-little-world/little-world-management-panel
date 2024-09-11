@@ -1,8 +1,10 @@
 import {
   Button,
   Checkbox,
+  MessageTypes,
   Modal,
   Separator,
+  StatusMessage,
   Text,
   TextArea,
   TextTypes,
@@ -20,7 +22,7 @@ import {
 import { Card, CardFooter, CardHeader, CardTitle } from '../atoms/Card';
 import { registerInput } from '../store';
 
-function SendSms({ userId }) {
+function SendSms({ userId }: { userId: string }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [sentSuccessfully, setSentSuccessfully] = useState(false);
   const {
@@ -70,15 +72,22 @@ function SendSms({ userId }) {
   );
 }
 
-const UserActions = ({ user }) => {
+const UserActions = ({
+  user,
+  onUpdate,
+}: {
+  user: any;
+  onUpdate: () => void;
+}) => {
   const theme = useTheme();
   const [deleteUserModalOpen, setDeleteUserModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [changesSaved, setChangesSaved] = useState(false);
 
   const {
     control,
     handleSubmit,
-    formState: { dirtyFields },
+    formState: { dirtyFields, errors },
     setError,
   } = useForm();
 
@@ -105,12 +114,17 @@ const UserActions = ({ user }) => {
           [key]: data[key],
           onError: error => {
             setError(key, error.message);
+            throw error;
           },
-          onSuccess: res => console.log(res),
+          onSuccess: () => null,
         });
       }),
     )
-      .then(() => setIsSubmitting(false))
+      .then(() => {
+        setIsSubmitting(false);
+        setChangesSaved(true);
+        onUpdate();
+      })
       .catch(() => {
         setIsSubmitting(false);
       });
@@ -120,7 +134,11 @@ const UserActions = ({ user }) => {
     <div className="w-full">
       <SendSms userId={user} />
       <Separator />
-      <form className="mb-4" onSubmit={handleSubmit(saveChanges)}>
+      <form
+        className="mb-4"
+        onSubmit={handleSubmit(saveChanges)}
+        onChange={() => setChangesSaved(false)}
+      >
         <Controller
           defaultValue={user.state.had_prematching_call}
           name="completed"
@@ -164,7 +182,15 @@ const UserActions = ({ user }) => {
             />
           )}
         />
-        <Button type="submit" disabled={isSubmitting}>
+        <StatusMessage
+          $visible={changesSaved || !!errors?.root?.serverError}
+          $type={changesSaved ? MessageTypes.Success : MessageTypes.Error}
+        >
+          {changesSaved
+            ? 'Changes updated successfully'
+            : errors?.root?.serverError?.message}
+        </StatusMessage>
+        <Button type="submit" disabled={isSubmitting || isEmpty(dirtyFields)}>
           Save Changes
         </Button>
       </form>
