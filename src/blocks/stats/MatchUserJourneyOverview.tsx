@@ -420,7 +420,7 @@ export function MatchQualitySatisticDownloadBlock(){
     // should start a json Download
     console.log('Download');
 
-    const downloadData = JSON.stringify(accentureReport);
+    const downloadData = JSON.stringify(matchQualityStatistic);
     const blob = new Blob([downloadData], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
