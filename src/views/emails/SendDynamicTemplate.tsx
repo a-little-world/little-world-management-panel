@@ -10,6 +10,7 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.small};
+  min-height: 0;
 `;
 
 const SendWrapper = styled.div`
