@@ -67,7 +67,6 @@ const UserPanelContent = ({
 
 const UserPanel = () => {
   const { userId } = useParams();
-  const { state } = useLocation();
   const { addUserToMatching } = useGlobalState();
   const theme = useTheme();
   let [searchParams, setSearchParams] = useSearchParams();
@@ -100,7 +99,7 @@ const UserPanel = () => {
     );
 
   return (
-    <Tabs defaultValue={state?.openTab ?? USER_TABS[0].key}>
+    <Tabs defaultValue={searchParams.get('tab') ?? USER_TABS[0].key}>
       <TabsList className="grid w-full grid-cols-6">
         {USER_TABS.map(tab => (
           <TabsTrigger
@@ -156,7 +155,7 @@ const UserPanel = () => {
           </Card>
         </TabsContent>
       ))}
-      {state?.openTab !== USER_TABS[0].key && <SelectedUsersSheet />}
+      {searchParams.get('tab') !== USER_TABS[1].key && <SelectedUsersSheet />}
     </Tabs>
   );
 };
