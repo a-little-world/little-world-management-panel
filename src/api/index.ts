@@ -1,7 +1,6 @@
 import { getCookiesAsObject } from '../lib/utils';
 
 export const formatApiError = responseBody => {
-  console.log({ responseBody });
   if (typeof responseBody === 'string') return new Error(responseBody);
   const errorTypeApi = Object.keys(responseBody)?.[0];
   const errorTags = Object.values(responseBody)?.[0];
@@ -248,6 +247,31 @@ export const matchUsers = ({ data, onError, onSuccess }) =>
       }
     })
     .catch(onError);
+
+export const getTaskStatus = async ({ taskId, onSuccess, onError }) => {
+  console.log({ taskId });
+  try {
+    const response = await fetch(`/api/matching/tasks/${taskId}/status/`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookiesAsObject().csrftoken,
+      },
+    });
+    console.log({ response });
+    if (response.ok) {
+      const responseBody = await response?.json();
+      console.log({ responseBody });
+      onSuccess(responseBody);
+    } else {
+      const responseBody = await response?.json();
+      const error = formatApiError(responseBody);
+      throw error;
+    }
+  } catch (error) {
+    onError(error);
+  }
+};
 
 export const calculateAllScoresForUser = ({ user1Id, onSuccess, onError }) => {
   fetch(`/api/matching/users/${user1Id}/scores/`, {

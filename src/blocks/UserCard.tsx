@@ -96,23 +96,19 @@ export const UserCard = ({
               </Text>
               : {user.profile.target_group}
             </div>
-            <Text tag="h4" bold type={TextTypes.Heading6}>
+            {/* <Text tag="h4" bold type={TextTypes.Heading6}>
               Interests
             </Text>
-            {/*<Tags content={user.profile.interests} /> */}
+            <Tags content={user.profile.interests} /> */}
 
             <Text tag="h4" bold type={TextTypes.Heading6}>
               About
             </Text>
             <Text>{user.profile.description}</Text>
-            <Text tag="h4" bold type={TextTypes.Heading6}>
-              Other Topics
+            {/* <Text tag="h4" bold type={TextTypes.Heading6}>
+              Languages:
             </Text>
-            <Text>{user.profile.additional_interests}</Text>
-            <Text tag="h4" bold type={TextTypes.Heading6}>
-              Which languages do you speak and how well?
-            </Text>
-            <Text>{user.profile.language_skill_description}</Text>
+            <Text>{user.profile.language_skill_description}</Text> */}
           </div>
           <div className="w-full md:w-1/2 bg-white rounded-xl p-3 flex-col border border-slate-200">
             <Text type={TextTypes.Body4} center bold>

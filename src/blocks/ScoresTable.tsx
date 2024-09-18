@@ -28,9 +28,11 @@ const SCORES_FIELDS = [
 export function ScoresTable({
   scoresList,
   onMatchClick,
+  loading,
 }: {
   scoresList: any;
-  onMatchClick: (user: any) => void;
+  onMatchClick: (score: any) => void;
+  loading: boolean;
 }) {
   const { removeUserFromMatching, addUserToMatching, potentialMatch } =
     useGlobalState();
@@ -50,7 +52,7 @@ export function ScoresTable({
         </TableHeader>
         {isEmpty(scoresList) ? (
           <Text className="p-4 w-full" center>
-            No results.
+            {loading ? 'Loading...' : 'No results.'}
           </Text>
         ) : (
           <TableBody>

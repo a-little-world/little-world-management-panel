@@ -1,7 +1,12 @@
 import {
   Button,
   ButtonAppearance,
+  Card,
+  CardHeader,
+  CardSizes,
   Dropdown,
+  Modal,
+  ProgressBar,
   Text,
 } from '@a-little-world/little-world-design-system';
 import React, { useState } from 'react';
@@ -10,18 +15,10 @@ import { createSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import useSWR from 'swr';
 
-import { burstUpdateMatchingScores } from '../api/index';
-import { Button as ShadcnButton } from '../atoms/Button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '../atoms/Dialog';
+import { burstUpdateMatchingScores, getTaskStatus } from '../api/index';
 import Pagination from '../atoms/Pagination';
 import { ScoresTable } from '../blocks/ScoresTable';
 import { formatTime } from '../helpers/date';
-import { cn } from '../lib/utils';
 import {
   dataFetcher,
   useGlobalState,
@@ -67,7 +64,7 @@ export const TaskMonitorComponent = ({ task_id, finishedCallback }) => {
             className="progress progress-primary w-full"
             value={progressInfo.progress}
             max={progressInfo.total_considered_users}
-          ></progress>
+          />
         </div>
       )}
       {progressInfo && (
@@ -84,36 +81,42 @@ const StyledDropdown = styled(Dropdown)`
 `;
 
 function MatchingDialog({
-  matchingDialogOpen,
-  setMatchingDialogOpen,
+  open,
+  onClose,
   mutateResults,
+  score,
+}: {
+  open: boolean;
+  onClose: () => void;
+  mutateResults: () => void;
+  score: any;
 }) {
   const { clearMatching } = useGlobalState();
 
   return (
-    <Dialog open={matchingDialogOpen} onOpenChange={setMatchingDialogOpen}>
-      <DialogContent className="z-140 max-w-full w-[1000px]">
-        <DialogHeader>
-          <DialogTitle>
-            Do you want to perform a matching for these users?
-          </DialogTitle>
-          <Matching
-            onPerformedMatch={() => {
-              setTimeout(() => {
-                clearMatching();
-                setMatchingDialogOpen(false);
-              }, 500);
-            }}
-          />
-        </DialogHeader>
-      </DialogContent>
-    </Dialog>
+    <Modal open={open} onClose={onClose}>
+      <Card>
+        <CardHeader>
+          Do you want to perform a matching for these users?
+        </CardHeader>
+        <Matching
+          preCalculatedScoreData={score}
+          onPerformedMatch={() => {
+            mutateResults();
+            setTimeout(() => {
+              clearMatching();
+              onClose();
+            }, 500);
+          }}
+        />
+      </Card>
+    </Modal>
   );
 }
 
 function BurstUpdateDialog({
-  burstUpdateDialogOpen,
-  setBurstUpdateDialogOpen,
+  open,
+  onClose,
   burstMatchingState,
   taskIds,
   setTaskIds,
@@ -121,34 +124,27 @@ function BurstUpdateDialog({
   const activeScoreCalculation = burstMatchingState?.active || true;
 
   return (
-    <Dialog
-      open={burstUpdateDialogOpen}
-      onOpenChange={setBurstUpdateDialogOpen}
-    >
-      <DialogContent className="z-140 max-w-full w-[1000px]">
-        <DialogHeader>
-          <DialogTitle>
-            Do you want to perform a burst update for these users?
-          </DialogTitle>
-          <Button
-            appearance={ButtonAppearance.Secondary}
-            onClick={() => {
-              console.log('BURST UPDATE');
-              burstUpdateMatchingScores({ parallel_tasks: 10 }).then(
-                results => {
-                  //TODO: returns the task ID's so a progress monitor should be displayed
-                  console.log('BURST UPDATE RESULTS', results);
-                  setTaskIds(results.task_ids);
-                },
-              );
-            }}
-          >
-            Burst Update Scores
-          </Button>
-          {JSON.stringify(taskIds)}
-        </DialogHeader>
-      </DialogContent>
-    </Dialog>
+    <Modal open={open} onClose={onClose}>
+      <Card width={CardSizes.Medium}>
+        <CardHeader>
+          Do you want to perform a burst update for these users?
+        </CardHeader>
+
+        <Button
+          appearance={ButtonAppearance.Primary}
+          onClick={() => {
+            burstUpdateMatchingScores({ parallel_tasks: 10 }).then(results => {
+              //TODO: returns the task ID's so a progress monitor should be displayed
+              console.log('BURST UPDATE RESULTS', results);
+              setTaskIds(results.task_ids);
+            });
+          }}
+        >
+          Burst Update Scores
+        </Button>
+        <Text>{taskIds?.map(task => task)}</Text>
+      </Card>
+    </Modal>
   );
 }
 
@@ -157,22 +153,23 @@ export function Scores() {
 
   // Score calculation
   const [burstUpdateDialogOpen, setBurstUpdateDialogOpen] = useState(false);
-  const [burstMatchingTasks, setBurstMatchingTasks] = useState([]);
+  const [burstTasks, setBurstTasks] = useState([]);
+  const [burstProgress, setBurstProgress] = useState(0);
 
   const {
     data: burstMatchingState,
     error,
     mutate: mutateBurstUpdateState,
-    isLoading,
+    isLoading: burstLoading,
   } = useSWR(`/api/matching/get_active_burst_calculation/`, dataFetcher, {
     refreshInterval: 1000,
   });
   const activeScoreCalculation = burstMatchingState?.active;
 
-  console.log({ burstMatchingState, error, isLoading });
+  console.log({ burstMatchingState, error, burstLoading });
 
   // Quick matching
-  const [matchingDialogOpen, setMatchingDialogOpen] = useState(false);
+  const [selectedMatch, setSelectedMatch] = useState(null);
 
   // Score api lookup
   const { isLoading: filtersLoading } = useScoresFilterOptions();
@@ -190,21 +187,36 @@ export function Scores() {
     );
   };
 
-  console.log({ scoresList });
+  // useEffect(() => {
+  //   if (burstMatchingState?.active) {
+  //     if (isEmpty(burstTasks)) setBurstTasks(burstMatchingState.tasks);
+  //     burstTasks?.forEach(taskId =>
+  //       getTaskStatus({
+  //         taskId,
+  //         onSuccess: res => console.log({ res }),
+  //         onError: error => console.log({ error }),
+  //       }),
+  //     );
+  //   }
+  // }, [burstTasks, burstMatchingState?.active]);
+
+  const scoresUpdating =
+    activeScoreCalculation || burstLoading || scoresLoading;
 
   return (
     <>
       <MatchingDialog
-        matchingDialogOpen={matchingDialogOpen}
-        setMatchingDialogOpen={setMatchingDialogOpen}
+        open={!!selectedMatch}
+        onClose={() => setSelectedMatch(null)}
         mutateResults={mutate}
+        score={selectedMatch}
       />
       <BurstUpdateDialog
         burstMatchingState={burstMatchingState}
-        burstUpdateDialogOpen={burstUpdateDialogOpen}
-        setBurstUpdateDialogOpen={setBurstUpdateDialogOpen}
-        taskIds={burstMatchingTasks}
-        setTaskIds={setBurstMatchingTasks}
+        open={burstUpdateDialogOpen}
+        onClose={() => setBurstUpdateDialogOpen(false)}
+        taskIds={burstTasks}
+        setTaskIds={setBurstTasks}
       />
       <div className="flex w-full overflow-scroll gap-2 p-2.5 align-center z-100 justify-center items-center">
         {filtersLoading ? (
@@ -224,24 +236,20 @@ export function Scores() {
               placeholder="Select a score list..."
               cannotError
             />
-            <ShadcnButton
-              variant="outline"
+            <Button
+              disabled={scoresUpdating}
               onClick={() => {
                 setBurstUpdateDialogOpen(true);
               }}
-              className={cn('', {
-                'bg-success': activeScoreCalculation,
-                'bg-error': !activeScoreCalculation,
-              })}
+              backgroundColor={scoresUpdating ? 'gray' : undefined}
             >
-              {activeScoreCalculation
-                ? 'Scores are being updated...'
-                : 'Burst Update Scores'}
-            </ShadcnButton>
+              {scoresUpdating ? 'Scores updating...' : 'Update Scores'}
+            </Button>
             {scoresUpdated && (
               <Text>Scores Updated at {formatTime(scoresUpdated)}</Text>
             )}
             <Pagination list={scoresList} />
+            {/* <ProgressBar max={burstTasks.length} value={burstProgress} /> */}
           </div>
         )}
       </div>
@@ -252,8 +260,12 @@ export function Scores() {
         `Loading scores...`
       ) : (
         <ScoresTable
+          loading={scoresLoading}
           scoresList={scoresList?.results ?? []}
-          onMatchClick={() => setMatchingDialogOpen(true)}
+          onMatchClick={score => {
+            console.log({ score });
+            setSelectedMatch(score);
+          }}
         />
       )}
     </>

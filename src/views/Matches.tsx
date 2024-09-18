@@ -1,4 +1,4 @@
-import { Dropdown, Text } from '@a-little-world/little-world-design-system';
+import { Dropdown } from '@a-little-world/little-world-design-system';
 import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { createSearchParams } from 'react-router-dom';
@@ -15,14 +15,16 @@ const StyledDropdown = styled(Dropdown)`
   }
 `;
 
-const orderingOptions = [{
-  value: 'created_at',
-  label: '(Asc) Created At',
-}, {
-  value: '-created_at',
-  label: '(Desc) Created At',
-}];
-
+const orderingOptions = [
+  {
+    value: 'created_at',
+    label: '(Asc) Created At',
+  },
+  {
+    value: '-created_at',
+    label: '(Desc) Created At',
+  },
+];
 
 export function Matches() {
   let [searchParams, setSearchParams] = useSearchParams();
@@ -36,18 +38,18 @@ export function Matches() {
   );
 
   const changeList = (list: string) => {
-    searchParams.set('list', list)
-    setSearchParams(searchParams)
+    searchParams.set('list', list);
+    setSearchParams(searchParams);
   };
 
   return (
     <>
-      <div className="flex w-full overflow-scroll gap-2 p-2.5 align-center z-100 justify-center items-center">
+      <div className="flex w-full gap-5 p-4 align-center justify-center items-center">
         {/*{`Filters ${JSON.stringify(filterOptions?.filters.map(({ name }) => name))}`} todo use to render some filter menu*/}
         {filtersLoading ? (
           'Loading filters...'
         ) : (
-          <div className="w-full flex items-center w-full gap-4 p-4 justify-between flex-wrap">
+          <div className="w-full flex items-center gap-2 justify-between flex-wrap">
             <StyledDropdown
               value={list}
               options={filterOptions.lists.map(({ name, description }) => ({
@@ -63,8 +65,8 @@ export function Matches() {
               value={orderBy}
               options={orderingOptions}
               onValueChange={val => {
-                searchParams.set('order_by', val)
-                setSearchParams(searchParams)
+                searchParams.set('order_by', val);
+                setSearchParams(searchParams);
               }}
               placeholder="Select a user list..."
               cannotError

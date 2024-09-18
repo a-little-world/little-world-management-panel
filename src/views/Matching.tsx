@@ -7,7 +7,7 @@ import {
   Text,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
-import { isEmpty } from 'lodash';
+import { isEmpty, isNumber } from 'lodash';
 import React, { useState } from 'react';
 
 import {
@@ -23,6 +23,7 @@ import {
   CardHeader,
   CardTitle,
 } from '../atoms/Card';
+import Tag, { TagAppearance, TagSizes } from '../atoms/Tag';
 import { ScoresTable } from '../blocks/ScoresTable';
 import { SelectedUsersSheet } from '../blocks/SelectedUsersSheet';
 import UserCard from '../blocks/UserCard';
@@ -37,12 +38,15 @@ const MATCHING_OPTIONS = [
 const Matching = ({
   preselectOption = 'proposal',
   onPerformedMatch = () => {},
+  preCalculatedScoreData,
+}: {
+  preCalculatedScoreData?: any;
 }) => {
   const [option, setOption] = useState<string>(preselectOption);
   const [forceMatch, setForceMatch] = useState<boolean>(false);
   const [submitError, setSubmitError] = useState<string>('');
   const [matchSucces, setMatchSuccess] = useState<string>('');
-  const [score, setScore] = useState<string | number>('To Be Calculated');
+  const [scoreData, setScoreData] = useState<any>(preCalculatedScoreData ?? {});
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [loadingScore, setLoadingScore] = useState<boolean>(false);
 
@@ -81,7 +85,8 @@ const Matching = ({
         },
         onSuccess: res => {
           setLoadingScore(false);
-          setScore(res.score);
+
+          setScoreData(res);
           setMatchSuccess('Score Calculated');
         },
       });
@@ -150,18 +155,20 @@ const Matching = ({
             >
               Submit
             </Button>
-            <Button
-              disabled={
-                loadingPotentialMatches ||
-                isSubmitting ||
-                potentialMatch.length !== 1 ||
-                !option
-              }
-              onClick={calculateScores}
-              size={ButtonSizes.Small}
-            >
-              Calculate Scores for first user
-            </Button>
+            {isEmpty(preCalculatedScoreData) && (
+              <Button
+                disabled={
+                  loadingPotentialMatches ||
+                  isSubmitting ||
+                  potentialMatch.length !== 1 ||
+                  !option
+                }
+                onClick={calculateScores}
+                size={ButtonSizes.Small}
+              >
+                Calculate Scores for first user
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent className="space-y-2 flex flex-col gap-4">
@@ -172,9 +179,25 @@ const Matching = ({
             </Text>
           ) : (
             <>
-              <Text type={TextTypes.Body3} bold>
-                Score: {loadingScore ? 'Loading Score...' : score}
-              </Text>
+              <div className="flex gap-4 items-center">
+                <Text type={TextTypes.Body3} bold>
+                  Score:{' '}
+                  {loadingScore
+                    ? 'Loading Score...'
+                    : scoreData.score ?? 'to be calculated'}
+                </Text>
+                {!isEmpty(scoreData) && (
+                  <Tag
+                    appearance={
+                      TagAppearance[scoreData?.matchable ? 'success' : 'error']
+                    }
+                    size={TagSizes.small}
+                  >
+                    {scoreData?.matchable ? 'Matchable' : 'Not valid'}
+                  </Tag>
+                )}
+              </div>
+
               {potentialMatch.map(user => (
                 <UserCard
                   user={user}
