@@ -10,6 +10,7 @@ import { EmailHtmlRenderer } from './views/emails/EmailHtml';
 
 function renderApp({ apiOptions, apiTranslations }) {
   const root = ReactDOM.createRoot(document.getElementById('root'));
+  console.log('RENDERING APP');
   root.render(
     <React.StrictMode>
       <MatchingPannel

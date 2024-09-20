@@ -122,6 +122,7 @@ function BurstUpdateDialog({
   setTaskIds,
 }) {
   const activeScoreCalculation = burstMatchingState?.active || true;
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   return (
     <Modal open={open} onClose={onClose}>
@@ -131,11 +132,15 @@ function BurstUpdateDialog({
         </CardHeader>
 
         <Button
+          disabled={isSubmitting}
           appearance={ButtonAppearance.Primary}
           onClick={() => {
+            setIsSubmitting(true);
             burstUpdateMatchingScores({ parallel_tasks: 10 }).then(results => {
               //TODO: returns the task ID's so a progress monitor should be displayed
               console.log('BURST UPDATE RESULTS', results);
+              onClose();
+              setIsSubmitting(false);
               setTaskIds(results.task_ids);
             });
           }}
@@ -182,9 +187,8 @@ export function Scores() {
   } = useScoresListData(createSearchParams(searchParams));
 
   const changeList = (value: string) => {
-    setSearchParams(
-      createSearchParams({ ...searchParams, current_match_suggestion: value }),
-    );
+    searchParams.set('current_match_suggestion', value);
+    setSearchParams(searchParams);
   };
 
   // useEffect(() => {
@@ -224,7 +228,7 @@ export function Scores() {
         ) : (
           <div className="w-full flex items-center w-full gap-4 p-4 justify-between flex-wrap">
             <StyledDropdown
-              value={'false'}
+              value={searchParams.get('current_match_suggestion') ?? 'false'}
               options={[
                 { label: 'All Scores', value: 'false' },
                 {
@@ -232,7 +236,7 @@ export function Scores() {
                   value: 'true',
                 },
               ]}
-              onValueChange={val => changeList(val)}
+              onValueChange={changeList}
               placeholder="Select a score list..."
               cannotError
             />
