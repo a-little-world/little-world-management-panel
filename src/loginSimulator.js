@@ -1,5 +1,6 @@
-import * as utils from './utils';
-import { USER_FILTERS, baseUrl, baseLogin } from './constants';
+import { USER_FILTERS, baseLogin, baseUrl } from './constants';
+import * as utils from './lib/utils.ts';
+
 /*
 The 'data' should prob be centralized in some env-file
 Be aware that using the loginSimulator will only work in combination with 'schroedingers-nginx.sh'

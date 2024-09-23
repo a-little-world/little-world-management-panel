@@ -1,4 +1,4 @@
-import { recursiveObjectToFormData } from '../utils';
+import { recursiveObjectToFormData } from '../lib/utils.ts';
 
 it('list recursiveObjectToFormData', () => {
   const formD = new FormData();

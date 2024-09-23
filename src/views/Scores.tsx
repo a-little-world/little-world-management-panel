@@ -83,30 +83,22 @@ const StyledDropdown = styled(Dropdown)`
 function MatchingDialog({
   open,
   onClose,
-  mutateResults,
+  onMatch,
   score,
 }: {
   open: boolean;
   onClose: () => void;
-  mutateResults: () => void;
+  onMatch: () => void;
   score: any;
 }) {
-  const { clearMatching } = useGlobalState();
-
   return (
     <Modal open={open} onClose={onClose}>
-      <Card>
-        <CardHeader>
-          Do you want to perform a matching for these users?
-        </CardHeader>
+      <Card height={'100%'}>
+        <CardHeader>Match users?</CardHeader>
         <Matching
           preCalculatedScoreData={score}
-          onPerformedMatch={() => {
-            mutateResults();
-            setTimeout(() => {
-              clearMatching();
-              onClose();
-            }, 500);
+          onMatch={() => {
+            onMatch();
           }}
         />
       </Card>
@@ -155,6 +147,7 @@ function BurstUpdateDialog({
 
 export function Scores() {
   let [searchParams, setSearchParams] = useSearchParams();
+  const { clearMatching } = useGlobalState();
 
   // Score calculation
   const [burstUpdateDialogOpen, setBurstUpdateDialogOpen] = useState(false);
@@ -211,8 +204,11 @@ export function Scores() {
     <>
       <MatchingDialog
         open={!!selectedMatch}
-        onClose={() => setSelectedMatch(null)}
-        mutateResults={mutate}
+        onClose={() => {
+          clearMatching();
+          setSelectedMatch(null);
+        }}
+        onMatch={mutate}
         score={selectedMatch}
       />
       <BurstUpdateDialog
@@ -222,11 +218,11 @@ export function Scores() {
         taskIds={burstTasks}
         setTaskIds={setBurstTasks}
       />
-      <div className="flex w-full overflow-scroll gap-2 p-2.5 align-center z-100 justify-center items-center">
+      <div className="flex w-full gap-2 p-4 align-center z-100 justify-center items-center">
         {filtersLoading ? (
           'Loading filters...'
         ) : (
-          <div className="w-full flex items-center w-full gap-4 p-4 justify-between flex-wrap">
+          <div className="w-full flex items-center w-full gap-4 justify-between flex-wrap">
             <StyledDropdown
               value={searchParams.get('current_match_suggestion') ?? 'false'}
               options={[
@@ -257,21 +253,15 @@ export function Scores() {
           </div>
         )}
       </div>
-      {!scoresLoading && scoresList?.results?.length === 0 && (
-        <Text>No scores found</Text>
-      )}
-      {scoresLoading && scoresList?.results?.length > 0 ? (
-        `Loading scores...`
-      ) : (
-        <ScoresTable
-          loading={scoresLoading}
-          scoresList={scoresList?.results ?? []}
-          onMatchClick={score => {
-            console.log({ score });
-            setSelectedMatch(score);
-          }}
-        />
-      )}
+
+      <ScoresTable
+        loading={scoresLoading}
+        scoresList={scoresList?.results ?? []}
+        onMatchClick={score => {
+          console.log({ score });
+          setSelectedMatch(score);
+        }}
+      />
     </>
   );
 }

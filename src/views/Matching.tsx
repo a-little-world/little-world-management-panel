@@ -2,13 +2,15 @@ import {
   Button,
   ButtonAppearance,
   ButtonSizes,
+  Card as CardDS,
   Checkbox,
   Dropdown,
   Text,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
-import { isEmpty, isNumber } from 'lodash';
+import { isEmpty } from 'lodash';
 import React, { useState } from 'react';
+import styled from 'styled-components';
 
 import {
   calculateAllScoresForUser,
@@ -35,12 +37,45 @@ const MATCHING_OPTIONS = [
   { value: 'score', label: 'Calculate Matching Score' },
 ];
 
+const SCORE_FUNCTION_LABELS = {
+  time_slot_overlap: 'Time Slot Overlap',
+  postal_code_distance: 'Postal Code Distance',
+  gender: 'Gender Preference',
+  interest_overlap: 'Interest Overlap',
+};
+
+const ScoreCategory = styled.div`
+  border-bottom: 1px solid ${({ theme }) => theme.color.border.subtle};
+  padding: ${({ theme }) => theme.spacing.xxsmall} 0;
+`;
+
+const ScoreBreakdown = ({ data }) => {
+  return (
+    <CardDS>
+      <Text type={TextTypes.Body4}>Score Breakdown</Text>
+      {data.slice(2).map(result => (
+        <ScoreCategory>
+          <Text type={TextTypes.Body5} bold>
+            {SCORE_FUNCTION_LABELS[result.score_function]}
+          </Text>
+          <Text type={TextTypes.Body5}>{result.res.markdown_info}</Text>
+          <Text type={TextTypes.Body5}>
+            Score Contributor: {result.res.score}
+          </Text>
+        </ScoreCategory>
+      ))}
+    </CardDS>
+  );
+};
+
 const Matching = ({
   preselectOption = 'proposal',
-  onPerformedMatch = () => {},
+  onMatch,
   preCalculatedScoreData,
 }: {
   preCalculatedScoreData?: any;
+  onMatch?: () => void;
+  preselectOption?: string;
 }) => {
   const [option, setOption] = useState<string>(preselectOption);
   const [forceMatch, setForceMatch] = useState<boolean>(false);
@@ -91,6 +126,7 @@ const Matching = ({
         },
       });
     } else {
+      setIsSubmitting(true);
       const data = {
         user1: potentialMatch[0].id,
         user2: potentialMatch[1].id,
@@ -100,11 +136,14 @@ const Matching = ({
 
       matchUsers({
         data,
-        onError: error =>
-          setSubmitError(error?.message || 'Issue with request'),
+        onError: error => {
+          setSubmitError(error?.message || 'Issue with request');
+          setIsSubmitting(false);
+        },
         onSuccess: message => {
           setMatchSuccess(message);
-          onPerformedMatch();
+          setIsSubmitting(false);
+          onMatch?.();
         },
       });
     }
@@ -113,6 +152,8 @@ const Matching = ({
   const handlePotentialMatchClick = score => {
     addUserToMatching(score.to_usr);
   };
+
+  console.log({ scoreData, potentialMatch });
 
   return (
     <main className="overflow-y-scroll">
@@ -197,7 +238,17 @@ const Matching = ({
                   </Tag>
                 )}
               </div>
-
+              {(matchSucces || submitError) && (
+                <div
+                  className={`${
+                    matchSucces || submitError ? 'opacity-100' : 'opacity-0'
+                  } w-full h-12 p-4 flex flex-column items-center justify-center ${
+                    submitError ? 'bg-red-200' : 'bg-green-200'
+                  }`}
+                >
+                  {matchSucces || submitError}
+                </div>
+              )}
               {potentialMatch.map(user => (
                 <UserCard
                   user={user}
@@ -206,6 +257,9 @@ const Matching = ({
                 />
               ))}
             </>
+          )}
+          {!isEmpty(scoreData?.scoring_results) && (
+            <ScoreBreakdown data={scoreData.scoring_results} />
           )}
           {(scoresList || loadingPotentialMatches) && (
             <div>
@@ -229,18 +283,6 @@ const Matching = ({
             </div>
           )}
         </CardContent>
-
-        <CardFooter>
-          <div
-            className={`${
-              matchSucces || submitError ? 'opacity-100' : 'opacity-0'
-            } w-full h-12 p-4 flex flex-column items-center justify-center ${
-              submitError ? 'bg-red-200' : 'bg-green-200'
-            }`}
-          >
-            {matchSucces || submitError}
-          </div>
-        </CardFooter>
       </Card>
 
       <SelectedUsersSheet />
