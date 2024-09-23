@@ -171,7 +171,6 @@ const CreateNewEmail = () => {
     isLoading: templatesLoading,
     mutate,
   } = useSWR('/api/matching/emails/dynamic_templates/', dataFetcher, {});
-  console.log({ dynamicTemplates });
 
   const {
     watch,

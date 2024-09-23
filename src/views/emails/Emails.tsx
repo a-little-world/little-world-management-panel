@@ -118,7 +118,7 @@ function developmentUpdateBackendEmailTemplatesAndConfiguration({
       key: key,
       html: html,
     });
-    console.log(templateDict);
+
     newEmailConfig.emails[key] = templateDict;
   }
 
