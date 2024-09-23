@@ -249,7 +249,6 @@ export const matchUsers = ({ data, onError, onSuccess }) =>
     .catch(onError);
 
 export const getTaskStatus = async ({ taskId, onSuccess, onError }) => {
-  console.log({ taskId });
   try {
     const response = await fetch(`/api/matching/tasks/${taskId}/status/`, {
       method: 'GET',
