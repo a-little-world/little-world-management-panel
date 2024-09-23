@@ -23,8 +23,8 @@ type UserCardProps = {
   user: any;
   deselectUser?: (hash: string) => void;
   selectUserForDetails?: (user: any) => void;
-  partial: boolean;
-  horizontal: boolean;
+  partial?: boolean;
+  horizontal?: boolean;
 };
 
 export const UserCard = ({

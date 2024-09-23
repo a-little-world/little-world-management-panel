@@ -1,5 +1,5 @@
 import { filter, unset } from 'lodash';
-import React, { createContext, useState } from 'react';
+import React, { createContext, useCallback, useState } from 'react';
 import useSWR from 'swr';
 
 import { getCookiesAsObject } from './lib/utils';
@@ -225,33 +225,50 @@ export function GlobalStateProvider(props) {
   const [apiOptions] = useState(props?.apiOptions || {});
   const [apiTranslations] = useState(props?.apiTranslations || {});
 
-  const selectUser = (user: any) => {
-    setSelectedUsers(currentUsers => ({ ...currentUsers, [user.hash]: user }));
-  };
+  const selectUser = useCallback(
+    (user: any) => {
+      setSelectedUsers(currentUsers => ({
+        ...currentUsers,
+        [user.hash]: user,
+      }));
+    },
+    [setSelectedUsers],
+  );
 
-  const deselectUser = (userHash: string) => {
-    setSelectedUsers(currentUsers => {
-      const newUsers = { ...currentUsers };
-      unset(newUsers, userHash);
-      return newUsers;
-    });
-  };
+  const deselectUser = useCallback(
+    (userHash: string) => {
+      setSelectedUsers(currentUsers => {
+        const newUsers = { ...currentUsers };
+        unset(newUsers, userHash);
+        return newUsers;
+      });
+    },
+    [setSelectedUsers],
+  );
 
-  const addUserToMatching = (user: any) => {
-    setPotentialMatch(current =>
-      current.length === 2 ? [current[0], user] : [...current, user],
-    );
-  };
+  const addUserToMatching = useCallback(
+    (user: any) => {
+      setPotentialMatch(current => {
+        console.log({ user, current });
+        return current.length === 2 ? [current[0], user] : [...current, user];
+      });
+    },
+    [setPotentialMatch],
+  );
 
-  const removeUserFromMatching = (userHash: string) => {
-    setPotentialMatch(current =>
-      filter(current, (user: any) => user.hash !== userHash),
-    );
-  };
+  const removeUserFromMatching = useCallback(
+    (userHash: string) => {
+      setPotentialMatch(current =>
+        filter(current, (user: any) => user.hash !== userHash),
+      );
+    },
+    [setPotentialMatch],
+  );
 
-  const clearMatching = () => {
+  const clearMatching = useCallback(() => {
+    console.log('CLEARING');
     setPotentialMatch([]);
-  };
+  }, [setPotentialMatch]);
 
   const value = React.useMemo(
     () => ({

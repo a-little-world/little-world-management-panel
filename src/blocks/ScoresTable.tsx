@@ -32,12 +32,12 @@ export function ScoresTable({
 }: {
   scoresList: any;
   onMatchClick: (score: any) => void;
-  loading: boolean;
+  loading?: boolean;
 }) {
   const { removeUserFromMatching, addUserToMatching, potentialMatch } =
     useGlobalState();
   const [fields, setFields] = useState(SCORES_FIELDS);
-  console.log({ scoresList });
+
   return (
     <>
       <Table>
@@ -97,7 +97,7 @@ export function ScoresTable({
                           }}
                           className="text-blue-500"
                         >
-                          Match
+                          View
                         </button>
                       </TableCell>
                     );

@@ -83,30 +83,22 @@ const StyledDropdown = styled(Dropdown)`
 function MatchingDialog({
   open,
   onClose,
-  mutateResults,
+  onMatch,
   score,
 }: {
   open: boolean;
   onClose: () => void;
-  mutateResults: () => void;
+  onMatch: () => void;
   score: any;
 }) {
-  const { clearMatching } = useGlobalState();
-
   return (
     <Modal open={open} onClose={onClose}>
-      <Card>
-        <CardHeader>
-          Do you want to perform a matching for these users?
-        </CardHeader>
+      <Card height={'100%'}>
+        <CardHeader>Match users?</CardHeader>
         <Matching
           preCalculatedScoreData={score}
-          onPerformedMatch={() => {
-            mutateResults();
-            setTimeout(() => {
-              clearMatching();
-              onClose();
-            }, 500);
+          onMatch={() => {
+            onMatch();
           }}
         />
       </Card>
@@ -122,6 +114,7 @@ function BurstUpdateDialog({
   setTaskIds,
 }) {
   const activeScoreCalculation = burstMatchingState?.active || true;
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   return (
     <Modal open={open} onClose={onClose}>
@@ -131,11 +124,15 @@ function BurstUpdateDialog({
         </CardHeader>
 
         <Button
+          disabled={isSubmitting}
           appearance={ButtonAppearance.Primary}
           onClick={() => {
+            setIsSubmitting(true);
             burstUpdateMatchingScores({ parallel_tasks: 10 }).then(results => {
               //TODO: returns the task ID's so a progress monitor should be displayed
               console.log('BURST UPDATE RESULTS', results);
+              onClose();
+              setIsSubmitting(false);
               setTaskIds(results.task_ids);
             });
           }}
@@ -150,6 +147,7 @@ function BurstUpdateDialog({
 
 export function Scores() {
   let [searchParams, setSearchParams] = useSearchParams();
+  const { clearMatching } = useGlobalState();
 
   // Score calculation
   const [burstUpdateDialogOpen, setBurstUpdateDialogOpen] = useState(false);
@@ -182,9 +180,8 @@ export function Scores() {
   } = useScoresListData(createSearchParams(searchParams));
 
   const changeList = (value: string) => {
-    setSearchParams(
-      createSearchParams({ ...searchParams, current_match_suggestion: value }),
-    );
+    searchParams.set('current_match_suggestion', value);
+    setSearchParams(searchParams);
   };
 
   // useEffect(() => {
@@ -207,8 +204,11 @@ export function Scores() {
     <>
       <MatchingDialog
         open={!!selectedMatch}
-        onClose={() => setSelectedMatch(null)}
-        mutateResults={mutate}
+        onClose={() => {
+          clearMatching();
+          setSelectedMatch(null);
+        }}
+        onMatch={mutate}
         score={selectedMatch}
       />
       <BurstUpdateDialog
@@ -218,13 +218,13 @@ export function Scores() {
         taskIds={burstTasks}
         setTaskIds={setBurstTasks}
       />
-      <div className="flex w-full overflow-scroll gap-2 p-2.5 align-center z-100 justify-center items-center">
+      <div className="flex w-full gap-2 p-4 align-center z-100 justify-center items-center">
         {filtersLoading ? (
           'Loading filters...'
         ) : (
-          <div className="w-full flex items-center w-full gap-4 p-4 justify-between flex-wrap">
+          <div className="w-full flex items-center w-full gap-4 justify-between flex-wrap">
             <StyledDropdown
-              value={'false'}
+              value={searchParams.get('current_match_suggestion') ?? 'false'}
               options={[
                 { label: 'All Scores', value: 'false' },
                 {
@@ -232,7 +232,7 @@ export function Scores() {
                   value: 'true',
                 },
               ]}
-              onValueChange={val => changeList(val)}
+              onValueChange={changeList}
               placeholder="Select a score list..."
               cannotError
             />
@@ -253,21 +253,15 @@ export function Scores() {
           </div>
         )}
       </div>
-      {!scoresLoading && scoresList?.results?.length === 0 && (
-        <Text>No scores found</Text>
-      )}
-      {scoresLoading && scoresList?.results?.length > 0 ? (
-        `Loading scores...`
-      ) : (
-        <ScoresTable
-          loading={scoresLoading}
-          scoresList={scoresList?.results ?? []}
-          onMatchClick={score => {
-            console.log({ score });
-            setSelectedMatch(score);
-          }}
-        />
-      )}
+
+      <ScoresTable
+        loading={scoresLoading}
+        scoresList={scoresList?.results ?? []}
+        onMatchClick={score => {
+          console.log({ score });
+          setSelectedMatch(score);
+        }}
+      />
     </>
   );
 }

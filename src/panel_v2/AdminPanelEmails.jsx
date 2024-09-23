@@ -3,7 +3,6 @@ import { useParams } from 'react-router-dom';
 import useSWR from 'swr';
 
 import { getCookiesAsObject } from '../lib/utils.ts';
-import { UserDetailsCard } from './AdminPanel.jsx';
 
 export function AdminPanelV2_Emails(props) {
   const [tab, setTab] = useState('templates');

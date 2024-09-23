@@ -28,7 +28,7 @@ const MatchesIcons = ({
               to={'/user/' + match.partner?.id}
               key={match.id}
               className="tooltip"
-              data-tip={`${match.partner.first_name} ${match.partner.second_name}`}
+              data-tip={`${match.partner.first_name}`}
             >
               <UserImage
                 alt="match profile pic"
