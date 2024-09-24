@@ -108,7 +108,7 @@ const MatchCard = ({ match }: { match: any }) => {
       <p>
         Last Message: {formatTimeDistance(new Date('04.05.24'), new Date())}
       </p>
-      <p>Group: {match.partner.target_group}</p>
+      <p>Group: {match.partner.target_groups?.join(', ')}</p>
       <p>Languages: {match.language_skills} </p>
       <div className="flex gap-2">
         <Link
