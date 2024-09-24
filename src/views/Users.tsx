@@ -162,6 +162,12 @@ const userColumns = [
       <MatchesIcons matches={row.original.matches.unconfirmed.items} />
     ),
   }),
+  columnHelper.accessor('matches.proposed', {
+    header: 'Proposed',
+    cell: ({ row }) => (
+      <MatchesIcons matches={row.original.matches.proposed.items} />
+    ),
+  }),
   columnHelper.accessor('date_joined', {
     header: ({ column }) => {
       return (

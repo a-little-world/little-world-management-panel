@@ -24,17 +24,14 @@ export const StyledTag = styled(Text)<{ $size: string; $appearance: string }>`
   background-color: ${({ theme }) => theme.color.surface.primary};
   border-radius: ${({ theme }) => theme.radius.large};
   gap: ${({ theme }) => theme.spacing.xxxsmall};
-  color: ${({ theme, $appearance }) =>
-    $appearance === TagAppearance.primary
-      ? theme.color.text.heading
-      : '#de5050'};
+  color: ${({ $appearance }) =>
+    $appearance === TagAppearance.primary ? '#9631c5' : '#ec2525'};
   border: 2px solid
-    ${({ theme, $appearance }) =>
-      $appearance === TagAppearance.primary
-        ? theme.color.border.bold
-        : '#de5050'};
+    ${({ $appearance }) =>
+      $appearance === TagAppearance.primary ? '#9631c5' : '#ec2525'};
   filter: drop-shadow(0px 1px 3px rgb(0 0 0 / 22%));
   line-height: 1.1;
+  text-transform: capitalize;
 
   ${({ theme, $size }) => {
     if ($size === TagSizes.small)

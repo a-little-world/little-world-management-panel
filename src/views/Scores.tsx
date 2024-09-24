@@ -9,7 +9,7 @@ import {
   ProgressBar,
   Text,
 } from '@a-little-world/little-world-design-system';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { createSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
@@ -199,6 +199,10 @@ export function Scores() {
 
   const scoresUpdating =
     activeScoreCalculation || burstLoading || scoresLoading;
+
+  useEffect(() => {
+    clearMatching();
+  }, []);
 
   return (
     <>

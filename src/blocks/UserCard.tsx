@@ -4,6 +4,7 @@ import {
   ButtonSizes,
   ButtonVariations,
   Link,
+  MultiDropdown,
   Tags,
   Text,
   TextTypes,
@@ -25,6 +26,7 @@ type UserCardProps = {
   selectUserForDetails?: (user: any) => void;
   partial?: boolean;
   horizontal?: boolean;
+  tiny?: boolean;
 };
 
 export const UserCard = ({
@@ -96,10 +98,10 @@ export const UserCard = ({
               </Text>
               : {user.profile.target_group}
             </div>
-            {/* <Text tag="h4" bold type={TextTypes.Heading6}>
+            <Text tag="h4" bold type={TextTypes.Heading6}>
               Interests
             </Text>
-            <Tags content={user.profile.interests} /> */}
+            <Tags content={user.profile.interests} />
 
             <Text tag="h4" bold type={TextTypes.Heading6}>
               About
@@ -107,8 +109,8 @@ export const UserCard = ({
             <Text>{user.profile.description}</Text>
             {/* <Text tag="h4" bold type={TextTypes.Heading6}>
               Languages:
-            </Text>
-            <Text>{user.profile.language_skill_description}</Text> */}
+            </Text> */}
+            {/* <MultiDropdown locked options /> */}
           </div>
           <div className="w-full md:w-1/2 bg-white rounded-xl p-3 flex-col border border-slate-200">
             <Text type={TextTypes.Body4} center bold>
@@ -159,7 +161,7 @@ export const UserCard = ({
           Marked as unresponsive
         </div>
       )}
-      {partial && !tiny && (
+      {!tiny && (
         <div className="w-full h-fit p-3 flex flex-row justify-between absolute top-0 left-0 z-10">
           <Tag
             className=""
@@ -171,28 +173,30 @@ export const UserCard = ({
           >
             {user.profile.user_type}
           </Tag>
-          <Button
-            variation={ButtonVariations.Icon}
-            onClick={e => {
-              deselectUser?.(user.hash);
-              e.stopPropagation();
-            }}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+          {partial && (
+            <Button
+              variation={ButtonVariations.Icon}
+              onClick={e => {
+                deselectUser?.(user.hash);
+                e.stopPropagation();
+              }}
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </Button>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </Button>
+          )}
         </div>
       )}
 
