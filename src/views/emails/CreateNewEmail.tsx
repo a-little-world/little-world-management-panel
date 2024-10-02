@@ -17,6 +17,7 @@ import { render as renderEmail } from '@react-email/render';
 import { filter, isEmpty, isNumber, map, pullAt } from 'lodash';
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useSearchParams } from 'react-router-dom';
 import styled, { useTheme } from 'styled-components';
 import useSWR from 'swr';
 
@@ -161,6 +162,7 @@ const CreateNewEmail = () => {
   const [templateSaved, setTemplateSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [isFirstSave, setIsFirstSave] = useState(true);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const theme = useTheme();
 
@@ -170,7 +172,11 @@ const CreateNewEmail = () => {
     data: dynamicTemplates,
     isLoading: templatesLoading,
     mutate,
-  } = useSWR('/api/matching/emails/dynamic_templates/', dataFetcher, {});
+  } = useSWR(
+    '/api/matching/emails/dynamic_templates/?page_size=50',
+    dataFetcher,
+    {},
+  );
 
   const {
     watch,
@@ -226,6 +232,8 @@ const CreateNewEmail = () => {
     const dynamicTemplate = dynamicTemplates?.results.find(
       template => template.uuid === value,
     );
+    if (!dynamicTemplate) return;
+    searchParams.delete('template');
     setValue('template_name', `${dynamicTemplate?.template_name} - COPY` ?? '');
     setNewEmail(dynamicTemplate.content);
   };
@@ -233,6 +241,13 @@ const CreateNewEmail = () => {
   useEffect(() => {
     setTemplateSaved(false);
   }, [newEmail]);
+
+  useEffect(() => {
+    const searchParamTemplate = searchParams.get('template');
+    console.log({ dynamicTemplates, searchParamTemplate });
+    if (!templatesLoading && searchParamTemplate)
+      handleTemplateSelect(searchParamTemplate);
+  }, [templatesLoading]);
 
   useEffect(() => {
     if (templateName) {
