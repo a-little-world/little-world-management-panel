@@ -4,7 +4,7 @@ import {
   ButtonVariations,
   PlusIcon,
 } from '@a-little-world/little-world-design-system';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useSearchParams } from 'react-router-dom';
 import { useTheme } from 'styled-components';
@@ -67,7 +67,7 @@ const UserPanelContent = ({
 
 const UserPanel = () => {
   const { userId } = useParams();
-  const { addUserToMatching } = useGlobalState();
+  const { addUserToMatching, setUpdateCurrentUser } = useGlobalState();
   const theme = useTheme();
   let [searchParams, setSearchParams] = useSearchParams();
 
@@ -84,6 +84,10 @@ const UserPanel = () => {
     addUserToMatching(user);
     navigate(MATCHING_ROUTE);
   };
+
+  useEffect(() => {
+    setUpdateCurrentUser(() => mutate);
+  }, [userId, mutate]);
 
   const { data: preMatchingAppointment } = useSWR(
     `/api/matching/users/${userId}/prematching_appointments/`,

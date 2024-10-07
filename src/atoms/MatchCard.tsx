@@ -2,68 +2,65 @@ import {
   Button,
   ButtonAppearance,
   ButtonSizes,
+  Card,
+  CardHeader,
+  CardSizes,
   Link,
+  Modal,
+  Text,
 } from '@a-little-world/little-world-design-system';
 import React from 'react';
 
+import { removeMatch } from '../api';
 import { formatTimeDistance } from '../helpers/date';
-import { getCookiesAsObject } from '../lib/utils';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from './Dialog';
+import { useGlobalState } from '../store';
 import Tag, { TagAppearance } from './Tag';
 import UserImage from './UserImage';
 
-const ConfirmRemoveMatchDialog = ({ dialogOpen, setDialogOpen, match }) => {
+const ConfirmRemoveMatchDialog = ({ dialogOpen, onClose, match, userName }) => {
+  const { updateCurrentUser } = useGlobalState();
+
   return (
-    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-      <DialogTrigger></DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Do you want to remove this match?</DialogTitle>
-          <DialogDescription>
-            This will remove the match between you and{' '}
-            {match.partner.first_name} {match.partner.second_name}
-          </DialogDescription>
-          <Button
-            appearance={ButtonAppearance.Secondary}
-            onClick={() => {
-              console.log('REMOVE MATCH');
-              fetch(`/api/matching/matches/${match.id}/resolve/`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'X-CSRFToken': getCookiesAsObject().csrftoken,
-                },
-              }).then(res => {
-                if (res.ok) {
-                  setDialogOpen(false);
-                }
-              });
-              // TODO: mutate matches and reload so the UI updates!
-            }}
-          >
-            Remove Match
-          </Button>
-        </DialogHeader>
-      </DialogContent>
-    </Dialog>
+    <Modal open={dialogOpen} onClose={onClose}>
+      <Card className="items-center justify-center" width={CardSizes.Medium}>
+        <CardHeader>Do you want to remove this match?</CardHeader>
+        <Text>
+          This will remove the match between {match.partner.first_name}
+          and {userName}
+        </Text>
+        <Button
+          className="mt-4"
+          appearance={ButtonAppearance.Secondary}
+          size={ButtonSizes.Medium}
+          backgroundColor={'red'}
+          color={'red'}
+          onClick={() => {
+            removeMatch({
+              match,
+              onSuccess: () => {
+                updateCurrentUser();
+                onClose();
+              },
+              onError: error => console.error(error),
+            });
+          }}
+        >
+          Remove Match
+        </Button>
+      </Card>
+    </Modal>
   );
 };
 
-const MatchCard = ({ match }: { match: any }) => {
+const MatchCard = ({ match, userName }: { match: any; userName: string }) => {
   const [dialogOpen, setDialogOpen] = React.useState(false);
   return (
     <div className="w-full max-w-[320px] flex flex-col bg-white h-fit relative items-center justify-center rounded-xl p-4 gap-2 border border-border-slate-400">
       <ConfirmRemoveMatchDialog
         dialogOpen={dialogOpen}
-        setDialogOpen={setDialogOpen}
+        onClose={() => setDialogOpen(false)}
         match={match}
+        userName={userName}
       />
       <Link
         to={'/user/' + match.partner?.id}
@@ -94,6 +91,8 @@ const MatchCard = ({ match }: { match: any }) => {
       <div className="absolute top-2 right-2">
         <Button
           appearance={ButtonAppearance.Secondary}
+          color={'red'}
+          backgroundColor={'red'}
           onClick={() => {
             setDialogOpen(true);
           }}

@@ -1,4 +1,4 @@
-import { filter, unset } from 'lodash';
+import { filter, unset, update } from 'lodash';
 import React, { createContext, useCallback, useState } from 'react';
 import useSWR from 'swr';
 
@@ -224,6 +224,7 @@ export function GlobalStateProvider(props) {
   const [potentialMatch, setPotentialMatch] = useState<any[]>([]);
   const [apiOptions] = useState(props?.apiOptions || {});
   const [apiTranslations] = useState(props?.apiTranslations || {});
+  const [updateCurrentUser, setUpdateCurrentUser] = useState(() => () => null);
 
   const selectUser = useCallback(
     (user: any) => {
@@ -266,7 +267,6 @@ export function GlobalStateProvider(props) {
   );
 
   const clearMatching = useCallback(() => {
-    console.log('CLEARING');
     setPotentialMatch([]);
   }, [setPotentialMatch]);
 
@@ -281,6 +281,8 @@ export function GlobalStateProvider(props) {
       clearMatching,
       apiOptions,
       apiTranslations,
+      updateCurrentUser,
+      setUpdateCurrentUser,
     }),
     [
       addUserToMatching,
@@ -292,6 +294,8 @@ export function GlobalStateProvider(props) {
       clearMatching,
       apiOptions,
       apiTranslations,
+      updateCurrentUser,
+      setUpdateCurrentUser,
     ],
   );
   return <GlobalStateContext.Provider value={value} {...props} />;

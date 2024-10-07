@@ -1,13 +1,5 @@
 import { getCookiesAsObject } from '../lib/utils';
-
-export const formatApiError = responseBody => {
-  if (typeof responseBody === 'string') return new Error(responseBody);
-  const errorTypeApi = Object.keys(responseBody)?.[0];
-  const errorTags = Object.values(responseBody)?.[0];
-  const errorTag = Array.isArray(errorTags) ? errorTags[0] : errorTags;
-
-  return new Error(errorTag, { cause: errorTypeApi ?? null });
-};
+import { apiFetch, formatApiError } from './helpers';
 
 export const addUserByHash = async (
   userHash: string,
@@ -132,7 +124,7 @@ export const setUserUnresponsive = async ({
       onSuccess(responseBody);
     } else {
       const responseBody = await response?.json();
-      const error = formatApiError(responseBody);
+      const error = formatApiError(responseBody, response);
       throw error;
     }
   } catch (error) {
@@ -199,7 +191,7 @@ export const setHadPrematchingCall = async ({
       onSuccess(responseBody);
     } else {
       const responseBody = await response?.json();
-      const error = formatApiError(responseBody);
+      const error = formatApiError(responseBody, response);
       throw error;
     }
   } catch (error) {
@@ -224,6 +216,20 @@ export const burstUpdateMatchingScores = async ({ parallel_tasks }) => {
   }
   const result = await res.json();
   return result;
+};
+
+export const removeMatch = async ({ match, onError, onSuccess }) => {
+  try {
+    const result = await apiFetch(
+      `/api/matching/matches/${match.id}/resolve/`,
+      {
+        method: 'POST',
+      },
+    );
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
+  }
 };
 
 export const matchUsers = ({ data, onError, onSuccess }) =>
@@ -264,7 +270,7 @@ export const getTaskStatus = async ({ taskId, onSuccess, onError }) => {
       onSuccess(responseBody);
     } else {
       const responseBody = await response?.json();
-      const error = formatApiError(responseBody);
+      const error = formatApiError(responseBody, response);
       throw error;
     }
   } catch (error) {

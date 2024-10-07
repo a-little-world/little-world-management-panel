@@ -9,7 +9,7 @@ import { RangedDataGraph } from '../blocks/stats/RangedDataGraph';
 
 function Stats() {
   let [searchParams, setSearchParams] = useSearchParams();
-  const tab = searchParams.get('tab') || 'graphs';
+  const tab = searchParams.get('tab') || 'overview';
 
   const onTabChange = (value: string) => {
     searchParams.set('tab', value);

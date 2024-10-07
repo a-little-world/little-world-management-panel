@@ -6,9 +6,6 @@ import MatchCard from '../atoms/MatchCard';
 import { formatDate, formatTime } from '../helpers/date';
 
 const UserMatches = ({ preMatchingAppointment, user }) => {
-  const theme = useTheme();
-  const matches = {};
-
   return (
     <div className="w-full">
       {preMatchingAppointment && (
@@ -23,25 +20,25 @@ const UserMatches = ({ preMatchingAppointment, user }) => {
         items={[
           {
             content: user?.matches.confirmed?.items.map(match => (
-              <MatchCard match={match} />
+              <MatchCard match={match} userName={user.profile.first_name} />
             )),
             header: `Confirmed (${user?.matches.confirmed?.items.length})`,
           },
           {
             content: user?.matches.unconfirmed?.items.map(match => (
-              <MatchCard match={match} />
+              <MatchCard match={match} userName={user.profile.first_name} />
             )),
             header: `Unconfirmed (${user?.matches.unconfirmed?.items.length})`,
           },
           {
             content: user?.matches.proposed?.items.map(match => (
-              <MatchCard match={match} />
+              <MatchCard match={match} userName={user.profile.first_name} />
             )),
             header: `Proposed (${user?.matches.proposed?.items.length})`,
           },
           {
             content: user?.matches.support?.items.map(match => (
-              <MatchCard match={match} />
+              <MatchCard match={match} userName={user.profile.first_name} />
             )),
             header: `Support (${user?.matches.support?.items.length})`,
           },
