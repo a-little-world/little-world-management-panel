@@ -1,17 +1,19 @@
 import {
   ButtonSizes,
+  ButtonVariations,
   Button as DSButton,
   Dropdown,
 } from '@a-little-world/little-world-design-system';
 import { ArrowsUpDownIcon } from '@heroicons/react/20/solid';
 import { createColumnHelper } from '@tanstack/react-table';
-import { SlidersHorizontalIcon } from 'lucide-react';
+import { DownloadIcon, SlidersHorizontalIcon } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { createSearchParams } from 'react-router-dom';
 import styled, { css } from 'styled-components';
 
+import { getListData } from '../api/index';
 import { Button } from '../atoms/Button';
 import MatchesIcons from '../atoms/MatchesIcons';
 import { PageSizeDropdown } from '../atoms/PageSizeDropdown';
@@ -265,6 +267,18 @@ export function Users() {
     }
   };
 
+  const handleDownload = data => {
+    console.log({ data });
+  };
+
+  const downloadListData = () => {
+    getListData({
+      searchParams,
+      onSuccess: handleDownload,
+      onError: error => console.log({ error }),
+    });
+  };
+  console.log({ userList });
   return (
     <>
       <div className="w-full flex items-end gap-5 p-4 justify-between flex-wrap">
@@ -285,6 +299,14 @@ export function Users() {
           >
             <SlidersHorizontalIcon width={16} height={16} /> Filters
           </FilterButton>
+          <DSButton
+            onClick={downloadListData}
+            disabled={!list || list === 'all'}
+            variation={ButtonVariations.Circle}
+            className="shrink-0"
+          >
+            <DownloadIcon />
+          </DSButton>
         </div>
         <div className="flex items-end gap-6 flex-wrap">
           <div className="flex items-center gap-2">

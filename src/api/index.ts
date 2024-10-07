@@ -35,6 +35,33 @@ export const addUserByHash = async (
     });
 };
 
+export const getListData = async ({ searchParams, onError, onSuccess }) => {
+  try {
+    const response = await fetch(
+      `/api/matching/users/list_data/?${searchParams}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookiesAsObject().csrftoken,
+        },
+      },
+    );
+    console.log({ response });
+    if (response.ok) {
+      const responseBody = await response?.json();
+      console.log({ responseBody });
+      onSuccess(responseBody);
+    } else {
+      const responseBody = await response?.json();
+      const error = formatApiError(responseBody);
+      throw error;
+    }
+  } catch (error) {
+    onError(error);
+  }
+};
+
 export const sendChatMessage = ({ userId, message, onError, onSuccess }) =>
   fetch(`/api/matching/users/${userId}/message_reply/`, {
     method: 'POST',
