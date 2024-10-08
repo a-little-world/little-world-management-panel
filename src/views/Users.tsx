@@ -4,6 +4,7 @@ import {
   Button as DSButton,
   Dropdown,
 } from '@a-little-world/little-world-design-system';
+import { getCookiesAsObject } from '../lib/utils';
 import { ArrowsUpDownIcon } from '@heroicons/react/20/solid';
 import { createColumnHelper } from '@tanstack/react-table';
 import { DownloadIcon, SlidersHorizontalIcon } from 'lucide-react';
@@ -267,16 +268,21 @@ export function Users() {
     }
   };
 
-  const handleDownload = data => {
-    console.log({ data });
+  const handleDownload = () => {
+    fetch(`/api/matching/users_export/?${createSearchParams(searchParams)}`).then(response => response.json()).then(data => {
+      // create a json file and download it in the browser
+      const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'users.json';
+      a.click();
+      console.log({ data });
+    });
   };
 
   const downloadListData = () => {
-    getListData({
-      searchParams,
-      onSuccess: handleDownload,
-      onError: error => console.log({ error }),
-    });
+    handleDownload();
   };
   console.log({ userList });
   return (
