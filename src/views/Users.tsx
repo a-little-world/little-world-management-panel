@@ -4,7 +4,6 @@ import {
   Button as DSButton,
   Dropdown,
 } from '@a-little-world/little-world-design-system';
-import { getCookiesAsObject } from '../lib/utils';
 import { ArrowsUpDownIcon } from '@heroicons/react/20/solid';
 import { createColumnHelper } from '@tanstack/react-table';
 import { DownloadIcon, SlidersHorizontalIcon } from 'lucide-react';
@@ -14,7 +13,7 @@ import { Link } from 'react-router-dom';
 import { createSearchParams } from 'react-router-dom';
 import styled, { css } from 'styled-components';
 
-import { getListData } from '../api/index';
+import { getUserListExport } from '../api/index';
 import { Button } from '../atoms/Button';
 import MatchesIcons from '../atoms/MatchesIcons';
 import { PageSizeDropdown } from '../atoms/PageSizeDropdown';
@@ -25,6 +24,7 @@ import { DataTable } from '../blocks/DataTable';
 import Filters, { containsFilterKey } from '../blocks/Filters';
 import SearchBar from '../blocks/SearchBar';
 import { formatDate, formatTimeDistance } from '../helpers/date';
+import { getCookiesAsObject } from '../lib/utils';
 import { useGlobalState, useUserListData } from '../store';
 import { SelectedUsersSheet } from './../blocks/SelectedUsersSheet';
 
@@ -269,15 +269,36 @@ export function Users() {
   };
 
   const handleDownload = () => {
-    fetch(`/api/matching/users_export/?${createSearchParams(searchParams)}`).then(response => response.json()).then(data => {
-      // create a json file and download it in the browser
-      const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'users.json';
-      a.click();
-      console.log({ data });
+    getUserListExport({
+      searchParams: createSearchParams(searchParams),
+      onSuccess: response => {
+        // const blob = new Blob([JSON.stringify(response)], {
+        //   type: 'application/json',
+        // });
+        // const url = URL.createObjectURL(blob);
+        // const a = document.createElement('a');
+        // a.href = url;
+        // a.download = 'users.json';
+        // a.click();
+
+        // create a csv file and download it in the browser
+        const headers = ['email', 'first_name'].join(',');
+        const csvRows = response.map(row =>
+          [row.email, row.profile.first_name].join(','),
+        );
+
+        const csvContent = [headers, ...csvRows].join('\n');
+
+        const blob = new Blob([csvContent], {
+          type: 'text/csv;charset=utf-8;',
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'users.csv';
+        a.click();
+      },
+      onError: error => console.log({ error }),
     });
   };
 

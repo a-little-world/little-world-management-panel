@@ -25,8 +25,8 @@ const ConfirmRemoveMatchDialog = ({ dialogOpen, onClose, match, userName }) => {
       <Card className="items-center justify-center" width={CardSizes.Medium}>
         <CardHeader>Do you want to remove this match?</CardHeader>
         <Text>
-          This will remove the match between {match.partner.first_name}
-          and {userName}
+          This will remove the match between {match.partner.first_name} and{' '}
+          {userName}
         </Text>
         <Button
           className="mt-4"

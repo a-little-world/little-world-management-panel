@@ -35,10 +35,14 @@ export const addUserByHash = async (
     });
 };
 
-export const getListData = async ({ searchParams, onError, onSuccess }) => {
+export const getUserListExport = async ({
+  searchParams,
+  onError,
+  onSuccess,
+}) => {
   try {
-    const response = await fetch(
-      `/api/matching/users/list_data/?${searchParams}`,
+    const result = await apiFetch(
+      `/api/matching/users_export/?${searchParams}`,
       {
         method: 'GET',
         headers: {
@@ -47,16 +51,7 @@ export const getListData = async ({ searchParams, onError, onSuccess }) => {
         },
       },
     );
-    console.log({ response });
-    if (response.ok) {
-      const responseBody = await response?.json();
-      console.log({ responseBody });
-      onSuccess(responseBody);
-    } else {
-      const responseBody = await response?.json();
-      const error = formatApiError(responseBody);
-      throw error;
-    }
+    onSuccess(result);
   } catch (error) {
     onError(error);
   }
