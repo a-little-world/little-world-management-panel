@@ -19,6 +19,7 @@ import UserImage from '../atoms/UserImage';
 import { formatDate } from '../helpers/date';
 import { MATCHING_ROUTE } from '../routes';
 import { useGlobalState } from '../store';
+import UserLanguages from './UserLanguages';
 
 type UserCardProps = {
   user: any;
@@ -107,10 +108,10 @@ export const UserCard = ({
               About
             </Text>
             <Text>{user.profile.description}</Text>
-            {/* <Text tag="h4" bold type={TextTypes.Heading6}>
+            <Text tag="h4" bold type={TextTypes.Heading6}>
               Languages:
-            </Text> */}
-            {/* <MultiDropdown locked options /> */}
+            </Text>
+            <UserLanguages langSkill={user.profile.lang_skill} />
           </div>
           <div className="w-full md:w-1/2 bg-white rounded-xl p-3 flex-col border border-slate-200">
             <Text type={TextTypes.Body4} center bold>
