@@ -234,7 +234,7 @@ const CreateNewEmail = () => {
     );
     if (!dynamicTemplate) return;
     searchParams.delete('template');
-    setValue('template_name', `${dynamicTemplate?.template_name} - COPY` ?? '');
+    setValue('template_name', dynamicTemplate?.template_name);
     setNewEmail(dynamicTemplate.content);
   };
 

@@ -1,5 +1,10 @@
+import {
+  Tag,
+  TagAppearance,
+  TagSizes,
+  Text,
+} from '@a-little-world/little-world-design-system';
 import { get, isEmpty } from 'lodash';
-import { Text } from '@a-little-world/little-world-design-system';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -11,9 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from '../atoms/Table';
-import Tag, { TagAppearance, TagSizes } from '../atoms/Tag';
 import UserImage from '../atoms/UserImage';
-import { useGlobalState } from '../store';
 
 const MATCHES_FIELDS = [
   { key: 'status', label: 'Status' },

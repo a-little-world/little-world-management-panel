@@ -1,6 +1,5 @@
 import { Accordion } from '@a-little-world/little-world-design-system';
 import React from 'react';
-import { useTheme } from 'styled-components';
 
 import MatchCard from '../atoms/MatchCard';
 import { formatDate, formatTime } from '../helpers/date';

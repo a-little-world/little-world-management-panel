@@ -3,9 +3,12 @@ import {
   ButtonVariations,
   Button as DSButton,
   Dropdown,
+  Tag,
+  TagSizes,
 } from '@a-little-world/little-world-design-system';
 import { ArrowsUpDownIcon } from '@heroicons/react/20/solid';
 import { createColumnHelper } from '@tanstack/react-table';
+import { capitalize } from 'lodash';
 import { DownloadIcon, SlidersHorizontalIcon } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -18,13 +21,11 @@ import { Button } from '../atoms/Button';
 import MatchesIcons from '../atoms/MatchesIcons';
 import { PageSizeDropdown } from '../atoms/PageSizeDropdown';
 import Pagination from '../atoms/Pagination';
-import Tag, { TagAppearance, TagSizes } from '../atoms/Tag';
 import UserImage from '../atoms/UserImage';
 import { DataTable } from '../blocks/DataTable';
 import Filters, { containsFilterKey } from '../blocks/Filters';
 import SearchBar from '../blocks/SearchBar';
 import { formatDate, formatTimeDistance } from '../helpers/date';
-import { getCookiesAsObject } from '../lib/utils';
 import { useGlobalState, useUserListData } from '../store';
 import { SelectedUsersSheet } from './../blocks/SelectedUsersSheet';
 
@@ -126,14 +127,13 @@ const userColumns = [
     },
     cell: ({ row }) => (
       <Tag
+        bold
         size={TagSizes.small}
-        appearance={
-          row.original.profile.user_type === 'volunteer'
-            ? TagAppearance.primary
-            : TagAppearance.secondary
+        color={
+          row.original.profile.user_type === 'volunteer' ? '#9631c5' : '#ec2525'
         }
       >
-        {row.original.profile.user_type}
+        {capitalize(row.original.profile.user_type)}
       </Tag>
     ),
   }),

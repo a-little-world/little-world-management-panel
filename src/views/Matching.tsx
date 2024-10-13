@@ -5,6 +5,9 @@ import {
   Card as CardDS,
   Checkbox,
   Dropdown,
+  Tag,
+  TagAppearance,
+  TagSizes,
   Text,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
@@ -21,11 +24,9 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '../atoms/Card';
-import Tag, { TagAppearance, TagSizes } from '../atoms/Tag';
 import { ScoresTable } from '../blocks/ScoresTable';
 import { SelectedUsersSheet } from '../blocks/SelectedUsersSheet';
 import UserCard from '../blocks/UserCard';
@@ -44,9 +45,18 @@ const SCORE_FUNCTION_LABELS = {
   interest_overlap: 'Interest Overlap',
 };
 
-const ScoreCategory = styled.div`
+const ScoreCategory = styled.div<{ $matchable: boolean }>`
+  position: relative;
   border-bottom: 1px solid ${({ theme }) => theme.color.border.subtle};
-  padding: ${({ theme }) => theme.spacing.xxsmall} 0;
+  padding: ${({ theme }) => theme.spacing.xxsmall}
+    ${({ theme }) => theme.spacing.xxxsmall};
+  margin-bottom: ${({ theme }) => theme.spacing.xxxsmall};
+`;
+
+const Title = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.xxsmall};
+  align-items: center;
 `;
 
 const ScoreBreakdown = ({ data }) => {
@@ -54,10 +64,22 @@ const ScoreBreakdown = ({ data }) => {
     <CardDS>
       <Text type={TextTypes.Body4}>Score Breakdown</Text>
       {data.slice(2).map(result => (
-        <ScoreCategory>
-          <Text type={TextTypes.Body5} bold>
-            {SCORE_FUNCTION_LABELS[result.score_function]}
-          </Text>
+        <ScoreCategory $matchable={result.res.matchable}>
+          <Title>
+            <Text type={TextTypes.Body5} bold>
+              {SCORE_FUNCTION_LABELS[result.score_function]}
+            </Text>
+            <Tag
+              appearance={
+                result.res.matchable
+                  ? TagAppearance.success
+                  : TagAppearance.error
+              }
+              size={TagSizes.small}
+            >
+              {result.res.matchable ? 'Matchable' : 'Prevents Match'}
+            </Tag>
+          </Title>
           <Text type={TextTypes.Body5}>{result.res.markdown_info}</Text>
           <Text type={TextTypes.Body5}>
             Score Contributor: {result.res.score}
@@ -152,8 +174,6 @@ const Matching = ({
   const handlePotentialMatchClick = score => {
     addUserToMatching(score.to_usr);
   };
-
-  console.log({ scoreData, potentialMatch });
 
   return (
     <main className="overflow-y-scroll">

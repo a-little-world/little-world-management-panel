@@ -4,17 +4,18 @@ import {
   ButtonSizes,
   ButtonVariations,
   Link,
-  MultiDropdown,
+  Tag,
+  TagAppearance,
+  TagSizes,
   Tags,
   Text,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
-import { isEmpty } from 'lodash';
+import { capitalize, isEmpty } from 'lodash';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import MatchesIcons from '../atoms/MatchesIcons';
-import Tag, { TagAppearance, TagSizes } from '../atoms/Tag';
 import UserImage from '../atoms/UserImage';
 import { formatDate } from '../helpers/date';
 import { MATCHING_ROUTE } from '../routes';
@@ -165,14 +166,12 @@ export const UserCard = ({
       {!tiny && (
         <div className="w-full h-fit p-3 flex flex-row justify-between absolute top-0 left-0 z-10">
           <Tag
-            className=""
-            appearance={
-              user.profile.user_type === 'volunteer'
-                ? TagAppearance.primary
-                : TagAppearance.secondary
+            bold
+            color={
+              user.profile.user_type === 'volunteer' ? '#9631c5' : '#ec2525'
             }
           >
-            {user.profile.user_type}
+            {capitalize(user.profile.user_type)}
           </Tag>
           {partial && (
             <Button

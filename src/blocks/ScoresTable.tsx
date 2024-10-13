@@ -1,4 +1,9 @@
-import { Text } from '@a-little-world/little-world-design-system';
+import {
+  Tag,
+  TagAppearance,
+  TagSizes,
+  Text,
+} from '@a-little-world/little-world-design-system';
 import { get, isEmpty, isObject } from 'lodash';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -11,7 +16,6 @@ import {
   TableHeader,
   TableRow,
 } from '../atoms/Table';
-import Tag, { TagAppearance, TagSizes } from '../atoms/Tag';
 import UserImage from '../atoms/UserImage';
 import { formatDate, formatTime } from '../helpers/date';
 import { useGlobalState } from '../store';

@@ -7,6 +7,8 @@ import {
   CardSizes,
   Link,
   Modal,
+  Tag,
+  TagSizes,
   Text,
 } from '@a-little-world/little-world-design-system';
 import React from 'react';
@@ -14,7 +16,6 @@ import React from 'react';
 import { removeMatch } from '../api';
 import { formatTimeDistance } from '../helpers/date';
 import { useGlobalState } from '../store';
-import Tag, { TagAppearance } from './Tag';
 import UserImage from './UserImage';
 
 const ConfirmRemoveMatchDialog = ({ dialogOpen, onClose, match, userName }) => {
@@ -79,12 +80,10 @@ const MatchCard = ({ match, userName }: { match: any; userName: string }) => {
       </Link>
 
       <Tag
+        bold
         className="absolute top-2 left-2"
-        appearance={
-          match.partner.user_type === 'volunteer'
-            ? TagAppearance.primary
-            : TagAppearance.secondary
-        }
+        color={match.partner.user_type === 'volunteer' ? '#9631c5' : '#ec2525'}
+        size={TagSizes.small}
       >
         {match.partner.user_type}
       </Tag>

@@ -1,5 +1,10 @@
+import {
+  Tag,
+  TagAppearance,
+  TagSizes,
+  Text,
+} from '@a-little-world/little-world-design-system';
 import { get, isEmpty } from 'lodash';
-import { Text } from '@a-little-world/little-world-design-system';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -11,15 +16,14 @@ import {
   TableHeader,
   TableRow,
 } from '../atoms/Table';
-import Tag, { TagAppearance, TagSizes } from '../atoms/Tag';
 import UserImage from '../atoms/UserImage';
 import { useGlobalState } from '../store';
 
 const PREMATCH_APPOINTMENT_FIELDS = [
   { key: 'had_prematching_call', label: 'Had Prematching Call' },
-  { key: 'user', label: "User" },
-  { key: 'name', label: "Name" },
-  { key: 'email', label: "Email" },
+  { key: 'user', label: 'User' },
+  { key: 'name', label: 'Name' },
+  { key: 'email', label: 'Email' },
   { key: 'start_time', label: 'Starts At' },
 ];
 
@@ -53,11 +57,17 @@ export function PrematchingAppointmentsTable({ appointments, list }) {
                 <TableCell className="w-20">
                   <input
                     type="checkbox"
-                    checked={Object.keys(selectedUsers).includes(appointment.user.hash)}
+                    checked={Object.keys(selectedUsers).includes(
+                      appointment.user.hash,
+                    )}
                     className="checkbox ml-2"
                     onChange={() => {
                       console.log('appointment', appointment);
-                      if (Object.keys(selectedUsers).includes(appointment.user.hash)) {
+                      if (
+                        Object.keys(selectedUsers).includes(
+                          appointment.user.hash,
+                        )
+                      ) {
                         deselectUser(appointment.user.hash);
                       } else {
                         selectUser(appointment.user);
@@ -89,25 +99,37 @@ export function PrematchingAppointmentsTable({ appointments, list }) {
                   }
 
                   if (key === 'had_prematching_call') {
-                    return <TableCell key={appointment.uuid + key}>
-                      <Tag
-                        appearance={
-                          TagAppearance[appointment.had_prematching_call]
-                        }
-                        size={TagSizes.small}
-                      >
-                        {appointment.had_prematching_call ? 'Yes' : 'No'}
-                      </Tag>
-                    </TableCell>
-
+                    return (
+                      <TableCell key={appointment.uuid + key}>
+                        <Tag
+                          appearance={
+                            appointment.had_prematching_call
+                              ? TagAppearance.success
+                              : TagAppearance.error
+                          }
+                          size={TagSizes.small}
+                        >
+                          {appointment.had_prematching_call ? 'Yes' : 'No'}
+                        </Tag>
+                      </TableCell>
+                    );
                   }
 
                   if (key === 'name') {
-                    return <TableCell key={appointment.uuid + key}>{appointment.user.profile.first_name} {appointment.user.profile.second_name}</TableCell>
+                    return (
+                      <TableCell key={appointment.uuid + key}>
+                        {appointment.user.profile.first_name}{' '}
+                        {appointment.user.profile.second_name}
+                      </TableCell>
+                    );
                   }
 
                   if (key === 'email') {
-                    return <TableCell key={appointment.uuid + key}>{appointment.user.email}</TableCell>
+                    return (
+                      <TableCell key={appointment.uuid + key}>
+                        {appointment.user.email}
+                      </TableCell>
+                    );
                   }
 
                   return (
