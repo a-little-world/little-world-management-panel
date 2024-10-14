@@ -180,7 +180,16 @@ export function Scores() {
   } = useScoresListData(createSearchParams(searchParams));
 
   const changeList = (value: string) => {
-    searchParams.set('current_match_suggestion', value);
+    if (value === 'current_suggestion') {
+      searchParams.set('current_match_suggestion', 'true');
+      searchParams.delete('matchable');
+    } else if (value === 'matchable_scores') {
+      searchParams.set('matchable', 'true');
+      searchParams.delete('current_match_suggestion');
+    }else{
+      searchParams.delete('current_match_suggestion');
+      searchParams.delete('matchable');
+    }
     setSearchParams(searchParams);
   };
 
@@ -203,6 +212,8 @@ export function Scores() {
   useEffect(() => {
     clearMatching();
   }, []);
+
+  const currentDropdownValue = searchParams.get('current_match_suggestion') === 'true' ? 'current_suggestion' : (searchParams.get('matchable') === 'true' ? 'matchable_scores' : 'all_scores');
 
   return (
     <>
@@ -228,13 +239,17 @@ export function Scores() {
         ) : (
           <div className="w-full flex items-center w-full gap-4 justify-between flex-wrap">
             <StyledDropdown
-              value={searchParams.get('current_match_suggestion') ?? 'false'}
+              value={currentDropdownValue}
               options={[
-                { label: 'All Scores', value: 'false' },
+                { label: 'All Scores', value: 'all_scores' },
                 {
                   label: 'Optimised Matches',
-                  value: 'true',
+                  value: 'current_suggestion',
                 },
+                {
+                  label: 'Matchable Scores',
+                  value: 'matchable_scores',
+                }
               ]}
               onValueChange={changeList}
               placeholder="Select a score list..."
