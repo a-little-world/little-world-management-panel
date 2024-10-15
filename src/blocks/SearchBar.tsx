@@ -18,8 +18,10 @@ const SearchBar = ({
   isSubmitting,
   placeholder,
   error,
+  defaultValue,
   searchOnType,
 }: {
+  defaultValue?: string;
   name: string;
   hideSubmitBtn?: boolean;
   onSubmit: (data: any) => void;
@@ -54,6 +56,7 @@ const SearchBar = ({
         placeholder={placeholder}
         inline
         onSubmit={handleSubmit(onSubmit)}
+        defaultValue={defaultValue}
       />
       {!hideSubmitBtn && (
         <Button type="submit" disabled={isSubmitting} size={ButtonSizes.Small}>

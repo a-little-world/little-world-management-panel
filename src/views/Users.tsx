@@ -246,6 +246,7 @@ export function Users() {
   }, [searchParams]);
 
   const removeSearchParam = (key: string) => {
+    searchParams.delete('page');
     searchParams.delete(key);
     setSearchParams(searchParams);
     setFilters(prevFilters => {
@@ -256,6 +257,7 @@ export function Users() {
   };
 
   const updateSearchParams = (key: string, value: string) => {
+    searchParams.delete('page');
     if (!value) {
       removeSearchParam(key);
     } else {
@@ -311,12 +313,13 @@ export function Users() {
       <div className="w-full flex items-end gap-5 p-4 justify-between flex-wrap">
         <div className="flex items-center gap-2">
           <SearchBar
-            name="email"
+            name="search"
             hideSubmitBtn
             isSubmitting={false}
-            onSubmit={({ email }) => updateSearchParams('email', email)}
+            onSubmit={({ search }) => updateSearchParams('search', search)}
             error={null}
-            placeholder="Filter by email"
+            placeholder="Search by name or email"
+            defaultValue={filters?.search}
           />
           <FilterButton
             backgroundColor={'black'}

@@ -17,8 +17,8 @@ const pageSizeOptions = [
     label: '50',
   },
   {
-    value: 99,
-    label: '99',
+    value: 100,
+    label: '100',
   },
 ];
 
@@ -30,7 +30,7 @@ const StyledDropdown = styled(Dropdown)`
 
 export function PageSizeDropdown() {
   let [searchParams, setSearchParams] = useSearchParams();
-  const pageSize = searchParams.get('page_size') || 10;
+  const pageSize = searchParams.get('page_size') || 50;
 
   const onChangePageSize = val => {
     searchParams.set('page_size', val);

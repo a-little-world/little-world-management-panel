@@ -154,6 +154,29 @@ export const setUserUnresponsive = async ({
   }
 };
 
+export const setNewsletterSubscribed = async ({
+  userId,
+  onSuccess,
+  onError,
+  newsletter,
+}) => {
+  console.log({ userId });
+  try {
+    const result = await apiFetch(
+      `/api/matching/users/${userId}/change_newsletter_subscribed/`,
+      {
+        method: 'POST',
+        body: {
+          newsletter_subscribed: newsletter,
+        },
+      },
+    );
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
+  }
+};
+
 export const sendBulkEmail = async ({
   emailTemplate,
   userList,

@@ -1,6 +1,7 @@
 import {
   Button,
   Checkbox,
+  Dropdown,
   MessageTypes,
   Modal,
   Separator,
@@ -17,10 +18,22 @@ import { useTheme } from 'styled-components';
 import {
   sendSms,
   setHadPrematchingCall,
+  setNewsletterSubscribed,
   setUserUnresponsive,
 } from '../api/index';
 import { Card, CardFooter, CardHeader, CardTitle } from '../atoms/Card';
 import { registerInput } from '../store';
+
+const SUPPORT_USERS = [
+  {
+    label: 'littleworld.management@gmail.com',
+    value: 'littleworld.management@gmail.com',
+  },
+  {
+    label: 'tim.timschupp+420@gmail.com',
+    value: 'tim.timschupp+420@gmail.com',
+  },
+];
 
 function SendSms({ userId }: { userId: string }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -102,6 +115,8 @@ const UserActions = ({
           func = setUserUnresponsive;
         } else if (key === 'completed') {
           func = setHadPrematchingCall;
+        } else if (key === 'newsletter') {
+          func = setNewsletterSubscribed;
         } else {
           console.error(`No function mapped for key: ${key}`);
           return Promise.reject(
@@ -139,6 +154,50 @@ const UserActions = ({
         onSubmit={handleSubmit(saveChanges)}
         onChange={() => setChangesSaved(false)}
       >
+        <Controller
+          defaultValue={user.state.user_support}
+          name="support_user"
+          control={control}
+          render={({
+            field: { onChange, onBlur, value, name, ref },
+            fieldState: { error },
+          }) => (
+            <Dropdown
+              id="support_user"
+              name={name}
+              inputRef={ref}
+              onCheckedChange={val => onChange({ target: { value: val } })}
+              onBlur={onBlur}
+              value={value}
+              defaultChecked={value}
+              error={error?.message}
+              label="Change support user"
+              options={SUPPORT_USERS}
+            />
+          )}
+        />
+        <Controller
+          defaultValue={user.profile.newsletter_subscribed}
+          name="newsletter"
+          control={control}
+          render={({
+            field: { onChange, onBlur, value, name, ref },
+            fieldState: { error },
+          }) => (
+            <Checkbox
+              id="newsletter"
+              name={name}
+              inputRef={ref}
+              onCheckedChange={val => onChange({ target: { value: val } })}
+              onBlur={onBlur}
+              value={value}
+              defaultChecked={value}
+              error={error?.message}
+              label="Subscribed to newsletter"
+              required={false}
+            />
+          )}
+        />
         <Controller
           defaultValue={user.state.had_prematching_call}
           name="completed"
@@ -182,6 +241,7 @@ const UserActions = ({
             />
           )}
         />
+
         <StatusMessage
           $visible={changesSaved || !!errors?.root?.serverError}
           $type={changesSaved ? MessageTypes.Success : MessageTypes.Error}
