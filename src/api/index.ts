@@ -160,7 +160,6 @@ export const setNewsletterSubscribed = async ({
   onError,
   newsletter,
 }) => {
-  console.log({ userId });
   try {
     const result = await apiFetch(
       `/api/matching/users/${userId}/change_newsletter_subscribed/`,
@@ -369,4 +368,44 @@ export const calculateScoreBetweenUsers = ({
       }
     })
     .catch(onError);
+};
+
+export const updateDynamicTemplate = async ({
+  existingTemplate,
+  subject,
+  templateName,
+  template,
+  templateContent,
+  onSuccess,
+  onError,
+}: {
+  existingTemplate: boolean;
+  subject: string;
+  templateName: string;
+  template: any;
+  templateContent: any;
+  onSuccess: (response: any) => void;
+  onError: (error: any) => void;
+}) => {
+  try {
+    const result = await apiFetch(
+      `/api/matching/emails/dynamic_templates/${
+        existingTemplate ? `${templateName}/` : ''
+      }`,
+      {
+        method: existingTemplate ? 'PATCH' : 'POST',
+        body: {
+          template_name: templateName,
+          template,
+          subject,
+          category_id: 'dynamic',
+          sender_id: 'noreply',
+          content: templateContent,
+        },
+      },
+    );
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
+  }
 };

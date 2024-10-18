@@ -45,7 +45,10 @@ export function SendDynamicTemplateView() {
         >
           Edit Template
         </Link>
-        <SendEmailSheet emailTemplateName={emailTemplateName} />
+        <SendEmailSheet
+          emailTemplateName={emailTemplateName}
+          subject={dynamicEmail?.subject}
+        />
       </SendWrapper>
       <div
         dangerouslySetInnerHTML={{ __html: dynamicEmail?.template }}

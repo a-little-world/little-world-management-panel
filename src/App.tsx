@@ -15,6 +15,7 @@ import {
 import {
   BASE_ROUTE,
   CREATE_NEW_EMAIL_ROUTE,
+  EDIT_EMAIL_ROUTE,
   EMAILS_ROUTE,
   EMAIL_HTML_ROUTE,
   EMAIL_ROUTE,
@@ -107,6 +108,10 @@ const router = createBrowserRouter(
         },
         {
           path: CREATE_NEW_EMAIL_ROUTE,
+          element: <CreateNewEmail />,
+        },
+        {
+          path: EDIT_EMAIL_ROUTE,
           element: <CreateNewEmail />,
         },
         {

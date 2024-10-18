@@ -17,7 +17,7 @@ import { useNavigate } from 'react-router-dom';
 
 import MatchesIcons from '../atoms/MatchesIcons';
 import UserImage from '../atoms/UserImage';
-import { formatDate } from '../helpers/date';
+import { formatDate, formatTimeDistance } from '../helpers/date';
 import { MATCHING_ROUTE } from '../routes';
 import { useGlobalState } from '../store';
 import UserLanguages from './UserLanguages';
@@ -57,12 +57,6 @@ export const UserCard = ({
                 Id
               </Text>
               {user.id}
-            </div>
-            <div className="flex flex-row content-center items-start justify-start gap-1">
-              <Text tag="h4" bold type={TextTypes.Heading6}>
-                Date Joined:
-              </Text>
-              {formatDate(new Date(user.date_joined))}
             </div>
             <div className="flex flex-row content-center items-start justify-start gap-1">
               <Text tag="h4" bold type={TextTypes.Heading6}>
@@ -219,6 +213,15 @@ export const UserCard = ({
         >
           {user.profile.first_name} {user.profile.second_name}
         </div>
+        <div className="flex flex-row content-center items-start justify-start gap-1">
+          <Text tag="h4" bold>
+            Joined:
+          </Text>
+          <Text>
+            {formatDate(new Date(user.date_joined))} (
+            {formatTimeDistance(new Date(user.date_joined), new Date())})
+          </Text>
+        </div>
         <div className="w-full text-xs text-center flex flex-col gap-2 items-center border-blue">
           <MatchesIcons
             label="Confirmed"
@@ -249,7 +252,7 @@ export const UserCard = ({
       )}
       {partial && (
         <div
-          className={`flex gap-4 ${
+          className={`flex gap-4 z-50 ${
             horizontal ? 'flex-col ' : 'items-center mt-2'
           }`}
         >

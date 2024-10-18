@@ -7,6 +7,7 @@ import {
   CardSizes,
   Dropdown,
   InfoIcon,
+  InputWidth,
   Modal,
   Text,
   TextInput,
@@ -17,10 +18,11 @@ import { render as renderEmail } from '@react-email/render';
 import { filter, isEmpty, isNumber, map, pullAt } from 'lodash';
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import styled, { useTheme } from 'styled-components';
 import useSWR from 'swr';
 
+import { updateDynamicTemplate } from '../../api';
 import LoadingSpinner from '../../atoms/LoadingSpinner';
 import SendEmailSheet from '../../blocks/SendEmailSheet';
 import EmailBuilder, {
@@ -28,7 +30,8 @@ import EmailBuilder, {
   ContentTypes,
 } from '../../emails/Builder';
 import { BackendVars } from '../../emails/templates/backendVars';
-import { getCookiesAsObject } from '../../lib/utils';
+import useAutosave from '../../hooks/useAutoSave';
+import { CREATE_NEW_EMAIL_ROUTE, getEditEmailRoute } from '../../routes';
 import { dataFetcher, registerInput } from '../../store';
 import {
   Container,
@@ -161,8 +164,9 @@ const CreateNewEmail = () => {
   const [newEmail, setNewEmail] = useState([]);
   const [templateSaved, setTemplateSaved] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [isFirstSave, setIsFirstSave] = useState(true);
-  const [searchParams, setSearchParams] = useSearchParams();
+
+  const navigate = useNavigate();
+  const { templateId } = useParams();
 
   const theme = useTheme();
 
@@ -187,78 +191,78 @@ const CreateNewEmail = () => {
     setValue,
   } = useForm();
   const templateName = watch('template_name');
+  const subject = watch('subject');
 
   const onSaveDynamicTemplate = () => {
     setSaving(true);
-    fetch(
-      `/api/matching/emails/dynamic_templates/${
-        isFirstSave ? '' : `${templateName}/`
-      }`,
-      {
-        method: isFirstSave ? 'POST' : 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': getCookiesAsObject().csrftoken,
-        },
-        body: JSON.stringify({
-          template_name: templateName,
-          template: renderEmail(
-            <EmailBuilder content={newEmail} preview={''} />,
-          ),
-          subject: 'Test Subject',
-          category_id: 'dynamic',
-          sender_id: 'noreply',
-          content: newEmail,
-        }),
+    updateDynamicTemplate({
+      existingTemplate: Boolean(templateId),
+      templateName,
+      template: renderEmail(<EmailBuilder content={newEmail} preview={''} />),
+      templateContent: newEmail,
+      subject,
+      onSuccess: response => {
+        setSaving(false);
+        console.log({ response });
+        // navigate(getEditEmailRoute(dynamicTemplate.id));
+        setTemplateSaved(true);
+        mutate();
       },
-    )
-      .then(response => {
-        if (response?.ok) {
-          setSaving(false);
-          setTemplateSaved(true);
-          setIsFirstSave(false);
-          mutate();
-        } else {
-          throw new Error();
-        }
-      })
-      .catch(() => {
+      onError: error => {
+        console.error(error);
         setSaving(false);
         setError('template_name', { message: 'Error saving' });
-      });
+      },
+    });
+  };
+
+  useAutosave({
+    callback: onSaveDynamicTemplate,
+    delay: 30000,
+    shouldSave: !templateSaved,
+  });
+
+  const updateTemplate = (templateId: string) => {
+    const dynamicTemplate = dynamicTemplates?.results.find(
+      template => template.id.toString() === templateId,
+    );
+    // if template does not exist navigate to create new template
+    if (!dynamicTemplate) return navigate(CREATE_NEW_EMAIL_ROUTE);
+    setValue('template_name', dynamicTemplate.template_name);
+    setValue('subject', dynamicTemplate.subject);
+    setNewEmail(dynamicTemplate.content);
+    setTemplateSaved(true);
   };
 
   const handleTemplateSelect = value => {
     const dynamicTemplate = dynamicTemplates?.results.find(
       template => template.uuid === value,
     );
-    if (!dynamicTemplate) return;
-    searchParams.delete('template');
-    setValue('template_name', dynamicTemplate?.template_name);
-    setNewEmail(dynamicTemplate.content);
+    navigate(getEditEmailRoute(dynamicTemplate.id));
   };
 
   useEffect(() => {
     setTemplateSaved(false);
-  }, [newEmail]);
+  }, [newEmail, subject]);
 
   useEffect(() => {
-    const searchParamTemplate = searchParams.get('template');
-    console.log({ dynamicTemplates, searchParamTemplate });
-    if (!templatesLoading && searchParamTemplate)
-      handleTemplateSelect(searchParamTemplate);
-  }, [templatesLoading]);
-
-  useEffect(() => {
-    if (templateName) {
-      // check if template name already exists
-      setIsFirstSave(
-        !dynamicTemplates?.results.some(
-          template => template.template_name === templateName,
-        ),
+    // update path on template name changes
+    if (!templatesLoading) {
+      const existingTemplate = dynamicTemplates?.results?.find(
+        template => template.template_name === templateName,
       );
+      if (!existingTemplate?.id) {
+        navigate(CREATE_NEW_EMAIL_ROUTE);
+      } else if (existingTemplate?.id !== templateId) {
+        navigate(getEditEmailRoute(existingTemplate.id));
+      }
     }
-  }, [templateName, dynamicTemplates]);
+  }, [templateName]);
+
+  useEffect(() => {
+    // populate existing template
+    if (!templatesLoading && templateId) updateTemplate(templateId);
+  }, [templatesLoading, templateId]);
 
   const handleTextUpdate = ({
     text,
@@ -339,17 +343,35 @@ const CreateNewEmail = () => {
           placeholder="Template Name"
           label="Template Name"
           error={errorsTemplate.template_name?.message}
+          width={InputWidth.Medium}
+        />
+        <TextInput
+          id={'subject'}
+          {...registerInput({
+            register: registerTemplate,
+            name: 'subject',
+            options: { required: 'Required' },
+          })}
+          placeholder="Email subject..."
+          label="Subject"
+          error={errorsTemplate.subject?.message}
+          width={InputWidth.Medium}
         />
         <ButtonsContainer>
           <Button
             appearance={ButtonAppearance.Secondary}
             size={ButtonSizes.Small}
             type="submit"
-            {...(templateSaved ? { color: theme.color.surface.on } : {})}
+            disabled={templateSaved}
+            {...(templateSaved ? { color: theme.color.text.success } : {})}
           >
             {saving ? <LoadingSpinner /> : 'Save Template'}
           </Button>
-          <SendEmailSheet emailTemplateName={templateName} />
+          <SendEmailSheet
+            emailTemplateName={templateName}
+            subject={subject}
+            cannotOpen={!templateSaved}
+          />
 
           <ToolTip
             trigger={
@@ -392,10 +414,14 @@ const CreateNewEmail = () => {
         <TemplateWrapper>
           {isEmpty(newEmail) ? (
             <NothingSelected>
-              <Text>
-                Nothing Selected. Please start with an existing template or
-                select a building block to get started.
-              </Text>
+              {templatesLoading ? (
+                <Text>Templates Loading...</Text>
+              ) : (
+                <Text>
+                  Nothing Selected. Please start with an existing template or
+                  select a building block to get started.
+                </Text>
+              )}
             </NothingSelected>
           ) : (
             <EmailBuilder

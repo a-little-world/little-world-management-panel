@@ -31,10 +31,23 @@ const Recipients = styled(Text)`
   margin-bottom: ${({ theme }) => theme.spacing.small};
 `;
 
+export const TextField = styled.div`
+  border: 1px solid ${({ theme }) => theme.color.border.subtle};
+  border-radius: ${({ theme }) => theme.radius.xxxsmall};
+  background: ${({ theme }) => theme.color.surface.disabled};
+  padding: ${({ theme }) => theme.spacing.xxsmall};
+  margin-bottom: ${({ theme }) => theme.spacing.small};
+  white-space: pre-line;
+`;
+
 export function SendEmailSheet({
+  cannotOpen,
   emailTemplateName,
+  subject,
 }: {
   emailTemplateName?: string;
+  subject: string;
+  cannotOpen?: boolean;
 }) {
   const [emailSent, setEmailSent] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -78,7 +91,9 @@ export function SendEmailSheet({
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button disabled={!Boolean(emailTemplateName)}>Send Email</Button>
+        <Button disabled={cannotOpen || !Boolean(emailTemplateName)}>
+          Send Email
+        </Button>
       </SheetTrigger>
 
       <SheetContent>
@@ -87,17 +102,7 @@ export function SendEmailSheet({
         </SheetHeader>
         <ScrollArea className="h-full overflow-scroll">
           <form onSubmit={handleSubmit(onSendEmail)}>
-            <TextInput
-              id={'subject'}
-              {...registerInput({
-                register,
-                name: 'subject',
-                options: { required: 'Required' },
-              })}
-              placeholder="Subject"
-              label="Subject"
-              error={errors.subject?.message}
-            />
+            <TextField>{subject}</TextField>
             {!isLoading && (
               <Controller
                 defaultValue={null}

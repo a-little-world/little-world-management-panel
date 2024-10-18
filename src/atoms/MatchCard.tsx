@@ -95,6 +95,7 @@ const MatchCard = ({ match, userName }: { match: any; userName: string }) => {
           onClick={() => {
             setDialogOpen(true);
           }}
+          size={ButtonSizes.Small}
         >
           Remove
         </Button>
@@ -102,9 +103,17 @@ const MatchCard = ({ match, userName }: { match: any; userName: string }) => {
       <p>
         {match.partner.first_name} {match.partner.second_name}
       </p>
-      <p>Created: {formatTimeDistance(new Date('04.11.23'), new Date())} </p>
       <p>
-        Last Message: {formatTimeDistance(new Date('04.05.24'), new Date())}
+        Matched: {formatTimeDistance(new Date(match.chat.created), new Date())}{' '}
+      </p>
+      <p>
+        Last Message:{' '}
+        {match.chat.newest_message?.created
+          ? formatTimeDistance(
+              new Date(match.chat.newest_message.created),
+              new Date(),
+            )
+          : 'No messages yet'}
       </p>
       <p>Group: {match.partner.target_groups?.join(', ')}</p>
       <p>Languages: {match.language_skills} </p>
