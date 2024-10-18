@@ -1,10 +1,10 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  darkMode: false,
+  darkMode: 'selector',
   content: ['./src/**/*.{ts,tsx}'],
   prefix: '',
   daisyUI: {
-    darkMode: false,
+    darkMode: 'selector',
   },
   theme: {
     screens: {

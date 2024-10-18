@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+dialog {
+  color: black;
+}
+
 @layer base {
   :root {
     --chart-1: 12 76% 61%;

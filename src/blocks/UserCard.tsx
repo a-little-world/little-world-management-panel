@@ -14,6 +14,7 @@ import {
 import { capitalize, isEmpty } from 'lodash';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import styled, { css } from 'styled-components';
 
 import MatchesIcons from '../atoms/MatchesIcons';
 import UserImage from '../atoms/UserImage';
@@ -21,6 +22,30 @@ import { formatDate, formatTimeDistance } from '../helpers/date';
 import { MATCHING_ROUTE } from '../routes';
 import { useGlobalState } from '../store';
 import UserLanguages from './UserLanguages';
+
+const StyledCard = styled.div<{ $horizontal?: boolean }>`
+  width: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: ${({ theme }) => theme.color.surface.tertiary};
+  margin-bottom: ${({ theme }) => theme.spacing.xxsmall};
+  padding: ${({ theme }) => theme.spacing.small};
+  border: 1px solid ${({ theme }) => theme.color.border.subtle};
+  border-radius: ${({ theme }) => theme.radius.large};
+  height: fit-content;
+
+  ${({ theme, $horizontal }) =>
+    $horizontal
+      ? css`
+          gap: ${theme.spacing.xlarge};
+        `
+      : css`
+          flex-direction: column;
+          gap: ${theme.spacing.small};
+        `}
+`;
 
 type UserCardProps = {
   user: any;
@@ -147,11 +172,7 @@ export const UserCard = ({
   }
 
   return (
-    <div
-      className={`w-full relative flex ${
-        horizontal ? 'flex-row gap-8' : 'flex-col gap-2'
-      } bg-base-200 h-fit items-center content-center justify-center rounded-xl p-4  mb-2 border border-border-slate-400`}
-    >
+    <StyledCard $horizontal={horizontal}>
       {user.state.unresponsive && (
         <div className="w-90% p-2 z-10 rounded-md absolute top-3 right-1/2 translate-x-2/4 max-w-ful bg-error text-2xl text-center">
           Marked as unresponsive
@@ -271,7 +292,7 @@ export const UserCard = ({
         </div>
       )}
       {End}
-    </div>
+    </StyledCard>
   );
 };
 
