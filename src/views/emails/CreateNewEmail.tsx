@@ -192,6 +192,8 @@ const CreateNewEmail = () => {
   } = useForm();
   const templateName = watch('template_name');
   const subject = watch('subject');
+  const shouldSave =
+    !templateSaved && subject && templateName && !isEmpty(newEmail);
 
   const onSaveDynamicTemplate = () => {
     setSaving(true);
@@ -201,12 +203,10 @@ const CreateNewEmail = () => {
       template: renderEmail(<EmailBuilder content={newEmail} preview={''} />),
       templateContent: newEmail,
       subject,
-      onSuccess: response => {
+      onSuccess: () => {
         setSaving(false);
-        console.log({ response });
-        // navigate(getEditEmailRoute(dynamicTemplate.id));
-        setTemplateSaved(true);
         mutate();
+        setTemplateSaved(true);
       },
       onError: error => {
         console.error(error);
@@ -219,7 +219,7 @@ const CreateNewEmail = () => {
   useAutosave({
     callback: onSaveDynamicTemplate,
     delay: 30000,
-    shouldSave: !templateSaved,
+    shouldSave,
   });
 
   const updateTemplate = (templateId: string) => {
@@ -257,7 +257,7 @@ const CreateNewEmail = () => {
         navigate(getEditEmailRoute(existingTemplate.id));
       }
     }
-  }, [templateName]);
+  }, [templateName, dynamicTemplates]);
 
   useEffect(() => {
     // populate existing template
@@ -362,7 +362,7 @@ const CreateNewEmail = () => {
             appearance={ButtonAppearance.Secondary}
             size={ButtonSizes.Small}
             type="submit"
-            disabled={templateSaved}
+            disabled={!shouldSave}
             {...(templateSaved ? { color: theme.color.text.success } : {})}
           >
             {saving ? <LoadingSpinner /> : 'Save Template'}
