@@ -226,7 +226,10 @@ const orderingOptions = [
 ];
 
 export function Users() {
-  let [searchParams, setSearchParams] = useSearchParams();
+  let [searchParams, setSearchParams] = useSearchParams({
+    order_by: '-date_joined',
+    page_size: '50',
+  });
   const list = searchParams.get('list') || 'all';
   const orderBy = searchParams.get('order_by') || '-date_joined';
 
