@@ -5,6 +5,7 @@ import {
   Card as CardDS,
   Checkbox,
   Dropdown,
+  Link,
   Tag,
   TagAppearance,
   TagSizes,
@@ -30,6 +31,7 @@ import {
 import { ScoresTable } from '../blocks/ScoresTable';
 import { SelectedUsersSheet } from '../blocks/SelectedUsersSheet';
 import UserCard from '../blocks/UserCard';
+import { ALGORITHM_ROUTE } from '../routes';
 import { useGlobalState } from '../store';
 
 const MATCHING_OPTIONS = [
@@ -48,8 +50,8 @@ const SCORE_FUNCTION_LABELS = {
 const ScoreCategory = styled.div<{ $matchable: boolean }>`
   position: relative;
   border-bottom: 1px solid ${({ theme }) => theme.color.border.subtle};
-  padding: ${({ theme }) => theme.spacing.xxsmall}
-    ${({ theme }) => theme.spacing.xxxsmall};
+  padding: ${({ theme }) =>
+    `${theme.spacing.xxsmall} ${theme.spacing.xxxsmall}`};
   margin-bottom: ${({ theme }) => theme.spacing.xxxsmall};
 `;
 
@@ -62,7 +64,10 @@ const Title = styled.div`
 const ScoreBreakdown = ({ data }) => {
   return (
     <CardDS>
-      <Text type={TextTypes.Body4}>Score Breakdown</Text>
+      <div className="flex gap-4 items-center justify-between">
+        <Text type={TextTypes.Body4}>Score Breakdown</Text>
+        <Link to={ALGORITHM_ROUTE}>More Info</Link>
+      </div>
       {data.slice(2).map(result => (
         <ScoreCategory $matchable={result.res.matchable}>
           <Title>
@@ -248,14 +253,19 @@ const Matching = ({
                     : scoreData.score ?? 'to be calculated'}
                 </Text>
                 {!isEmpty(scoreData) && (
-                  <Tag
-                    appearance={
-                      TagAppearance[scoreData?.matchable ? 'success' : 'error']
-                    }
-                    size={TagSizes.small}
-                  >
-                    {scoreData?.matchable ? 'Matchable' : 'Not valid'}
-                  </Tag>
+                  <>
+                    <Tag
+                      appearance={
+                        TagAppearance[
+                          scoreData?.matchable ? 'success' : 'error'
+                        ]
+                      }
+                      size={TagSizes.small}
+                    >
+                      {scoreData?.matchable ? 'Matchable' : 'Not valid'}
+                    </Tag>
+                    <Link to={ALGORITHM_ROUTE}>How is this calculated?</Link>
+                  </>
                 )}
               </div>
               {(matchSucces || submitError) && (

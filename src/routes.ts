@@ -1,4 +1,5 @@
 export const BASE_ROUTE = '/matching/';
+export const ALGORITHM_ROUTE = '/algorithm/';
 export const USERS_ROUTE = '/users/';
 export const USER_DETAILS_ROUTE = '/user/:userId';
 export const MATCHES_LIST_ROUTE = '/matches/';

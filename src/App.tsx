@@ -13,6 +13,7 @@ import {
   AdminPanelV2_Emails,
 } from './panel_v2/AdminPanelEmails.jsx';
 import {
+  ALGORITHM_ROUTE,
   BASE_ROUTE,
   CREATE_NEW_EMAIL_ROUTE,
   EDIT_EMAIL_ROUTE,
@@ -30,6 +31,7 @@ import {
   VIDEO_CALLS_ROUTE,
 } from './routes';
 import { GlobalStateProvider } from './store';
+import Algorithm from './views/Algorithm';
 import Home from './views/Home';
 import Matches from './views/Matches';
 import Matching from './views/Matching';
@@ -121,6 +123,10 @@ const router = createBrowserRouter(
         {
           path: EMAIL_ROUTE,
           element: <Email />,
+        },
+        {
+          path: ALGORITHM_ROUTE,
+          element: <Algorithm />,
         },
       ],
     },

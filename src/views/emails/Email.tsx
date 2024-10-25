@@ -3,21 +3,26 @@ import {
   Button,
   ButtonAppearance,
   ButtonSizes,
+  Link,
+  Loading,
+  MessageTypes,
+  StatusMessage,
   Text,
   TextInput,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
 import { render as renderEmail } from '@react-email/render';
 import { some } from 'lodash';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import useSWR from 'swr';
 
+import { sendEmail } from '../../api';
+import TextField from '../../atoms/TextField';
 import EmailBuilder from '../../emails/Builder';
 import emailsData from '../../emails/data';
-import { getCookiesAsObject } from '../../lib/utils';
 import { dataFetcher, registerInput } from '../../store';
 import {
   Container,
@@ -30,8 +35,13 @@ import {
 
 const Option = styled.div`
   display: flex;
-  align-items: center;
   flex-direction: column;
+`;
+
+const DynamicVariables = styled.ul`
+  list-style-type: disc;
+  padding-inline-start: ${({ theme }) => theme.spacing.small};
+  margin-top: ${({ theme }) => theme.spacing.xxsmall};
 `;
 
 const Email = () => {
@@ -40,26 +50,30 @@ const Email = () => {
   const [backendPreviewHTML, setBackendPreviewHTML] = React.useState(
     '<h1>No Preview fetched, enter the dependencies and click render!</h1>',
   );
+  const [emailSent, setEmailSent] = useState(false);
   const email = emailsData[emailTemplateName ?? 'undefined'];
   const {
     watch,
     register,
-    handleSubmit,
     formState: { errors },
     setError,
   } = useForm({
     defaultValues: {},
   });
+  const emailVariables = watch();
 
-  const { data: backendTemplateInfo } = useSWR(
+  const { data: backendTemplateInfo, isLoading: templateLoading } = useSWR(
     `/api/matching/emails/templates/${emailTemplateName}/info/`,
     dataFetcher,
     {},
   );
 
+  useEffect(() => {
+    setEmailSent(false);
+  }, [emailVariables]);
+
   const fetchBackendPreview = async (data: any) => {
-    const url = `/api/matching/emails/templates/${emailTemplateName}/`;
-    const search = new URLSearchParams(watch()).toString();
+    const search = new URLSearchParams(emailVariables).toString();
     const response = await fetch(
       `/api/matching/emails/templates/${emailTemplateName}/?${search}`,
     );
@@ -69,13 +83,15 @@ const Email = () => {
   };
 
   const onSendEmail = async () => {
-    const url = `/api/matching/emails/templates/${emailTemplateName}/send/`;
-    await fetch(url, {
-      method: 'POST',
-      body: JSON.stringify(watch()),
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCookiesAsObject().csrftoken,
+    sendEmail({
+      body: watch(),
+      emailTemplateName,
+      onSuccess: () => setEmailSent(true),
+      onError: error => {
+        setError('root.serverError', {
+          type: error.status,
+          message: error.message,
+        });
       },
     });
   };
@@ -92,16 +108,17 @@ const Email = () => {
     a.click();
   };
 
-  const cannotPreview = some(watch(), val => !val);
+  const cannotPreview = templateLoading || some(emailVariables, val => !val);
+  const displayServerMessage = emailSent || !!errors?.root?.serverError;
 
   return (
     <Container>
-      <PageHeading type={TextTypes.Heading4}>
+      <PageHeading type={TextTypes.Heading4} center>
         {emailTemplateName} Template
       </PageHeading>
       {email ? (
         <Content>
-          <OptionsContainer onSubmit={() => {}}>
+          <OptionsContainer>
             <Text type={TextTypes.Body3} bold>
               Email Template Parameters
             </Text>
@@ -110,62 +127,92 @@ const Email = () => {
               parameters are dynamicly injected. Here is an overview of the
               templates current backend configuration:
             </Text>
-            <Text type={TextTypes.Body4} bold>
-              Detected Backend Variables:
-            </Text>
-            <Text type={TextTypes.Body6}>
-              We automatically process the template for replacable backend
-              variables, and found:
-            </Text>
-            {backendTemplateInfo?.params.map((variable: string) => (
-              <Text key={variable} type={TextTypes.Body5} bold>
-                - {variable}
-              </Text>
-            ))}
-            <Text type={TextTypes.Body6}>
-              So sending this email requires setting these variables:
-            </Text>
-            {backendTemplateInfo?.dependencies?.map((dep: string) => (
+            {templateLoading ? (
+              <Loading />
+            ) : (
               <>
-                <TextInput
-                  {...registerInput({
-                    register,
-                    name: dep?.query_id_field,
-                    options: { required: 'error.required' },
-                  })}
-                  id={dep?.query_id_field}
-                  label={`- ${dep?.id} ( by id query param: ${dep?.query_id_field} )`}
-                  error={errors?.[dep?.id]?.message}
-                  placeholder="Enter a value"
-                />
+                <Option>
+                  <Text type={TextTypes.Body4} bold>
+                    Email Subject:
+                  </Text>
+                  <TextField $active>
+                    {backendTemplateInfo?.config?.subject}
+                  </TextField>
+
+                  <Text type={TextTypes.Body4} bold>
+                    Detected Backend Variables:
+                  </Text>
+                  <Text type={TextTypes.Body6}>
+                    We automatically process the template for replacable backend
+                    variables, and found:
+                  </Text>
+                  <DynamicVariables>
+                    {backendTemplateInfo?.params.map((variable: string) => (
+                      <Text key={variable} type={TextTypes.Body5} bold tag="li">
+                        {variable}
+                      </Text>
+                    ))}
+                  </DynamicVariables>
+                </Option>
+                <Option>
+                  <Text type={TextTypes.Body6}>
+                    Sending this email requires setting these variables:
+                  </Text>
+                  {backendTemplateInfo?.dependencies?.map((dep: string) => (
+                    <>
+                      <TextInput
+                        {...registerInput({
+                          register,
+                          name: dep?.query_id_field,
+                          options: { required: 'error.required' },
+                        })}
+                        id={dep?.query_id_field}
+                        label={`${dep?.id} ( by id query param: ${dep?.query_id_field} )`}
+                        error={errors?.[dep?.id]?.message}
+                        placeholder="Enter a value"
+                      />
+                    </>
+                  ))}
+                  {displayServerMessage && (
+                    <StatusMessage
+                      $visible={emailSent || !!errors?.root?.serverError}
+                      $type={
+                        emailSent ? MessageTypes.Success : MessageTypes.Error
+                      }
+                    >
+                      {emailSent
+                        ? 'Email sent successfully'
+                        : errors?.root?.serverError?.message}
+                    </StatusMessage>
+                  )}
+                  <Toolbar>
+                    <Button
+                      appearance={ButtonAppearance.Secondary}
+                      size={ButtonSizes.Small}
+                      onClick={fetchBackendPreview}
+                      disabled={cannotPreview}
+                    >
+                      Preview Email
+                    </Button>
+                    <Button
+                      size={ButtonSizes.Small}
+                      onClick={onSendEmail}
+                      disabled={cannotPreview || emailSent}
+                    >
+                      Send Email
+                    </Button>
+                    <Link
+                      href={`${window.location.origin}/api/matching/emails/templates/${emailTemplateName}/test/`}
+                      target="_blank"
+                      style={{ textAlign: 'center' }}
+                    >
+                      View Rendered Example with placeholders
+                    </Link>
+                  </Toolbar>
+                </Option>
               </>
-            ))}
-            <Toolbar>
-              <Button
-                appearance={ButtonAppearance.Secondary}
-                size={ButtonSizes.Small}
-                onClick={fetchBackendPreview}
-                disabled={cannotPreview}
-              >
-                Preview Email
-              </Button>
-              <Button size={ButtonSizes.Small} onClick={onSendEmail}>
-                Send Email
-              </Button>
-              <Button
-                size={ButtonSizes.Small}
-                onClick={() => {
-                  const url = `/api/matching/emails/templates/${emailTemplateName}/test/`;
-                  window.open(url, '_blank');
-                }}
-              >
-                View Rendered Example with placeholders
-              </Button>
-            </Toolbar>
-            <Text type={TextTypes.Body4} bold>
-              Email Subject:
-            </Text>
-            {backendTemplateInfo?.config?.subject}
+            )}
+
             {email.options?.map((option: { name: string; label: string }) => (
               <Option key={option.name}>
                 <TextInput
@@ -181,29 +228,24 @@ const Email = () => {
                 />
               </Option>
             ))}
-            <Text type={TextTypes.Body3} bold>
-              View & Send
-            </Text>
-            <Text type={TextTypes.Body6}>
-              View the final rendered backend email, with or without dynamicly
-              injecting parameters.
-            </Text>
-            <Text type={TextTypes.Body3} bold>
-              Export Email
-            </Text>
-            <Text type={TextTypes.Body6}>
-              You wan't to make a change to this email? Then edit the text and
-              download the updated content and template to transmit it to the
-              dev team.
-            </Text>
-            <Toolbar>
-              <Button size={ButtonSizes.Small} onClick={onDownload}>
-                Download JSON Content
-              </Button>
-              <Button size={ButtonSizes.Small} onClick={onDownload}>
-                Download HTML Template
-              </Button>
-            </Toolbar>
+            <Option>
+              <Text type={TextTypes.Body3} bold>
+                Export Email
+              </Text>
+              <Text type={TextTypes.Body6}>
+                You wan't to make a change to this email? Then edit the text and
+                download the updated content and template to transmit it to the
+                dev team.
+              </Text>
+              <Toolbar style={{ marginTop: '16px' }}>
+                <Button size={ButtonSizes.Small} onClick={onDownload}>
+                  Download JSON Content
+                </Button>
+                <Button size={ButtonSizes.Small} onClick={onDownload}>
+                  Download HTML Template
+                </Button>
+              </Toolbar>
+            </Option>
           </OptionsContainer>
           <TemplateWrapper>
             <div className="relative">
@@ -214,7 +256,13 @@ const Email = () => {
                     size={ButtonSizes.Small}
                     onClick={() => setShowBackendPreview(!showBackendPreview)}
                   >
-                    <ArrowLeftIcon /> Back to Email Builder
+                    <ArrowLeftIcon
+                      height={16}
+                      width={16}
+                      label="back icon"
+                      labelId="backIconId"
+                    />{' '}
+                    Back to Email Builder
                   </Button>
                 )}
               </div>

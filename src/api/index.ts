@@ -176,6 +176,26 @@ export const setNewsletterSubscribed = async ({
   }
 };
 
+export const sendEmail = async ({
+  body,
+  emailTemplateName,
+  onSuccess,
+  onError,
+}) => {
+  try {
+    const result = await apiFetch(
+      `/api/matching/emails/templates/${emailTemplateName}/send/`,
+      {
+        method: 'POST',
+        body,
+      },
+    );
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
+  }
+};
+
 export const sendBulkEmail = async ({
   emailTemplate,
   userList,

@@ -5,7 +5,7 @@ import {
   PlusIcon,
 } from '@a-little-world/little-world-design-system';
 import React, { useEffect } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useSearchParams } from 'react-router-dom';
 import { useTheme } from 'styled-components';
 import useSWR from 'swr';
@@ -37,12 +37,10 @@ const USER_TABS = [
 ];
 
 const UserPanelContent = ({
-  preMatchingAppointment,
   tab,
   user,
   onUpdate,
 }: {
-  preMatchingAppointment: string;
   tab: string;
   user: any;
   onUpdate: () => void;
@@ -53,13 +51,7 @@ const UserPanelContent = ({
 
   if (tab === 'emails') return <UserEmails user={user} />;
 
-  if (tab === 'matches')
-    return (
-      <UserMatches
-        user={user}
-        preMatchingAppointment={preMatchingAppointment}
-      />
-    );
+  if (tab === 'matches') return <UserMatches user={user} />;
 
   if (tab === 'actions') return <UserActions user={user} onUpdate={onUpdate} />;
   return null;
@@ -89,10 +81,6 @@ const UserPanel = () => {
     setUpdateCurrentUser(() => mutate);
   }, [userId, mutate]);
 
-  const { data: preMatchingAppointment } = useSWR(
-    `/api/matching/users/${userId}/prematching_appointments/`,
-    dataFetcher,
-  );
   if (isLoading && !error)
     return <div className="w-full p-3 text-center">Loading</div>;
   if (error)
@@ -149,12 +137,7 @@ const UserPanel = () => {
               </Button>
             </CardHeader>
             <CardContent className="px-6 py-4 flex flex-col min-h-0 h-full w-full">
-              <UserPanelContent
-                tab={tab.key}
-                user={user}
-                preMatchingAppointment={preMatchingAppointment?.start_time}
-                onUpdate={mutate}
-              />
+              <UserPanelContent tab={tab.key} user={user} onUpdate={mutate} />
             </CardContent>
           </Card>
         </TabsContent>

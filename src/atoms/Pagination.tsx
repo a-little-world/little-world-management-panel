@@ -5,7 +5,7 @@ import {
   DotsIcon,
   Text,
 } from '@a-little-world/little-world-design-system';
-import { isEmpty } from 'lodash';
+import { isEmpty, toNumber } from 'lodash';
 import React, { useEffect, useState } from 'react';
 import { Link, LinkProps, useSearchParams } from 'react-router-dom';
 
@@ -149,7 +149,11 @@ const Pagination = ({ list }: { list: any }) => {
     newParams.set('page', newPage);
     setSearchParams(newParams);
   };
-
+  const displayLastPage =
+    (internalList?.pages_total &&
+      internalList?.page !== internalList?.pages_total) ||
+    (internalList?.last_page && internalList?.page !== internalList?.last_page);
+  console.log({ list, displayLastPage, internalList });
   useEffect(() => {
     if (!isEmpty(list)) setInternalList(list);
   }, [list]);
@@ -176,16 +180,20 @@ const Pagination = ({ list }: { list: any }) => {
         <PaginationItem>
           <PaginationButton isActive>{internalList?.page}</PaginationButton>
         </PaginationItem>
-        {internalList?.page !== internalList?.last_page && (
+        {displayLastPage && (
           <>
             <PaginationItem>
               <PaginationEllipsis />
             </PaginationItem>
             <PaginationItem>
               <PaginationButton
-                onClick={() => handlePagination(internalList?.last_page)}
+                onClick={() =>
+                  handlePagination(
+                    internalList?.last_page || internalList?.pages_total,
+                  )
+                }
               >
-                {internalList?.last_page}
+                {internalList?.last_page || internalList?.pages_total}
               </PaginationButton>
             </PaginationItem>
           </>

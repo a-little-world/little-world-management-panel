@@ -1,10 +1,10 @@
 import {
   Button,
   Dropdown,
+  Loading,
   MessageTypes,
   StatusMessage,
   Text,
-  TextInput,
 } from '@a-little-world/little-world-design-system';
 import { ScrollArea } from '@radix-ui/react-scroll-area';
 import React, { useState } from 'react';
@@ -12,7 +12,6 @@ import { Controller, useForm } from 'react-hook-form';
 import styled from 'styled-components';
 
 import { sendBulkEmail } from '../api/index';
-import LoadingSpinner from '../atoms/LoadingSpinner';
 import {
   Sheet,
   SheetContent,
@@ -20,24 +19,11 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '../atoms/Sheet';
-import {
-  onFormError,
-  registerInput,
-  useFilterOptions,
-  useUserListData,
-} from '../store';
+import TextField from '../atoms/TextField';
+import { onFormError, useFilterOptions, useUserListData } from '../store';
 
 const Recipients = styled(Text)`
   margin-bottom: ${({ theme }) => theme.spacing.small};
-`;
-
-export const TextField = styled.div`
-  border: 1px solid ${({ theme }) => theme.color.border.subtle};
-  border-radius: ${({ theme }) => theme.radius.xxxsmall};
-  background: ${({ theme }) => theme.color.surface.disabled};
-  padding: ${({ theme }) => theme.spacing.xxsmall};
-  margin-bottom: ${({ theme }) => theme.spacing.small};
-  white-space: pre-line;
 `;
 
 export function SendEmailSheet({
@@ -53,7 +39,6 @@ export function SendEmailSheet({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { filterOptions, isLoading } = useFilterOptions();
   const {
-    register,
     handleSubmit,
     getValues,
     formState: { errors },
@@ -132,7 +117,7 @@ export function SendEmailSheet({
             )}
             <Recipients>
               Number of recipients:{' '}
-              {userListLoading ? <LoadingSpinner inline /> : recipients}
+              {userListLoading ? <Loading inline /> : recipients}
             </Recipients>
             <StatusMessage
               $visible={emailSent || !!errors?.root?.serverError}

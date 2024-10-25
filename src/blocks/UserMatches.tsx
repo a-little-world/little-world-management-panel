@@ -1,19 +1,45 @@
-import { Accordion } from '@a-little-world/little-world-design-system';
+import { Accordion, Text } from '@a-little-world/little-world-design-system';
 import React from 'react';
+import styled, { useTheme } from 'styled-components';
+import useSWR from 'swr';
 
 import MatchCard from '../atoms/MatchCard';
 import { formatDate, formatTime } from '../helpers/date';
+import { dataFetcher } from '../store';
 
-const UserMatches = ({ preMatchingAppointment, user }) => {
+const PrematchingAppointment = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.xxsmall};
+  align-items: center;
+  margin-bottom: ${({ theme }) => theme.spacing.small};
+`;
+
+const UserMatches = ({ user }) => {
+  const { data: appointment } = useSWR(
+    `/api/matching/users/${user.hash}/prematching_appointments/`,
+    dataFetcher,
+  );
+  const theme = useTheme();
+
   return (
     <div className="w-full">
-      {preMatchingAppointment && (
-        <div className="flex gap-2 items-center mb-4">
-          <h3>Prematching call booked for:</h3>
-          <div>
-            {formatDate(new Date())} {formatTime(new Date())}
-          </div>
-        </div>
+      {appointment && (
+        <PrematchingAppointment>
+          <Text bold tag="h3">
+            Prematching call:
+          </Text>
+          <Text color={theme.color.text.title} bold>
+            {formatDate(
+              new Date(appointment?.start_time),
+              'cccc, do LLLL',
+              'en',
+            )}
+          </Text>
+          <Text color={theme.color.text.title} bold>
+            {formatTime(new Date(appointment?.start_time))} -{' '}
+            {formatTime(new Date(appointment?.end_time))}
+          </Text>
+        </PrematchingAppointment>
       )}
       <Accordion
         items={[
