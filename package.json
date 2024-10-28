@@ -4,7 +4,7 @@
   "private": true,
   "prettier": "@a-little-world/little-world-prettier-config",
   "dependencies": {
-    "@a-little-world/little-world-design-system": "^1.19.12",
+    "@a-little-world/little-world-design-system": "^1.19.13",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@heroicons/react": "^2.0.18",
