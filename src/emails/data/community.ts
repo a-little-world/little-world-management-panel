@@ -1,11 +1,12 @@
 import { ContentTypes } from '../Builder';
-import { BackendVars } from '../shared/constants';
+import { BackendVars, EmailCategories } from '../shared/constants';
 import communityText from './text/community.json';
 
 const communityEmails = {
   'community-get-together': {
     id: 'community-get-together',
     label: 'Community Monthly Get Together',
+    category_id: EmailCategories.Community,
     preview: communityText['community-get-together.preview'],
     subject: communityText['community-get-together.subject'],
     content: [

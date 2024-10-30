@@ -23,6 +23,7 @@ import { sendEmail } from '../../api';
 import TextField from '../../atoms/TextField';
 import EmailBuilder from '../../emails/Builder';
 import emailsData from '../../emails/data';
+import { getUnsubscribeUrl } from '../../emails/shared/constants';
 import { dataFetcher, registerInput } from '../../store';
 import {
   Container,
@@ -101,7 +102,7 @@ const Email = () => {
       <EmailBuilder
         content={email.content}
         preview={email.preview}
-        unsubscribeLink={email.unsubscribeLink}
+        unsubscribeLink={getUnsubscribeUrl(email.category_id)}
       />,
     );
     const blob = new Blob([html], { type: 'text/html' });
@@ -278,7 +279,7 @@ const Email = () => {
               <EmailBuilder
                 content={email.content}
                 preview={email.preview}
-                unsubscribeLink={email.unsubscribeLink}
+                unsubscribeLink={getUnsubscribeUrl(email.category_id)}
               />
             )}
           </TemplateWrapper>

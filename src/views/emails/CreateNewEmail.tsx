@@ -33,6 +33,7 @@ import {
   BackendVars,
   EMAIL_CATEGORIES,
   UNSUBSCRIBABLE_CATEGORIES,
+  getUnsubscribeUrl,
 } from '../../emails/shared/constants';
 import useAutosave from '../../hooks/useAutoSave';
 import { CREATE_NEW_EMAIL_ROUTE, getEditEmailRoute } from '../../routes';
@@ -249,7 +250,6 @@ const CreateNewEmail = () => {
     );
     navigate(getEditEmailRoute(dynamicTemplate.id));
   };
-  console.log({ category });
 
   useEffect(() => {
     setTemplateSaved(false);
@@ -471,7 +471,7 @@ const CreateNewEmail = () => {
               moveBlock={moveBlock}
               openHrefEditor={setShowHrefEditor}
               updateText={handleTextUpdate}
-              unsubscribeLink={UNSUBSCRIBABLE_CATEGORIES.includes(category)}
+              unsubscribeLink={getUnsubscribeUrl(category)}
             />
           )}
         </TemplateWrapper>

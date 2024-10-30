@@ -1,11 +1,12 @@
 import { ContentTypes } from '../Builder';
-import { BackendVars } from '../shared/constants';
+import { BackendVars, EmailCategories } from '../shared/constants';
 import partnershipsText from './text/partnerships.json';
 
 const partnershipsEmails = {
   'babbel-subscription-winner': {
     id: 'babbel-subscription-winner',
     label: 'Babbel Subscription Winner',
+    category_id: EmailCategories.Partnerships,
     preview: partnershipsText['babbel-subscription-winner.preview'],
     subject: partnershipsText['babbel-subscription-winner.subject'],
     content: [
@@ -38,6 +39,7 @@ const partnershipsEmails = {
   'babbel-precode-survey': {
     id: 'babbel-precode-survey',
     label: 'Babbel Precode Survey',
+    category_id: EmailCategories.Partnerships,
     preview: partnershipsText['babbel-precode-survey.preview'],
     subject: partnershipsText['babbel-precode-survey.subject'],
     content: [
