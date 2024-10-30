@@ -1,5 +1,5 @@
 import { ContentTypes } from '../Builder';
-import { BackendVars } from '../templates/backendVars';
+import { BackendVars } from '../shared/constants';
 import communityText from './text/community.json';
 
 const communityEmails = {

@@ -98,7 +98,11 @@ const Email = () => {
 
   const onDownload = () => {
     const html = renderEmail(
-      <EmailBuilder content={email.content} preview={email.preview} />,
+      <EmailBuilder
+        content={email.content}
+        preview={email.preview}
+        unsubscribeLink={email.unsubscribeLink}
+      />,
     );
     const blob = new Blob([html], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
@@ -271,7 +275,11 @@ const Email = () => {
               <div dangerouslySetInnerHTML={{ __html: backendPreviewHTML }} />
             )}
             {!showBackendPreview && (
-              <EmailBuilder content={email.content} preview={email.preview} />
+              <EmailBuilder
+                content={email.content}
+                preview={email.preview}
+                unsubscribeLink={email.unsubscribeLink}
+              />
             )}
           </TemplateWrapper>
         </Content>

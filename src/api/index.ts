@@ -391,6 +391,7 @@ export const calculateScoreBetweenUsers = ({
 };
 
 export const updateDynamicTemplate = async ({
+  category,
   existingTemplate,
   subject,
   templateName,
@@ -418,7 +419,7 @@ export const updateDynamicTemplate = async ({
           template_name: templateName,
           template,
           subject,
-          category_id: 'dynamic',
+          category_id: category,
           sender_id: 'noreply',
           content: templateContent,
         },

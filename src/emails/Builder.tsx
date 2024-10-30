@@ -2,9 +2,6 @@ import {
   ButtonVariations,
   ChevronDownIcon,
   Button as DSButton,
-  Modal,
-  PencilIcon,
-  TextInput,
   TrashIcon,
 } from '@a-little-world/little-world-design-system';
 import { Heading, Img, Link, Text } from '@react-email/components';
@@ -58,6 +55,7 @@ type Props = {
   moveBlock?: (index1: number, index2: number) => void;
   updateText?: ({ index, text }: { index: number; text: string }) => void;
   openHrefEditor?: (index: number) => void;
+  unsubscribeLink?: string;
 };
 
 const EditActions = styled.div`
@@ -271,9 +269,10 @@ const EmailBuilder = ({
   moveBlock,
   updateText,
   openHrefEditor,
+  unsubscribeLink,
 }: Props) => {
   return (
-    <EmailLayout previewText={preview}>
+    <EmailLayout previewText={preview} unsubscribeLink={unsubscribeLink}>
       {content?.map((blockData, index) =>
         editable ? (
           <EditableEmailBlock

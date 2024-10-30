@@ -1,6 +1,6 @@
 import KeyImage from '../../assets/key.png';
 import { ContentTypes } from '../Builder';
-import { BackendVars } from '../templates/backendVars';
+import { BackendVars } from '../shared/constants';
 import automatedText from './text/automated.json';
 
 const automatedEmails = {
