@@ -137,7 +137,7 @@ const userColumns = [
       </Tag>
     ),
   }),
-  columnHelper.accessor('profile.target_groups', {
+  columnHelper.accessor('profile.groups', {
     header: ({ column }) => {
       return (
         <Button
@@ -149,9 +149,7 @@ const userColumns = [
         </Button>
       );
     },
-    cell: ({ row }) => (
-      <div>{row.original.profile.target_groups?.join(', ')}</div>
-    ),
+    cell: ({ row }) => <div>{row.original.profile.groups?.join(', ')}</div>,
   }),
   columnHelper.accessor('matches.confirmed', {
     header: 'Confirmed',

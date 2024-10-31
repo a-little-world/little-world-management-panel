@@ -115,7 +115,7 @@ const MatchCard = ({ match, userName }: { match: any; userName: string }) => {
             )
           : 'No messages yet'}
       </p>
-      <p>Group: {match.partner.target_groups?.join(', ')}</p>
+      <p>Group: {match.partner.groups?.join(', ')}</p>
       <p>Languages: {match.language_skills} </p>
       <div className="flex gap-2">
         <Link

@@ -117,7 +117,7 @@ export const UserCard = ({
               <Text tag="h4" bold type={TextTypes.Heading6}>
                 Group
               </Text>
-              : {user.profile.target_groups?.join(', ')}
+              : {user.profile.groups?.join(', ')}
             </div>
             <Text tag="h4" bold type={TextTypes.Heading6}>
               Interests
