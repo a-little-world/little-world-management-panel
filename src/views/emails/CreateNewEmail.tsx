@@ -208,7 +208,13 @@ const CreateNewEmail = () => {
       existingTemplate: Boolean(templateId),
       category,
       templateName,
-      template: renderEmail(<EmailBuilder content={newEmail} preview={''} />),
+      template: renderEmail(
+        <EmailBuilder
+          content={newEmail}
+          preview={''}
+          unsubscribeLink={getUnsubscribeUrl(category)}
+        />,
+      ),
       templateContent: newEmail,
       subject,
       onSuccess: () => {
@@ -236,7 +242,8 @@ const CreateNewEmail = () => {
     );
     // if template does not exist navigate to create new template
     if (!dynamicTemplate) return navigate(CREATE_NEW_EMAIL_ROUTE);
-    console.log({ dynamicTemplate });
+
+    setValue('template', dynamicTemplate.uuid);
     setValue('template_name', dynamicTemplate.template_name);
     setValue('subject', dynamicTemplate.subject);
     setValue('category', dynamicTemplate.category_id);
@@ -330,18 +337,37 @@ const CreateNewEmail = () => {
     <Container>
       <PageHeading type={TextTypes.Heading4}>New Email Creator</PageHeading>
       <SaveTemplateForm onSubmit={submitTemplate(onSaveDynamicTemplate)}>
-        <Dropdown
-          label={'Start with a pre-existing template'}
-          options={map(
-            filter(dynamicTemplates?.results, item => !isEmpty(item.content)),
-            template => ({
-              value: template.uuid,
-              label: template.template_name,
-            }),
+        <Controller
+          defaultValue={null}
+          name={'template'}
+          control={control}
+          render={({
+            field: { onBlur, value, name, ref },
+            fieldState: { error },
+          }) => (
+            <Dropdown
+              key={category}
+              name={name}
+              inputRef={ref}
+              onBlur={onBlur}
+              value={value}
+              error={error?.message}
+              label={'Start with a pre-existing template'}
+              options={map(
+                filter(
+                  dynamicTemplates?.results,
+                  item => !isEmpty(item.content),
+                ),
+                template => ({
+                  value: template.uuid,
+                  label: template.template_name,
+                }),
+              )}
+              onValueChange={handleTemplateSelect}
+              placeholder="pick a template"
+              disabled={templatesLoading || isEmpty(dynamicTemplates?.results)}
+            />
           )}
-          onValueChange={handleTemplateSelect}
-          placeholder="pick a template"
-          disabled={templatesLoading || isEmpty(dynamicTemplates?.results)}
         />
         <Controller
           defaultValue={null}
