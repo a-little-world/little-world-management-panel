@@ -400,6 +400,7 @@ export const updateDynamicTemplate = async ({
   onSuccess,
   onError,
 }: {
+  category: string;
   existingTemplate: boolean;
   subject: string;
   templateName: string;
