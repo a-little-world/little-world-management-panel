@@ -63,7 +63,7 @@ const socials = {
   borderCollapse: 'separate',
 };
 
-export const Footer = ({ unsubscribeLink }: { unsubscribeLink?: boolean }) => (
+export const Footer = ({ unsubscribeLink }: { unsubscribeLink?: string }) => (
   <Container style={footer}>
     <Section>
       <Img style={bannerImage} src={footerBannerImage} />

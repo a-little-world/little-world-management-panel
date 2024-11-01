@@ -201,7 +201,7 @@ const CreateNewEmail = () => {
   const category = watch('category');
   const shouldSave =
     !templateSaved && subject && templateName && !isEmpty(newEmail);
-
+  
   const onSaveDynamicTemplate = () => {
     setSaving(true);
     updateDynamicTemplate({
