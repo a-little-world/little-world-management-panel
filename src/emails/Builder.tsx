@@ -198,17 +198,6 @@ const EditableEmailBlock: React.FC = ({
       >
         {isVisible && (
           <EditActions>
-            {/* <DSButton
-            variation={ButtonVariations.Icon}
-            onClick={() => deleteBlock(index)}
-          >
-            <PencilIcon
-              label="edit block"
-              labelId="editBlockIcon"
-              width={16}
-              height={16}
-            />
-          </DSButton> */}
             {BlocksWithLink.includes(blockData.type) && (
               <DSButton
                 variation={ButtonVariations.Icon}
