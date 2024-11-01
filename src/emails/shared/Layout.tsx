@@ -17,13 +17,13 @@ import { body, content, contentContainer, logo, sentence } from './styles';
 interface EmailLayoutProps {
   children: React.ReactNode;
   previewText: string;
-  canUnsubscribe?: boolean;
+  unsubscribeLink?: boolean;
 }
 
 export const EmailLayout = ({
   children,
   previewText,
-  canUnsubscribe,
+  unsubscribeLink,
 }: EmailLayoutProps) => (
   <Html>
     <Head>
@@ -52,7 +52,7 @@ export const EmailLayout = ({
             <Text style={sentence}>Dein Little World Team</Text>
           </Section>
         </Container>
-        <Footer canUnsubscribe={canUnsubscribe} />
+        <Footer unsubscribeLink={unsubscribeLink} />
       </Container>
     </Body>
   </Html>

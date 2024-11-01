@@ -1,4 +1,10 @@
-import React, { ChangeEvent, FocusEvent, KeyboardEvent, useState } from 'react';
+import React, {
+  ChangeEvent,
+  FocusEvent,
+  KeyboardEvent,
+  useRef,
+  useState,
+} from 'react';
 import styled from 'styled-components';
 
 const StyledInput = styled.input`
@@ -19,6 +25,7 @@ const EditableText: React.FC = ({
 }) => {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [text, setText] = useState<string>(defaultText);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleDoubleClick = () => {
     setIsEditing(true);
@@ -35,6 +42,7 @@ const EditableText: React.FC = ({
 
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
+      inputRef?.current?.blur();
       setIsEditing(false);
     }
   };
@@ -46,6 +54,7 @@ const EditableText: React.FC = ({
     >
       {isEditing ? (
         <StyledInput
+          ref={inputRef}
           type="text"
           value={text}
           onChange={handleChange}

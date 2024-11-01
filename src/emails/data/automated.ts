@@ -1,12 +1,13 @@
 import KeyImage from '../../assets/key.png';
 import { ContentTypes } from '../Builder';
-import { BackendVars } from '../templates/backendVars';
+import { BackendVars, EmailCategories } from '../shared/constants';
 import automatedText from './text/automated.json';
 
 const automatedEmails = {
   'account-deleted': {
     id: 'account-deleted',
     label: 'Account Deleted',
+    category_id: EmailCategories.Automated,
     preview: automatedText['account-deleted.preview'],
     subject: automatedText['account-deleted.subject'],
     content: [
@@ -40,6 +41,7 @@ const automatedEmails = {
   welcome: {
     id: 'welcome',
     label: 'Welcome',
+    category_id: EmailCategories.Automated,
     preview: automatedText['welcome.preview'],
     subject: automatedText['welcome.subject'],
     content: [
@@ -74,6 +76,7 @@ const automatedEmails = {
   'confirm-match-1': {
     id: 'confirm-match-1',
     label: 'Confirm Match 1',
+    category_id: EmailCategories.Automated,
     preview: automatedText['confirm-match-1.preview'],
     subject: automatedText['confirm-match-1.subject'],
     content: [
@@ -103,6 +106,7 @@ const automatedEmails = {
   'confirm-match-2': {
     id: 'confirm-match-2',
     label: 'Confirm Match 2',
+    category_id: EmailCategories.Automated,
     preview: automatedText['confirm-match-2.preview'],
     subject: automatedText['confirm-match-2.subject'],
     content: [
@@ -132,6 +136,7 @@ const automatedEmails = {
   'expired-match': {
     id: 'expired-match',
     label: 'Match Expired',
+    category_id: EmailCategories.Automated,
     preview: automatedText['expired-match.preview'],
     subject: automatedText['expired-match.subject'],
     content: [
@@ -161,6 +166,7 @@ const automatedEmails = {
   'new-match': {
     id: 'new-match',
     label: 'New Match',
+    category_id: EmailCategories.Automated,
     preview: automatedText['new-match.block-5'],
     subject: automatedText['new-match.subject'],
     content: [
@@ -194,6 +200,7 @@ const automatedEmails = {
   'new-messages': {
     id: 'new-messages',
     label: 'New Messages',
+    category_id: EmailCategories.Automated,
     preview: automatedText['new-messages.preview'],
     subject: automatedText['new-messages.subject'],
     content: [
@@ -219,6 +226,7 @@ const automatedEmails = {
   'match-resolved': {
     id: 'match-resolved',
     label: 'Match Resolved',
+    category_id: EmailCategories.Automated,
     subject: automatedText['match-resolved.subject'],
     preview: automatedText['match-resolved.preview'],
     content: [
@@ -248,6 +256,7 @@ const automatedEmails = {
   'reset-password': {
     id: 'reset-password',
     label: 'Reset Password',
+    category_id: EmailCategories.Automated,
     subject: automatedText['reset-password.subject'],
     preview: automatedText['reset-password.preview'],
     content: [
@@ -287,6 +296,7 @@ const automatedEmails = {
   'still-in-contact': {
     id: 'still-in-contact',
     label: 'Still in Contact?',
+    category_id: EmailCategories.Automated,
     subject: automatedText['still-in-contact.subject'],
     preview: automatedText['still-in-contact.preview'],
     content: [
@@ -312,6 +322,7 @@ const automatedEmails = {
   unfinished_user_form_1: {
     id: 'unfinished_user_form_1',
     label: 'User Form Reminder 1',
+    category_id: EmailCategories.Automated,
     subject: automatedText['unfinished_user_form_1.subject'],
     preview: automatedText['unfinished_user_form_1.preview'],
     content: [
@@ -337,6 +348,7 @@ const automatedEmails = {
   unfinished_user_form_2: {
     id: 'unfinished_user_form_2',
     label: 'User Form Reminder 2',
+    category_id: EmailCategories.Automated,
     preview: automatedText['unfinished_user_form_2.preview'],
     subject: automatedText['unfinished_user_form_2.subject'],
     content: [
@@ -366,6 +378,7 @@ const automatedEmails = {
   'verify-email': {
     id: 'verify-email',
     label: 'Verify Email',
+    category_id: EmailCategories.Automated,
     preview: automatedText['verify-email.preview'],
     subject: automatedText['verify-email.subject'],
     content: [

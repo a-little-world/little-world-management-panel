@@ -3,6 +3,7 @@ import React from 'react';
 
 import EmailBuilder from '../../emails/Builder';
 import emailsData from '../../emails/data/index';
+import { getUnsubscribeUrl } from '../../emails/shared/constants';
 
 const useQueryParams = (): Record<string, string> => {
   const queryParams: Record<string, string> = {};
@@ -27,6 +28,7 @@ const EmailHtml = () => {
     <EmailBuilder
       content={email?.content}
       preview={email?.preview}
+      unsubscribeLink={getUnsubscribeUrl(email.category_id)}
       {...emailProps}
     />,
     {
@@ -43,6 +45,7 @@ export const EmailHtmlRenderer = ({ template, params }) => {
     <EmailBuilder
       content={email?.content}
       preview={email?.preview}
+      unsubscribeLink={getUnsubscribeUrl(email.category_id)}
       {...params}
     />,
     {

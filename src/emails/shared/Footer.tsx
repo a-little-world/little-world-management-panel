@@ -63,15 +63,20 @@ const socials = {
   borderCollapse: 'separate',
 };
 
-export const Footer = ({ canUnsubscribe }: { canUnsubscribe?: boolean }) => (
+export const Footer = ({ unsubscribeLink }: { unsubscribeLink?: string }) => (
   <Container style={footer}>
     <Section>
       <Img style={bannerImage} src={footerBannerImage} />
     </Section>
     <Text style={footerActions}>
-      {canUnsubscribe && (
+      {unsubscribeLink && (
         <>
-          <Link style={{ ...footerLink, marginRight: '8px' }}>Unsubscribe</Link>{' '}
+          <Link
+            style={{ ...footerLink, marginRight: '8px' }}
+            href={unsubscribeLink}
+          >
+            Unsubscribe
+          </Link>{' '}
           ・
         </>
       )}
@@ -81,7 +86,7 @@ export const Footer = ({ canUnsubscribe }: { canUnsubscribe?: boolean }) => (
           </Link>
         </Column> */}
       <Link
-        style={{ ...footerLink, marginLeft: canUnsubscribe ? '8px' : '0' }}
+        style={{ ...footerLink, marginLeft: unsubscribeLink ? '8px' : '0' }}
         href="https://home.little-world.com/kontakt"
       >
         Kontakt
