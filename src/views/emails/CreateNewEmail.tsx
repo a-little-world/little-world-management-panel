@@ -392,7 +392,7 @@ const CreateNewEmail = () => {
               }))}
               onValueChange={val => onChange({ target: { value: val } })}
               placeholder="pick a category"
-              disabled={templatesLoading || isEmpty(dynamicTemplates?.results)}
+              disabled={templatesLoading}
               maxWidth="160px"
             />
           )}
