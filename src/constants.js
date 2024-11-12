@@ -274,3 +274,10 @@ export const LANGUAGES = {
   de: 'de',
   en: 'en',
 };
+
+export const USER_GROUPS = {
+  other: 'other',
+  refugee: 'refugee',
+  student: 'student',
+  worker: 'worker',
+};
