@@ -80,19 +80,19 @@ function wrapText(text, lineLength) {
 
 const chartCategories = [
   {
-    id: 'user-signup-loss',
-    title: 'User Signup Loss',
+    id: 'user-signup-funnel',
+    title: 'User Signup Funnel',
     chartBackend: 'v2',
     filters: [
         'all',
         'journey_v2__user_created',
+        'journey_v2__user_deleted',
         'journey_v2__email_verified',
         'journey_v2__user_form_completed',
+        'journey_v2__too_low_german_level',
         'journey_v2__booked_onboarding_call',
         // 'journey_v2__first_search',
-        'journey_v2__user_deleted',
         'journey_v2__no_show',
-        'journey_v2__too_low_german_level'
     ],
   },
   {
@@ -162,7 +162,7 @@ function MultilineTick(props) {
 
 export function BarChartTimeRanged({
   version = 'v2', // TODO 'v1',
-  initialCategory = 'user-signup-loss',
+  initialCategory = 'user-signup-funnel',
   hideCategoryDropdown = true, // TODO false,
 }) {
   return version === 'v1' ? <BarChartTimeRangedV1
@@ -195,7 +195,7 @@ function modifyDataV2(data) {
 }
 
 export function BarChartTimeRangedV2({
-  initialCategory = 'user-signup-loss',
+  initialCategory = 'user-signup-funnel',
 }) {
   const [category, setCategory] = React.useState(chartCategories.find(cat => cat.id === initialCategory));
 
@@ -216,7 +216,7 @@ export function BarChartTimeRangedV2({
 
   return <Card className="">
         <CardHeader>
-        {category?.id}
+        {category?.title}
       </CardHeader>
       <CardContent className="min-w-[600px]">
         <ChartContainer config={chartConfig}>
