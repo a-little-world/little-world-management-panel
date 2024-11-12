@@ -89,7 +89,7 @@ const chartCategories = [
         'journey_v2__email_verified',
         'journey_v2__user_form_completed',
         'journey_v2__booked_onboarding_call',
-        'journey_v2__first_search',
+        // 'journey_v2__first_search',
         'journey_v2__user_deleted',
         'journey_v2__no_show',
         'journey_v2__too_low_german_level'
