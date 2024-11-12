@@ -19,6 +19,7 @@ import emailData from '../../emails/data/';
 import automatedEmails from '../../emails/data/automated';
 import marketingEmails from '../../emails/data/marketing';
 import partnershipsEmails from '../../emails/data/partnerships';
+import { getUnsubscribeUrl } from '../../emails/shared/constants';
 import { getCookiesAsObject } from '../../lib/utils';
 import { CREATE_NEW_EMAIL_ROUTE, SEND_DYNAMIC_EMAIL_ROUTE } from '../../routes';
 import { dataFetcher } from '../../store';
@@ -105,12 +106,16 @@ function developmentUpdateBackendEmailTemplatesAndConfiguration({
     console.log(`TEMPLATE: ${key}: ${value}`, value);
     const email = value;
     const html = renderEmail(
-      <EmailBuilder content={email.content} preview={email.preview} />,
+      <EmailBuilder
+        content={email.content}
+        preview={email.preview}
+        unsubscribeLink={getUnsubscribeUrl(email.category_id)}
+      />,
     );
     const templateDict = {
       id: key,
       sender_id: 'noreply',
-      category_id: 'automated',
+      category_id: email.category_id,
       subject: value?.subject ?? 'No Subject',
       template: 'react_emails/' + key + '.html',
     };

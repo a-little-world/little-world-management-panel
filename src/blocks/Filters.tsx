@@ -7,11 +7,12 @@ import {
   Text,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
-import { includes, map, some } from 'lodash';
+import { includes, isEmpty, isString, map, some, values } from 'lodash';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 import { Card, CardContent, CardFooter, CardHeader } from '../atoms/Card';
+import { USER_GROUPS } from '../constants.js';
 import { useFilterOptions } from '../store';
 
 const FiltersModal = styled(Modal)`
@@ -30,9 +31,42 @@ enum FilterKeys {
   Company = 'state__company',
   EmailAuthenticated = 'state__email_authenticated',
   HadPreMatchingCall = 'state__had_prematching_call',
+  TargetGroups = 'profile__target_groups',
   UserType = 'profile__user_type',
   UserList = 'list',
 }
+
+type FilterOption = {
+  key: string;
+  value: string;
+};
+
+type OnUpdateFilters = (key: string, value: string) => void;
+type OnRemoveFilter = (key: string) => void;
+
+const handleFilterSelection = (
+  selectedOptions: [string] | null,
+  filters: string | Record<string, FilterOption>,
+  onUpdateFilters: OnUpdateFilters,
+  onRemoveFilter: OnRemoveFilter,
+): void => {
+  if (!selectedOptions) return;
+
+  if (isString(filters)) {
+    isEmpty(selectedOptions)
+      ? onRemoveFilter(filters)
+      : onUpdateFilters(filters, selectedOptions);
+  } else {
+    // if multiple filters
+    for (const [key, filter] of Object.entries(filters)) {
+      if (selectedOptions.some(option => option === filter.key)) {
+        onUpdateFilters(filter.key, filter.value);
+      } else {
+        onRemoveFilter(filter.key);
+      }
+    }
+  }
+};
 
 export const containsFilterKey = (filters: Record<string, any>): boolean => {
   return some(filters, (_, key: string) => {
@@ -51,6 +85,7 @@ const formatDefaultValues = (defaultValues: any) => {
       FilterKeys.HadPreMatchingCall,
     ];
   }
+
   return formattedValues;
 };
 
@@ -123,14 +158,17 @@ const Filters: React.FC<FiltersProps> = ({
           <MultiCheckbox
             key={filters.user_journey}
             name="user_journey"
-            onSelection={val => {
-              val?.includes(FilterKeys.EmailAuthenticated)
-                ? onUpdateFilters(FilterKeys.EmailAuthenticated, 'true')
-                : onRemoveFilter(FilterKeys.EmailAuthenticated);
-              val?.includes(FilterKeys.HadPreMatchingCall)
-                ? onUpdateFilters(FilterKeys.HadPreMatchingCall, 'true')
-                : onRemoveFilter(FilterKeys.HadPreMatchingCall);
-            }}
+            onSelection={val =>
+              handleFilterSelection(
+                val,
+                [
+                  { key: FilterKeys.EmailAuthenticated, value: 'true' },
+                  { key: FilterKeys.HadPreMatchingCall, value: 'true' },
+                ],
+                onUpdateFilters,
+                onRemoveFilter,
+              )
+            }
             options={[
               {
                 label: 'Email authenticated',
@@ -143,6 +181,39 @@ const Filters: React.FC<FiltersProps> = ({
             ]}
             preSelected={filters.user_journey}
             heading={'User Journey Variables'}
+          />
+
+          <MultiCheckbox
+            key={filters[FilterKeys.TargetGroups]}
+            name={FilterKeys.TargetGroups}
+            onSelection={val =>
+              handleFilterSelection(
+                val,
+                FilterKeys.TargetGroups,
+                onUpdateFilters,
+                onRemoveFilter,
+              )
+            }
+            options={[
+              {
+                label: 'Student',
+                value: USER_GROUPS.student,
+              },
+              {
+                label: 'Refugee',
+                value: USER_GROUPS.refugee,
+              },
+              {
+                label: 'Other',
+                value: USER_GROUPS.other,
+              },
+              {
+                label: 'Worker',
+                value: USER_GROUPS.worker,
+              },
+            ]}
+            preSelected={filters[FilterKeys.TargetGroups]}
+            heading={'Groups'}
           />
         </CardContent>
         <CardFooter className="justify-between">

@@ -21,6 +21,7 @@ import {
 } from '../atoms/Sheet';
 import TextField from '../atoms/TextField';
 import { onFormError, useFilterOptions, useUserListData } from '../store';
+import { unsubscribe } from 'diagnostics_channel';
 
 const Recipients = styled(Text)`
   margin-bottom: ${({ theme }) => theme.spacing.small};
@@ -37,6 +38,10 @@ export function SendEmailSheet({
 }) {
   const [emailSent, setEmailSent] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [resultData, setResultData] = useState({
+    sendToCount: 0,
+    unsubscribedCount: 0,
+  });
   const { filterOptions, isLoading } = useFilterOptions();
   const {
     handleSubmit,
@@ -58,8 +63,12 @@ export function SendEmailSheet({
     onFormError({ e, formFields: getValues(), setError });
   };
 
-  const onSuccess = () => {
+  const onSuccess = (result) => {
     setIsSubmitting(false);
+    setResultData({
+      sendToCount: result?.subscribed_user_count,
+      unsubscribedCount: result?.unsubscribed_user_count,
+    });
     setEmailSent(true);
   };
 
@@ -127,6 +136,11 @@ export function SendEmailSheet({
                 ? 'Email successfully sent'
                 : errors?.root?.serverError?.message}
             </StatusMessage>
+              {emailSent && <>
+                Email Was send to {resultData.sendToCount} users
+                <br />
+                {resultData.unsubscribedCount} users have unsubscribed
+              </>}
             <Button
               type="submit"
               disabled={userListLoading || emailSent || isSubmitting}

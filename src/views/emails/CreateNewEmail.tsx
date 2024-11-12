@@ -15,9 +15,9 @@ import {
   ToolTip,
 } from '@a-little-world/little-world-design-system';
 import { render as renderEmail } from '@react-email/render';
-import { filter, isEmpty, isNumber, map, pullAt } from 'lodash';
+import { capitalize, filter, isEmpty, isNumber, map, pullAt } from 'lodash';
 import React, { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
 import styled, { useTheme } from 'styled-components';
 import useSWR from 'swr';
@@ -29,7 +29,11 @@ import EmailBuilder, {
   BlocksWithLink,
   ContentTypes,
 } from '../../emails/Builder';
-import { BackendVars } from '../../emails/templates/backendVars';
+import {
+  BackendVars,
+  EMAIL_CATEGORIES,
+  getUnsubscribeUrl,
+} from '../../emails/shared/constants';
 import useAutosave from '../../hooks/useAutoSave';
 import { CREATE_NEW_EMAIL_ROUTE, getEditEmailRoute } from '../../routes';
 import { dataFetcher, registerInput } from '../../store';
@@ -184,6 +188,7 @@ const CreateNewEmail = () => {
 
   const {
     watch,
+    control,
     register: registerTemplate,
     handleSubmit: submitTemplate,
     formState: { errors: errorsTemplate },
@@ -192,6 +197,7 @@ const CreateNewEmail = () => {
   } = useForm();
   const templateName = watch('template_name');
   const subject = watch('subject');
+  const category = watch('category');
   const shouldSave =
     !templateSaved && subject && templateName && !isEmpty(newEmail);
 
@@ -199,8 +205,15 @@ const CreateNewEmail = () => {
     setSaving(true);
     updateDynamicTemplate({
       existingTemplate: Boolean(templateId),
+      category,
       templateName,
-      template: renderEmail(<EmailBuilder content={newEmail} preview={''} />),
+      template: renderEmail(
+        <EmailBuilder
+          content={newEmail}
+          preview={''}
+          unsubscribeLink={getUnsubscribeUrl(category)}
+        />,
+      ),
       templateContent: newEmail,
       subject,
       onSuccess: () => {
@@ -228,8 +241,11 @@ const CreateNewEmail = () => {
     );
     // if template does not exist navigate to create new template
     if (!dynamicTemplate) return navigate(CREATE_NEW_EMAIL_ROUTE);
+
+    setValue('template', dynamicTemplate.uuid);
     setValue('template_name', dynamicTemplate.template_name);
     setValue('subject', dynamicTemplate.subject);
+    setValue('category', dynamicTemplate.category_id);
     setNewEmail(dynamicTemplate.content);
     setTemplateSaved(true);
   };
@@ -320,19 +336,67 @@ const CreateNewEmail = () => {
     <Container>
       <PageHeading type={TextTypes.Heading4}>New Email Creator</PageHeading>
       <SaveTemplateForm onSubmit={submitTemplate(onSaveDynamicTemplate)}>
-        <Dropdown
-          label={'Start with a pre-existing template'}
-          options={map(
-            filter(dynamicTemplates?.results, item => !isEmpty(item.content)),
-            template => ({
-              value: template.uuid,
-              label: template.template_name,
-            }),
+        <Controller
+          defaultValue={null}
+          name={'template'}
+          control={control}
+          render={({
+            field: { onBlur, value, name, ref },
+            fieldState: { error },
+          }) => (
+            <Dropdown
+              key={category}
+              name={name}
+              inputRef={ref}
+              onBlur={onBlur}
+              value={value}
+              error={error?.message}
+              label={'Start with a pre-existing template'}
+              options={map(
+                filter(
+                  dynamicTemplates?.results,
+                  item => !isEmpty(item.content),
+                ),
+                template => ({
+                  value: template.uuid,
+                  label: template.template_name,
+                }),
+              )}
+              onValueChange={handleTemplateSelect}
+              placeholder="pick a template"
+              disabled={templatesLoading || isEmpty(dynamicTemplates?.results)}
+            />
           )}
-          onValueChange={handleTemplateSelect}
-          placeholder="pick a template"
-          disabled={templatesLoading || isEmpty(dynamicTemplates?.results)}
         />
+        <Controller
+          defaultValue={null}
+          name={'category'}
+          control={control}
+          rules={{ required: 'Required' }}
+          render={({
+            field: { onChange, onBlur, value, name, ref },
+            fieldState: { error },
+          }) => (
+            <Dropdown
+              key={category}
+              name={name}
+              inputRef={ref}
+              onBlur={onBlur}
+              value={value}
+              error={error?.message}
+              label={'Category'}
+              options={map(EMAIL_CATEGORIES, category => ({
+                value: category,
+                label: capitalize(category),
+              }))}
+              onValueChange={val => onChange({ target: { value: val } })}
+              placeholder="pick a category"
+              disabled={templatesLoading}
+              maxWidth="160px"
+            />
+          )}
+        />
+
         <TextInput
           id={'template_name'}
           {...registerInput({
@@ -432,6 +496,7 @@ const CreateNewEmail = () => {
               moveBlock={moveBlock}
               openHrefEditor={setShowHrefEditor}
               updateText={handleTextUpdate}
+              unsubscribeLink={getUnsubscribeUrl(category)}
             />
           )}
         </TemplateWrapper>

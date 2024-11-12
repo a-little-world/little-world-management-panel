@@ -153,7 +153,7 @@ const Pagination = ({ list }: { list: any }) => {
     (internalList?.pages_total &&
       internalList?.page !== internalList?.pages_total) ||
     (internalList?.last_page && internalList?.page !== internalList?.last_page);
-  console.log({ list, displayLastPage, internalList });
+
   useEffect(() => {
     if (!isEmpty(list)) setInternalList(list);
   }, [list]);

@@ -46,4 +46,4 @@ if (LOCAL_DEV) {
   window.renderApp = renderApp;
 }
 
-reportWebVitals();
+//reportWebVitals();

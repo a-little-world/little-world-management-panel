@@ -1,5 +1,5 @@
 import { ContentTypes } from '../Builder';
-import { BackendVars } from '../templates/backendVars';
+import { BackendVars } from '../shared/constants';
 
 const marketingEmails = {};
 

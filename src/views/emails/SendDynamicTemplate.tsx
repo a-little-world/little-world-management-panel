@@ -1,14 +1,16 @@
 import {
   ButtonAppearance,
   Link,
+  Loading,
 } from '@a-little-world/little-world-design-system';
+import { LoadingSizes } from '@a-little-world/little-world-design-system/dist/esm/components/Loading/Loading';
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import useSWR from 'swr';
 
 import SendEmailSheet from '../../blocks/SendEmailSheet';
-import { CREATE_NEW_EMAIL_ROUTE } from '../../routes';
+import { getEditEmailRoute } from '../../routes';
 import { dataFetcher } from '../../store';
 
 const Container = styled.div`
@@ -16,6 +18,14 @@ const Container = styled.div`
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.small};
   min-height: 0;
+`;
+
+const LoadingContainer = styled.div`
+  display: flex;
+  padding: ${({ theme }) => theme.spacing.medium};
+  align-items: center;
+  justify-content: center;
+  height: 100%;
 `;
 
 const SendWrapper = styled.div`
@@ -30,17 +40,21 @@ const SendWrapper = styled.div`
 
 export function SendDynamicTemplateView() {
   const { emailTemplateName } = useParams();
-  const { data: dynamicEmail } = useSWR(
+  const { data: dynamicEmail, isLoading } = useSWR(
     `/api/matching/emails/dynamic_templates/${emailTemplateName}/`,
     dataFetcher,
     {},
   );
 
-  return (
+  return isLoading ? (
+    <LoadingContainer>
+      <Loading size={LoadingSizes.Large} inline={false} />
+    </LoadingContainer>
+  ) : (
     <Container>
       <SendWrapper>
         <Link
-          to={`${CREATE_NEW_EMAIL_ROUTE}?template=${dynamicEmail?.uuid}`}
+          to={getEditEmailRoute(dynamicEmail?.id)}
           buttonAppearance={ButtonAppearance.Secondary}
         >
           Edit Template

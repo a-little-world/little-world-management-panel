@@ -223,6 +223,8 @@ const orderingOptions = [
   },
 ];
 
+type Filters = { [key: string]: string | string[] };
+
 export function Users() {
   let [searchParams, setSearchParams] = useSearchParams({
     order_by: '-date_joined',
@@ -231,7 +233,7 @@ export function Users() {
   const list = searchParams.get('list') || 'all';
   const orderBy = searchParams.get('order_by') || '-date_joined';
 
-  const [filters, setFilters] = useState({});
+  const [filters, setFilters] = useState<Filters>({});
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   const {
@@ -242,7 +244,19 @@ export function Users() {
 
   // Sync searchParams with filters state
   useEffect(() => {
-    const paramsObject = Object.fromEntries([...searchParams]);
+    const paramsObject: Filters = {};
+
+    searchParams.forEach((value, key) => {
+      if (paramsObject[key]) {
+        paramsObject[key] = Array.isArray(paramsObject[key])
+          ? [...(paramsObject[key] as string[]), value]
+          : [paramsObject[key] as string, value];
+      } else {
+        paramsObject[key] = value;
+      }
+    });
+
+    console.log({ paramsObject });
     setFilters(paramsObject);
   }, [searchParams]);
 
@@ -257,12 +271,24 @@ export function Users() {
     });
   };
 
-  const updateSearchParams = (key: string, value: string) => {
+  const updateSearchParams = (key: string, value: string | string[]) => {
     searchParams.delete('page');
+
     if (!value) {
       removeSearchParam(key);
     } else {
-      searchParams.set(key, value);
+      if (Array.isArray(value)) {
+        // Remove the existing parameter
+        searchParams.delete(key);
+
+        // Add each array element as a separate parameter
+        value.forEach(item => {
+          searchParams.append(key, item);
+        });
+      } else {
+        searchParams.set(key, value);
+      }
+
       setSearchParams(searchParams);
       setFilters(prevFilters => ({
         ...prevFilters,
@@ -270,7 +296,6 @@ export function Users() {
       }));
     }
   };
-
   const handleDownload = () => {
     getUserListExport({
       searchParams: createSearchParams(searchParams),
@@ -308,7 +333,7 @@ export function Users() {
   const downloadListData = () => {
     handleDownload();
   };
-  console.log({ userList });
+  console.log({ filters });
   return (
     <>
       <div className="w-full flex items-end gap-5 p-4 justify-between flex-wrap">
