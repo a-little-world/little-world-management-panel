@@ -34,6 +34,19 @@ const chartData = [
   { name: 'other', count: 90, fill: 'var(--color-other)' },
 ];
 
+function createChartConfig_v2(data) {
+  const chartConfig = {};
+  data.forEach((item, index) => {
+    // @ts-ignore
+    chartConfig[item.name] = {
+      label: item.name,
+      description: item.name,
+      color: `hsl(var(--chart-${index + 1}))`,
+    };
+  });
+  return chartConfig;
+}
+
 function createChartConfig(data) {
   const chartConfig = {};
   data.forEach((item, index) => {
@@ -67,25 +80,41 @@ function wrapText(text, lineLength) {
 
 const chartCategories = [
   {
+    id: 'user-signup-loss',
+    title: 'User Signup Loss',
+    chartBackend: 'v2',
+    filters: [
+        'all',
+        'journey_v2__user_created',
+        'journey_v2__email_verified',
+        'journey_v2__user_form_completed',
+        'journey_v2__booked_onboarding_call',
+        'journey_v2__first_search',
+        'journey_v2__user_deleted',
+        'journey_v2__no_show',
+        'journey_v2__too_low_german_level'
+    ],
+  },
+  {
     id: 'in-reg',
     title: 'Users still in Registration Process',
     filters: [
-      'ujv2_user_created',
-      'ujv2_email_verified',
-      'ujv2_user_form_completed',
-      'ujv2_booked_onboarding_call',
-      'ujv2_no_show',
+      'journey_v2__user_created',
+      'journey_v2__email_verified',
+      'journey_v2__user_form_completed',
+      'journey_v2__booked_onboarding_call',
+      'journey_v2__no_show',
     ],
   },
   {
     id: 'await-match',
     title: 'Users awaiting match',
-    filters: ['ujv2_first_search', 'ujv2_user_searching', 'ujv2_pre_matching'],
+    filters: ['journey_v2__first_search', 'journey_v2__user_searching', 'journey_v2__pre_matching'],
   },
   {
     id: 'match-take-off',
     title: 'Users in Matching Process',
-    filters: ['ujv2_match_takeoff', 'ujv2_ghoster'],
+    filters: ['journey_v2__match_takeoff', 'journey_v2__ghoster'],
   },
   {
     id: 'active-users',
@@ -131,11 +160,48 @@ function MultilineTick(props) {
   );
 }
 
-export function BarChartTimeRanged() {
-  const [category, setCategory] = React.useState(chartCategories[0]);
+export function BarChartTimeRanged({
+  version = 'v2', // TODO 'v1',
+  initialCategory = 'user-signup-loss',
+  hideCategoryDropdown = true, // TODO false,
+}) {
+  return version === 'v1' ? <BarChartTimeRangedV1
+    version={version}
+    initialCategory={initialCategory}
+    hideCategoryDropdown={hideCategoryDropdown}
+    /> : <BarChartTimeRangedV2
+        initialCategory={initialCategory}
+      />
+}
 
+function modifyDataV2(data) {
+  const modifiedData = []
+  const topCount = data[0].count;
+  let currentCount = topCount;
+  let lastName = ''
+
+  data.forEach((item, index) => {
+    if( index !== 0) {
+      currentCount -= item.count;
+    }
+    const percentage = Math.round((currentCount / topCount) * 100);
+    modifiedData.push({
+      name: item.name,
+      count: currentCount,
+      description: `${index !== 0 ? '-' : ''} ${item.name} (${item.count}) = ${currentCount} (${percentage}%)`,
+    });
+  });
+  return modifiedData
+}
+
+export function BarChartTimeRangedV2({
+  initialCategory = 'user-signup-loss',
+}) {
+  const [category, setCategory] = React.useState(chartCategories.find(cat => cat.id === initialCategory));
+
+  const random = React.useRef(Date.now() + Math.random());
   const { mutate, error, data, isLoading } = useSWR(
-    '/api/matching/users/statistics/user_journey_buckets/',
+    '/api/matching/users/statistics/user_journey_buckets/?random=' + random.current,
     cratePostFetcher({
       selected_filters: category.filters,
     }),
@@ -144,12 +210,76 @@ export function BarChartTimeRanged() {
 
   if (isLoading) return <div>Loading...</div>;
   if (!data) return <div>Error: {error}</div>;
+  
+  const modifiedData = modifyDataV2(data);
+  const chartConfig = createChartConfig_v2(modifiedData);
 
-  const chartConfig = createChartConfig(data);
+  return <Card className="">
+        <CardHeader>
+        {category?.id}
+      </CardHeader>
+      <CardContent className="min-w-[600px]">
+        <ChartContainer config={chartConfig}>
+          <BarChart
+            accessibilityLayer
+            data={modifiedData}
+            layout="vertical"
+            margin={{
+              left: 200,
+            }}
+          >
+            <YAxis
+              dataKey="name"
+              type="category"
+              tickLine={true}
+              tickMargin={1}
+              axisLine={false}
+              tick={<MultilineTick data={modifiedData} />}
+            />
+            <XAxis dataKey="count" type="number" hide />
+            <ChartTooltip
+              cursor={false}
+              content={<ChartTooltipContent hideLabel />}
+            />
+            <Bar
+              dataKey="count"
+              layout="vertical"
+              radius={3}
+              width={1}
+              height={1}
+            />
+          </BarChart>
+        </ChartContainer>
+      </CardContent>
+    </Card>
+}
+    
+  
+export function BarChartTimeRangedV1({
+  version = 'v1',
+  initialCategory = 'user-signup-loss',
+  hideCategoryDropdown = true, // TODO false,
+}) {
+  const [category, setCategory] = React.useState(chartCategories.find(cat => cat.id === initialCategory));
+
+  const random = React.useRef(Date.now() + Math.random());
+  const { mutate, error, data, isLoading } = useSWR(
+    '/api/matching/users/statistics/user_journey_buckets/?random=' + random.current,
+    cratePostFetcher({
+      selected_filters: category.filters,
+    }),
+    {},
+  );
+
+  if (isLoading) return <div>Loading...</div>;
+  if (!data) return <div>Error: {error}</div>;
+  
+  const modifiedData = data;
+  const chartConfig = createChartConfig(modifiedData);
   return (
     <Card className="">
       <CardHeader>
-        <StyledDropdown
+        {!hideCategoryDropdown && <StyledDropdown
           value={category.id}
           options={chartCategories.map(({ id, title }) => ({
             value: id,
@@ -164,7 +294,7 @@ export function BarChartTimeRanged() {
           }}
           placeholder="Select a user list..."
           cannotError
-        />
+        />}
         <CardTitle>{category.title}</CardTitle>
         {/*<CardDescription>January - June 2024</CardDescription>*/}
       </CardHeader>
@@ -172,7 +302,7 @@ export function BarChartTimeRanged() {
         <ChartContainer config={chartConfig}>
           <BarChart
             accessibilityLayer
-            data={data}
+            data={modifiedData}
             layout="vertical"
             margin={{
               left: 200,
@@ -184,7 +314,7 @@ export function BarChartTimeRanged() {
               tickLine={true}
               tickMargin={1}
               axisLine={false}
-              tick={<MultilineTick data={data} />}
+              tick={<MultilineTick data={modifiedData} />}
             />
             <XAxis dataKey="count" type="number" hide />
             <ChartTooltip
@@ -202,7 +332,7 @@ export function BarChartTimeRanged() {
         </ChartContainer>
       </CardContent>
       <CardFooter className="flex-col items-start gap-2 text-sm">
-        NODE: Data filtered down to the current matching user
+        NOTE: Data filtered down to the current matching user
       </CardFooter>
     </Card>
   );
