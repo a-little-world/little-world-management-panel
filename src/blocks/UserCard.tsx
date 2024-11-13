@@ -70,7 +70,7 @@ export const UserCard = ({
     error: waitingTimeError,
     isLoading,
   } = useSWR(`/api/matching/users/${user.id}/match_waiting_time/`, dataFetcher);
-  console.log({ waitingTime, waitingTimeError });
+  console.log({ user });
   const { addUserToMatching } = useGlobalState();
   const navigate = useNavigate();
   const onAddToMatching = () => {
@@ -79,6 +79,11 @@ export const UserCard = ({
   };
   if (!user) return <div>Undefined User</div>;
 
+  const isVolunteer = user.profile.user_type === 'volunteer';
+
+  const groups = isVolunteer
+    ? user.profile.target_group
+    : user.profile.groups.join(',').replace('other', user.profile.other_group);
   let End = <></>;
   if (!partial) {
     End = (
@@ -123,9 +128,9 @@ export const UserCard = ({
             </div>
             <div className="flex flex-row content-center items-start justify-start">
               <Text tag="h4" bold type={TextTypes.Heading6}>
-                Group
+                {isVolunteer ? 'Target Group' : 'Group'}
               </Text>
-              : {user.profile.groups?.join(', ')}
+              : {groups}
             </div>
             <Text tag="h4" bold type={TextTypes.Heading6}>
               Interests
@@ -188,12 +193,7 @@ export const UserCard = ({
       )}
       {!tiny && (
         <div className="w-full h-fit p-3 flex flex-row justify-between absolute top-0 left-0 z-10">
-          <Tag
-            bold
-            color={
-              user.profile.user_type === 'volunteer' ? '#9631c5' : '#ec2525'
-            }
-          >
+          <Tag bold color={isVolunteer ? '#9631c5' : '#ec2525'}>
             {capitalize(user.profile.user_type)}
           </Tag>
           {partial && (

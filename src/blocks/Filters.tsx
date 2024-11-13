@@ -31,7 +31,7 @@ enum FilterKeys {
   Company = 'state__company',
   EmailAuthenticated = 'state__email_authenticated',
   HadPreMatchingCall = 'state__had_prematching_call',
-  TargetGroups = 'profile__target_groups',
+  TargetGroups = 'profile__groups',
   UserType = 'profile__user_type',
   UserList = 'list',
 }
