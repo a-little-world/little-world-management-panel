@@ -281,3 +281,9 @@ export const USER_GROUPS = {
   student: 'student',
   worker: 'worker',
 };
+
+export const MATCH_STATUS = {
+  proposed: 'proposed',
+  confirmed: 'confirmed',
+  unconfirmed: 'unconfirmed',
+};

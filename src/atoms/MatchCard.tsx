@@ -14,6 +14,7 @@ import {
 import React from 'react';
 
 import { removeMatch } from '../api';
+import { MATCH_STATUS } from '../constants.js';
 import { formatTimeDistance } from '../helpers/date';
 import { useGlobalState } from '../store';
 import UserImage from './UserImage';
@@ -55,6 +56,8 @@ const ConfirmRemoveMatchDialog = ({ dialogOpen, onClose, match, userName }) => {
 
 const MatchCard = ({ match, userName }: { match: any; userName: string }) => {
   const [dialogOpen, setDialogOpen] = React.useState(false);
+  const isProposed = match.status === MATCH_STATUS.proposed;
+
   return (
     <div className="w-full max-w-[320px] flex flex-col bg-white h-fit relative items-center justify-center rounded-xl p-4 gap-2 border border-border-slate-400">
       <ConfirmRemoveMatchDialog
@@ -100,23 +103,34 @@ const MatchCard = ({ match, userName }: { match: any; userName: string }) => {
           Remove
         </Button>
       </div>
-      <p>
+      <Text bold>
         {match.partner.first_name} {match.partner.second_name}
-      </p>
-      <p>
-        Matched: {formatTimeDistance(new Date(match.chat.created), new Date())}{' '}
-      </p>
-      <p>
-        Last Message:{' '}
-        {match.chat.newest_message?.created
-          ? formatTimeDistance(
-              new Date(match.chat.newest_message.created),
-              new Date(),
-            )
-          : 'No messages yet'}
-      </p>
-      <p>Group: {match.partner.target_groups?.join(', ')}</p>
-      <p>Languages: {match.language_skills} </p>
+      </Text>
+      {!isProposed && (
+        <>
+          <div className="flex gap-2 items-center">
+            <Text bold>Matched:</Text>
+            <Text>
+              {formatTimeDistance(new Date(match.chat.created), new Date())}{' '}
+            </Text>
+          </div>
+          <div className="flex gap-2 items-center">
+            <Text bold>Last Message:</Text>
+            <Text>
+              {match.chat.newest_message?.created
+                ? formatTimeDistance(
+                    new Date(match.chat.newest_message.created),
+                    new Date(),
+                  )
+                : 'No messages yet'}
+            </Text>
+          </div>
+          {/* <div className="flex gap-2 items-center">
+            <Text bold>User active:</Text>
+            <Text>N/A</Text>
+          </div> */}
+        </>
+      )}
       <div className="flex gap-2">
         <Link
           buttonAppearance={ButtonAppearance.Secondary}
