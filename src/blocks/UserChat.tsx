@@ -74,7 +74,6 @@ const UserChat = ({ user }) => {
       message: payload.newMessage,
       onError,
       onSuccess: message => {
-        console.log({ message });
         reset();
         setResults([message, ...results]);
         setIsSubmitting(false);

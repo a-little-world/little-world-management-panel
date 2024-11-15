@@ -4,6 +4,7 @@ import {
   ButtonSizes,
   ButtonVariations,
   Link,
+  Loading,
   Tag,
   TagAppearance,
   TagSizes,
@@ -15,12 +16,13 @@ import { capitalize, isEmpty } from 'lodash';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled, { css } from 'styled-components';
+import useSWR from 'swr';
 
 import MatchesIcons from '../atoms/MatchesIcons';
 import UserImage from '../atoms/UserImage';
 import { formatDate, formatTimeDistance } from '../helpers/date';
 import { MATCHING_ROUTE } from '../routes';
-import { useGlobalState } from '../store';
+import { dataFetcher, useGlobalState } from '../store';
 import UserLanguages from './UserLanguages';
 
 const StyledCard = styled.div<{ $horizontal?: boolean }>`
@@ -63,6 +65,12 @@ export const UserCard = ({
   tiny = false,
   horizontal = false,
 }: UserCardProps) => {
+  const {
+    data: waitingTime,
+    error: waitingTimeError,
+    isLoading,
+  } = useSWR(`/api/matching/users/${user.id}/match_waiting_time/`, dataFetcher);
+  console.log({ waitingTime, waitingTimeError });
   const { addUserToMatching } = useGlobalState();
   const navigate = useNavigate();
   const onAddToMatching = () => {
@@ -234,7 +242,7 @@ export const UserCard = ({
         >
           {user.profile.first_name} {user.profile.second_name}
         </div>
-        <div className="flex flex-row content-center items-start justify-start gap-1">
+        <div className="flex flex-row content-center items-start justify-center gap-1">
           <Text tag="h4" bold>
             Joined:
           </Text>
@@ -242,6 +250,18 @@ export const UserCard = ({
             {formatDate(new Date(user.date_joined))} (
             {formatTimeDistance(new Date(user.date_joined), new Date())})
           </Text>
+        </div>
+        <div className="flex flex-row content-center items-center justify-center gap-1">
+          <Text className="whitespace-nowrap" tag="h4" bold>
+            Match eligibility:
+          </Text>
+          {isLoading ? (
+            <Loading />
+          ) : (
+            <Text color={waitingTime.includes('Waiting') ? 'red' : 'black'}>
+              {waitingTime}
+            </Text>
+          )}
         </div>
         <div className="w-full text-xs text-center flex flex-col gap-2 items-center border-blue">
           <MatchesIcons

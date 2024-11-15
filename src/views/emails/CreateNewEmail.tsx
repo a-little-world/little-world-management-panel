@@ -32,7 +32,6 @@ import EmailBuilder, {
 import {
   BackendVars,
   EMAIL_CATEGORIES,
-  UNSUBSCRIBABLE_CATEGORIES,
   getUnsubscribeUrl,
 } from '../../emails/shared/constants';
 import useAutosave from '../../hooks/useAutoSave';
@@ -201,7 +200,7 @@ const CreateNewEmail = () => {
   const category = watch('category');
   const shouldSave =
     !templateSaved && subject && templateName && !isEmpty(newEmail);
-  
+
   const onSaveDynamicTemplate = () => {
     setSaving(true);
     updateDynamicTemplate({

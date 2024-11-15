@@ -274,3 +274,16 @@ export const LANGUAGES = {
   de: 'de',
   en: 'en',
 };
+
+export const USER_GROUPS = {
+  other: 'other',
+  refugee: 'refugee',
+  student: 'student',
+  worker: 'worker',
+};
+
+export const MATCH_STATUS = {
+  proposed: 'proposed',
+  confirmed: 'confirmed',
+  unconfirmed: 'unconfirmed',
+};
