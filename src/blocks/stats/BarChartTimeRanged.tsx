@@ -85,9 +85,10 @@ const chartCategories = [
     chartBackend: 'v2',
     filters: [
         'all',
+        'journey_v2__never_active',
+        'journey_v2__user_created',
         'journey_v2__user_deleted',
         'journey_v2__email_verified',
-        'journey_v2__user_created',
         'journey_v2__user_form_completed',
         'journey_v2__too_low_german_level',
         'journey_v2__booked_onboarding_call',
