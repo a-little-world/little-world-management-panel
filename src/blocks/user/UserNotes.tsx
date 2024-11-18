@@ -17,7 +17,7 @@ const ButtonsContainer = styled.div`
   display: flex;
   justify-content: space-between;
   gap: ${({ theme }) => theme.spacing.large};
-  margin-top: ${({ theme }) => theme.spacing.small};
+  margin: ${({ theme }) => `${theme.spacing.small} 0 ${theme.spacing.large}`};
 
   @media (min-width: ${({ theme }) => theme.breakpoints.medium}) {
     justify-content: flex-end;
@@ -60,16 +60,6 @@ const UserNotes = ({ notes, userId }: UserNotesProps) => {
 
   return (
     <form onSubmit={handleSubmit(handleSave)}>
-      {displayStatusMessage && (
-        <StatusMessage
-          $visible={displayStatusMessage}
-          $type={saved ? MessageTypes.Success : MessageTypes.Error}
-        >
-          {saved
-            ? 'Notes saved successfully'
-            : errors?.root?.serverError?.message}
-        </StatusMessage>
-      )}
       <TextArea
         {...registerInput({
           register,
@@ -91,6 +81,16 @@ const UserNotes = ({ notes, userId }: UserNotesProps) => {
         </Button>
         <Button type="submit">Save</Button>
       </ButtonsContainer>
+      {displayStatusMessage && (
+        <StatusMessage
+          $visible={displayStatusMessage}
+          $type={saved ? MessageTypes.Success : MessageTypes.Error}
+        >
+          {saved
+            ? 'Notes saved successfully'
+            : errors?.root?.serverError?.message}
+        </StatusMessage>
+      )}
     </form>
   );
 };
