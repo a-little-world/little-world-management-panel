@@ -1,7 +1,7 @@
 import { MultiDropdown } from '@a-little-world/little-world-design-system';
 import React from 'react';
 
-import { useGlobalState } from '../store';
+import { useGlobalState } from '../../store';
 
 interface UserLanguagesProps {
   langSkill: any[];

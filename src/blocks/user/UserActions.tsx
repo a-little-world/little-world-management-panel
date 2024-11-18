@@ -20,9 +20,9 @@ import {
   setHadPrematchingCall,
   setNewsletterSubscribed,
   setUserUnresponsive,
-} from '../api/index';
-import { Card, CardFooter, CardHeader, CardTitle } from '../atoms/Card';
-import { registerInput } from '../store';
+} from '../../api/index';
+import { Card, CardFooter, CardHeader, CardTitle } from '../../atoms/Card';
+import { registerInput } from '../../store';
 
 const SUPPORT_USERS = [
   {

@@ -16,23 +16,24 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '../atoms/Card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../atoms/Tabs';
-import { MATCHING_ROUTE } from '../routes';
-import { dataFetcher, useGlobalState } from '../store';
-import { SelectedUsersSheet } from './SelectedUsersSheet';
+} from '../../atoms/Card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../atoms/Tabs';
+import { MATCHING_ROUTE } from '../../routes';
+import { dataFetcher, useGlobalState } from '../../store';
+import { SelectedUsersSheet } from '../SelectedUsersSheet';
 import UserActions from './UserActions';
 import UserDetailsCard from './UserCard';
 import UserChat from './UserChat';
 import UserEmails from './UserEmails';
 import UserMatches from './UserMatches';
+import UserNotes from './UserNotes';
 
 const USER_TABS = [
   { key: 'profile', label: 'Profile' },
   { key: 'chat', label: 'Chat', title: 'User Support Chat' },
   { key: 'emails', label: 'Emails' },
   { key: 'matches', label: 'Matches' },
-  // { key: 'notes', label: 'Notes' },
+  { key: 'notes', label: 'Notes' },
   { key: 'actions', label: 'Actions' },
 ];
 
@@ -52,6 +53,9 @@ const UserPanelContent = ({
   if (tab === 'emails') return <UserEmails user={user} />;
 
   if (tab === 'matches') return <UserMatches user={user} />;
+
+  if (tab === 'notes')
+    return <UserNotes notes={user?.state?.notes} userId={user.id} />;
 
   if (tab === 'actions') return <UserActions user={user} onUpdate={onUpdate} />;
   return null;
@@ -95,6 +99,7 @@ const UserPanel = () => {
       <TabsList className="grid w-full grid-cols-6">
         {USER_TABS.map(tab => (
           <TabsTrigger
+            key={'header' + tab.key}
             value={tab.key}
             onClick={() => {
               setSearchParams({ tab: tab.key });
@@ -105,7 +110,7 @@ const UserPanel = () => {
         ))}
       </TabsList>
       {USER_TABS.map(tab => (
-        <TabsContent value={tab.key}>
+        <TabsContent key={'content' + tab.key} value={tab.key}>
           <Card
             className={`border-none shadow-none flex flex-col w-full ${
               tab.key === 'chat' ? 'h-full' : ''

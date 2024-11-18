@@ -15,10 +15,10 @@ import React, { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTheme } from 'styled-components';
 
-import { markMessageAsRead, sendChatMessage } from '../api/index';
-import { formatTimeDistance } from '../helpers/date';
-import useInfiniteScroll from '../hooks/useInfiniteScroll';
-import { registerInput } from '../store';
+import { markMessageAsRead, sendChatMessage } from '../../api/index';
+import { formatTimeDistance } from '../../helpers/date';
+import useInfiniteScroll from '../../hooks/useInfiniteScroll';
+import { registerInput } from '../../store';
 import {
   ChatContainer,
   Message,

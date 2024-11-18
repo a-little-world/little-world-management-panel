@@ -18,11 +18,11 @@ import { useNavigate } from 'react-router-dom';
 import styled, { css } from 'styled-components';
 import useSWR from 'swr';
 
-import MatchesIcons from '../atoms/MatchesIcons';
-import UserImage from '../atoms/UserImage';
-import { formatDate, formatTimeDistance } from '../helpers/date';
-import { MATCHING_ROUTE } from '../routes';
-import { dataFetcher, useGlobalState } from '../store';
+import MatchesIcons from '../../atoms/MatchesIcons';
+import UserImage from '../../atoms/UserImage';
+import { formatDate, formatTimeDistance } from '../../helpers/date';
+import { MATCHING_ROUTE } from '../../routes';
+import { dataFetcher, useGlobalState } from '../../store';
 import UserLanguages from './UserLanguages';
 
 const StyledCard = styled.div<{ $horizontal?: boolean }>`

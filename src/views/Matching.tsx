@@ -30,7 +30,7 @@ import {
 } from '../atoms/Card';
 import { ScoresTable } from '../blocks/ScoresTable';
 import { SelectedUsersSheet } from '../blocks/SelectedUsersSheet';
-import UserCard from '../blocks/UserCard';
+import UserCard from '../blocks/user/UserCard';
 import { ALGORITHM_ROUTE } from '../routes';
 import { useGlobalState } from '../store';
 

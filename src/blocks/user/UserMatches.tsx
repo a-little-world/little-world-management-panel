@@ -3,9 +3,9 @@ import React from 'react';
 import styled, { useTheme } from 'styled-components';
 import useSWR from 'swr';
 
-import MatchCard from '../atoms/MatchCard';
-import { formatDate, formatTime } from '../helpers/date';
-import { dataFetcher } from '../store';
+import MatchCard from '../../atoms/MatchCard';
+import { formatDate, formatTime } from '../../helpers/date';
+import { dataFetcher } from '../../store';
 
 const PrematchingAppointment = styled.div`
   display: flex;

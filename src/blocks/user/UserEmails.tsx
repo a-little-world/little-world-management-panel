@@ -13,7 +13,7 @@ import { createSearchParams, useSearchParams } from 'react-router-dom';
 import { useTheme } from 'styled-components';
 import useSWR from 'swr';
 
-import Pagination from '../atoms/Pagination';
+import Pagination from '../../atoms/Pagination';
 import {
   Table,
   TableBody,
@@ -21,9 +21,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '../atoms/Table';
-import { formatDate, formatTime } from '../helpers/date';
-import { dataFetcher } from '../store';
+} from '../../atoms/Table';
+import { formatDate, formatTime } from '../../helpers/date';
+import { dataFetcher } from '../../store';
 
 const fields = [
   { key: 'receiver', label: 'Reciever' },

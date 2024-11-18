@@ -7,7 +7,7 @@ import { RouterProvider, ScrollRestoration } from 'react-router-dom';
 import { Outlet, createBrowserRouter } from 'react-router-dom';
 
 import Layout from './blocks/Layout';
-import UserPanel from './blocks/UserPanel';
+import UserPanel from './blocks/user/UserPanel';
 import {
   AdminPanelV2_EmailDetails,
   AdminPanelV2_Emails,

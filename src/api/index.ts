@@ -263,6 +263,25 @@ export const setHadPrematchingCall = async ({
   }
 };
 
+export const updateUserNotes = async ({
+  userId,
+  notes,
+  onSuccess,
+  onError,
+}) => {
+  try {
+    const result = await apiFetch(`/api/matching/users/${userId}/notes/`, {
+      method: 'POST',
+      body: {
+        notes,
+      },
+    });
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
+  }
+};
+
 export const burstUpdateMatchingScores = async ({ parallel_tasks }) => {
   const res = await fetch(`/api/matching/burst_update_scores/`, {
     method: 'POST',
@@ -327,7 +346,7 @@ export const getTaskStatus = async ({ taskId, onSuccess, onError }) => {
         'X-CSRFToken': getCookiesAsObject().csrftoken,
       },
     });
-    console.log({ response });
+
     if (response.ok) {
       const responseBody = await response?.json();
       console.log({ responseBody });

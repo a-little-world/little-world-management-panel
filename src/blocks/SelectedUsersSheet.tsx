@@ -21,7 +21,7 @@ import {
 import useSelectUser from '../hooks/useSelectUser';
 import { registerInput, useGlobalState } from '../store';
 import SearchBar from './SearchBar';
-import UserDetailsCard from './UserCard';
+import UserDetailsCard from './user/UserCard';
 
 const StyledSheetButton = styled(Button)`
   position: fixed;
