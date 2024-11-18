@@ -118,7 +118,7 @@ export const Footer = ({ unsubscribeLink }: { unsubscribeLink?: string }) => (
       </Row>
     </Section>
     <Text style={{ ...footerText, textAlign: 'center' }}>
-      A Little World gUG, www.little-world.com
+      A Little World gUG, little-world.com
     </Text>
   </Container>
 );
