@@ -9,11 +9,11 @@ import {
 } from '@react-email/components';
 import * as React from 'react';
 
-import footerBannerImage from '../../assets/email-footer-banner.png';
 import facebook from '../../assets/facebook.png';
 import instagram from '../../assets/instagram.png';
 import linkedin from '../../assets/linkedin.png';
 import { link, sentence } from '../shared/styles';
+import { THEMES } from './constants';
 
 export const footer = {
   borderCollapse: 'separate',
@@ -63,64 +63,68 @@ const socials = {
   borderCollapse: 'separate',
 };
 
-export const Footer = ({ unsubscribeLink }: { unsubscribeLink?: string }) => (
-  <Container style={footer}>
-    <Section>
-      <Img style={bannerImage} src={footerBannerImage} />
-    </Section>
-    <Text style={footerActions}>
-      {unsubscribeLink && (
-        <>
-          <Link
-            style={{ ...footerLink, marginRight: '8px' }}
-            href={unsubscribeLink}
-          >
-            Unsubscribe
-          </Link>{' '}
-          ・
-        </>
-      )}
-      {/* <Column style={{ textAlign: 'center', width: '33%' }}>
+export const Footer = ({
+  unsubscribeLink,
+  themeContent,
+}: {
+  unsubscribeLink?: string;
+  themeContent: (typeof THEMES)[keyof typeof THEMES];
+}) => {
+  return (
+    <Container style={footer}>
+      <Section>
+        <Img style={bannerImage} src={themeContent.footerBannerImage} />
+      </Section>
+      <Text style={footerActions}>
+        {unsubscribeLink && (
+          <>
+            <Link
+              style={{ ...footerLink, marginRight: '8px' }}
+              href={unsubscribeLink}
+            >
+              Unsubscribe
+            </Link>{' '}
+            ・
+          </>
+        )}
+        {/* <Column style={{ textAlign: 'center', width: '33%' }}>
           <Link style={{ ...footerLink, margin: '0 16px' }}>
             Manage Preferences
           </Link>
         </Column> */}
-      <Link
-        style={{ ...footerLink, marginLeft: unsubscribeLink ? '8px' : '0' }}
-        href="https://home.little-world.com/kontakt"
-      >
-        Kontakt
-      </Link>
-    </Text>
-    <Section>
-      <Row style={socials}>
-        <Column style={{ width: '32px' }}>
-          <Link
-            style={footerLink}
-            href="https://www.instagram.com/littleworld_de"
-          >
-            <Img src={instagram} width={32} />
-          </Link>
-        </Column>
-        <Column>
-          <Link href="https://www.facebook.com/LittleWorld.NonProfit">
-            <Img style={{ margin: '0 auto' }} src={facebook} width={32} />
-          </Link>
-        </Column>
-        <Column style={{ width: '32px' }}>
-          <Link
-            style={footerLink}
-            href="https://www.linkedin.com/company/little-world/"
-          >
-            <Img src={linkedin} width={32} />
-          </Link>
-        </Column>
-      </Row>
-    </Section>
-    <Text style={{ ...footerText, textAlign: 'center' }}>
-      A Little World gUG, little-world.com
-    </Text>
-  </Container>
-);
+        <Link
+          style={{ ...footerLink, marginLeft: unsubscribeLink ? '8px' : '0' }}
+          href={themeContent.contactUrl}
+        >
+          Kontakt
+        </Link>
+      </Text>
+      {themeContent.socials && (
+        <Section>
+          <Row style={socials}>
+            <Column style={{ width: '32px' }}>
+              <Link style={footerLink} href={themeContent.socials.instagram}>
+                <Img src={instagram} width={32} />
+              </Link>
+            </Column>
+            <Column>
+              <Link href={themeContent.socials.facebook}>
+                <Img style={{ margin: '0 auto' }} src={facebook} width={32} />
+              </Link>
+            </Column>
+            <Column style={{ width: '32px' }}>
+              <Link style={footerLink} href={themeContent.socials.linkedin}>
+                <Img src={linkedin} width={32} />
+              </Link>
+            </Column>
+          </Row>
+        </Section>
+      )}
+      <Text style={{ ...footerText, textAlign: 'center' }}>
+        {themeContent.footerText}
+      </Text>
+    </Container>
+  );
+};
 
 export default Footer;

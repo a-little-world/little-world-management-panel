@@ -102,6 +102,7 @@ const Email = () => {
       <EmailBuilder
         content={email.content}
         preview={email.preview}
+        theme={email.theme}
         unsubscribeLink={getUnsubscribeUrl(email.category_id)}
       />,
     );

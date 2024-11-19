@@ -12,6 +12,7 @@ import styled from 'styled-components';
 import EditableText from '../atoms/EditableText';
 import ButtonLink from './shared/ButtonLink';
 import { EmailLayout } from './shared/Layout';
+import { THEMES } from './shared/constants';
 import {
   button,
   centredParagraph,
@@ -23,6 +24,7 @@ import {
   sentence,
   title,
 } from './shared/styles';
+import { Theme } from './shared/theme';
 
 export enum ContentTypes {
   Title = 'title',
@@ -55,6 +57,7 @@ type Props = {
   moveBlock?: (index1: number, index2: number) => void;
   updateText?: ({ index, text }: { index: number; text: string }) => void;
   openHrefEditor?: (index: number) => void;
+  theme: Theme;
   unsubscribeLink?: string;
 };
 
@@ -258,10 +261,15 @@ const EmailBuilder = ({
   moveBlock,
   updateText,
   openHrefEditor,
+  theme = 'little_world',
   unsubscribeLink,
 }: Props) => {
   return (
-    <EmailLayout previewText={preview} unsubscribeLink={unsubscribeLink}>
+    <EmailLayout
+      previewText={preview}
+      unsubscribeLink={unsubscribeLink}
+      themeContent={THEMES[theme]}
+    >
       {content?.map((blockData, index) =>
         editable ? (
           <EditableEmailBlock
