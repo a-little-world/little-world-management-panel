@@ -23,7 +23,6 @@ function Stats() {
           <TabsTrigger value="overview">User & Match Journey</TabsTrigger>
           <TabsTrigger value="graphs">Graphs</TabsTrigger>
           <TabsTrigger value="charts">Charts</TabsTrigger>
-          <TabsTrigger value="numbers">Numbers</TabsTrigger>
         </TabsList>
         {tab === 'overview' && (
           <TabsContent value="overview" className="">
@@ -44,14 +43,6 @@ function Stats() {
             className="flex flex-col content-center justify-center items-center flex-grow"
           >
             <BarChartTimeRanged />
-          </TabsContent>
-        )}
-        {tab === 'numbers' && (
-          <TabsContent
-            value="numbers"
-            className="flex flex-col content-center justify-center items-center flex-grow"
-          >
-            <UserCountsBucketTable />
           </TabsContent>
         )}
       </Tabs>
