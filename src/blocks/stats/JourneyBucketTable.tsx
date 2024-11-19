@@ -37,9 +37,11 @@ const tableCategories = [
 
 const tb = tableCategories[0];
 
+
 export function UserCountsBucketTable({ category = tb }) {
+  const random = React.useRef(Date.now() + Math.random());
   const { mutate, error, data, isLoading } = useSWR(
-    '/api/matching/users/statistics/user_journey_buckets/',
+    '/api/matching/users/statistics/user_journey_buckets/' + "?random=" + random.current,
     cratePostFetcher({
       selected_filters: category.filters,
     }),

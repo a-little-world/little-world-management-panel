@@ -21,7 +21,7 @@ import {
 import LoadingSpinner from '../../atoms/LoadingSpinner';
 import { cratePostFetcher } from '../../store';
 import { BarChartCounts } from '../BarChartCounts';
-import DataGraph from '../DataGraph';
+import DataGraph, { DataGraphTwoCounts } from '../DataGraph';
 import { graphEndpoints } from './RangedDataGraph';
 import {
   UserSignUpLossStatistic,
@@ -218,19 +218,9 @@ export function DynamicBuckets({
   );
 }
 
-export function DynamicUserInfluxOverview() {
-  const today = new Date();
-  const startDate = new Date(Date.now() - 4 * 7 * 24 * 60 * 60 * 1000); // 4 weeks ago
-  const random = Math.floor(Math.random() * 1000);
-  const { mutate, error, data, isLoading } = useSWR(
-    `/api/matching/users/statistics/signups/?random=${random.toString()}`,
-    cratePostFetcher({
-      start_date: startDate.toISOString().split('T')[0],
-      end_date: today.toISOString().split('T')[0],
-      bucket_size: 7,
-    }),
-    {},
-  );
+export function DynamicUserInfluxOverview({
+  data
+}) {
 
   return (
     <Section>
@@ -238,7 +228,7 @@ export function DynamicUserInfluxOverview() {
         User Influx
       </SectionTitle>
       <SectionCard>
-        <DataGraph
+        <DataGraphTwoCounts
           data={data}
           dataLabel={'New registrations in the last week'}
           maxHeight="240px"
@@ -484,8 +474,10 @@ export function MatchUserJourneyOverview() {
     'journey_v2__active_matching',
   ];
 
+  const random = React.useRef(Date.now() + Math.random());
+
   const { data: userListCounts } = useSWR(
-    '/api/matching/users/statistics/user_journey_buckets/',
+    '/api/matching/users/statistics/user_journey_buckets/' + "?random=" + random.current,
     cratePostFetcher({
       selected_filters: allBucketIds.concat(extraBucketIds),
     }),
@@ -526,6 +518,19 @@ export function MatchUserJourneyOverview() {
           matchJourneyListCounts[i];
     }
   }
+  
+  
+  const today = new Date();
+  const startDate = new Date(Date.now() - 12 * 7 * 24 * 60 * 60 * 1000); // 12 weeks ago
+  const { mutate, error, data: userSignupsData, isLoading } = useSWR(
+    `/api/matching/users/statistics/signups/?random=${random.toString()}`,
+    cratePostFetcher({
+      start_date: startDate.toISOString().split('T')[0],
+      end_date: today.toISOString().split('T')[0],
+      bucket_size: 7,
+    }),
+    {},
+  );
 
   return (
     <Container>
@@ -536,7 +541,7 @@ export function MatchUserJourneyOverview() {
         {`All the numbers in these overviews <bold>are live statistics</bold> and are <bold>filtered down to the current users access</bold>.`}
       </Description>
       <Sections>
-        <DynamicUserInfluxOverview />
+        <DynamicUserInfluxOverview data={userSignupsData}/>
         <MatchingOverview
           extraCounts={extraCounts}
           extraMatchCounts={extraMatchCounts}
@@ -559,42 +564,6 @@ export function MatchUserJourneyOverview() {
       </Sections>
       <SectionR>
         <UserSignUpLossStatistic />
-      </SectionR>
-      <SectionR>
-        <UserSignUpLossStatisticMonthly
-          startingMonth="2024-01-01"
-          title="January 2024"
-        />
-        <UserSignUpLossStatisticMonthly
-          startingMonth="2024-02-01"
-          title="Feb 2024"
-        />
-        <UserSignUpLossStatisticMonthly
-          startingMonth="2024-03-01"
-          title="March 2024"
-        />
-        <UserSignUpLossStatisticMonthly
-          startingMonth="2024-04-01"
-          title="April 2024"
-        />
-      </SectionR>
-      <SectionR>
-        <UserSignUpLossStatisticMonthly
-          startingMonth="2024-05-01"
-          title="May 2024"
-        />
-        <UserSignUpLossStatisticMonthly
-          startingMonth="2024-06-01"
-          title="June 2024"
-        />
-        <UserSignUpLossStatisticMonthly
-          startingMonth="2024-07-01"
-          title="July 2024"
-        />
-        <UserSignUpLossStatisticMonthly
-          startingMonth="2024-08-01"
-          title="August 2024"
-        />
       </SectionR>
       <DownloadCenter />
     </Container>
