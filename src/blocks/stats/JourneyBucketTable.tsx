@@ -68,7 +68,7 @@ export function UserCountsBucketTable({ category = tb }) {
   if (data) {
     row['count_type'] = 'Users';
     description_row['count_type'] = 'Bucket Description';
-    data.forEach((item: any) => {
+    data?.buckets.forEach((item: any) => {
       let count_type = item.name;
       row[count_type] = item.count;
 

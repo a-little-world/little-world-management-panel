@@ -1,3 +1,111 @@
+export const userJourneyBucketsV4 = [
+  {
+    id: 'sign-up',
+    title: 'Sign-Up',
+    sub_buckets: [
+      {
+        id: 'journey_v2__user_created',
+        title: 'User Created',
+        description:
+          'User was created, but still has to verify mail, fill form and have a prematching call',
+      },
+      {
+        id: 'journey_v2__email_verified',
+        title: 'Email Verified',
+        description:
+          'User has verified email, but still has to fill form and have a prematching call',
+      },
+      {
+        id: 'journey_v2__user_form_completed',
+        title: 'User Form Completed',
+        description:
+          'User has filled form, but still has to have a prematching call',
+      },
+      {
+        id: 'journey_v2__booked_onboarding_call',
+        title: 'Booked Onboarding Call',
+        description: 'User has filled form and booked onboarding call',
+      },
+      {
+        id: 'journey_v2__too_low_german_level',
+        title: 'Too Low German Level',
+        description:
+          "User never active, but was flagged with a 'state.to_low_german_level=True'",
+      },
+    ],
+  },
+  {
+    id: 'active-users',
+    title: 'Active-Users',
+    sub_buckets: [
+      {
+        id: 'journey_v2__pre_matching',
+        title: 'Pre-Matching',
+        description: 'User has `Pre-Matching` or `Kickoff-Matching` Match.',
+      },
+      {
+        id: 'journey_v2__match_takeoff',
+        title: 'Match Takeoff',
+        description: 'User has `Pre-Matching` or `Kickoff-Matching` Match.',
+      },
+      {
+        id: 'journey_v2__active_matching',
+        title: 'Active Matching',
+        description:
+          'User has and confirst and ongoing match, that is still having video calls or sending messages',
+      },
+      {
+        id: 'journey_v2__first_search_v2',
+        title: 'First Search',
+        description:
+          "User is doing first search i.e.: has no 'non-support' match",
+      },
+    ],
+  },
+  {
+    id: 'success-users',
+    title: 'Success-Users',
+    sub_buckets: [
+      {
+        id: 'journey_v2__happy_inactive',
+        title: 'Match Completed',
+        description: 'User has completed a match',
+      },
+    ]
+  },
+  {
+    id: 'failed-users',
+    title: 'Failed-Users',
+    sub_buckets: [
+      {
+        id: 'journey_v2__no_show',
+        title: 'No Show',
+        description: "Didn't show up to onboarding call",
+      },
+      {
+        id: 'journey_v2__user_ghosted',
+        title: 'User Ghosted',
+        description: "User has matching in [3.G] 'ghosted' his match",
+      },
+      {
+        id: 'journey_v2__no_confirm',
+        title: 'No Confirm',
+        description: "Learner that has matching in 'Never Confirmed'",
+      },
+      {
+        id: 'journey_v2__gave_up_searching',
+        title: 'Gave Up Searching',
+        description: "User that's `searching=False` and has 0 matches",
+      },
+      {
+        id: 'journey_v2__user_deleted',
+        title: 'User Was Deleted',
+        description: 'User has left the platform',
+      },
+    ],
+  }
+];
+
 export const userJourneyBuckets = [
   {
     id: 'sign-up',
@@ -102,12 +210,6 @@ export const userJourneyBuckets = [
         title: 'Happy Inactive',
         description:
           "Not searching, 1 or more matches at least one match in 'Completed Matching'",
-      },
-      {
-        id: 'journey_v2__too_low_german_level',
-        title: 'Too Low German Level',
-        description:
-          "User never active, but was flagged with a 'state.to_low_german_level=True'",
       },
       {
         id: 'journey_v2__unmatched',
