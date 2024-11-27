@@ -1,4 +1,12 @@
 {
+  "patenmatch-example.preview": "Wir freuen uns, dass du dich bei Patenmatch registriert hast!",
+  "patenmatch-example.subject": "Willkommen bei Patenmatch",
+  "patenmatch-example.block-1": "Willkommen bei Patenmatch",
+  "patenmatch-example.block-2": "{{ first_name }}, wir freuen uns, dass du dich bei Patenmatch registriert hast!",
+  "patenmatch-example.block-3": "Damit wir wissen, dass deine E-Mail-Adresse wirklich dir gehört, bestätige diese bitte mit einem Klick auf den Knopf unten, oder gib den Code:",
+  "patenmatch-example.block-4": "auf unserer Website ein.",
+  "patenmatch-example.block-5": "E-mail bestätigen",
+  "patenmatch-example.block-6": "Solltest du dich nicht bei Patenmatch registriert haben, kannst du diese E-Mail ignorieren.",
   "account-deleted.preview": "Wir möchten dich darüber informieren, dass dein Account erfolgreich gelöscht wurde.",
   "account-deleted.subject": "Account erfolgreich gelöscht",
   "account-deleted.block-1": "Account erfolgreich gelöscht",

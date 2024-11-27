@@ -46,6 +46,7 @@ export const EmailHtmlRenderer = ({ template, params }) => {
     <EmailBuilder
       content={email?.content}
       preview={email?.preview}
+      theme={email.theme}
       unsubscribeLink={getUnsubscribeUrl(email.category_id)}
       {...params}
     />,

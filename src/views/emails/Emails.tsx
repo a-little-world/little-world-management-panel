@@ -118,6 +118,7 @@ function developmentUpdateBackendEmailTemplatesAndConfiguration({
       sender_id: 'noreply',
       category_id: email.category_id,
       subject: value?.subject ?? 'No Subject',
+      theme: email.theme || 'little-world',
       template: 'react_emails/' + key + '.html',
     };
     templateToUpload.push({

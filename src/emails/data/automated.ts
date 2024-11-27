@@ -4,6 +4,41 @@ import { BackendVars, EmailCategories } from '../shared/constants';
 import automatedText from './text/automated.json';
 
 const automatedEmails = {
+  'patenmatch-example': {
+    id: 'patenmatch-example',
+    label: 'Patenmatch example',
+    category_id: EmailCategories.Automated,
+    theme: 'patenmatch',
+    preview: automatedText['patenmatch-example.preview'],
+    subject: automatedText['patenmatch-example.subject'],
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: automatedText['patenmatch-example.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['patenmatch-example.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['patenmatch-example.block-3'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['patenmatch-example.block-4'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['patenmatch-example.block-5'],
+        href: 'https://patenmatch.de/',
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['patenmatch-example.block-6'],
+      },
+    ],
+  },
   'account-deleted': {
     id: 'account-deleted',
     label: 'Account Deleted',

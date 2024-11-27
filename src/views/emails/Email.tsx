@@ -281,6 +281,7 @@ const Email = () => {
                 content={email.content}
                 preview={email.preview}
                 unsubscribeLink={getUnsubscribeUrl(email.category_id)}
+                theme={email.theme}
               />
             )}
           </TemplateWrapper>
