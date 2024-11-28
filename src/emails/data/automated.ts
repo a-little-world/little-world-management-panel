@@ -5,37 +5,37 @@ import automatedText from './text/automated.json';
 
 const automatedEmails = {
   'patenmatch-signup': {
-    id: 'patenmatch-example',
-    label: 'Patenmatch example',
-    category_id: EmailCategories.Automated,
+    id: 'patenmatch-signup',
+    label: 'Patenmatch Signup Welcome',
+    category_id: EmailCategories.AutomatedPatenmatch,
     theme: 'patenmatch',
-    preview: automatedText['patenmatch-example.preview'],
-    subject: automatedText['patenmatch-example.subject'],
+    preview: automatedText['patenmatch-signup.preview'],
+    subject: automatedText['patenmatch-signup.subject'],
     content: [
       {
         type: ContentTypes.Title,
-        text: automatedText['patenmatch-example.block-1'],
+        text: automatedText['patenmatch-signup.block-1'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: automatedText['patenmatch-example.block-2'],
+        text: automatedText['patenmatch-signup.block-2'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: automatedText['patenmatch-example.block-3'],
+        text: automatedText['patenmatch-signup.block-3'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: automatedText['patenmatch-example.block-4'],
+        text: automatedText['patenmatch-signup.block-4'],
       },
       {
         type: ContentTypes.Button,
-        text: automatedText['patenmatch-example.block-5'],
-        href: 'https://patenmatch.de/',
+        text: automatedText['patenmatch-signup.block-5'],
+        href: 'https://home.little-world.com/projecttogether-uebergibt-patenmatch-an-little-world',
       },
       {
         type: ContentTypes.Paragraph,
-        text: automatedText['patenmatch-example.block-6'],
+        text: automatedText['patenmatch-signup.block-6'],
       },
     ],
   },
