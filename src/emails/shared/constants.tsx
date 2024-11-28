@@ -56,6 +56,7 @@ export const THEMES = {
 
 export enum EmailCategories {
   Automated = 'automated',
+  AutomatedPatenmatch = 'automated-patenmatch',
   Community = 'community',
   Dynamic = 'dynamic',
   Marketing = 'marketing',
