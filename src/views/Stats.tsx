@@ -6,9 +6,10 @@ import { cratePostFetcher } from '../store';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../atoms/Tabs';
 import { BarChartTimeRanged } from '../blocks/stats/BarChartTimeRanged';
 import { UserCountsBucketTable } from '../blocks/stats/JourneyBucketTable';
-import { MatchUserJourneyOverview, SimplifiedUserJourneyOverview } from '../blocks/stats/MatchUserJourneyOverview';
+import { MatchUserJourneyOverview, SimplifiedUserJourneyOverview, SimplifiedMatchJourneyOverview } from '../blocks/stats/MatchUserJourneyOverview';
 import { RangedDataGraph } from '../blocks/stats/RangedDataGraph';
 import { BarChartCounts } from '../blocks/BarChartCounts';
+import { Sections, Container, Section, SectionR } from '../blocks/stats/MatchUserJourneyOverview';
 import useSWR from 'swr';
 
 function MatchQualityChartMelina(){
@@ -125,9 +126,19 @@ function Stats() {
         {tab === 'simple-journey' && (
           <TabsContent
             value="simple-journey"
-            className="flex flex-col content-center justify-center items-center flex-grow"
+            className=""
           >
-            <SimplifiedUserJourneyOverview />
+            <Container>
+            <Sections>
+              
+            <SectionR $fullWidth>
+                    <SimplifiedUserJourneyOverview />
+            </SectionR>
+            <SectionR $fullWidth>
+                    <SimplifiedMatchJourneyOverview />
+            </SectionR>
+            </Sections>
+            </Container>
           </TabsContent>
         )}
         {tab === "debug" && (
