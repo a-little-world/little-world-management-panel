@@ -698,6 +698,8 @@ export function SimplifiedUserJourneyOverview() {
               )
             })}
         </ol>
+          <Text bold>Missing Ids: (count: {_userListCounts?.missing_ids.length})</Text>
+          {JSON.stringify(_userListCounts?.missing_ids)}
       </>}
     />
   <DynamicBucketsV2
