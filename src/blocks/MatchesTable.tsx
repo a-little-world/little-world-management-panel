@@ -58,10 +58,11 @@ export function MatchesTable({ matchList, list }) {
                     checked={Object.keys(selectedMatches).includes(match.uuid)}
                     className="checkbox ml-2"
                     onChange={() => {
+                      console.log('match', match, selectedMatches);
                       if (Object.keys(selectedMatches).includes(match.uuid)) {
-                        //deselectMatch(match.uuid);
+                        deselectMatch(match.uuid);
                       } else {
-                        //selectMatch(match);
+                        selectMatch(match);
                       }
                     }}
                   />

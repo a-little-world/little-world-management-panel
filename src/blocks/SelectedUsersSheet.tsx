@@ -48,11 +48,9 @@ export function SelectedUsersSheet() {
         </SheetTrigger>
       )}
       {!isEmpty(selectedMatches) && (
-        <SheetTrigger asChild>
-          <StyledSheetButton className="fixed bottom-14 right-2/4 translate-x-2/4">
+          <StyledSheetButton className="fixed bottom-14 right-3/4 translate-x-2/4">
             View Selected Matches ({size(selectedMatches)})
           </StyledSheetButton>
-        </SheetTrigger>
       )}
       <SheetContent>
         <SheetHeader>
