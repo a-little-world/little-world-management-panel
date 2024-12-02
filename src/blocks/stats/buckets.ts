@@ -88,9 +88,9 @@ export const userJourneyBucketsV4 = [
         description: "Didn't show up to onboarding call",
       },
       {
-        id: 'journey_v2__no_confirm',
-        title: 'No Confirm',
-        description: "Learner that has matching in 'Never Confirmed'",
+        id: 'journey_v2__failed_matching',
+        title: 'Failed Matching',
+        description: "User with only failed matchings",
       },
       {
         id: 'journey_v2__gave_up_searching',
@@ -358,7 +358,7 @@ export const matchJourneyBuckets = [
         id: 'match_journey_v2__proposed_matches',
         title: 'Proposed Matches',
         description:
-          'Matches that are proposed to users based on their preferences.',
+          'Users with an option matching proposal',
       },
       {
         id: 'match_journey_v2__unviewed',
