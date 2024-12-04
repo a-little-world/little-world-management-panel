@@ -61,7 +61,6 @@ export function Matches() {
               placeholder="Select a match list..."
               cannotError
             />
-
             <StyledDropdown
               value={orderBy}
               options={orderingOptions}
