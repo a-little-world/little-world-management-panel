@@ -593,6 +593,7 @@ export function SimplifiedMatchJourneyOverview() {
       open={detailsVisible}
       onClose={() => setDetailsVisible(false)}
       children={<>
+        All Buckets: {JSON.stringify(allBuckets.map(bucket => bucket.id))}
         <ol>
             {matchJourneyBucketsV4.map((bucket, index) => {
               return bucket.sub_buckets.map(sub_bucket => {
@@ -619,6 +620,8 @@ export function SimplifiedMatchJourneyOverview() {
               )
             })}
         </ol>
+          <Text bold>Missing Ids: (count: {_userListCounts?.missing_ids.length})</Text>
+          {JSON.stringify(_userListCounts?.missing_ids)}
       </>}
     />
       <DynamicBucketsV2
@@ -672,6 +675,7 @@ export function SimplifiedUserJourneyOverview() {
       open={detailsVisible}
       onClose={() => setDetailsVisible(false)}
       children={<>
+        All buckets: {JSON.stringify(allBuckets.map(bucket => bucket.id))}
         <ol>
             {userJourneyBucketsV4.map((bucket, index) => {
               return bucket.sub_buckets.map(sub_bucket => {

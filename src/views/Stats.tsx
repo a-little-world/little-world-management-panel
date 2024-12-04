@@ -132,10 +132,10 @@ function Stats() {
             <Sections>
               
             <SectionR $fullWidth>
-                    <SimplifiedUserJourneyOverview />
+              <SimplifiedUserJourneyOverview />
             </SectionR>
             <SectionR $fullWidth>
-                    <SimplifiedMatchJourneyOverview />
+              <SimplifiedMatchJourneyOverview />
             </SectionR>
             </Sections>
             </Container>
