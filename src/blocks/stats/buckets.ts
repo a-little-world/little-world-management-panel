@@ -17,7 +17,7 @@ export const userJourneyBucketsV4 = [
       },
       {
         id: 'journey_v2__user_form_completed',
-        title: 'User Form Completed',
+        title: 'Form Complete, No-Call Booked',
         description:
           'User has filled form, but still has to have a prematching call',
       },
@@ -56,7 +56,7 @@ export const userJourneyBucketsV4 = [
       },
       {
         id: 'journey_v2__first_search_v2',
-        title: 'First Search',
+        title: 'Searching No-Match',
         description:
           "User is doing first search i.e.: has no 'non-support' match",
       },
@@ -101,6 +101,11 @@ export const userJourneyBucketsV4 = [
         id: 'journey_v2__user_deleted',
         title: 'User Was Deleted',
         description: 'User has left the platform',
+      },
+      {
+        id: 'journey_v2__marked_unresponsive',
+        title: 'User Was Marked as Unresponsive',
+        description: 'User was marked as unresponsive',
       },
     ],
   }
@@ -212,6 +217,12 @@ export const matchJourneyBucketsV4 = [
         title: 'Contact Stopped',
         description:
           'Matches older than the desired match duration where users interacted but their interaction stopped before the desired duration.',
+      },
+      {
+        id: 'match_journey_v2__reported_or_removed',
+        title: 'Reported or unmatched',
+        description:
+          'Matches that have been removed/reported or unmatched',
       }
     ],
   },
@@ -237,7 +248,7 @@ export const userJourneyBuckets = [
       },
       {
         id: 'journey_v2__user_form_completed',
-        title: 'User Form Completed',
+        title: 'Form Complete, No-Call Booked',
         description:
           'User has filled form, but still has to have a prematching call',
       },
