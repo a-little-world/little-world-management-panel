@@ -21,6 +21,7 @@ import UserImage from '../atoms/UserImage';
 
 const MATCHES_FIELDS = [
   { key: 'status', label: 'Status' },
+  { key: 'uuid', label: 'Match ID' },
   { key: 'user1', label: 'User 1' },
   { key: 'user2', label: 'User 2' },
   { key: 'created_at', label: 'Created At' },
