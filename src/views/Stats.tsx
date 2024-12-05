@@ -82,7 +82,9 @@ function MatchQualityChartMelina(){
 
   
   let chartData = [
-    { tag: 'ongoing_plus_finished', count: categorieTotalCounts["ongoing_plus_finished"], fill: '#3498db' },
+    //{ tag: 'ongoing_plus_finished', count: categorieTotalCounts["ongoing_plus_finished"], fill: '#3498db' },
+    { tag: 'ongoing-matching', count: categorieTotalCounts["ongoing-matching"], fill: '#3498db' },
+    { tag: 'finished-matching', count: categorieTotalCounts["finished-matching"], fill: '#2ecc71' },
     { tag: 'failed-matching', count: categorieTotalCounts["failed-matching"], fill: '#e74c3c' },
     { tag: 'pre-matching', count: categorieTotalCounts["pre-matching"], fill: '#f1c40f' }
   ]
