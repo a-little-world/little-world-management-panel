@@ -32,6 +32,11 @@ export const userJourneyBucketsV4 = [
         description:
           "User never active, but was flagged with a 'state.to_low_german_level=True'",
       },
+      {
+        id: 'journey_v2__no_show',
+        title: 'No Show',
+        description: "Didn't show up to onboarding call",
+      }
     ],
   },
   {
@@ -82,11 +87,6 @@ export const userJourneyBucketsV4 = [
     id: 'failed-users',
     title: 'Failed-Users',
     sub_buckets: [
-      {
-        id: 'journey_v2__no_show',
-        title: 'No Show',
-        description: "Didn't show up to onboarding call",
-      },
       {
         id: 'journey_v2__failed_matching',
         title: 'Failed Matching',
