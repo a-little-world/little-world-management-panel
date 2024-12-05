@@ -6,11 +6,13 @@ import { cratePostFetcher } from '../store';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../atoms/Tabs';
 import { BarChartTimeRanged } from '../blocks/stats/BarChartTimeRanged';
 import { UserCountsBucketTable } from '../blocks/stats/JourneyBucketTable';
-import { MatchUserJourneyOverview, SimplifiedUserJourneyOverview, SimplifiedMatchJourneyOverview } from '../blocks/stats/MatchUserJourneyOverview';
+import { MatchUserJourneyOverview } from '../blocks/stats/MatchUserJourneyOverview';
+import { UserJourneyBucketsOverview } from '../blocks/stats/UserJourneyBuckets';
 import { RangedDataGraph } from '../blocks/stats/RangedDataGraph';
 import { BarChartCounts } from '../blocks/BarChartCounts';
 import { Sections, Container, Section, SectionR } from '../blocks/stats/MatchUserJourneyOverview';
 import useSWR from 'swr';
+import { MatchJourneyOverview } from '../blocks/stats/MatchJourneyBuckets';
 
 function MatchQualityChartMelina(){
   
@@ -96,10 +98,8 @@ function Stats() {
         <TabsList>
           <TabsTrigger value="overview">User & Match Journey</TabsTrigger>
           <TabsTrigger value="graphs">Graphs</TabsTrigger>
-          <TabsTrigger value="charts">Charts</TabsTrigger>
-          <TabsTrigger value="simple-journey">Simple</TabsTrigger>
-          <TabsTrigger value="debug">Debug</TabsTrigger>
-          <TabsTrigger value="debugMatches">Debug Matches</TabsTrigger>
+          <TabsTrigger value="signup-funnel">User Sign-up Funnel</TabsTrigger>
+          <TabsTrigger value="simple-journey">Basic Buckets</TabsTrigger>
         </TabsList>
         {tab === 'overview' && (
           <TabsContent value="overview" className="">
@@ -114,9 +114,9 @@ function Stats() {
             <RangedDataGraph />
           </TabsContent>
         )}
-        {tab === 'charts' && (
+        {tab === 'signup-funnel' && (
           <TabsContent
-            value="charts"
+            value="signup-funnel"
             className="flex flex-col content-center justify-center items-center flex-grow"
           >
             <BarChartTimeRanged />
@@ -132,29 +132,13 @@ function Stats() {
             <Sections>
               
             <SectionR $fullWidth>
-              <SimplifiedUserJourneyOverview />
+              <UserJourneyBucketsOverview />
             </SectionR>
             <SectionR $fullWidth>
-              <SimplifiedMatchJourneyOverview />
+              <MatchJourneyOverview />
             </SectionR>
             </Sections>
             </Container>
-          </TabsContent>
-        )}
-        {tab === "debug" && (
-          <TabsContent
-            value="debug"
-            className="flex flex-col content-center justify-center items-center flex-grow"
-          >
-            <DebugTab/>
-          </TabsContent>
-        )}
-        {tab === "debugMatches" && (
-          <TabsContent
-            value="debugMatches"
-            className="flex flex-col content-center justify-center items-center flex-grow"
-          >
-            <DebugMatches/>
           </TabsContent>
         )}
       </Tabs>

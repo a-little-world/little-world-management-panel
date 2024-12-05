@@ -32,8 +32,10 @@ import {
 } from './UserSignUpLossStatistic';
 import { matchJourneyBuckets, matchJourneyBucketsV4, userJourneyBuckets, userJourneyBucketsV4 } from './buckets';
 import { sub } from 'date-fns';
+import { UserJourneyBucketsOverview } from './UserJourneyBuckets';
+import { MatchJourneyOverview } from './MatchJourneyBuckets';
 
-const SectionTitle = styled(Text)`
+export const SectionTitle = styled(Text)`
   font-weight: bold;
   margin-bottom: ${({ theme }) => theme.spacing.small};
 `;
@@ -74,39 +76,39 @@ export const SectionR = styled.div<{ $fullWidth?: boolean }>`
     width: 100%`}
 `;
 
-const SectionCard = styled(Card)`
+export const SectionCard = styled(Card)`
   flex: 1;
 `;
 
-const Description = styled(Text)`
+export const Description = styled(Text)`
   margin-bottom: ${({ theme }) => theme.spacing.large};
 `;
 
-const BucketsContainer = styled.ul`
+export const BucketsContainer = styled.ul`
   display: flex;
   gap: ${({ theme }) => theme.spacing.large};
   margin-top: ${({ theme }) => theme.spacing.small};
 `;
 
-const Bucket = styled.li`
+export const Bucket = styled.li`
   gap: ${({ theme }) => theme.spacing.xxsmall};
   display: flex;
   flex-direction: column;
 `;
 
-const SubBucket = styled.li`
+export const SubBucket = styled.li`
   gap: ${({ theme }) => theme.spacing.xxsmall};
   display: flex;
   align-items: center;
 `;
 
-const StatsGrouping = styled.ul`
+export const StatsGrouping = styled.ul`
   display: flex;
   gap: ${({ theme }) => theme.spacing.small};
   align-items: flex-start;
 `;
 
-const Stat = styled.li`
+export const Stat = styled.li`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -116,13 +118,13 @@ const Stat = styled.li`
   flex: 1;
 `;
 
-const StatDescription = styled(Text)``;
-const Number = styled(Text)`
+export const StatDescription = styled(Text)``;
+export const Number = styled(Text)`
   line-height: 1;
   color: ${({ theme }) => theme.color.text.title};
 `;
 
-const StyledChevron = styled(ChevronRightIcon)`
+export const StyledChevron = styled(ChevronRightIcon)`
   color: ${({ theme }) => theme.color.text.accent};
 `;
 
@@ -163,6 +165,27 @@ export function HoverableLiveListDescription({
       <HoverCardContent>
         <Text>{description}</Text>
         <Count count={count} label={'Current users'} />
+      </HoverCardContent>
+    </HoverCard>
+  );
+}
+
+export function DetailsOpenLink({
+  title,
+  description,
+  onClick = () => {},
+}) {
+  return (
+    <HoverCard>
+      <HoverCardTrigger asChild>
+        <Link onClick={onClick} className="flex ">
+          <>
+            <span>{title}</span>
+          </>
+        </Link>
+      </HoverCardTrigger>
+      <HoverCardContent>
+        <Text>{description}</Text>
       </HoverCardContent>
     </HoverCard>
   );
@@ -232,60 +255,6 @@ export function DynamicBucketsV2({
         <Text bold>Total summed: {totalCount}</Text>
         {detailsVisible && <>
         </>}
-      </SectionCard>
-    </Section>
-  );
-}
-
-export function DynamicBuckets({
-  buckets,
-  listCounts,
-  bucketLink,
-  title,
-  description,
-  showStatus,
-}) {
-  return (
-    <Section $fullWidth>
-      <SectionTitle type={TextTypes.Body4} tag="h2">
-        {title}
-      </SectionTitle>
-      {showStatus && (
-        <StatusMessage $type={MessageTypes.Error} $visible>
-          ⚠️ The User Journey V2 is still in development, we are aware of some
-          wrong list and will report when there are ready for user testing
-        </StatusMessage>
-      )}
-      <SectionCard>
-        <Text>{description}</Text>
-        <BucketsContainer>
-          {buckets.map((bucket, index) => {
-            return (
-              <>
-                <Bucket key={bucket.id}>
-                  <Text bold>{`${index + 1} ${bucket.title}:`}</Text>
-                  {bucket.sub_buckets.map(sub_bucket => {
-                    const count = listCounts?.find(
-                      item => item.name === sub_bucket.id,
-                    )?.count;
-                    return (
-                      <SubBucket>
-                        •
-                        <HoverableLiveListDescription
-                          title={`${sub_bucket.title}`}
-                          description={sub_bucket.description}
-                          linkTo={`${bucketLink}=${sub_bucket.id}`}
-                          count={count}
-                        />
-                      </SubBucket>
-                    );
-                  })}
-                </Bucket>
-                {userJourneyBuckets.length !== index + 1 && <StyledChevron />}
-              </>
-            );
-          })}
-        </BucketsContainer>
       </SectionCard>
     </Section>
   );
@@ -537,190 +506,6 @@ export function DownloadCenter() {
   )
 }
 
-function DetailsDialog({
-  open,
-  onClose,
-  children,
-}: {
-  open: boolean;
-  onClose: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <Modal open={open} onClose={onClose}>
-      <Card height={'100%'}>
-        <CardHeader>Match users?</CardHeader>
-        Hello there?
-        {children}
-      </Card>
-    </Modal>
-  );
-}
-
-export function SimplifiedMatchJourneyOverview() {
-  const [detailsVisible, setDetailsVisible] = React.useState(false);
-  const allBuckets = matchJourneyBucketsV4.flatMap(bucket => bucket.sub_buckets);
-  const allBucketIds = allBuckets.map(bucket => bucket.id);
-  const extraBucketIds = [
-    'match_journey_v2__match_ongoing',
-    'match_journey_v2__match_free_play',
-    'match_journey_v2__completed_match',
-  ];
-
-  const random = React.useRef(Date.now() + Math.random());
-
-  const { data: _userListCounts } = useSWR(
-    '/api/matching/users/statistics/match_journey_buckets/' + "?random=" + random.current,
-    cratePostFetcher({
-      selected_filters: allBucketIds.concat(extraBucketIds),
-    }),
-    {},
-  );
-  
-  const userListCounts = _userListCounts?.buckets
-  const intersectingLists = _userListCounts?.intersecting_ids_lists;
-
-  let extraCounts = {};
-  if (userListCounts) {
-    for (let i = 0; i < userListCounts.length; i++) {
-      if (extraBucketIds.includes(userListCounts[i].name))
-        extraCounts[userListCounts[i].name] = userListCounts[i];
-    }
-  }
-  
-  return <>
-    <DetailsDialog
-      open={detailsVisible}
-      onClose={() => setDetailsVisible(false)}
-      children={<>
-        All Buckets: {JSON.stringify(allBuckets.map(bucket => bucket.id))}
-        <ol>
-            {matchJourneyBucketsV4.map((bucket, index) => {
-              return bucket.sub_buckets.map(sub_bucket => {
-                const item = userListCounts?.find(
-                  item => item.name === sub_bucket.id,
-                )
-          
-                return (
-                  <li>
-                    <Text bold>{`${sub_bucket.title}:`}</Text>
-                    <Text>Query duration: {`${item?.query_duration}`}</Text> 
-                  </li>
-                )
-              })
-            })}
-          </ol>
-          <Text bold>Overlaps:</Text>
-        <ol>
-            {intersectingLists && Object.keys(intersectingLists).map((item) => {
-              return (
-                <li>
-                  <Text>{item}: {intersectingLists[item].join(",")}</Text>
-                </li>
-              )
-            })}
-        </ol>
-          <Text bold>Missing Ids: (count: {_userListCounts?.missing_ids.length})</Text>
-          {JSON.stringify(_userListCounts?.missing_ids)}
-      </>}
-    />
-      <DynamicBucketsV2
-        buckets={matchJourneyBucketsV4}
-        bucketLink="/matches/?list"
-        listCounts={userListCounts}
-        excludeBucketsTotalSum={["match_journey_v2__proposed_matches", "match_journey_v2__expired_proposals"]}
-        intersectingLists={_userListCounts?.intersecting_ids_lists}
-        title="The Match Journey V4"
-        showStatus
-        description="Radically simplified per-match, buckets:"
-      />
-        <Button onClick={() => {
-          setDetailsVisible(!detailsVisible);
-        }}>Details</Button>
-    </>
-}
-
-
-export function SimplifiedUserJourneyOverview() {
-  const [detailsVisible, setDetailsVisible] = React.useState(false);
-  const allBuckets = userJourneyBucketsV4.flatMap(bucket => bucket.sub_buckets);
-  const allBucketIds = allBuckets.map(bucket => bucket.id);
-  const extraBucketIds = [
-    'all',
-  ];
-
-  const random = React.useRef(Date.now() + Math.random());
-
-  const { data: _userListCounts } = useSWR(
-    '/api/matching/users/statistics/user_journey_buckets/' + "?random=" + random.current,
-    cratePostFetcher({
-      selected_filters: allBucketIds.concat(extraBucketIds),
-    }),
-    {},
-  );
-  
-  const userListCounts = _userListCounts?.buckets
-  const intersectingLists = _userListCounts?.intersecting_ids_lists;
-
-  let extraCounts = {};
-  if (userListCounts) {
-    for (let i = 0; i < userListCounts.length; i++) {
-      if (extraBucketIds.includes(userListCounts[i].name))
-        extraCounts[userListCounts[i].name] = userListCounts[i];
-    }
-  }
-  
-  return <>
-    <DetailsDialog
-      open={detailsVisible}
-      onClose={() => setDetailsVisible(false)}
-      children={<>
-        All buckets: {JSON.stringify(allBuckets.map(bucket => bucket.id))}
-        <ol>
-            {userJourneyBucketsV4.map((bucket, index) => {
-              return bucket.sub_buckets.map(sub_bucket => {
-                const item = userListCounts?.find(
-                  item => item.name === sub_bucket.id,
-                )
-          
-                return (
-                  <li>
-                    <Text bold>{`${sub_bucket.title}:`}</Text>
-                    <Text>Query duration: {`${item?.query_duration}`}</Text> 
-                  </li>
-                )
-              })
-            })}
-          </ol>
-          <Text bold>Overlaps:</Text>
-        <ol>
-            {intersectingLists && Object.keys(intersectingLists).map((item) => {
-              return (
-                <li>
-                  <Text>{item}: {intersectingLists[item].join(",")}</Text>
-                </li>
-              )
-            })}
-        </ol>
-          <Text bold>Missing Ids: (count: {_userListCounts?.missing_ids.length})</Text>
-          {JSON.stringify(_userListCounts?.missing_ids)}
-      </>}
-    />
-  <DynamicBucketsV2
-          buckets={userJourneyBucketsV4}
-          bucketLink="/users/?list"
-          listCounts={userListCounts}
-          intersectingLists={_userListCounts?.intersecting_ids_lists}
-          title="The User Journey V4"
-          showStatus
-          description="Radically simplified user journey, buckets:"
-        />
-        <Button onClick={() => {
-          setDetailsVisible(!detailsVisible);
-        }}>Details</Button>
-      </>
-}
-
 export function MatchUserJourneyOverview() {
   const allBuckets = userJourneyBuckets.flatMap(bucket => bucket.sub_buckets);
   const allBucketIds = allBuckets.map(bucket => bucket.id);
@@ -803,22 +588,8 @@ export function MatchUserJourneyOverview() {
           extraCounts={extraCounts}
           extraMatchCounts={extraMatchCounts}
         />
-        <SimplifiedUserJourneyOverview />
-        <DynamicBuckets
-          buckets={userJourneyBuckets}
-          bucketLink="/users/?list"
-          listCounts={userListCounts?.buckets}
-          title="The User Journey"
-          showStatus
-          description="We currently define our user journey in the following buckets:"
-        />
-        <DynamicBuckets
-          buckets={matchJourneyBuckets}
-          bucketLink="/matches/?list"
-          listCounts={matchJourneyListCounts?.buckets}
-          title="The Match Journey"
-          description="We currently define our match journey in the following buckets:"
-        />
+        <UserJourneyBucketsOverview />
+        <MatchJourneyOverview />
       </Sections>
       <SectionR>
         <UserSignUpLossStatistic />
