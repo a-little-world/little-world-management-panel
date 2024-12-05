@@ -39,6 +39,7 @@ export function BucketOverview({
   title,
   description,
   showStatus,
+  predicate="users",
   allBuckets=[],
   missingIds=[],
   intersectingLists={},
@@ -59,6 +60,10 @@ export function BucketOverview({
       }
     }
     categorieTotalCounts[bucket.id] = bucketTotalCount;
+  }
+  var totalOverlaps = 0
+  for (const [key, value] of Object.entries(intersectingLists)) {
+    totalOverlaps += value.length;
   }
   return <>
     <DetailsDialog
@@ -131,7 +136,7 @@ export function BucketOverview({
           })}
         </BucketsContainer>
         <div className='flex flex-row'>
-          <Text bold>Total summed: {totalCount} ( missing users: {missingIds.length}, overlaps: {Object.keys(intersectingLists).length})</Text>
+          <Text bold>Total summed {predicate}: {totalCount} ( missing {predicate}: {missingIds.length}, {totalOverlaps} overlaps in {Object.keys(intersectingLists).length} buckets)</Text>
           <div className="flex space-x-4" />
           <DetailsOpenLink title="details" description={"Click to se query / overlap details"} onClick={() => {
             setDetailsVisible(!detailsVisible);
