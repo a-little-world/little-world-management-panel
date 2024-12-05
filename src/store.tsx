@@ -159,6 +159,25 @@ export const usePrematchAppointmentsListData = (searchParams: string) => {
   };
 };
 
+export const useMessageListsData = (searchParams: string) => {
+  const { data, error, mutate, isLoading } = useSWR(
+    searchParams ? `/api/message_broadcast_lists/?${searchParams}` : '/api/message_broadcast_lists/',
+    dataFetcher,
+    {
+      revalidateOnFocus: true,
+      revalidateOnMount: true,
+      refreshInterval: 0
+    }
+  );
+
+  return {
+    messageLists: data,
+    error,
+    mutate,
+    isLoading,
+  };
+};
+
 export const useUserListData = (searchParams: string) => {
   const { data, error, mutate, isLoading } = useSWR(
     searchParams ? `/api/matching/users/?${searchParams}` : null,

@@ -10,7 +10,7 @@ import Pagination from '../atoms/Pagination';
 import { MatchesTable } from '../blocks/MatchesTable';
 import { usePrematchingAppointmentsFilterOptions, usePrematchAppointmentsListData } from '../store';
 import { PrematchingAppointmentsTable } from '../blocks/PrematchingAppointmentsTable';
-import { SelectedUsersActionsSheet } from '../blocks/SelectedUsersActionsSheets';
+import { SelectedUsersActionsSheet, SelectedUsersPrematchingCallAttended } from '../blocks/SelectedUsersActionsSheets';
 import { PageSizeDropdown } from '../atoms/PageSizeDropdown';
 
 
@@ -83,6 +83,7 @@ export function PrematchingAppointments() {
       ) : (
         <PrematchingAppointmentsTable appointments={prematchAppointmentsList} list={list} />
       )}
+      <SelectedUsersPrematchingCallAttended mutateBaseList={mutate} list={list} />
       <SelectedUsersActionsSheet mutateBaseList={mutate} />
       <SelectedUsersSheet />
     </>

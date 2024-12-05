@@ -16,6 +16,7 @@ export const SEND_DYNAMIC_EMAIL_ROUTE =
 export const EMAIL_HTML_ROUTE = '/emails/:emailTemplateName/rendered';
 export const DEVKIT_ROUTE = '/devkit/';
 export const VIDEO_CALLS_ROUTE = '/video-calls/';
+export const MESSAGE_LISTS_ROUTE = '/messagelists/';
 
 export const getEditEmailRoute = (templateId: number) =>
   `/email/${templateId}/edit`;
