@@ -498,7 +498,6 @@ export function DownloadCenter() {
           Download Center
         </SectionTitle>
         <div className="w-full flex flex-row">
-          <MatchQualitySatisticDownloadBlock />
           <UserLossStatisticDownloadBlock />
           <AccentureReportDownloadBloack />
         </div>
