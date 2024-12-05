@@ -90,6 +90,14 @@ const MatchCard = ({ match, userName }: { match: any; userName: string }) => {
       >
         {match.partner.user_type}
       </Tag>
+      <Tag
+        bold
+        className="absolute top-10 left-2"
+        color={'#000000'}
+        size={TagSizes.small}
+      >
+        {match?.bucket}
+      </Tag>
       <div className="absolute top-2 right-2">
         <Button
           appearance={ButtonAppearance.Secondary}

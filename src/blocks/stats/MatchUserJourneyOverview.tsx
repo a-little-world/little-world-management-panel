@@ -1,8 +1,11 @@
 import {
+  Button,
   Card,
+  CardHeader,
   ChevronRightIcon,
   Link,
   MessageTypes,
+  Modal,
   StatusMessage,
   Text,
   TextTypes,
@@ -27,24 +30,27 @@ import {
   UserSignUpLossStatistic,
   UserSignUpLossStatisticMonthly,
 } from './UserSignUpLossStatistic';
-import { matchJourneyBuckets, userJourneyBuckets } from './buckets';
+import { matchJourneyBuckets, matchJourneyBucketsV4, userJourneyBuckets, userJourneyBucketsV4 } from './buckets';
+import { sub } from 'date-fns';
+import { UserJourneyBucketsOverview } from './UserJourneyBuckets';
+import { MatchJourneyOverview } from './MatchJourneyBuckets';
 
-const SectionTitle = styled(Text)`
+export const SectionTitle = styled(Text)`
   font-weight: bold;
   margin-bottom: ${({ theme }) => theme.spacing.small};
 `;
 
-const Container = styled.div`
+export const Container = styled.div`
   padding: ${({ theme }) => theme.spacing.small};
 `;
 
-const Sections = styled.div`
+export const Sections = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.spacing.medium};
   flex-wrap: wrap;
 `;
 
-const Section = styled.div<{ $fullWidth?: boolean }>`
+export const Section = styled.div<{ $fullWidth?: boolean }>`
   margin-bottom: ${({ theme }) => theme.spacing.small};
   display: flex;
   flex-direction: column;
@@ -57,7 +63,7 @@ const Section = styled.div<{ $fullWidth?: boolean }>`
     width: 100%`}
 `;
 
-const SectionR = styled.div<{ $fullWidth?: boolean }>`
+export const SectionR = styled.div<{ $fullWidth?: boolean }>`
   margin-bottom: ${({ theme }) => theme.spacing.small};
   display: flex;
   flex-direction: row;
@@ -70,39 +76,39 @@ const SectionR = styled.div<{ $fullWidth?: boolean }>`
     width: 100%`}
 `;
 
-const SectionCard = styled(Card)`
+export const SectionCard = styled(Card)`
   flex: 1;
 `;
 
-const Description = styled(Text)`
+export const Description = styled(Text)`
   margin-bottom: ${({ theme }) => theme.spacing.large};
 `;
 
-const BucketsContainer = styled.ul`
+export const BucketsContainer = styled.ul`
   display: flex;
   gap: ${({ theme }) => theme.spacing.large};
   margin-top: ${({ theme }) => theme.spacing.small};
 `;
 
-const Bucket = styled.li`
+export const Bucket = styled.li`
   gap: ${({ theme }) => theme.spacing.xxsmall};
   display: flex;
   flex-direction: column;
 `;
 
-const SubBucket = styled.li`
+export const SubBucket = styled.li`
   gap: ${({ theme }) => theme.spacing.xxsmall};
   display: flex;
   align-items: center;
 `;
 
-const StatsGrouping = styled.ul`
+export const StatsGrouping = styled.ul`
   display: flex;
   gap: ${({ theme }) => theme.spacing.small};
   align-items: flex-start;
 `;
 
-const Stat = styled.li`
+export const Stat = styled.li`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -112,13 +118,13 @@ const Stat = styled.li`
   flex: 1;
 `;
 
-const StatDescription = styled(Text)``;
-const Number = styled(Text)`
+export const StatDescription = styled(Text)``;
+export const Number = styled(Text)`
   line-height: 1;
   color: ${({ theme }) => theme.color.text.title};
 `;
 
-const StyledChevron = styled(ChevronRightIcon)`
+export const StyledChevron = styled(ChevronRightIcon)`
   color: ${({ theme }) => theme.color.text.accent};
 `;
 
@@ -164,25 +170,58 @@ export function HoverableLiveListDescription({
   );
 }
 
-export function DynamicBuckets({
+export function DetailsOpenLink({
+  title,
+  description,
+  onClick = () => {},
+}) {
+  return (
+    <HoverCard>
+      <HoverCardTrigger asChild>
+        <Link onClick={onClick} className="flex ">
+          <>
+            <span>{title}</span>
+          </>
+        </Link>
+      </HoverCardTrigger>
+      <HoverCardContent>
+        <Text>{description}</Text>
+      </HoverCardContent>
+    </HoverCard>
+  );
+}
+
+export function DynamicBucketsV2({
   buckets,
   listCounts,
+  intersectingLists,
   bucketLink,
   title,
   description,
   showStatus,
+  excludeBucketsTotalSum=[],
 }) {
+  const [detailsVisible, setDetailsVisible] = React.useState(false);
+  const categorieTotalCounts = {};
+  var totalCount = 0;
+  for (let bucket of buckets) {
+    let bucketTotalCount = 0;
+    for(let sub_bucket of bucket.sub_buckets) {
+      const count = listCounts?.find(
+        item => item.name === sub_bucket.id,
+      )?.count;
+      if(count && !excludeBucketsTotalSum.includes(sub_bucket.id)){
+        bucketTotalCount += count;
+        totalCount += count;
+      }
+    }
+    categorieTotalCounts[bucket.id] = bucketTotalCount;
+  }
   return (
     <Section $fullWidth>
       <SectionTitle type={TextTypes.Body4} tag="h2">
         {title}
       </SectionTitle>
-      {showStatus && (
-        <StatusMessage $type={MessageTypes.Error} $visible>
-          ⚠️ The User Journey V2 is still in development, we are aware of some
-          wrong list and will report when there are ready for user testing
-        </StatusMessage>
-      )}
       <SectionCard>
         <Text>{description}</Text>
         <BucketsContainer>
@@ -190,7 +229,7 @@ export function DynamicBuckets({
             return (
               <>
                 <Bucket key={bucket.id}>
-                  <Text bold>{`${index + 1} ${bucket.title}:`}</Text>
+                  <Text bold>{`${index + 1} ${bucket.title}: (total: ${categorieTotalCounts[bucket.id]})`}</Text>
                   {bucket.sub_buckets.map(sub_bucket => {
                     const count = listCounts?.find(
                       item => item.name === sub_bucket.id,
@@ -213,6 +252,9 @@ export function DynamicBuckets({
             );
           })}
         </BucketsContainer>
+        <Text bold>Total summed: {totalCount}</Text>
+        {detailsVisible && <>
+        </>}
       </SectionCard>
     </Section>
   );
@@ -456,7 +498,6 @@ export function DownloadCenter() {
           Download Center
         </SectionTitle>
         <div className="w-full flex flex-row">
-          <MatchQualitySatisticDownloadBlock />
           <UserLossStatisticDownloadBlock />
           <AccentureReportDownloadBloack />
         </div>
@@ -504,18 +545,18 @@ export function MatchUserJourneyOverview() {
 
   let extraCounts = {};
   if (userListCounts) {
-    for (let i = 0; i < userListCounts.length; i++) {
-      if (extraBucketIds.includes(userListCounts[i].name))
-        extraCounts[userListCounts[i].name] = userListCounts[i];
+    for (let i = 0; i < userListCounts?.buckets.length; i++) {
+      if (extraBucketIds.includes(userListCounts?.buckets[i].name))
+        extraCounts[userListCounts?.buckets[i].name] = userListCounts?.buckets[i];
     }
   }
 
   let extraMatchCounts = {};
   if (matchJourneyListCounts) {
-    for (let i = 0; i < matchJourneyListCounts.length; i++) {
-      if (extraMatchBucketIds.includes(matchJourneyListCounts[i].name))
-        extraMatchCounts[matchJourneyListCounts[i].name] =
-          matchJourneyListCounts[i];
+    for (let i = 0; i < matchJourneyListCounts?.buckets.length; i++) {
+      if (extraMatchBucketIds.includes(matchJourneyListCounts?.buckets[i].name))
+        extraMatchCounts[matchJourneyListCounts?.buckets[i].name] =
+          matchJourneyListCounts?.buckets[i];
     }
   }
   
@@ -523,7 +564,7 @@ export function MatchUserJourneyOverview() {
   const today = new Date();
   const startDate = new Date(Date.now() - 12 * 7 * 24 * 60 * 60 * 1000); // 12 weeks ago
   const { mutate, error, data: userSignupsData, isLoading } = useSWR(
-    `/api/matching/users/statistics/signups/?random=${random.toString()}`,
+    `/api/matching/users/statistics/signups/?random=${random.current}`,
     cratePostFetcher({
       start_date: startDate.toISOString().split('T')[0],
       end_date: today.toISOString().split('T')[0],
@@ -546,21 +587,8 @@ export function MatchUserJourneyOverview() {
           extraCounts={extraCounts}
           extraMatchCounts={extraMatchCounts}
         />
-        <DynamicBuckets
-          buckets={userJourneyBuckets}
-          bucketLink="/users/?list"
-          listCounts={userListCounts}
-          title="The User Journey"
-          showStatus
-          description="We currently define our user journey in the following buckets:"
-        />
-        <DynamicBuckets
-          buckets={matchJourneyBuckets}
-          bucketLink="/matches/?list"
-          listCounts={matchJourneyListCounts}
-          title="The Match Journey"
-          description="We currently define our match journey in the following buckets:"
-        />
+        <UserJourneyBucketsOverview />
+        <MatchJourneyOverview />
       </Sections>
       <SectionR>
         <UserSignUpLossStatistic />

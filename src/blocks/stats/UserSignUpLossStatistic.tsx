@@ -101,9 +101,9 @@ export function UserSignUpLossStatisticBase({
 
     if (!userListCounts) return <LoadingSpinner />;
 
-    const totalUserCount = userListCounts?.find(item => item.name === 'all')?.count;
+    const totalUserCount = userListCounts?.buckets.find(item => item.name === 'all')?.count;
 
-    const allUserCount = userListCounts?.reduce((acc, curr) => {
+    const allUserCount = userListCounts?.buckets.reduce((acc, curr) => {
         acc[curr.name] = curr.count;
         return acc;
     }, {});

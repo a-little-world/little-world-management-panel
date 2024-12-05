@@ -8,6 +8,7 @@ import Pagination from '../atoms/Pagination';
 import { MatchesTable } from '../blocks/MatchesTable';
 import { useMatchesFilterOptions } from '../store';
 import { useMatchListData } from '../store';
+import { SelectedUsersSheet } from './../blocks/SelectedUsersSheet';
 
 const StyledDropdown = styled(Dropdown)`
   div[data-radix-popper-content-wrapper] {
@@ -60,7 +61,6 @@ export function Matches() {
               placeholder="Select a match list..."
               cannotError
             />
-
             <StyledDropdown
               value={orderBy}
               options={orderingOptions}
@@ -80,6 +80,7 @@ export function Matches() {
       ) : (
         <MatchesTable matchList={matchList} list={list} />
       )}
+      <SelectedUsersSheet />
     </>
   );
 }

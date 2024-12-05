@@ -7,6 +7,7 @@ import {
 import { get, isEmpty } from 'lodash';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useGlobalState } from '../store';
 
 import {
   Table,
@@ -20,6 +21,7 @@ import UserImage from '../atoms/UserImage';
 
 const MATCHES_FIELDS = [
   { key: 'status', label: 'Status' },
+  { key: 'uuid', label: 'Match ID' },
   { key: 'user1', label: 'User 1' },
   { key: 'user2', label: 'User 2' },
   { key: 'created_at', label: 'Created At' },
@@ -27,8 +29,7 @@ const MATCHES_FIELDS = [
 ];
 
 export function MatchesTable({ matchList, list }) {
-  //const { selectedMatch, selectMatch, deselectMatch } = useGlobalState();
-  const selectedMatch = {};
+  const { selectedMatches, selectMatch, deselectMatch } = useGlobalState();
   const [fields, setFields] = useState(MATCHES_FIELDS);
 
   return (
@@ -55,13 +56,14 @@ export function MatchesTable({ matchList, list }) {
                 <TableCell className="w-20">
                   <input
                     type="checkbox"
-                    checked={Object.keys(selectedMatch).includes(match.uuid)}
+                    checked={Object.keys(selectedMatches).includes(match.uuid)}
                     className="checkbox ml-2"
                     onChange={() => {
-                      if (Object.keys(selectedMatch).includes(match.uuid)) {
-                        //deselectMatch(match.uuid);
+                      console.log('match', match, selectedMatches);
+                      if (Object.keys(selectedMatches).includes(match.uuid)) {
+                        deselectMatch(match.uuid);
                       } else {
-                        //selectMatch(match);
+                        selectMatch(match);
                       }
                     }}
                   />
