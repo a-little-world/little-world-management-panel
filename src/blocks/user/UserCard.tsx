@@ -70,7 +70,7 @@ export const UserCard = ({
     error: waitingTimeError,
     isLoading,
   } = useSWR(`/api/matching/users/${user.id}/match_waiting_time/`, dataFetcher);
-  console.log({ waitingTime, waitingTimeError });
+  console.log({ user });
   const { addUserToMatching } = useGlobalState();
   const navigate = useNavigate();
   const onAddToMatching = () => {
@@ -152,10 +152,26 @@ export const UserCard = ({
 
               <li
                 className={`step text-left ${
-                  user.email_authenticated ? 'step-primary' : ''
+                  user.state.email_authenticated ? 'step-primary' : ''
                 }`}
               >
                 Email Authenticated
+              </li>
+              <li
+                className={`step text-left ${
+                  user.state.user_form_state === 'filled' ? 'step-primary' : ''
+                }`}
+              >
+                User Form
+              </li>
+              <li
+                className={`step text-left ${
+                  user.state.had_prematching_call === 'filled'
+                    ? 'step-primary'
+                    : ''
+                }`}
+              >
+                Prematching Call
               </li>
               {!isEmpty(user.matches.unconfirmed.items) &&
                 isEmpty(user.matches.confirmed.items) && (
@@ -195,6 +211,14 @@ export const UserCard = ({
             }
           >
             {capitalize(user.profile.user_type)}
+          </Tag>
+          <Tag
+            bold
+            color={
+              '#000000'
+            }
+          >
+            {user["bucket"]}
           </Tag>
           {partial && (
             <Button

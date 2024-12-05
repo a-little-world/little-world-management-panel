@@ -36,9 +36,6 @@ export const title = {
 
 export const logo = {
   margin: '20px auto',
-  width: '144px',
-  height: '40.35px',
-  maxWidth: '144px',
 };
 
 export const illustration = {

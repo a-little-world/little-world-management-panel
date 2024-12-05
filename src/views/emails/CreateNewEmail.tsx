@@ -34,6 +34,7 @@ import {
   EMAIL_CATEGORIES,
   getUnsubscribeUrl,
 } from '../../emails/shared/constants';
+import { EmailThemeContext } from '../../emails/shared/theme';
 import useAutosave from '../../hooks/useAutoSave';
 import { CREATE_NEW_EMAIL_ROUTE, getEditEmailRoute } from '../../routes';
 import { dataFetcher, registerInput } from '../../store';
@@ -200,6 +201,7 @@ const CreateNewEmail = () => {
   const category = watch('category');
   const shouldSave =
     !templateSaved && subject && templateName && !isEmpty(newEmail);
+  const { emailTheme, setEmailTheme } = React.useContext(EmailThemeContext)!;
 
   const onSaveDynamicTemplate = () => {
     setSaving(true);
@@ -211,11 +213,13 @@ const CreateNewEmail = () => {
         <EmailBuilder
           content={newEmail}
           preview={''}
+          theme={emailTheme}
           unsubscribeLink={getUnsubscribeUrl(category)}
         />,
       ),
       templateContent: newEmail,
       subject,
+      theme: emailTheme,
       onSuccess: () => {
         setSaving(false);
         mutate();
@@ -231,7 +235,7 @@ const CreateNewEmail = () => {
 
   useAutosave({
     callback: onSaveDynamicTemplate,
-    delay: 30000,
+    delay: 10000,
     shouldSave,
   });
 
@@ -246,6 +250,7 @@ const CreateNewEmail = () => {
     setValue('template_name', dynamicTemplate.template_name);
     setValue('subject', dynamicTemplate.subject);
     setValue('category', dynamicTemplate.category_id);
+    setEmailTheme(dynamicTemplate.theme);
     setNewEmail(dynamicTemplate.content);
     setTemplateSaved(true);
   };
@@ -259,7 +264,7 @@ const CreateNewEmail = () => {
 
   useEffect(() => {
     setTemplateSaved(false);
-  }, [newEmail, subject]);
+  }, [newEmail, subject, emailTheme]);
 
   useEffect(() => {
     // update path on template name changes
@@ -331,11 +336,23 @@ const CreateNewEmail = () => {
       });
     });
   };
-
+  console.log({ emailTheme });
   return (
     <Container>
       <PageHeading type={TextTypes.Heading4}>New Email Creator</PageHeading>
       <SaveTemplateForm onSubmit={submitTemplate(onSaveDynamicTemplate)}>
+        <Dropdown
+          onValueChange={setEmailTheme}
+          key={emailTheme}
+          maxWidth="160px"
+          value={emailTheme}
+          label={'Theme'}
+          placeholder="Select a theme"
+          options={[
+            { label: 'Little World', value: 'little_world' },
+            { label: 'Patenmatch', value: 'patenmatch' },
+          ]}
+        />
         <Controller
           defaultValue={null}
           name={'template'}
@@ -495,6 +512,7 @@ const CreateNewEmail = () => {
               deleteBlock={deleteBlock}
               moveBlock={moveBlock}
               openHrefEditor={setShowHrefEditor}
+              theme={emailTheme}
               updateText={handleTextUpdate}
               unsubscribeLink={getUnsubscribeUrl(category)}
             />

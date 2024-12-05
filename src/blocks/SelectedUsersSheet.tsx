@@ -35,7 +35,7 @@ export function SelectedUsersSheet() {
     setError,
   } = useForm();
 
-  const { selectedUsers, deselectUser } = useGlobalState();
+  const { selectedUsers, deselectUser, selectedMatches } = useGlobalState();
   const { isSubmitting, onSelectUser, error } = useSelectUser();
 
   return (
@@ -46,6 +46,11 @@ export function SelectedUsersSheet() {
             View Selected Users ({size(selectedUsers)})
           </StyledSheetButton>
         </SheetTrigger>
+      )}
+      {!isEmpty(selectedMatches) && (
+          <StyledSheetButton className="fixed bottom-14 right-3/4 translate-x-2/4">
+            View Selected Matches ({size(selectedMatches)})
+          </StyledSheetButton>
       )}
       <SheetContent>
         <SheetHeader>

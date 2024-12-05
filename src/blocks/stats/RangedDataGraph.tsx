@@ -53,6 +53,8 @@ export const graphEndpoints = [
 ];
 
 export function RangedDataGraph() {
+  const random = React.useRef(Date.now() + Math.random());
+
   const [endpoint, setEndpoint] = React.useState(graphEndpoints[0]);
 
   const [startDate, setStartDate] = React.useState('2024-01-01');
@@ -61,9 +63,11 @@ export function RangedDataGraph() {
     today.toISOString().split('T')[0],
   );
   const [dayRange, setDayRange] = React.useState(1); // supports only 1 or 7 atm
+  
+  const appendEndpoint = (endpoint.endpoint.endsWith("/") ? "?random=" : "&random=") + random.current;
 
   const { mutate, error, data, isLoading } = useSWR(
-    endpoint.endpoint,
+    endpoint.endpoint + appendEndpoint,
     cratePostFetcher({
       start_date: startDate,
       end_date: endDate,

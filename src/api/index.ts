@@ -1,3 +1,4 @@
+import { Theme } from '../emails/shared/theme';
 import { getCookiesAsObject } from '../lib/utils';
 import { apiFetch, formatApiError } from './helpers';
 
@@ -416,6 +417,7 @@ export const updateDynamicTemplate = async ({
   templateName,
   template,
   templateContent,
+  theme,
   onSuccess,
   onError,
 }: {
@@ -427,6 +429,7 @@ export const updateDynamicTemplate = async ({
   templateContent: any;
   onSuccess: (response: any) => void;
   onError: (error: any) => void;
+  theme: Theme;
 }) => {
   try {
     const result = await apiFetch(
@@ -441,6 +444,7 @@ export const updateDynamicTemplate = async ({
           subject,
           category_id: category,
           sender_id: 'noreply',
+          theme,
           content: templateContent,
         },
       },

@@ -24,6 +24,7 @@ export function BarChartCounts({
     subtitle1 = "fill me 1",
     subtitle2 = "fill me 2",
     chartData = [{ tag: 'count_name', count: 8, fill: 'var(--color-chrome)' }],
+    label="Sign-Ups",
     chartConfig = {
         count: {
             label: 'Count'
@@ -88,7 +89,7 @@ export function BarChartCounts({
                                                     y={(viewBox.cy || 0) + 24}
                                                     className="fill-muted-foreground"
                                                 >
-                                                    Sign-Ups
+                                                    {label}
                                                 </tspan>
                                             </text>
                                         )

@@ -211,7 +211,7 @@ export function BarChartTimeRangedV2({
   if (isLoading) return <div>Loading...</div>;
   if (!data) return <div>Error: {error}</div>;
   
-  const modifiedData = modifyDataV2(data);
+  const modifiedData = modifyDataV2(data?.buckets);
   const chartConfig = createChartConfig_v2(modifiedData);
 
   return <Card className="">
@@ -274,7 +274,7 @@ export function BarChartTimeRangedV1({
   if (isLoading) return <div>Loading...</div>;
   if (!data) return <div>Error: {error}</div>;
   
-  const modifiedData = data;
+  const modifiedData = data?.buckets;
   const chartConfig = createChartConfig(modifiedData);
   return (
     <Card className="">

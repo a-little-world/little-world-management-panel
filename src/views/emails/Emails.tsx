@@ -16,7 +16,7 @@ import useSWR from 'swr';
 import LoadingSpinner from '../../atoms/LoadingSpinner';
 import EmailBuilder from '../../emails/Builder';
 import emailData from '../../emails/data/';
-import automatedEmails from '../../emails/data/automated';
+import automatedEmails, { getAutomatedPatentmatchEmails } from '../../emails/data/automated';
 import marketingEmails from '../../emails/data/marketing';
 import partnershipsEmails from '../../emails/data/partnerships';
 import { getUnsubscribeUrl } from '../../emails/shared/constants';
@@ -69,6 +69,7 @@ const GROUPED_TEMPLATES = {
   Automated: map(automatedEmails),
   Marketing: map(marketingEmails),
   Partnerships: map(partnershipsEmails),
+  AutomatedPatenmatch: map(getAutomatedPatentmatchEmails()),
 };
 
 function developmentUpdateBackendEmailTemplatesAndConfiguration({
@@ -109,6 +110,7 @@ function developmentUpdateBackendEmailTemplatesAndConfiguration({
       <EmailBuilder
         content={email.content}
         preview={email.preview}
+        theme={email.theme}
         unsubscribeLink={getUnsubscribeUrl(email.category_id)}
       />,
     );
@@ -117,6 +119,7 @@ function developmentUpdateBackendEmailTemplatesAndConfiguration({
       sender_id: 'noreply',
       category_id: email.category_id,
       subject: value?.subject ?? 'No Subject',
+      theme: email.theme || 'little-world',
       template: 'react_emails/' + key + '.html',
     };
     templateToUpload.push({

@@ -8,6 +8,7 @@ import { Outlet, createBrowserRouter } from 'react-router-dom';
 
 import Layout from './blocks/Layout';
 import UserPanel from './blocks/user/UserPanel';
+import { EmailThemeProvider } from './emails/shared/theme';
 import {
   AdminPanelV2_EmailDetails,
   AdminPanelV2_Emails,
@@ -54,13 +55,15 @@ export const Root = ({
   withLayout = false,
 }: PropsWithChildren<{ restoreScroll?: boolean; withLayout?: boolean }>) => (
   <CustomThemeProvider>
-    {restoreScroll && <ScrollRestoration />}
-    <GlobalStyles />
-    {withLayout ? (
-      <Layout>{children || <Outlet />}</Layout>
-    ) : (
-      children || <Outlet />
-    )}
+    <EmailThemeProvider>
+      {restoreScroll && <ScrollRestoration />}
+      <GlobalStyles />
+      {withLayout ? (
+        <Layout>{children || <Outlet />}</Layout>
+      ) : (
+        children || <Outlet />
+      )}
+    </EmailThemeProvider>
   </CustomThemeProvider>
 );
 

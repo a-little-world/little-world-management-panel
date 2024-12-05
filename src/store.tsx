@@ -236,10 +236,12 @@ export const useScoresListData = (searchParams: string) => {
 
 const GlobalStateContext = createContext({
   selectedUsers: [],
+  selectedMatches: []
 });
 
 export function GlobalStateProvider(props) {
   const [selectedUsers, setSelectedUsers] = useState([]);
+  const [selectedMatches, setSelectedMatches] = useState([]);
   const [potentialMatch, setPotentialMatch] = useState<any[]>([]);
   const [apiOptions] = useState(props?.apiOptions || {});
   const [apiTranslations] = useState(props?.apiTranslations || {});
@@ -253,6 +255,27 @@ export function GlobalStateProvider(props) {
       }));
     },
     [setSelectedUsers],
+  );
+  
+  const selectMatch = useCallback(
+    (match: any) => {
+      setSelectedMatches(currentMatches => ({
+        ...currentMatches,
+        [match.uuid]: match,
+      }));
+    },
+    [setSelectedMatches],
+  );
+  
+  const deselectMatch = useCallback(
+    (matchHash: string) => {
+      setSelectedMatches(currentMatches => {
+        const newMatches = { ...currentMatches };
+        unset(newMatches, matchHash);
+        return newMatches;
+      });
+    },
+    [setSelectedMatches],
   );
 
   const deselectUser = useCallback(
@@ -295,8 +318,11 @@ export function GlobalStateProvider(props) {
       removeUserFromMatching,
       potentialMatch,
       selectedUsers,
+      selectedMatches,
       selectUser,
       deselectUser,
+      selectMatch,
+      deselectMatch,
       clearMatching,
       apiOptions,
       apiTranslations,
@@ -308,8 +334,11 @@ export function GlobalStateProvider(props) {
       removeUserFromMatching,
       potentialMatch,
       selectedUsers,
+      selectedMatches,
       selectUser,
       deselectUser,
+      selectMatch,
+      deselectMatch,
       clearMatching,
       apiOptions,
       apiTranslations,
