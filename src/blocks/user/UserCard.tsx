@@ -210,14 +210,11 @@ export const UserCard = ({
           >
             {capitalize(user.profile.user_type)}
           </Tag>
-          <Tag
-            bold
-            color={
-              '#000000'
-            }
-          >
-            {user["bucket"]}
-          </Tag>
+          {user['bucket'] && (
+            <Tag bold color={'#000000'}>
+              {user['bucket']}
+            </Tag>
+          )}
           {partial && (
             <Button
               variation={ButtonVariations.Icon}
