@@ -111,14 +111,14 @@ export const UserCard = ({
               <Tag
                 appearance={
                   TagAppearance[
-                    user.state.matching_state === 'searching'
+                    user.state.searching_state === 'searching'
                       ? 'error'
                       : 'success'
                   ]
                 }
                 size={TagSizes.small}
               >
-                {user.state.matching_state}
+                {user.state.searching_state}
               </Tag>
             </div>
             <div className="flex flex-row content-center items-start justify-start">
@@ -166,9 +166,7 @@ export const UserCard = ({
               </li>
               <li
                 className={`step text-left ${
-                  user.state.had_prematching_call === 'filled'
-                    ? 'step-primary'
-                    : ''
+                  user.state.had_prematching_call ? 'step-primary' : ''
                 }`}
               >
                 Prematching Call
@@ -281,8 +279,10 @@ export const UserCard = ({
           </Text>
           {isLoading ? (
             <Loading />
+          ) : waitingTimeError ? (
+            <Text>Error fetching</Text>
           ) : (
-            <Text color={waitingTime.includes('Waiting') ? 'red' : 'black'}>
+            <Text color={waitingTime?.includes('Waiting') ? 'red' : 'black'}>
               {waitingTime}
             </Text>
           )}

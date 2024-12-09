@@ -18,7 +18,7 @@ export const baseLogin = {
 export const USER_FILTERS = {
   currentlySearching: {
     text: 'All searching',
-    filters: ['state.matching_state:is:searching'],
+    filters: ['state.searching_state:is:searching'],
   },
   authenticatedEmail: {
     text: 'Has authenticated email',
@@ -140,7 +140,7 @@ export const ADMIN_ACTIONS = {
           filters: {
             type: 'array',
             default: [
-              'state.matching_state:is:searching',
+              'state.searching_state:is:searching',
               'state.email_authenticated:is:True',
               'state.user_form_state:is:filled',
               'state.user_category:in:legit,undefined',
@@ -148,7 +148,7 @@ export const ADMIN_ACTIONS = {
             items: {
               type: 'string',
             },
-            //'state.matching_state:is:searching&state.email_authenticated:is:True&state.user_form_state:is:filled&state.user_category:in:legit,undefined',
+            //'state.searching_state:is:searching&state.email_authenticated:is:True&state.user_form_state:is:filled&state.user_category:in:legit,undefined',
           },
           lookup: {
             type: 'string',
