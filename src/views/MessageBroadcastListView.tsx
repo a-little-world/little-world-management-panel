@@ -141,6 +141,7 @@ function CreateListModal({ open, onClose, onSubmit }: CreateListModalProps) {
 }
 
 function ModifyListModal({ open, onClose, onSubmit, initialData }: ModifyListModalProps) {
+  const [id, setId] = useState(initialData.id);
   const [name, setName] = useState(initialData.name);
   const [description, setDescription] = useState(initialData.description);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -150,6 +151,7 @@ function ModifyListModal({ open, onClose, onSubmit, initialData }: ModifyListMod
     setIsSubmitting(true);
     const selectedUserIds = Object.values(selectedUsers).map(user => user.id);
     onSubmit({ 
+      id,
       name, 
       description, 
       users: selectedUserIds
@@ -162,6 +164,7 @@ function ModifyListModal({ open, onClose, onSubmit, initialData }: ModifyListMod
       <Card width={CardSizes.Medium}>
         <div className="space-y-4 p-4">
           <Text>Modify Message Broadcast List</Text>
+          <Text>Instance id: {id}</Text>
           <TextInput
             label="Name"
             value={name}
@@ -200,7 +203,7 @@ function ModifyListModal({ open, onClose, onSubmit, initialData }: ModifyListMod
               onClick={handleSubmit}
               disabled={!name || !description || isSubmitting}
             >
-              Save Changes
+              Save
             </DSButton>
           </div>
         </div>
@@ -258,6 +261,28 @@ function ViewUsersModal({ open, onClose, list }: ViewUsersModalProps) {
     };
   }, [open, list?.id]);
 
+  const handleDeleteSelected = async (user_id, list_id) => {
+    if (!user_id) return;
+    
+    try {
+      const response = await fetch(`/api/message_broadcast_lists/${list_id}/${user_id}/`, {
+        method: 'DELETE',
+        headers: {
+          'X-CSRFToken': document.cookie.split('csrftoken=')[1]?.split(';')[0] || '',
+        },
+        credentials: 'same-origin',
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to remove user ${user_id}`);
+      }
+
+      setUsers(prev => prev.filter(user => user.id != user_id))
+      
+    } catch (error) {
+      console.error('Error removing user from message lists:', error);
+    }
+  };
+
   if (!list) return null;
 
   return (
@@ -293,6 +318,14 @@ function ViewUsersModal({ open, onClose, list }: ViewUsersModalProps) {
                     <div key={user.id} className="flex items-center justify-between py-1 px-2 bg-gray-50 rounded">
                       <Text variant="body-small">{user.email}</Text>
                       <Text variant="body-small" className="text-gray-500">ID: {user.id}</Text>
+
+                      <DSButton
+                        variation={ButtonVariations.danger}
+                        onClick={() => handleDeleteSelected(user.id, list.id)}
+                        key={user.id}
+                      >
+                        Remove
+                      </DSButton>
                     </div>
                   ))
                 ) : (
@@ -314,6 +347,11 @@ export function MessageListsTable({ messageLists, onSelectionChange }) {
   const [modifyModalOpen, setModifyModalOpen] = useState(false);
   const [viewUsersModalOpen, setViewUsersModalOpen] = useState(false);
   const [selectedList, setSelectedList] = useState<MessageBroadcastList | null>(null);
+
+
+  const {
+    mutate,
+  } = useMessageListsData(null);
 
   const handleCheckboxChange = (id: number) => {
     setSelectedRows(prev => {
@@ -344,6 +382,7 @@ export function MessageListsTable({ messageLists, onSelectionChange }) {
         method: 'PUT',
         body: data,
       });
+      mutate(); // Refresh the list
       setModifyModalOpen(false);
       // The parent component will handle the refresh via mutate
     } catch (error) {
@@ -453,7 +492,7 @@ export function MessageBroadcastListView() {
     isLoading,
     error,
     mutate,
-  } = useMessageListsData(createSearchParams(searchParams));
+  } = useMessageListsData(null);
 
   const handleDeleteSelected = async () => {
     if (!selectedIds.length) return;
@@ -476,8 +515,7 @@ export function MessageBroadcastListView() {
       );
       
       // Fetch fresh data after deletion
-      const freshData = await apiFetch('/api/message_broadcast_lists/');
-      mutate(freshData, true);
+      mutate();
       
       setSelectedIds([]); // Clear selection
     } catch (error) {
@@ -496,18 +534,6 @@ export function MessageBroadcastListView() {
       setCreateModalOpen(false); // Close the modal after successful creation
     } catch (error) {
       console.error('Error creating message broadcast list:', error);
-    }
-  };
-
-  const handleModifyList = async (data: { name: string; description: string; users: number[] }) => {
-    try {
-      await apiFetch(`/api/message_broadcast_lists/${data.id}/`, {
-        method: 'PUT',
-        body: data,
-      });
-      mutate(); // Refresh the list
-    } catch (error) {
-      console.error('Error modifying message broadcast list:', error);
     }
   };
 

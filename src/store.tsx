@@ -159,9 +159,9 @@ export const usePrematchAppointmentsListData = (searchParams: string) => {
   };
 };
 
-export const useMessageListsData = (searchParams: string) => {
+export const useMessageListsData = (message_list_id) => {
   const { data, error, mutate, isLoading } = useSWR(
-    searchParams ? `/api/message_broadcast_lists/?${searchParams}` : '/api/message_broadcast_lists/',
+    message_list_id ? `/api/message_broadcast_lists/${message_list_id}/` : '/api/message_broadcast_lists/',
     dataFetcher,
     {
       revalidateOnFocus: true,
