@@ -5,23 +5,20 @@ import {
   Card,
   CardSizes,
   Modal,
-  Tag,
-  TagSizes,
   Text,
   TextInput,
-  Select,
 } from '@a-little-world/little-world-design-system';
 import { createColumnHelper } from '@tanstack/react-table';
 import React, { useState, useEffect } from 'react';
-import { useSearchParams, createSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 
 import { apiFetch } from '../api/helpers';
 import { DataTable } from '../blocks/DataTable';
-import { useMessageListsData, useGlobalState } from '../store';
+import { useDynamicUserListData, useGlobalState } from '../store';
 import { formatDate } from '../helpers/date';
-import { MultiSelect } from "react-multi-select-component";
-import Multiselect from 'multiselect-react-dropdown';
-interface MessageBroadcastList {
+import { mutate } from 'swr';
+
+interface DynamicUserList {
   id: number;
   name: string;
   description: string;
@@ -46,13 +43,13 @@ interface ModifyListModalProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (data: { name: string; description: string; users: number[] }) => void;
-  initialData: MessageBroadcastList;
+  initialData: DynamicUserList;
 }
 
 interface ViewUsersModalProps {
   open: boolean;
   onClose: () => void;
-  list: MessageBroadcastList;
+  list: DynamicUserList;
 }
 
 interface Option {
@@ -64,16 +61,8 @@ interface Option {
 function CreateListModal({ open, onClose, onSubmit }: CreateListModalProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [selected, setSelected] = useState<Option[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { selectedUsers } = useGlobalState();
-
-  const options = Object.values(selectedUsers)
-    .filter(user => user && user.hash && user.email)
-    .map(user => ({
-      label: user.email || `User ${user.hash}`,
-      value: user.hash
-    }));
 
   const handleSubmit = () => {
     setIsSubmitting(true);
@@ -92,7 +81,7 @@ function CreateListModal({ open, onClose, onSubmit }: CreateListModalProps) {
     <Modal open={open} onClose={onClose}>
       <Card width={CardSizes.Medium}>
         <div className="space-y-4 p-4">
-          <Text>Create New Message Broadcast List</Text>
+          <Text>Create New Dynamic User List</Text>
           <TextInput
             label="Name"
             value={name}
@@ -151,9 +140,8 @@ function ModifyListModal({ open, onClose, onSubmit, initialData }: ModifyListMod
     setIsSubmitting(true);
     const selectedUserIds = Object.values(selectedUsers).map(user => user.id);
     onSubmit({ 
-      id,
-      name, 
-      description, 
+      name: name, 
+      description: description, 
       users: selectedUserIds
     });
     setIsSubmitting(false);
@@ -163,7 +151,7 @@ function ModifyListModal({ open, onClose, onSubmit, initialData }: ModifyListMod
     <Modal open={open} onClose={onClose}>
       <Card width={CardSizes.Medium}>
         <div className="space-y-4 p-4">
-          <Text>Modify Message Broadcast List</Text>
+          <Text>Modify Dynamic User List</Text>
           <Text>Instance id: {id}</Text>
           <TextInput
             label="Name"
@@ -230,7 +218,7 @@ function ViewUsersModal({ open, onClose, list }: ViewUsersModalProps) {
         console.log('Starting to fetch users for list:', list.id);
         setIsLoading(true);
         const response = await apiFetch<User[]>(
-          `/api/message_broadcast_lists/${list.id}/`
+          `/api/dynamic_user_lists/${list.id}/`
         );
         console.log('API Response:', response);
         
@@ -261,11 +249,15 @@ function ViewUsersModal({ open, onClose, list }: ViewUsersModalProps) {
     };
   }, [open, list?.id]);
 
+  const {
+    mutate,
+  } = useDynamicUserListData(null);
+
   const handleDeleteSelected = async (user_id, list_id) => {
     if (!user_id) return;
     
     try {
-      const response = await fetch(`/api/message_broadcast_lists/${list_id}/${user_id}/`, {
+      const response = await fetch(`/api/dynamic_user_lists/${list_id}/${user_id}/`, {
         method: 'DELETE',
         headers: {
           'X-CSRFToken': document.cookie.split('csrftoken=')[1]?.split(';')[0] || '',
@@ -275,7 +267,7 @@ function ViewUsersModal({ open, onClose, list }: ViewUsersModalProps) {
       if (!response.ok) {
         throw new Error(`Failed to remove user ${user_id}`);
       }
-
+      mutate();
       setUsers(prev => prev.filter(user => user.id != user_id))
       
     } catch (error) {
@@ -340,18 +332,18 @@ function ViewUsersModal({ open, onClose, list }: ViewUsersModalProps) {
   );
 }
 
-const columnHelper = createColumnHelper<MessageBroadcastList>();
+const columnHelper = createColumnHelper<DynamicUserList>();
 
 export function MessageListsTable({ messageLists, onSelectionChange }) {
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
   const [modifyModalOpen, setModifyModalOpen] = useState(false);
   const [viewUsersModalOpen, setViewUsersModalOpen] = useState(false);
-  const [selectedList, setSelectedList] = useState<MessageBroadcastList | null>(null);
+  const [selectedList, setSelectedList] = useState<DynamicUserList | null>(null);
 
 
   const {
     mutate,
-  } = useMessageListsData(null);
+  } = useDynamicUserListData(null);
 
   const handleCheckboxChange = (id: number) => {
     setSelectedRows(prev => {
@@ -363,12 +355,12 @@ export function MessageListsTable({ messageLists, onSelectionChange }) {
     });
   };
 
-  const handleModify = (list: MessageBroadcastList) => {
+  const handleModify = (list: DynamicUserList) => {
     setSelectedList(list);
     setModifyModalOpen(true);
   };
 
-  const handleViewUsers = async (list: MessageBroadcastList) => {
+  const handleViewUsers = async (list: DynamicUserList) => {
     console.log('handleViewUsers called with list:', list);
     setSelectedList(list);
     setViewUsersModalOpen(true);
@@ -378,7 +370,7 @@ export function MessageListsTable({ messageLists, onSelectionChange }) {
     if (!selectedList) return;
     
     try {
-      await apiFetch(`/api/message_broadcast_lists/${selectedList.id}/`, {
+      await apiFetch(`/api/dynamic_user_lists/${selectedList.id}/`, {
         method: 'PUT',
         body: data,
       });
@@ -386,7 +378,7 @@ export function MessageListsTable({ messageLists, onSelectionChange }) {
       setModifyModalOpen(false);
       // The parent component will handle the refresh via mutate
     } catch (error) {
-      console.error('Error modifying message broadcast list:', error);
+      console.error('Error modifying dynamic user list:', error);
     }
   };
 
@@ -482,7 +474,7 @@ export function MessageListsTable({ messageLists, onSelectionChange }) {
   );
 }
 
-export function MessageBroadcastListView() {
+export function DynamicUserListView() {
   const [searchParams] = useSearchParams();
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
@@ -492,7 +484,7 @@ export function MessageBroadcastListView() {
     isLoading,
     error,
     mutate,
-  } = useMessageListsData(null);
+  } = useDynamicUserListData(null);
 
   const handleDeleteSelected = async () => {
     if (!selectedIds.length) return;
@@ -501,7 +493,7 @@ export function MessageBroadcastListView() {
       // Delete all selected items
       await Promise.all(
         selectedIds.map(async id => {
-          const response = await fetch(`/api/message_broadcast_lists/${id}/`, {
+          const response = await fetch(`/api/dynamic_user_lists/${id}/`, {
             method: 'DELETE',
             headers: {
               'X-CSRFToken': document.cookie.split('csrftoken=')[1]?.split(';')[0] || '',
@@ -525,7 +517,7 @@ export function MessageBroadcastListView() {
 
   const handleCreateList = async (data: { name: string; description: string; users: number[] }) => {
     try {
-      await apiFetch('/api/message_broadcast_lists/', {
+      await apiFetch('/api/dynamic_user_lists/', {
         method: 'POST',
         body: data,
       });
@@ -533,7 +525,7 @@ export function MessageBroadcastListView() {
       mutate(); // Refresh the list
       setCreateModalOpen(false); // Close the modal after successful creation
     } catch (error) {
-      console.error('Error creating message broadcast list:', error);
+      console.error('Error creating dynamic user list:', error);
     }
   };
 
@@ -548,7 +540,7 @@ export function MessageBroadcastListView() {
   return (
     <div className="space-y-4 p-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Message Broadcast Lists</h1>
+        <h1 className="text-2xl font-bold">Dynamic User Lists</h1>
         <div className="flex gap-2">
           <DSButton
             variation={ButtonVariations.danger}
@@ -580,4 +572,4 @@ export function MessageBroadcastListView() {
   );
 }
 
-export default MessageBroadcastListView;
+export default DynamicUserListView;

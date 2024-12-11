@@ -13,7 +13,7 @@ import useSelectUser from '../hooks/useSelectUser';
 import {
   EMAILS_ROUTE,
   MATCHES_LIST_ROUTE,
-  MESSAGE_LISTS_ROUTE,
+  DYNAMIC_USER_LISTS_ROUTE,
   PREMATCH_APPOINTMENTS_ROUTE,
   SCORES_ROUTE,
   STATS_ROUTE,
@@ -77,10 +77,10 @@ const Menu = () => {
             Scores
           </NavigationMenuContentItem>
           <NavigationMenuContentItem
-            to={MESSAGE_LISTS_ROUTE}
-            active={location.pathname === MESSAGE_LISTS_ROUTE}
+            to={DYNAMIC_USER_LISTS_ROUTE}
+            active={location.pathname === DYNAMIC_USER_LISTS_ROUTE}
           >
-            Message Lists
+            Dynamic User Lists
           </NavigationMenuContentItem>
           <NavigationMenuContentItem
             to={VIDEO_CALLS_ROUTE}

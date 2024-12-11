@@ -23,7 +23,7 @@ import {
   EMAIL_ROUTE,
   MATCHES_LIST_ROUTE,
   MATCHING_ROUTE,
-  MESSAGE_LISTS_ROUTE,
+  DYNAMIC_USER_LISTS_ROUTE,
   PREMATCH_APPOINTMENTS_ROUTE,
   SCORES_ROUTE,
   SEND_DYNAMIC_EMAIL_ROUTE,
@@ -47,7 +47,7 @@ import Email from './views/emails/Email';
 import EmailHtml from './views/emails/EmailHtml';
 import Emails from './views/emails/Emails';
 import { SendDynamicTemplateView } from './views/emails/SendDynamicTemplate';
-import { MessageBroadcastListView } from './views/MessageBroadcastListView';
+import { DynamicUserListView } from './views/DynamicUserListView';
 
 export const Root = ({
   children,
@@ -94,8 +94,8 @@ const router = createBrowserRouter(
           element: <Stats />,
         },
         {
-          path: MESSAGE_LISTS_ROUTE,
-          element: <MessageBroadcastListView />,
+          path: DYNAMIC_USER_LISTS_ROUTE,
+          element: <DynamicUserListView />,
         },
         {
           path: MATCHES_LIST_ROUTE,

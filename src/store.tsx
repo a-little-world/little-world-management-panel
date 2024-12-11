@@ -159,9 +159,9 @@ export const usePrematchAppointmentsListData = (searchParams: string) => {
   };
 };
 
-export const useMessageListsData = (message_list_id) => {
+export const useDynamicUserListData = (message_list_id) => {
   const { data, error, mutate, isLoading } = useSWR(
-    message_list_id ? `/api/message_broadcast_lists/${message_list_id}/` : '/api/message_broadcast_lists/',
+    message_list_id ? `/api/dynamic_user_lists/${message_list_id}/` : '/api/dynamic_user_lists/',
     dataFetcher,
     {
       revalidateOnFocus: true,
