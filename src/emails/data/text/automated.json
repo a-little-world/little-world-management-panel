@@ -104,5 +104,13 @@
   "verify-email.block-1": "Bitte bestätige deine E-Mail-Adresse für Little World",
   "verify-email.block-2": "Hallo {{ first_name }},",
   "verify-email.block-3": "du hast dich kürzlich bei Little World registriert, aber deine E-Mail-Adresse noch nicht bestätigt. Um alle Funktionen unserer Plattform nutzen zu können und mit Menschen aus aller Welt in Kontakt zu treten, bitten wir dich, deine E-Mail-Adresse zu bestätigen.",
-  "verify-email.block-4": "E-mail bestätigen"
+  "verify-email.block-4": "E-mail bestätigen",
+  "patenmatch-waiting.preview": "Ein Update zu deiner Anmeldung bei Patenmatch",
+  "patenmatch-waiting.subject": "Wichtiges Update zu deiner Patenmatch-Anmeldung",
+  "patenmatch-waiting.block-1": "Update zu deiner Patenmatch-Anmeldung",
+  "patenmatch-waiting.block-2": "Liebe:r {{ patenmatch_first_name }},",
+  "patenmatch-waiting.block-3": "vielen Dank für deine Geduld bezüglich deiner Anmeldung bei Patenmatch. Wir möchten dich darüber informieren, dass Patenmatch kürzlich von der gemeinnützigen Organisation Little World übernommen wurde. Diese Übernahme ist ein wichtiger Schritt, um die langfristige Unterstützung für Geflüchtete und Migrant:innen in Deutschland sicherzustellen.",
+  "patenmatch-waiting.block-4": "Aktuell arbeiten wir daran, den Matching-Prozess neu aufzusetzen und zu optimieren. In den nächsten Wochen wirst du von uns eine E-Mail mit den nächsten Schritten oder einem Organisations-Match erhalten. Wir bitten dich noch um etwas Geduld, während wir die volle Funktionalität der Plattform wiederherstellen.",
+  "patenmatch-waiting.block-5": "Mehr über die Übernahme erfahren",
+  "patenmatch-waiting.block-6": "Wir danken dir für dein Verständnis und dein Engagement. Dein Wunsch, andere Menschen zu unterstützen, ist wertvoll und wichtig für unsere Gesellschaft. Bei Fragen stehen wir dir jederzeit unter oliver.berlin@patenmatch.de zur Verfügung."
 }

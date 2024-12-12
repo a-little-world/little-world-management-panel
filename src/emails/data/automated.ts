@@ -471,6 +471,41 @@ const automatedEmails = {
       },
     ],
   },
+  'patenmatch-waiting': {
+    id: 'patenmatch-waiting',
+    label: 'Patenmatch Waiting Status',
+    category_id: EmailCategories.AutomatedPatenmatch,
+    theme: 'patenmatch',
+    preview: automatedText['patenmatch-waiting.preview'],
+    subject: automatedText['patenmatch-waiting.subject'],
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: automatedText['patenmatch-waiting.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['patenmatch-waiting.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['patenmatch-waiting.block-3'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['patenmatch-waiting.block-4'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['patenmatch-waiting.block-5'],
+        href: 'https://home.little-world.com/projecttogether-uebergibt-patenmatch-an-little-world',
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['patenmatch-waiting.block-6'],
+      },
+    ],
+  },
 };
 
 export function getAutomatedPatentmatchEmails() {
