@@ -98,19 +98,21 @@ const MatchCard = ({ match, userName }: { match: any; userName: string }) => {
       >
         {match?.bucket}
       </Tag>
-      <div className="absolute top-2 right-2">
-        <Button
-          appearance={ButtonAppearance.Secondary}
-          color={'red'}
-          backgroundColor={'red'}
-          onClick={() => {
-            setDialogOpen(true);
-          }}
-          size={ButtonSizes.Small}
-        >
-          Remove
-        </Button>
-      </div>
+      {!isProposed && (
+        <div className="absolute top-2 right-2">
+          <Button
+            appearance={ButtonAppearance.Secondary}
+            color={'red'}
+            backgroundColor={'red'}
+            onClick={() => {
+              setDialogOpen(true);
+            }}
+            size={ButtonSizes.Small}
+          >
+            Remove
+          </Button>
+        </div>
+      )}
       <Text bold>
         {match.partner.first_name} {match.partner.second_name}
       </Text>
