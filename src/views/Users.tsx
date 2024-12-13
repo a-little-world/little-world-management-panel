@@ -302,19 +302,24 @@ export function Users() {
     getUserListExport({
       searchParams: createSearchParams(searchParams),
       onSuccess: response => {
-        // const blob = new Blob([JSON.stringify(response)], {
-        //   type: 'application/json',
-        // });
-        // const url = URL.createObjectURL(blob);
-        // const a = document.createElement('a');
-        // a.href = url;
-        // a.download = 'users.json';
-        // a.click();
-
         // create a csv file and download it in the browser
-        const headers = ['email', 'first_name'].join(',');
+        const headers = [
+          'email',
+          'first_name',
+          'user_type',
+          'postal_code',
+          'birth_year',
+          'gender',
+        ].join(',');
         const csvRows = response.map(row =>
-          [row.email, row.profile.first_name].join(','),
+          [
+            row.email,
+            row.profile.first_name,
+            row.profile.user_type,
+            row.profile.postal_code,
+            row.profile.birth_year,
+            row.profile.gender,
+          ].join(','),
         );
 
         const csvContent = [headers, ...csvRows].join('\n');
@@ -325,7 +330,7 @@ export function Users() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'users.csv';
+        a.download = `${list} ${new Date().toLocaleDateString('de')}.csv`;
         a.click();
       },
       onError: error => console.log({ error }),
