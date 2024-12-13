@@ -4,6 +4,90 @@ import { BackendVars, EmailCategories } from '../shared/constants';
 import automatedText from './text/automated.json';
 
 const automatedEmails = {
+  'prematching-call-no-show': {
+    id: 'prematching-call-no-show',
+    label: 'Prematching call no show',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['prematching-call-no-show.preview'],
+    subject: automatedText['prematching-call-no-show.subject'],
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: automatedText['prematching-call-no-show.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['prematching-call-no-show.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['prematching-call-no-show.block-3'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['prematching-call-no-show.block-4'],
+      },
+      {
+        type: ContentTypes.Link,
+        text: 'Buche einen neuen Termin',
+        href: automatedText['prematching-call-no-show.booking-link'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: "",
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['prematching-call-no-show.block-5'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['prematching-call-no-show.block-6'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['prematching-call-no-show.block-7'],
+      },
+    ],
+  },
+  'prematching-call-post-thanks': {
+    id: 'prematching-call-post-thanks',
+    label: 'Prematching call thanks for coming',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['prematching-call-post-thanks.preview'],
+    subject: automatedText['prematching-call-post-thanks.subject'],
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: automatedText['prematching-call-post-thanks.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['prematching-call-post-thanks.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['prematching-call-post-thanks.block-3'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['prematching-call-post-thanks.block-4'],
+      },
+      {
+        type: ContentTypes.Link,
+        text: 'Little World Gruppengespräche',
+        href: 'https://home.little-world.com/#gruppentermine',
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: "",
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['prematching-call-post-thanks.block-5'],
+      },
+    ],
+  },
   'patenmatch-signup': {
     id: 'patenmatch-signup',
     label: 'Patenmatch Signup Welcome',
@@ -477,15 +561,16 @@ export function getAutomatedPatentmatchEmails() {
   let automatedEmailsPatenmatch = {};
 
   Object.keys(automatedEmails).forEach(key => {
-      if (automatedEmails[key].category_id === EmailCategories.AutomatedPatenmatch) {
-        automatedEmailsPatenmatch[key] = {
-          ...automatedEmails[key],
-          category_id: EmailCategories.AutomatedPatenmatch,
-        };
+    if (
+      automatedEmails[key].category_id === EmailCategories.AutomatedPatenmatch
+    ) {
+      automatedEmailsPatenmatch[key] = {
+        ...automatedEmails[key],
+        category_id: EmailCategories.AutomatedPatenmatch,
+      };
     }
   });
   return automatedEmailsPatenmatch;
 }
-
 
 export default automatedEmails;

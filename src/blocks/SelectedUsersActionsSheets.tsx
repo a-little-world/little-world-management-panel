@@ -58,9 +58,9 @@ export function SelectedUsersPrematchingCallAttended({ mutateBaseList, list }) {
 
   return (
     !isEmpty(selectedUsers) && (
-      <Button className="fixed bottom-10 left-2" onClick={markSelectedUsersAsHadPrematchingCall}>
+      <StyledSheetButton className="fixed bottom-32 right-2/4 translate-x-2/4" onClick={markSelectedUsersAsHadPrematchingCall}>
         Mark users and send email
-      </Button>
+      </StyledSheetButton>
     )
   );
 }

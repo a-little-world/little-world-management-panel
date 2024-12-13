@@ -84,7 +84,6 @@ export function PrematchingAppointments() {
         <PrematchingAppointmentsTable appointments={prematchAppointmentsList} list={list} />
       )}
       <SelectedUsersPrematchingCallAttended mutateBaseList={mutate} list={list} />
-      <SelectedUsersActionsSheet mutateBaseList={mutate} />
       <SelectedUsersSheet />
     </>
   );
