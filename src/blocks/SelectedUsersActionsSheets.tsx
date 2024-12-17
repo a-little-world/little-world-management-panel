@@ -21,6 +21,50 @@ const StyledSheetButton = styled(Button)`
   position: fixed;
 `;
 
+export function SelectedUsersPrematchingCallAttended({ mutateBaseList, list }) {
+  const { selectedUsers, selectUser, deselectUser, } = useGlobalState();
+
+  let selectedUserIds = [];
+  for (const hash in selectedUsers) {
+    selectedUserIds.push(selectedUsers[hash].id);
+  }
+
+  // format list as date time string from 2024-12-03 18:00:00+00:00 to YYYY-MM-DDTHH:MM:SSZ
+  const appointmentDate = list.replace(' ', 'T').replace('+00:00', 'Z');
+
+  const [progress, setProgress] = useState(0);
+  const [results, setResults] = useState<any[]>([]);
+  const [error, setError] = useState<any>();
+
+  const markSelectedUsersAsHadPrematchingCall = async () => {
+
+      const res = await fetch(
+        `/api/matching/users/complete_prematching_call/`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookiesAsObject().csrftoken,
+          },
+          body: JSON.stringify({
+            appointment_date: appointmentDate,
+            userlist: selectedUserIds
+          }),
+        },
+      );
+      setResults(prevResults => [...prevResults, res]);
+      mutateBaseList();
+  };
+
+  return (
+    !isEmpty(selectedUsers) && (
+      <StyledSheetButton className="fixed bottom-32 right-2/4 translate-x-2/4" onClick={markSelectedUsersAsHadPrematchingCall}>
+        Mark users and send email
+      </StyledSheetButton>
+    )
+  );
+}
+
 export function SelectedUsersActionsSheet({ mutateBaseList }) {
   const { selectedUsers, selectUser, deselectUser } = useGlobalState();
 
