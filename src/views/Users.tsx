@@ -258,7 +258,6 @@ export function Users() {
       }
     });
 
-    console.log({ paramsObject });
     setFilters(paramsObject);
   }, [searchParams]);
 
@@ -337,10 +336,6 @@ export function Users() {
     });
   };
 
-  const downloadListData = () => {
-    handleDownload();
-  };
-  console.log({ filters });
   return (
     <>
       <div className="w-full flex items-end gap-5 p-4 justify-between flex-wrap">
@@ -363,8 +358,8 @@ export function Users() {
             <SlidersHorizontalIcon width={16} height={16} /> Filters
           </FilterButton>
           <DSButton
-            onClick={downloadListData}
-            disabled={!list || list === 'all'}
+            onClick={handleDownload}
+            disabled={!list}
             variation={ButtonVariations.Circle}
             className="shrink-0"
           >
