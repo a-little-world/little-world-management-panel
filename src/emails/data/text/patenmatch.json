@@ -14,7 +14,7 @@
   "patenmatch-orga-forward-user.block-3": "Hier die Anfragedaten der Person:\n{{ patenmatch_first_name }} {{ patenmatch_last_name }}\n{{ patenmatch_email }}\nZielgruppe: {{ patenmatch_target_group_name }}\nPostleitzahl: {{ patenmatch_postal_address }}",
   "patenmatch-orga-forward-user.block-4": "{{ patenmatch_first_name }} hat das Anfrageformular in {{ patenmatch_language }} ausgefüllt.",
   "patenmatch-orga-forward-user.block-5": "Bitte schreibt direkt proaktiv an diese E-Mail-Adresse und nehmt die Anfrage in Euren bestehenden Prozess auf. Es ist sehr wichtig, dass ihr dieser Anfrage nachgeht, da {{ patenmatch_first_name }} {{ patenmatch_last_name }} auf eine Nachricht von Euch wartet und sich darauf sehr freut. Bitte geht zeitnah auf die Person zu, spätestens innerhalb der nächsten zwei Wochen.",
-  "patenmatch-orga-forward-user.block-6": "Sollte es Eurerseits Fragen oder Anmerkungen geben, meldet Euch gerne jederzeit bei Sebastian von ProjectTogether: patenmatch@projecttogether.org",
+  "patenmatch-orga-forward-user.block-6": "Sollte es Eurerseits Fragen oder Anmerkungen geben, meldet Euch gerne jederzeit bei oliver.berlin@little-world.com",
   "patenmatch-orga-forward-user.block-7": "Danke für Eure großartige Arbeit und herzliche Grüße\ndas Team von ProjectTogether",
   "patenmatch-example.preview": "Wir freuen uns, dass du dich bei Patenmatch registriert hast!",
   "patenmatch-example.subject": "Willkommen bei Patenmatch",
@@ -31,5 +31,5 @@
   "patenmatch-signup.block-3": "Wir möchten dich darüber informieren, dass die Patenmatch Plattform kürzlich von Little World übernommen wurde und sich derzeit im Wiederaufbau befindet.",
   "patenmatch-signup.block-4": "Matching-Vorschläge können daher bis zu zwei Wochen dauern, da wir den Prozess derzeit neu herstellen.",
   "patenmatch-signup.block-5": "Hier findest du mehr infos zur übergabe von Patenmatch an Little World",
-  "patenmatch-signup.block-6": "Solltest du dich nicht bei Patenmatch registriert haben, kannst du diese E-Mail ignorieren.",
+  "patenmatch-signup.block-6": "Solltest du dich nicht bei Patenmatch registriert haben, kannst du diese E-Mail ignorieren."
 }
