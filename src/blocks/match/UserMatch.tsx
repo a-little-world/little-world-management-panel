@@ -13,11 +13,11 @@ import {
 } from '@a-little-world/little-world-design-system';
 import React from 'react';
 
-import { removeMatch } from '../api';
-import { MATCH_STATUS } from '../constants.js';
-import { formatTimeDistance } from '../helpers/date';
-import { useGlobalState } from '../store';
-import UserImage from './UserImage';
+import { removeMatch } from '../../api';
+import UserImage from '../../atoms/UserImage';
+import { MATCH_STATUS } from '../../constants.js';
+import { formatTimeDistance } from '../../helpers/date';
+import { useGlobalState } from '../../store';
 
 const ConfirmRemoveMatchDialog = ({ dialogOpen, onClose, match, userName }) => {
   const { updateCurrentUser } = useGlobalState();
@@ -54,7 +54,7 @@ const ConfirmRemoveMatchDialog = ({ dialogOpen, onClose, match, userName }) => {
   );
 };
 
-const MatchCard = ({ match, userName }: { match: any; userName: string }) => {
+const UserMatch = ({ match, userName }: { match: any; userName: string }) => {
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const isProposed = match.status === MATCH_STATUS.proposed;
 
@@ -136,9 +136,9 @@ const MatchCard = ({ match, userName }: { match: any; userName: string }) => {
             </Text>
           </div>
           {/* <div className="flex gap-2 items-center">
-            <Text bold>User active:</Text>
-            <Text>N/A</Text>
-          </div> */}
+              <Text bold>User active:</Text>
+              <Text>N/A</Text>
+            </div> */}
         </>
       )}
       <div className="flex gap-2">
@@ -154,4 +154,4 @@ const MatchCard = ({ match, userName }: { match: any; userName: string }) => {
   );
 };
 
-export default MatchCard;
+export default UserMatch;

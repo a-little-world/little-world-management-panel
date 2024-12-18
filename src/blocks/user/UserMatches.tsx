@@ -3,9 +3,9 @@ import React from 'react';
 import styled, { useTheme } from 'styled-components';
 import useSWR from 'swr';
 
-import MatchCard from '../../atoms/MatchCard';
 import { formatDate, formatTime } from '../../helpers/date';
 import { dataFetcher } from '../../store';
+import UserMatch from '../match/UserMatch';
 
 const PrematchingAppointment = styled.div`
   display: flex;
@@ -45,25 +45,25 @@ const UserMatches = ({ user }) => {
         items={[
           {
             content: user?.matches.confirmed?.items.map(match => (
-              <MatchCard match={match} userName={user.profile.first_name} />
+              <UserMatch match={match} userName={user.profile.first_name} />
             )),
             header: `Confirmed (${user?.matches.confirmed?.items.length})`,
           },
           {
             content: user?.matches.unconfirmed?.items.map(match => (
-              <MatchCard match={match} userName={user.profile.first_name} />
+              <UserMatch match={match} userName={user.profile.first_name} />
             )),
             header: `Unconfirmed (${user?.matches.unconfirmed?.items.length})`,
           },
           {
             content: user?.matches.proposed?.items.map(match => (
-              <MatchCard match={match} userName={user.profile.first_name} />
+              <UserMatch match={match} userName={user.profile.first_name} />
             )),
             header: `Proposed (${user?.matches.proposed?.items.length})`,
           },
           {
             content: user?.matches.support?.items.map(match => (
-              <MatchCard match={match} userName={user.profile.first_name} />
+              <UserMatch match={match} userName={user.profile.first_name} />
             )),
             header: `Support (${user?.matches.support?.items.length})`,
           },

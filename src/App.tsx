@@ -23,6 +23,7 @@ import {
   EMAIL_ROUTE,
   MATCHES_LIST_ROUTE,
   MATCHING_ROUTE,
+  MATCH_ROUTE,
   PREMATCH_APPOINTMENTS_ROUTE,
   SCORES_ROUTE,
   SEND_DYNAMIC_EMAIL_ROUTE,
@@ -34,6 +35,7 @@ import {
 import { GlobalStateProvider } from './store';
 import Algorithm from './views/Algorithm';
 import Home from './views/Home';
+import MatchPanel from './views/MatchPanel';
 import Matches from './views/Matches';
 import Matching from './views/Matching';
 import PrematchingAppointments from './views/PrematchingAppointments';
@@ -94,6 +96,10 @@ const router = createBrowserRouter(
         {
           path: MATCHES_LIST_ROUTE,
           element: <Matches />,
+        },
+        {
+          path: MATCH_ROUTE,
+          element: <MatchPanel />,
         },
         {
           path: PREMATCH_APPOINTMENTS_ROUTE,
