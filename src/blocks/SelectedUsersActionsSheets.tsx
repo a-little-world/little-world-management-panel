@@ -47,7 +47,7 @@ export function SelectedUsersPrematchingCallAttended({ mutateBaseList, list }) {
             'X-CSRFToken': getCookiesAsObject().csrftoken,
           },
           body: JSON.stringify({
-            appointment_date: appointmentDate,
+            appointment_date: list,
             userlist: selectedUserIds
           }),
         },
