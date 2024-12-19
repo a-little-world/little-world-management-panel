@@ -28,10 +28,7 @@ export function SelectedUsersPrematchingCallAttended({ mutateBaseList, list }) {
   for (const hash in selectedUsers) {
     selectedUserIds.push(selectedUsers[hash].id);
   }
-
-  // format list as date time string from 2024-12-03 18:00:00+00:00 to YYYY-MM-DDTHH:MM:SSZ
-  const appointmentDate = list.replace(' ', 'T').replace('+00:00', 'Z');
-
+  
   const [progress, setProgress] = useState(0);
   const [results, setResults] = useState<any[]>([]);
   const [error, setError] = useState<any>();
