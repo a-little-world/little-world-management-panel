@@ -55,7 +55,9 @@ const UserPanelContent = ({
   if (tab === 'matches') return <UserMatches user={user} />;
 
   if (tab === 'notes')
-    return <UserNotes notes={user?.state?.notes} userId={user.id} />;
+    return (
+      <UserNotes notes={user?.state?.notes} model="user" modelId={user.id} />
+    );
 
   if (tab === 'actions') return <UserActions user={user} onUpdate={onUpdate} />;
   return null;

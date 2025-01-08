@@ -2,151 +2,172 @@ import {
   Button,
   ButtonAppearance,
   ButtonSizes,
-  Card,
-  CardHeader,
-  CardSizes,
   Link,
-  Modal,
+  Logo,
   Tag,
   TagSizes,
   Text,
 } from '@a-little-world/little-world-design-system';
 import React from 'react';
+import styled from 'styled-components';
 
-import { removeMatch } from '../../api';
+import DataField from '../../atoms/DataField';
+import Stat from '../../atoms/Stat';
 import UserImage from '../../atoms/UserImage';
 import { MATCH_STATUS } from '../../constants.js';
 import { formatTimeDistance } from '../../helpers/date';
-import { useGlobalState } from '../../store';
+import ConfirmUnmatchModal from './ConfirmUnmatchModal';
 
-const ConfirmRemoveMatchDialog = ({ dialogOpen, onClose, match, userName }) => {
-  const { updateCurrentUser } = useGlobalState();
+const Container = styled.div`
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.medium};
+  border: ${({ theme }) => theme.color.border.subtle} solid 1px;
+  border-radius: ${({ theme }) => theme.radius.small};
+  padding: ${({ theme }) => `${theme.spacing.large} ${theme.spacing.medium}`};
+  max-width: 480px;
+  width: 100%;
+  margin: 0 auto;
+`;
 
-  return (
-    <Modal open={dialogOpen} onClose={onClose}>
-      <Card className="items-center justify-center" width={CardSizes.Medium}>
-        <CardHeader>Do you want to remove this match?</CardHeader>
-        <Text>
-          This will remove the match between {match.user1.profile.first_name}{' '}
-          and {userName}
-        </Text>
-        <Button
-          className="mt-4"
-          appearance={ButtonAppearance.Secondary}
-          size={ButtonSizes.Medium}
-          backgroundColor={'red'}
-          color={'red'}
-          onClick={() => {
-            removeMatch({
-              match,
-              onSuccess: () => {
-                updateCurrentUser();
-                onClose();
-              },
-              onError: error => console.error(error),
-            });
-          }}
-        >
-          Remove Match
-        </Button>
-      </Card>
-    </Modal>
-  );
-};
+const MatchUsers = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: no-wrap;
+  gap: ${({ theme }) => theme.spacing.small};
+`;
 
-const MatchCard = ({ match }: { match: any }) => {
+const UserInfoContainer = styled.div`
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  max-width: 240px;
+  gap: ${({ theme }) => theme.spacing.small};
+`;
+
+const Stats = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: ${({ theme }) => theme.spacing.medium};
+  margin-bottom: ${({ theme }) => theme.spacing.medium};
+  width: 100%;
+`;
+
+const StyledTag = styled(Tag)`
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+`;
+
+const Info = styled.div`
+  padding-left: 56px;
+`;
+
+const UnmatchButton = styled(Button)`
+  width: 320px;
+  max-width: 100%;
+  margin: auto;
+`;
+
+const UserInfo = ({ user, match }: { match: any; user: any }) => (
+  <UserInfoContainer>
+    <Link to={`/user/${user.id}`} key={match.id} className="tooltip">
+      <UserImage
+        alt="match user pic"
+        user={user.profile}
+        dimensions={{
+          height: 120,
+          width: 120,
+        }}
+      />
+    </Link>
+    <Text bold>
+      {user.profile.first_name} {user.profile.second_name}
+    </Text>
+    <StyledTag
+      bold
+      color={user.profile.user_type === 'volunteer' ? '#9631c5' : '#ec2525'}
+      size={TagSizes.small}
+    >
+      {user.profile.user_type}
+    </StyledTag>
+  </UserInfoContainer>
+);
+
+const MatchCard = ({
+  match,
+  onMatchUpdate,
+}: {
+  match: any;
+  onMatchUpdate: any;
+}) => {
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const isProposed = match.status === MATCH_STATUS.proposed;
 
   return (
-    <div className="w-full max-w-[320px] flex flex-col bg-white h-fit relative items-center justify-center rounded-xl p-4 gap-2 border border-border-slate-400">
-      <Link
-        to={'/user/' + match.user1.profile?.id}
-        key={match.id}
-        className="tooltip"
-        data-tip={`${match.user1.profile.first_name} ${match.user1.profile.second_name}`}
-      >
-        <UserImage
-          alt="match profile pic"
-          user={match.user1.profile}
-          dimensions={{
-            height: 120,
-            width: 120,
-          }}
-        />
-      </Link>
+    <>
+      <Container>
+        <MatchUsers>
+          <UserInfo user={match.user1} match={match} />
+          <Logo label="Little World Logo" labelId="LW" width={'64px'} />
+          <UserInfo user={match.user2} match={match} />
+        </MatchUsers>
+        <Info>
+          <DataField title="Status" value={match.status} />
+          <DataField
+            title="Matched"
+            value={formatTimeDistance(new Date(match.created_at), new Date())}
+          />
+          <DataField
+            title="Last interaction"
+            value={formatTimeDistance(
+              new Date(match.latest_interaction_at),
+              new Date(),
+            )}
+          />
+        </Info>
+        <Stats>
+          <Stat
+            label="No. of messages"
+            stat={match.total_messages_counter}
+            withBorder
+          />
+          <Stat
+            label="No. of video calls"
+            stat={match.total_mutal_video_calls_counter}
+            withBorder
+          />
+        </Stats>
 
-      <Tag
-        bold
-        className="absolute top-2 left-2"
-        color={
-          match.user1.profile.user_type === 'volunteer' ? '#9631c5' : '#ec2525'
-        }
-        size={TagSizes.small}
-      >
-        {match.user1.profile.user_type}
-      </Tag>
-      <Tag
-        bold
-        className="absolute top-10 left-2"
-        color={'#000000'}
-        size={TagSizes.small}
-      >
-        {match?.bucket}
-      </Tag>
-      {!isProposed && (
-        <div className="absolute top-2 right-2">
-          <Button
+        {!isProposed && (
+          <UnmatchButton
             appearance={ButtonAppearance.Secondary}
+            size={ButtonSizes.Large}
             color={'red'}
             backgroundColor={'red'}
             onClick={() => {
               setDialogOpen(true);
             }}
-            size={ButtonSizes.Small}
           >
-            Remove
-          </Button>
-        </div>
-      )}
-      <Text bold>
-        {match.user1.profile.first_name} {match.user1.profile.second_name}
-      </Text>
-      {!isProposed && (
-        <>
-          <div className="flex gap-2 items-center">
-            <Text bold>Matched:</Text>
-            <Text>
-              {formatTimeDistance(new Date(match.created_at), new Date())}{' '}
-            </Text>
-          </div>
-          {/* <div className="flex gap-2 items-center">
-            <Text bold>Last Message:</Text>
-            <Text>
-              {match.chat.newest_message?.created
-                ? formatTimeDistance(
-                    new Date(match.chat.newest_message.created),
-                    new Date(),
-                  )
-                : 'No messages yet'}
-            </Text>
-          </div> */}
-          {/* <div className="flex gap-2 items-center">
-            <Text bold>User active:</Text>
-            <Text>N/A</Text>
-          </div> */}
-        </>
-      )}
-      <div className="flex gap-2">
-        <Link
-          buttonAppearance={ButtonAppearance.Secondary}
-          buttonSize={ButtonSizes.Stretch}
-          to={`/user/${match.user1.profile.id}`}
-        >
-          View profile
-        </Link>
-      </div>
-    </div>
+            Unmatch
+          </UnmatchButton>
+        )}
+      </Container>
+      <ConfirmUnmatchModal
+        dialogOpen={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        onMatchUpdate={onMatchUpdate}
+        matchId={match.uuid}
+        user1Name={match.user1.profile.first_name}
+        user2Name={match.user2.profile.first_name}
+      />
+    </>
   );
 };
 

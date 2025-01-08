@@ -264,14 +264,23 @@ export const setHadPrematchingCall = async ({
   }
 };
 
-export const updateUserNotes = async ({
-  userId,
-  notes,
-  onSuccess,
-  onError,
-}) => {
+export const updateUserNotes = async ({ id, notes, onSuccess, onError }) => {
   try {
-    const result = await apiFetch(`/api/matching/users/${userId}/notes/`, {
+    const result = await apiFetch(`/api/matching/users/${id}/notes/`, {
+      method: 'POST',
+      body: {
+        notes,
+      },
+    });
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
+  }
+};
+
+export const updateMatchNotes = async ({ id, notes, onSuccess, onError }) => {
+  try {
+    const result = await apiFetch(`/api/matching/matches/${id}/notes/`, {
       method: 'POST',
       body: {
         notes,
@@ -302,14 +311,11 @@ export const burstUpdateMatchingScores = async ({ parallel_tasks }) => {
   return result;
 };
 
-export const removeMatch = async ({ match, onError, onSuccess }) => {
+export const removeMatch = async ({ id, onError, onSuccess }) => {
   try {
-    const result = await apiFetch(
-      `/api/matching/matches/${match.id}/resolve/`,
-      {
-        method: 'POST',
-      },
-    );
+    const result = await apiFetch(`/api/matching/matches/${id}/resolve/`, {
+      method: 'POST',
+    });
     onSuccess(result);
   } catch (error) {
     onError(error);

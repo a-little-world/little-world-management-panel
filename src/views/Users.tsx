@@ -258,7 +258,6 @@ export function Users() {
       }
     });
 
-    console.log({ paramsObject });
     setFilters(paramsObject);
   }, [searchParams]);
 

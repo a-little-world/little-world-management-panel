@@ -22,14 +22,13 @@ import { SelectedUsersSheet } from '../blocks/SelectedUsersSheet';
 import MatchCard from '../blocks/match/MatchCard';
 import UserActions from '../blocks/user/UserActions';
 import UserNotes from '../blocks/user/UserNotes';
-import { MATCHING_ROUTE } from '../routes';
 import { dataFetcher, useGlobalState } from '../store';
 
 const MATCH_TABS = [
-  { key: 'details', label: 'Details' },
+  { key: 'overview', label: 'Overview' },
   { key: 'stats', label: 'Stats' },
   { key: 'notes', label: 'Notes' },
-  { key: 'actions', label: 'Actions' },
+  // { key: 'actions', label: 'Actions' },
 ];
 
 const MatchPanelContent = ({
@@ -41,12 +40,15 @@ const MatchPanelContent = ({
   match: any;
   onUpdate: () => void;
 }) => {
-  if (tab === 'details') return <MatchCard match={match} />;
+  if (tab === 'overview')
+    return <MatchCard match={match} onMatchUpdate={onUpdate} />;
 
-  if (tab === 'stats') return 'STats';
+  if (tab === 'stats') return 'More detailed stats coming soon';
 
   if (tab === 'notes')
-    return <UserNotes notes={match?.state?.notes} userId={match.id} />;
+    return (
+      <UserNotes notes={match?.notes} modelId={match.uuid} model="match" />
+    );
 
   // if (tab === 'actions') return <UserActions user={user} onUpdate={onUpdate} />;
   return null;
@@ -67,9 +69,6 @@ const MatchPanel = () => {
     mutate,
   } = useSWR(`/api/matching/matches/${matchId}/`, dataFetcher);
 
-  // useEffect(() => {
-  //   setUpdateCurrentUser(() => mutate);
-  // }, [matchId, mutate]);
   console.log({ match });
   if (isLoading && !error)
     return <div className="w-full p-3 text-center">Loading</div>;
@@ -104,7 +103,7 @@ const MatchPanel = () => {
           >
             <CardHeader className="flex-row items-center justify-between px-6 py-4 gap-4">
               <div>
-                <CardTitle>{`${match.id} - ${tab.label}`}</CardTitle>
+                <CardTitle>{`Match: ${match.uuid}`}</CardTitle>
                 {tab.description && (
                   <CardDescription>{tab.description}</CardDescription>
                 )}
