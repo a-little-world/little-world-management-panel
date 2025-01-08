@@ -116,7 +116,7 @@ function developmentUpdateBackendEmailTemplatesAndConfiguration({
     );
     const templateDict = {
       id: key,
-      sender_id: 'noreply',
+      sender_id: email?.sender_id ?? "noreply",
       category_id: email.category_id,
       subject: value?.subject ?? 'No Subject',
       theme: email.theme || 'little-world',

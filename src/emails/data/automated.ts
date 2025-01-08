@@ -5,44 +5,51 @@ import automatedText from './text/automated.json';
 import patenmatchTexts from './text/patenmatch.json';
 
 const patenmatchEmails = {
-  'patenmatch-waiting': {
-    id: 'patenmatch-waiting',
-    label: 'Patenmatch Waiting Status',
+  'patenmatch-matching-back-online': {
+    id: 'patenmatch-matching-back-online',
+    label: 'Patenmatch Matching is back online',
     category_id: EmailCategories.AutomatedPatenmatch,
+    sender_id: 'info-patenmatch',
     theme: 'patenmatch',
-    preview: patenmatchTexts['patenmatch-waiting.preview'],
-    subject: patenmatchTexts['patenmatch-waiting.subject'],
+    preview: patenmatchTexts['patenmatch-matching-back-online.preview'],
+    subject: patenmatchTexts['patenmatch-matching-back-online.subject'],
     content: [
       {
         type: ContentTypes.Title,
-        text: patenmatchTexts['patenmatch-waiting.block-1'],
+        text: patenmatchTexts['patenmatch-matching-back-online.block-1'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: patenmatchTexts['patenmatch-waiting.block-2'],
+        text: patenmatchTexts['patenmatch-matching-back-online.block-2'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: patenmatchTexts['patenmatch-waiting.block-3'],
+        text: patenmatchTexts['patenmatch-matching-back-online.block-3'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: patenmatchTexts['patenmatch-waiting.block-4'],
+        text: patenmatchTexts['patenmatch-matching-back-online.block-4'],
       },
       {
-        type: ContentTypes.Button,
-        text: patenmatchTexts['patenmatch-waiting.block-5'],
+        type: ContentTypes.Link,
+        text: patenmatchTexts['patenmatch-matching-back-online.block-5'],
         href: 'https://home.little-world.com/projecttogether-uebergibt-patenmatch-an-little-world',
       },
       {
+        type: ContentTypes.Button,
+        text: patenmatchTexts['patenmatch-matching-back-online.block-6'],
+        href: '{{ patenmatch_email_verification_url }}',
+      },
+      {
         type: ContentTypes.Paragraph,
-        text: patenmatchTexts['patenmatch-waiting.block-6'],
-      }
+        text: patenmatchTexts['patenmatch-matching-back-online.block-7'],
+      },
     ],
   },
   'patenmatch-signup': {
     id: 'patenmatch-signup',
     label: 'Patenmatch Signup Welcome',
+    sender_id: 'info-patenmatch',
     category_id: EmailCategories.AutomatedPatenmatch,
     theme: 'patenmatch',
     preview: patenmatchTexts['patenmatch-signup.preview'],
@@ -66,12 +73,7 @@ const patenmatchEmails = {
       },
       {
         type: ContentTypes.Button,
-        text: patenmatchTexts['patenmatch-signup.block-5'],
-        href: 'https://home.little-world.com/projecttogether-uebergibt-patenmatch-an-little-world',
-      },
-      {
-        type: ContentTypes.Button,
-        text: patenmatchTexts['patenmatch-signup.block-5'],
+        text: patenmatchTexts['patenmatch-signup.block-match-link-text'],
         href: '{{ patenmatch_email_verification_url }}',
       },
       {
@@ -80,46 +82,12 @@ const patenmatchEmails = {
       },
     ],
   },
-  'patenmatch-example': {
-    id: 'patenmatch-example',
-    label: 'Patenmatch example',
-    category_id: EmailCategories.AutomatedPatenmatch,
-    theme: 'patenmatch',
-    preview: patenmatchTexts['patenmatch-example.preview'],
-    subject: patenmatchTexts['patenmatch-example.subject'],
-    content: [
-      {
-        type: ContentTypes.Title,
-        text: patenmatchTexts['patenmatch-example.block-1'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: patenmatchTexts['patenmatch-example.block-2'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: patenmatchTexts['patenmatch-example.block-3'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: patenmatchTexts['patenmatch-example.block-4'],
-      },
-      {
-        type: ContentTypes.Button,
-        text: patenmatchTexts['patenmatch-example.block-5'],
-        href: 'https://patenmatch.de/',
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: patenmatchTexts['patenmatch-example.block-6'],
-      },
-    ],
-  },
   'patenmatch-orga-forward-user': {
     id: 'patenmatch-orga-forward-user',
     label: 'Patenmatch Organization Forward User',
     category_id: EmailCategories.AutomatedPatenmatch,
     theme: 'patenmatch',
+    sender_id: 'info-patenmatch',
     preview: patenmatchTexts['patenmatch-orga-forward-user.preview'],
     subject: patenmatchTexts['patenmatch-orga-forward-user.subject'],
     content: [
