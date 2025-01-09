@@ -1,7 +1,7 @@
 import { Button } from '@a-little-world/little-world-design-system';
 import { ScrollArea } from '@radix-ui/react-scroll-area';
 import { isEmpty, size } from 'lodash';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 
 import { Progress } from '../atoms/Progress';
@@ -21,8 +21,29 @@ const StyledSheetButton = styled(Button)`
   position: fixed;
 `;
 
+const StyledSheetContent = styled(SheetContent)`
+  width: 100%;
+  max-width: 700px;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+  }
+`;
+
 export function SelectedUsersPrematchingCallAttended({ mutateBaseList, list }) {
-  const { selectedUsers, selectUser, deselectUser, } = useGlobalState();
+  const { selectedUsers, prematchingAppointmentUsers } = useGlobalState();
+  const [isOpen, setIsOpen] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
+  const [usersToEmail, setUsersToEmail] = useState<{[key: string]: boolean}>({});
+  const [userStats, setUserStats] = useState({
+    selected: 0,
+    all: 0
+  });
+  useEffect(() => {
+    if (isOpen) {
+      calculateUserStats();
+    }
+  }, [isOpen]);
 
   let selectedUserIds = [];
   for (const hash in selectedUsers) {
@@ -36,7 +57,53 @@ export function SelectedUsersPrematchingCallAttended({ mutateBaseList, list }) {
   const [results, setResults] = useState<any[]>([]);
   const [error, setError] = useState<any>();
 
-  const markSelectedUsersAsHadPrematchingCall = async () => {
+  const calculateUserStats = () => {
+    const stats = {
+      selected: 0,
+      all: 0
+    };
+    
+    // Use prematchingAppointmentUsers to check the status
+    Object.values(prematchingAppointmentUsers).forEach(appointmentUser => {
+      stats.all++;
+    });
+    stats.selected = Object.keys(selectedUsers).length
+
+    setUserStats(stats);
+  };
+
+  // Initialize email preferences when entering confirmation screen
+  React.useEffect(() => {
+    if (isConfirming) {
+      // Pre-select all selected users
+      const initialEmailPrefs = Object.keys(selectedUsers).reduce((acc, hash) => {
+        acc[hash] = true;
+        return acc;
+      }, {});
+
+      // Pre-select all users from the unselected list
+      const initialAdditionalUsers = getUnselectedUsers().reduce((acc, [hash, user]) => {
+        acc[hash] = user;
+        return acc;
+      }, {});
+
+      const combined = { ...initialEmailPrefs, ...initialAdditionalUsers };
+      setUsersToEmail(combined);
+    }
+  }, [isConfirming]);
+
+  const handleAction = async () => {
+    try {
+      setResults([]);
+      
+      // Combine selected users and additional users
+      
+      const send_mail = Object.entries(prematchingAppointmentUsers).reduce((acc, [hash, user]) => {
+        acc[user.id] = usersToEmail[hash] || false;
+        return acc;
+      }, {});
+
+      const userlist = Object.values(selectedUsers).map(user => user.id);
 
       const res = await fetch(
         `/api/matching/users/complete_prematching_call/`,
@@ -48,91 +115,175 @@ export function SelectedUsersPrematchingCallAttended({ mutateBaseList, list }) {
           },
           body: JSON.stringify({
             appointment_date: list,
-            userlist: selectedUserIds
+            selected_users: userlist,
+            send_mail: send_mail
           }),
         },
       );
-      setResults(prevResults => [...prevResults, res]);
+      setResults([res]);
       mutateBaseList();
+      
+      // Reset states after successful submission
+      setUsersToEmail({});
+      
+    } catch (err) {
+      setError(err);
+    }
   };
 
-  return (
-    !isEmpty(selectedUsers) && (
-      <StyledSheetButton className="fixed bottom-32 right-2/4 translate-x-2/4" onClick={markSelectedUsersAsHadPrematchingCall}>
-        Mark users and send email
-      </StyledSheetButton>
-    )
-  );
-}
+  const getUnselectedUsers = () => {
+    return Object.entries(prematchingAppointmentUsers)
+      .filter(([hash]) => !selectedUsers[hash]);
+  };
 
-export function SelectedUsersActionsSheet({ mutateBaseList }) {
-  const { selectedUsers, selectUser, deselectUser } = useGlobalState();
-
-  const [progress, setProgress] = useState(0);
-  const [results, setResults] = useState<any[]>([]);
-  const [error, setError] = useState<any>();
-
-  const markSelectedUsersAsHadPrematchingCall = async () => {
-    let c = 0;
-    for (const hash in selectedUsers) {
-      const user = selectedUsers[hash];
-      c += 1;
-      const res = await fetch(
-        `/api/matching/users/${user.id}/mark_prematching_call_completed/`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCookiesAsObject().csrftoken,
-          },
-        },
-      );
-      setProgress((c / size(selectedUsers)) * 100);
-      const result = {
-        user,
-        success: res.ok,
-      };
-      setResults(prevResults => [...prevResults, result]);
-      mutateBaseList();
+  // Reset states when sheet closes or opens
+  const handleSheetOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    if (!open) {
+      // Reset when closing
+      setResults([]);
+      setError(null);
+      setIsConfirming(false);
+    } else {
+      // Reset to first page when opening
+      setIsConfirming(false);
     }
   };
 
   return (
-    <Sheet>
-      {!isEmpty(selectedUsers) && (
-        <SheetTrigger asChild id="actions-sheet">
-          <StyledSheetButton className="fixed bottom-32 right-2/4 translate-x-2/4">
-            View Actions
-          </StyledSheetButton>
-        </SheetTrigger>
-      )}
-      <SheetContent>
-        <SheetHeader>
-          <SheetTitle>Selected Users</SheetTitle>
-          <SheetDescription>
-            Perform actions on the {Object.keys(selectedUsers).length} selected
-            users
-          </SheetDescription>
-          <Progress value={progress} />
-        </SheetHeader>
-        <ScrollArea className="h-full overflow-scroll">
-          <Button onClick={markSelectedUsersAsHadPrematchingCall}>
-            Mark users as had_prematching_call=True
-          </Button>
-          Results:
-          <div className="flex flex-col gap-2 w-full">
-            {results.map(result => (
-              <div>
-                {result.user.profile.first_name}{' '}
-                {result.user.profile.second_name}:{' '}
-                {result.success ? 'Success' : 'Failed'}
-                {result.error && `: ${result.error}`}
+    <Sheet open={isOpen} onOpenChange={handleSheetOpenChange}>
+      <SheetTrigger asChild>
+        <StyledSheetButton 
+          className="fixed bottom-32 right-2/4 translate-x-2/4" 
+        >
+          Open Email Options
+        </StyledSheetButton>
+      </SheetTrigger>
+      
+      <StyledSheetContent>
+        {!isConfirming ? (
+          <>
+            <SheetHeader>
+              <SheetTitle>User Selection Review</SheetTitle>
+              <SheetDescription>
+                Review selected users before proceeding
+              </SheetDescription>
+            </SheetHeader>
+            
+            <div className="py-4">
+              <p>Appointment Date: {list}</p>
+              <p>Total Selected Users: {Object.keys(selectedUsers).length}</p>
+              
+              <div className="mt-4">
+                <h3 className="font-semibold mb-2">Selected Users:</h3>
+                <div className="max-h-60 overflow-y-auto border rounded-md p-2">
+                  {Object.values(selectedUsers).map((user: any) => (
+                    <div key={user.id} className="py-1">
+                      {user.profile.first_name} {user.profile.second_name}
+                    </div>
+                  ))}
+                </div>
               </div>
-            ))}
-          </div>
-        </ScrollArea>
-        <SheetFooter>Footer</SheetFooter>
-      </SheetContent>
+            </div>
+
+            <SheetFooter className="flex justify-between mt-4">
+              <Button variant="secondary" onClick={() => setIsOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={() => {
+                calculateUserStats();
+                setIsConfirming(true);
+              }}>
+                Continue
+              </Button>
+            </SheetFooter>
+          </>
+        ) : (
+          <>
+            <SheetHeader>
+              <SheetTitle>Confirm Action</SheetTitle>
+              <SheetDescription>
+                Select which users should receive an email notification
+              </SheetDescription>
+            </SheetHeader>
+
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-semibold mb-2">Selected Users:</h3>
+                <div className="border rounded-md">
+                  <ScrollArea className="h-[200px]">
+                    {Object.entries(selectedUsers).map(([hash, user]) => (
+                      <div key={hash} className="flex items-center p-2 hover:bg-gray-50">
+                        <input
+                          type="checkbox"
+                          checked={usersToEmail[hash] || false}
+                          className="checkbox ml-2"
+                          onChange={() => {
+                            setUsersToEmail(prev => ({
+                              ...prev,
+                              [hash]: !prev[hash]
+                            }));
+                          }}
+                        />
+                        <span className="ml-3">
+                          {user.profile.first_name} {user.profile.second_name}
+                        </span>
+                      </div>
+                    ))}
+                  </ScrollArea>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-2">Other Users in List:</h3>
+                <div className="border rounded-md">
+                  <ScrollArea className="h-[200px]">
+                    {getUnselectedUsers().map(([hash, user]) => (
+                      <div key={hash} className="flex items-center p-2 hover:bg-gray-50">
+                        <input
+                          type="checkbox"
+                          checked={usersToEmail[hash] || false}
+                          className="checkbox ml-2"
+                          onChange={() => {
+                            setUsersToEmail(prev => ({
+                              ...prev,
+                              [hash]: !prev[hash]
+                            }));
+                          }}
+                        />
+                        <span className="ml-3">
+                          {user.profile.first_name} {user.profile.second_name}
+                        </span>
+                      </div>
+                    ))}
+                  </ScrollArea>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4">
+              {results.map((res, index) => (
+                <div key={index}>
+                  {res.ok ? '✅ Success' : '❌ Failed'}
+                </div>
+              ))}
+              {error && <div className="text-red-500">{error.message}</div>}
+            </div>
+
+            <SheetFooter className="flex flex-col sm:flex-row gap-4 mt-4">
+              <Button variant="secondary" onClick={() => setIsConfirming(false)}>
+                Back
+              </Button>
+              <Button 
+                onClick={() => handleAction()}
+              >
+                Mark Users
+              </Button>
+            </SheetFooter>
+          </>
+        )}
+      </StyledSheetContent>
     </Sheet>
   );
 }
+

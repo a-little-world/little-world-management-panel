@@ -10,8 +10,9 @@ import Pagination from '../atoms/Pagination';
 import { MatchesTable } from '../blocks/MatchesTable';
 import { usePrematchingAppointmentsFilterOptions, usePrematchAppointmentsListData } from '../store';
 import { PrematchingAppointmentsTable } from '../blocks/PrematchingAppointmentsTable';
-import { SelectedUsersActionsSheet, SelectedUsersPrematchingCallAttended } from '../blocks/SelectedUsersActionsSheets';
+import { SelectedUsersPrematchingCallAttended } from '../blocks/SelectedUsersActionsSheets';
 import { PageSizeDropdown } from '../atoms/PageSizeDropdown';
+import { useGlobalState } from '../store';
 
 
 const StyledDropdown = styled(Dropdown)`
@@ -35,6 +36,7 @@ export function PrematchingAppointments() {
   const list = searchParams.get('list') || 'all';
   const { filterOptions, isLoading: filtersLoading } =
     usePrematchingAppointmentsFilterOptions();
+  const { setPrematchingAppointmentUsers } = useGlobalState();
 
   const { prematchAppointmentsList, isLoading: usersLoading, mutate } = usePrematchAppointmentsListData(
     createSearchParams(searchParams),
@@ -44,6 +46,19 @@ export function PrematchingAppointments() {
     searchParams.set('list', list)
     setSearchParams(searchParams)
   };
+
+  React.useEffect(() => {
+    if (prematchAppointmentsList?.results) {
+      const usersFromAppointment = prematchAppointmentsList.results.reduce((acc, appointment) => {
+        acc[appointment.user.hash] = {
+          ...appointment.user,
+          had_prematching_call: appointment.had_prematching_call
+        };
+        return acc;
+      }, {});
+      setPrematchingAppointmentUsers(usersFromAppointment);
+    }
+  }, [prematchAppointmentsList]);
 
   return (
     <>

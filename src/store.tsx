@@ -242,6 +242,7 @@ const GlobalStateContext = createContext({
 export function GlobalStateProvider(props) {
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [selectedMatches, setSelectedMatches] = useState([]);
+  const [prematchingAppointmentUsers, setPrematchingAppointmentUsers] = useState([]);
   const [potentialMatch, setPotentialMatch] = useState<any[]>([]);
   const [apiOptions] = useState(props?.apiOptions || {});
   const [apiTranslations] = useState(props?.apiTranslations || {});
@@ -328,6 +329,8 @@ export function GlobalStateProvider(props) {
       apiTranslations,
       updateCurrentUser,
       setUpdateCurrentUser,
+      prematchingAppointmentUsers,
+      setPrematchingAppointmentUsers,
     }),
     [
       addUserToMatching,
@@ -344,6 +347,8 @@ export function GlobalStateProvider(props) {
       apiTranslations,
       updateCurrentUser,
       setUpdateCurrentUser,
+      prematchingAppointmentUsers,
+      setPrematchingAppointmentUsers,
     ],
   );
   return <GlobalStateContext.Provider value={value} {...props} />;
