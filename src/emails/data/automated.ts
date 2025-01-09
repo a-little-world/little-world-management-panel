@@ -44,6 +44,10 @@ const patenmatchEmails = {
         type: ContentTypes.Paragraph,
         text: patenmatchTexts['patenmatch-matching-back-online.block-7'],
       },
+      {
+        type: ContentTypes.Paragraph,
+        text: patenmatchTexts['patenmatch-matching-back-online.block-8'],
+      },
     ],
   },
   'patenmatch-signup': {
