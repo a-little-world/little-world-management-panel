@@ -201,15 +201,15 @@ export function SelectedUsersPrematchingCallAttended({ mutateBaseList, list }) {
         ) : (
           <>
             <SheetHeader>
-              <SheetTitle>Confirm Action</SheetTitle>
+              <SheetTitle>Bestätige Aktion</SheetTitle>
               <SheetDescription>
-                Select which users should receive an email notification
+                Wähle die User aus, die eine Email erhalten sollen
               </SheetDescription>
             </SheetHeader>
 
             <div className="space-y-4">
               <div>
-                <h3 className="font-semibold mb-2">Selected Users:</h3>
+                <h3 className="font-semibold mb-2">Anwesende Benutzer<br />Wenn ausgewählt, erhalten die folgenden User eine Email (Danke fuers Teilnehmen):</h3>
                 <div className="border rounded-md">
                   <ScrollArea className="h-[200px]">
                     {Object.entries(selectedUsers).map(([hash, user]) => (
@@ -235,7 +235,7 @@ export function SelectedUsersPrematchingCallAttended({ mutateBaseList, list }) {
               </div>
 
               <div>
-                <h3 className="font-semibold mb-2">Other Users in List:</h3>
+                <h3 className="font-semibold mb-2">Nicht anwesende Benutzer<br />Wenn ausgewählt, erhalten die folgenden User eine Email (Wir haben dich beim Onboarding Vermisst):</h3>
                 <div className="border rounded-md">
                   <ScrollArea className="h-[200px]">
                     {getUnselectedUsers().map(([hash, user]) => (
@@ -277,7 +277,7 @@ export function SelectedUsersPrematchingCallAttended({ mutateBaseList, list }) {
               <Button 
                 onClick={() => handleAction()}
               >
-                Mark Users
+                Prematching Call bestätigen
               </Button>
             </SheetFooter>
           </>
