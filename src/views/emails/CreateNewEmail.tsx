@@ -199,6 +199,7 @@ const CreateNewEmail = () => {
   const templateName = watch('template_name');
   const subject = watch('subject');
   const category = watch('category');
+  const senderId = 'noreply'
   const shouldSave =
     !templateSaved && subject && templateName && !isEmpty(newEmail);
   const { emailTheme, setEmailTheme } = React.useContext(EmailThemeContext)!;

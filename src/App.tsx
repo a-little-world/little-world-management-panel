@@ -17,6 +17,7 @@ import {
   ALGORITHM_ROUTE,
   BASE_ROUTE,
   CREATE_NEW_EMAIL_ROUTE,
+  DYNAMIC_USER_LISTS_ROUTE,
   EDIT_EMAIL_ROUTE,
   EMAILS_ROUTE,
   EMAIL_HTML_ROUTE,
@@ -34,6 +35,7 @@ import {
 } from './routes';
 import { GlobalStateProvider } from './store';
 import Algorithm from './views/Algorithm';
+import { DynamicUserListView } from './views/DynamicUserListView';
 import Home from './views/Home';
 import MatchPanel from './views/MatchPanel';
 import Matches from './views/Matches';
@@ -92,6 +94,10 @@ const router = createBrowserRouter(
         {
           path: STATS_ROUTE,
           element: <Stats />,
+        },
+        {
+          path: DYNAMIC_USER_LISTS_ROUTE,
+          element: <DynamicUserListView />,
         },
         {
           path: MATCHES_LIST_ROUTE,

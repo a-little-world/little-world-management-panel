@@ -2,78 +2,129 @@ import KeyImage from '../../assets/key.png';
 import { ContentTypes } from '../Builder';
 import { BackendVars, EmailCategories } from '../shared/constants';
 import automatedText from './text/automated.json';
+import patenmatchTexts from './text/patenmatch.json';
 
-const automatedEmails = {
-  'patenmatch-signup': {
-    id: 'patenmatch-signup',
-    label: 'Patenmatch Signup Welcome',
+const patenmatchEmails = {
+  'patenmatch-matching-back-online': {
+    id: 'patenmatch-matching-back-online',
+    label: 'Patenmatch Matching is back online',
     category_id: EmailCategories.AutomatedPatenmatch,
+    sender_id: 'info-patenmatch',
     theme: 'patenmatch',
-    preview: automatedText['patenmatch-signup.preview'],
-    subject: automatedText['patenmatch-signup.subject'],
+    preview: patenmatchTexts['patenmatch-matching-back-online.preview'],
+    subject: patenmatchTexts['patenmatch-matching-back-online.subject'],
     content: [
       {
         type: ContentTypes.Title,
-        text: automatedText['patenmatch-signup.block-1'],
+        text: patenmatchTexts['patenmatch-matching-back-online.block-1'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: automatedText['patenmatch-signup.block-2'],
+        text: patenmatchTexts['patenmatch-matching-back-online.block-2'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: automatedText['patenmatch-signup.block-3'],
+        text: patenmatchTexts['patenmatch-matching-back-online.block-3'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: automatedText['patenmatch-signup.block-4'],
+        text: patenmatchTexts['patenmatch-matching-back-online.block-4'],
       },
       {
-        type: ContentTypes.Button,
-        text: automatedText['patenmatch-signup.block-5'],
+        type: ContentTypes.Link,
+        text: patenmatchTexts['patenmatch-matching-back-online.block-5'],
         href: 'https://home.little-world.com/projecttogether-uebergibt-patenmatch-an-little-world',
       },
       {
+        type: ContentTypes.Button,
+        text: patenmatchTexts['patenmatch-matching-back-online.block-6'],
+        href: '{{ patenmatch_email_verification_url }}',
+      },
+      {
         type: ContentTypes.Paragraph,
-        text: automatedText['patenmatch-signup.block-6'],
+        text: patenmatchTexts['patenmatch-matching-back-online.block-7'],
       },
     ],
   },
-  'patenmatch-example': {
-    id: 'patenmatch-example',
-    label: 'Patenmatch example',
+  'patenmatch-signup': {
+    id: 'patenmatch-signup',
+    label: 'Patenmatch Signup Welcome',
+    sender_id: 'info-patenmatch',
     category_id: EmailCategories.AutomatedPatenmatch,
     theme: 'patenmatch',
-    preview: automatedText['patenmatch-example.preview'],
-    subject: automatedText['patenmatch-example.subject'],
+    preview: patenmatchTexts['patenmatch-signup.preview'],
+    subject: patenmatchTexts['patenmatch-signup.subject'],
     content: [
       {
         type: ContentTypes.Title,
-        text: automatedText['patenmatch-example.block-1'],
+        text: patenmatchTexts['patenmatch-signup.block-1'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: automatedText['patenmatch-example.block-2'],
+        text: patenmatchTexts['patenmatch-signup.block-2'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: automatedText['patenmatch-example.block-3'],
+        text: patenmatchTexts['patenmatch-signup.block-3'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: automatedText['patenmatch-example.block-4'],
+        text: patenmatchTexts['patenmatch-signup.block-4'],
       },
       {
         type: ContentTypes.Button,
-        text: automatedText['patenmatch-example.block-5'],
-        href: 'https://patenmatch.de/',
+        text: patenmatchTexts['patenmatch-signup.block-match-link-text'],
+        href: '{{ patenmatch_email_verification_url }}',
       },
       {
         type: ContentTypes.Paragraph,
-        text: automatedText['patenmatch-example.block-6'],
+        text: patenmatchTexts['patenmatch-signup.block-6'],
       },
     ],
   },
+  'patenmatch-orga-forward-user': {
+    id: 'patenmatch-orga-forward-user',
+    label: 'Patenmatch Organization Forward User',
+    category_id: EmailCategories.AutomatedPatenmatch,
+    theme: 'patenmatch',
+    sender_id: 'info-patenmatch',
+    preview: patenmatchTexts['patenmatch-orga-forward-user.preview'],
+    subject: patenmatchTexts['patenmatch-orga-forward-user.subject'],
+    content: [
+      {
+        type: ContentTypes.Paragraph,
+        text: patenmatchTexts['patenmatch-orga-forward-user.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: patenmatchTexts['patenmatch-orga-forward-user.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: patenmatchTexts['patenmatch-orga-forward-user.block-3'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: patenmatchTexts['patenmatch-orga-forward-user.block-4'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: patenmatchTexts['patenmatch-orga-forward-user.block-5'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: patenmatchTexts['patenmatch-orga-forward-user.block-6'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: patenmatchTexts['patenmatch-orga-forward-user.block-7'],
+      },
+    ],
+  },
+}
+
+const automatedEmails = {
+  ...patenmatchEmails,
   'account-deleted': {
     id: 'account-deleted',
     label: 'Account Deleted',
@@ -471,56 +522,22 @@ const automatedEmails = {
       },
     ],
   },
-  'patenmatch-waiting': {
-    id: 'patenmatch-waiting',
-    label: 'Patenmatch Waiting Status',
-    category_id: EmailCategories.AutomatedPatenmatch,
-    theme: 'patenmatch',
-    preview: automatedText['patenmatch-waiting.preview'],
-    subject: automatedText['patenmatch-waiting.subject'],
-    content: [
-      {
-        type: ContentTypes.Title,
-        text: automatedText['patenmatch-waiting.block-1'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['patenmatch-waiting.block-2'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['patenmatch-waiting.block-3'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['patenmatch-waiting.block-4'],
-      },
-      {
-        type: ContentTypes.Button,
-        text: automatedText['patenmatch-waiting.block-5'],
-        href: 'https://home.little-world.com/projecttogether-uebergibt-patenmatch-an-little-world',
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['patenmatch-waiting.block-6'],
-      },
-    ],
-  },
 };
 
 export function getAutomatedPatentmatchEmails() {
   let automatedEmailsPatenmatch = {};
 
   Object.keys(automatedEmails).forEach(key => {
-      if (automatedEmails[key].category_id === EmailCategories.AutomatedPatenmatch) {
-        automatedEmailsPatenmatch[key] = {
-          ...automatedEmails[key],
-          category_id: EmailCategories.AutomatedPatenmatch,
-        };
+    if (
+      automatedEmails[key].category_id === EmailCategories.AutomatedPatenmatch
+    ) {
+      automatedEmailsPatenmatch[key] = {
+        ...automatedEmails[key],
+        category_id: EmailCategories.AutomatedPatenmatch,
+      };
     }
   });
   return automatedEmailsPatenmatch;
 }
-
 
 export default automatedEmails;
