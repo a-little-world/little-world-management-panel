@@ -420,6 +420,7 @@ export const updateDynamicTemplate = async ({
   theme,
   onSuccess,
   onError,
+  senderId = 'noreply',
 }: {
   category: string;
   existingTemplate: boolean;
@@ -430,6 +431,7 @@ export const updateDynamicTemplate = async ({
   onSuccess: (response: any) => void;
   onError: (error: any) => void;
   theme: Theme;
+  senderId?: string;
 }) => {
   try {
     const result = await apiFetch(
@@ -443,7 +445,7 @@ export const updateDynamicTemplate = async ({
           template,
           subject,
           category_id: category,
-          sender_id: 'noreply',
+          sender_id: senderId,
           theme,
           content: templateContent,
         },
