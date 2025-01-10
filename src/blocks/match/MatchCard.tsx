@@ -12,6 +12,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 import DataField from '../../atoms/DataField';
+import MatchReport from '../../atoms/MatchReport';
 import Stat from '../../atoms/Stat';
 import UserImage from '../../atoms/UserImage';
 import { MATCH_STATUS } from '../../constants.js';
@@ -25,7 +26,7 @@ const Container = styled.div`
   gap: ${({ theme }) => theme.spacing.medium};
   border: ${({ theme }) => theme.color.border.subtle} solid 1px;
   border-radius: ${({ theme }) => theme.radius.small};
-  padding: ${({ theme }) => `${theme.spacing.large} ${theme.spacing.medium}`};
+  padding: ${({ theme }) => `${theme.spacing.large} ${theme.spacing.xxlarge}`};
   max-width: 480px;
   width: 100%;
   margin: 0 auto;
@@ -52,7 +53,6 @@ const UserInfoContainer = styled.div`
 const Stats = styled.div`
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: ${({ theme }) => theme.spacing.medium};
   margin-bottom: ${({ theme }) => theme.spacing.medium};
   width: 100%;
@@ -65,14 +65,16 @@ const StyledTag = styled(Tag)`
   transform: translateX(-50%);
 `;
 
-const Info = styled.div`
-  padding-left: 56px;
-`;
+const Info = styled.div``;
 
 const UnmatchButton = styled(Button)`
   width: 320px;
   max-width: 100%;
   margin: auto;
+`;
+
+const StyledMatchReport = styled(MatchReport)`
+  margin-bottom: ${({ theme }) => theme.spacing.xxsmall};
 `;
 
 const UserInfo = ({ user, match }: { match: any; user: any }) => (
@@ -109,7 +111,7 @@ const MatchCard = ({
 }) => {
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const isProposed = match.status === MATCH_STATUS.proposed;
-
+  console.log({ match });
   return (
     <>
       <Container>
@@ -119,6 +121,11 @@ const MatchCard = ({
           <UserInfo user={match.user2} match={match} />
         </MatchUsers>
         <Info>
+          <StyledMatchReport
+            match={match}
+            inactive={!match.active}
+            isProposed={isProposed}
+          />
           <DataField title="Status" value={match.status} />
           <DataField
             title="Matched"
@@ -145,7 +152,7 @@ const MatchCard = ({
           />
         </Stats>
 
-        {!isProposed && (
+        {!isProposed && match.active && (
           <UnmatchButton
             appearance={ButtonAppearance.Secondary}
             size={ButtonSizes.Large}

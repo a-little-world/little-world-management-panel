@@ -11,21 +11,54 @@ import {
   Text,
 } from '@a-little-world/little-world-design-system';
 import React from 'react';
+import styled, { css } from 'styled-components';
 
+import MatchReport from '../../atoms/MatchReport';
 import UserImage from '../../atoms/UserImage';
 import { MATCH_STATUS } from '../../constants.js';
 import { formatTimeDistance } from '../../helpers/date';
 import { useGlobalState } from '../../store';
 import ConfirmUnmatchModal from './ConfirmUnmatchModal';
 
+const UserMatchCard = styled(Card)<{ $inactive: boolean }>`
+ display: inline-flex;
+ margin-bottom: ${({ theme }) => theme.spacing.xsmall};
+
+ &:not(:last-child) {
+    margin-right: ${({ theme }) => theme.spacing.xsmall};
+  } 
+}
+
+${({ $inactive, theme }) =>
+  $inactive &&
+  css`
+    background: ${theme.color.surface.error};
+    border: 1px solid ${theme.color.border.error};
+  `}
+`;
+
+const Overview = styled.div`
+  text-align: center;
+  width: 100%;
+`;
+
+const Info = styled.div`
+  width: 100%;
+  margin-bottom: ${({ theme }) => theme.spacing.xxsmall};
+`;
+
+const StyledMatchReport = styled(MatchReport)`
+  margin-top: ${({ theme }) => theme.spacing.xxsmall};
+`;
+
 const UserMatch = ({ match, userName }: { match: any; userName: string }) => {
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const isProposed = match.status === MATCH_STATUS.proposed;
+  const inactive = match.closed || !match.active;
   const { updateCurrentUser } = useGlobalState();
 
-  //className="w-full max-w-[320px] flex flex-col bg-white h-fit relative items-center justify-center rounded-xl p-8 gap-2 border border-border-slate-400"
   return (
-    <Card width={CardSizes.Small}>
+    <UserMatchCard width={CardSizes.Small} $inactive={inactive}>
       <ConfirmUnmatchModal
         dialogOpen={dialogOpen}
         onClose={() => setDialogOpen(false)}
@@ -34,7 +67,7 @@ const UserMatch = ({ match, userName }: { match: any; userName: string }) => {
         user1Name={userName}
         user2Name={match.partner.first_name}
       />
-      <CardContent $align="center" className="relative">
+      <CardContent $align="center" className="relative" $marginBottom="0">
         <Link to={'/user/' + match.partner?.id} textDecoration={false}>
           <UserImage
             alt="match profile pic"
@@ -56,41 +89,35 @@ const UserMatch = ({ match, userName }: { match: any; userName: string }) => {
         >
           {match.partner.user_type}
         </Tag>
-        <Tag
-          bold
-          className="absolute top-10 left-2"
-          color={'#000000'}
-          size={TagSizes.small}
-        >
-          {match?.bucket}
-        </Tag>
-        {!isProposed && (
-          <div className="absolute top-2 right-2">
-            <Button
-              appearance={ButtonAppearance.Secondary}
-              color={'red'}
-              backgroundColor={'red'}
-              onClick={() => {
-                setDialogOpen(true);
-              }}
-              size={ButtonSizes.Small}
-            >
-              Remove
-            </Button>
-          </div>
+        {match.bucket && (
+          <Tag
+            bold
+            className="absolute top-2 right-2"
+            color={'#000000'}
+            size={TagSizes.small}
+          >
+            {match?.bucket}
+          </Tag>
         )}
-        <Text bold>
-          {match.partner.first_name} {match.partner.second_name}
-        </Text>
+        <Overview>
+          <Text bold>
+            {match.partner.first_name} {match.partner.second_name}
+          </Text>
+          <StyledMatchReport
+            match={match}
+            inactive={inactive}
+            isProposed={isProposed}
+          />
+        </Overview>
         {!isProposed && (
-          <div>
+          <Info>
             <div className="flex gap-2 items-center">
               <Text bold>Matched:</Text>
               <Text>
                 {formatTimeDistance(new Date(match.chat.created), new Date())}{' '}
               </Text>
             </div>
-            <div className="flex gap-2 items-center mb-2">
+            <div className="flex gap-2 items-center">
               <Text bold>Last Message:</Text>
               <Text>
                 {match.chat.newest_message?.created
@@ -101,14 +128,27 @@ const UserMatch = ({ match, userName }: { match: any; userName: string }) => {
                   : 'No messages yet'}
               </Text>
             </div>
-          </div>
+          </Info>
         )}
         <div className="flex gap-3">
-          <Link to={'/match/' + match.id}>View Match</Link>
-          <Link to={`/user/${match.partner.id}`}>View profile</Link>
+          {!isProposed && <Link to={'/match/' + match.id}>View Match</Link>}
+          <Link to={`/user/${match.partner.id}`}>View Profile</Link>
         </div>
+        {!isProposed && !inactive && (
+          <Button
+            appearance={ButtonAppearance.Secondary}
+            color={'red'}
+            backgroundColor={'red'}
+            onClick={() => {
+              setDialogOpen(true);
+            }}
+            size={ButtonSizes.Medium}
+          >
+            Remove
+          </Button>
+        )}
       </CardContent>
-    </Card>
+    </UserMatchCard>
   );
 };
 

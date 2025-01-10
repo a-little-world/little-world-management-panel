@@ -11,12 +11,12 @@ import { useTheme } from 'styled-components';
 import useSWR from 'swr';
 
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '../../atoms/Card';
+  Section,
+  SectionContent,
+  SectionDescription,
+  SectionHeader,
+  SectionTitle,
+} from '../../atoms/Section';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../atoms/Tabs';
 import { MATCHING_ROUTE } from '../../routes';
 import { dataFetcher, useGlobalState } from '../../store';
@@ -113,18 +113,14 @@ const UserPanel = () => {
       </TabsList>
       {USER_TABS.map(tab => (
         <TabsContent key={'content' + tab.key} value={tab.key}>
-          <Card
-            className={`border-none shadow-none flex flex-col w-full ${
-              tab.key === 'chat' ? 'h-full' : ''
-            }`}
-          >
-            <CardHeader className="flex-row items-center justify-between px-6 py-4 gap-4">
+          <Section fullHeight={tab.key === 'chat'}>
+            <SectionHeader>
               <div>
-                <CardTitle>{`${
+                <SectionTitle>{`${
                   user.profile.first_name + ' ' + user.profile.second_name
-                } - ${tab.title ?? tab.label}`}</CardTitle>
+                } - ${tab.title ?? tab.label}`}</SectionTitle>
                 {tab.description && (
-                  <CardDescription>{tab.description}</CardDescription>
+                  <SectionDescription>{tab.description}</SectionDescription>
                 )}
               </div>
               <Button
@@ -142,11 +138,11 @@ const UserPanel = () => {
                   height={16}
                 />
               </Button>
-            </CardHeader>
-            <CardContent className="px-6 py-4 flex flex-col min-h-0 h-full w-full">
+            </SectionHeader>
+            <SectionContent>
               <UserPanelContent tab={tab.key} user={user} onUpdate={mutate} />
-            </CardContent>
-          </Card>
+            </SectionContent>
+          </Section>
         </TabsContent>
       ))}
       {searchParams.get('tab') !== USER_TABS[1].key && <SelectedUsersSheet />}

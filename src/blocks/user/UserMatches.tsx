@@ -1,6 +1,6 @@
 import { Accordion, Text } from '@a-little-world/little-world-design-system';
 import React from 'react';
-import styled, { useTheme } from 'styled-components';
+import styled, { css, useTheme } from 'styled-components';
 import useSWR from 'swr';
 
 import { formatDate, formatTime } from '../../helpers/date';
@@ -20,6 +20,11 @@ const UserMatches = ({ user }) => {
     dataFetcher,
   );
   const theme = useTheme();
+  const proposedText =
+    user?.matches.proposed?.items.length ||
+    user?.matches.old_proposals?.items.length
+      ? `${user?.matches.proposed?.items.length} active | ${user?.matches.old_proposals?.items.length} old`
+      : '0';
 
   return (
     <div className="w-full">
@@ -45,25 +50,54 @@ const UserMatches = ({ user }) => {
         items={[
           {
             content: user?.matches.confirmed?.items.map(match => (
-              <UserMatch match={match} userName={user.profile.first_name} />
+              <UserMatch
+                key={match.id}
+                match={match}
+                userName={user.profile.first_name}
+              />
             )),
             header: `Confirmed (${user?.matches.confirmed?.items.length})`,
           },
           {
+            content: user?.matches.inactive?.items.map(match => (
+              <UserMatch
+                key={match.id}
+                match={match}
+                userName={user.profile.first_name}
+              />
+            )),
+            header: `Inactive (${user?.matches.inactive?.items.length})`,
+          },
+          {
             content: user?.matches.unconfirmed?.items.map(match => (
-              <UserMatch match={match} userName={user.profile.first_name} />
+              <UserMatch
+                key={match.id}
+                match={match}
+                userName={user.profile.first_name}
+              />
             )),
             header: `Unconfirmed (${user?.matches.unconfirmed?.items.length})`,
           },
           {
-            content: user?.matches.proposed?.items.map(match => (
-              <UserMatch match={match} userName={user.profile.first_name} />
+            content: [
+              ...user?.matches.proposed?.items,
+              ...user?.matches.old_proposals?.items,
+            ].map(match => (
+              <UserMatch
+                key={match.id}
+                match={match}
+                userName={user.profile.first_name}
+              />
             )),
-            header: `Proposed (${user?.matches.proposed?.items.length})`,
+            header: `Proposed (${proposedText})`,
           },
           {
             content: user?.matches.support?.items.map(match => (
-              <UserMatch match={match} userName={user.profile.first_name} />
+              <UserMatch
+                key={match.id}
+                match={match}
+                userName={user.profile.first_name}
+              />
             )),
             header: `Support (${user?.matches.support?.items.length})`,
           },

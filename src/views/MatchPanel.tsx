@@ -1,28 +1,20 @@
-import {
-  Button,
-  ButtonSizes,
-  ButtonVariations,
-  PlusIcon,
-} from '@a-little-world/little-world-design-system';
-import React, { useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React from 'react';
+import { useParams } from 'react-router-dom';
 import { useSearchParams } from 'react-router-dom';
-import { useTheme } from 'styled-components';
 import useSWR from 'swr';
 
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '../atoms/Card';
+  Section,
+  SectionContent,
+  SectionDescription,
+  SectionHeader,
+  SectionTitle,
+} from '../atoms/Section';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../atoms/Tabs';
 import { SelectedUsersSheet } from '../blocks/SelectedUsersSheet';
 import MatchCard from '../blocks/match/MatchCard';
-import UserActions from '../blocks/user/UserActions';
 import UserNotes from '../blocks/user/UserNotes';
-import { dataFetcher, useGlobalState } from '../store';
+import { dataFetcher } from '../store';
 
 const MATCH_TABS = [
   { key: 'overview', label: 'Overview' },
@@ -49,18 +41,13 @@ const MatchPanelContent = ({
     return (
       <UserNotes notes={match?.notes} modelId={match.uuid} model="match" />
     );
-
-  // if (tab === 'actions') return <UserActions user={user} onUpdate={onUpdate} />;
   return null;
 };
 
 const MatchPanel = () => {
   const { matchId } = useParams();
-  // const { addUserToMatching, setUpdateCurrentUser } = useGlobalState();
-  const theme = useTheme();
-  let [searchParams, setSearchParams] = useSearchParams();
 
-  const navigate = useNavigate();
+  let [searchParams, setSearchParams] = useSearchParams();
 
   const {
     data: match,
@@ -96,27 +83,25 @@ const MatchPanel = () => {
       </TabsList>
       {MATCH_TABS.map(tab => (
         <TabsContent key={'content' + tab.key} value={tab.key}>
-          <Card
-            className={`border-none shadow-none flex flex-col w-full ${
-              tab.key === 'chat' ? 'h-full' : ''
-            }`}
-          >
-            <CardHeader className="flex-row items-center justify-between px-6 py-4 gap-4">
+          <Section>
+            <SectionHeader>
               <div>
-                <CardTitle>{`Match: ${match.uuid}`}</CardTitle>
+                <SectionTitle inactive={!match.active}>{`${
+                  match.active ? '' : 'Inactive '
+                }Match: ${match.uuid}`}</SectionTitle>
                 {tab.description && (
-                  <CardDescription>{tab.description}</CardDescription>
+                  <SectionDescription>{tab.description}</SectionDescription>
                 )}
               </div>
-            </CardHeader>
-            <CardContent className="px-6 py-4 flex flex-col min-h-0 h-full w-full">
+            </SectionHeader>
+            <SectionContent>
               <MatchPanelContent
                 tab={tab.key}
                 match={match}
                 onUpdate={mutate}
               />
-            </CardContent>
-          </Card>
+            </SectionContent>
+          </Section>
         </TabsContent>
       ))}
       {searchParams.get('tab') !== MATCH_TABS[1].key && <SelectedUsersSheet />}
