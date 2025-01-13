@@ -97,7 +97,6 @@ function Stats() {
           >
             <Container>
             <Sections>
-              
             <SectionR $fullWidth>
               <UserJourneyBucketsOverview />
             </SectionR>
