@@ -26,20 +26,21 @@ export function MatchQuality(){
   
   const today = new Date();
   const thisYear = today.getFullYear();
+  const currentMonth = today.getMonth(); // 0-11
   const monthToDatesMap = {
     "all": ["2021-01-01", today.toISOString().split('T')[0]],
-    "january": [`${thisYear}-01-01`, `${thisYear}-01-31`],
-    "february": [`${thisYear}-02-01`, `${thisYear}-02-28`],
-    "march": [`${thisYear}-03-01`, `${thisYear}-03-31`],
-    "april": [`${thisYear}-04-01`, `${thisYear}-04-30`],
-    "may": [`${thisYear}-05-01`, `${thisYear}-05-31`],
-    "june": [`${thisYear}-06-01`, `${thisYear}-06-30`],
-    "july": [`${thisYear}-07-01`, `${thisYear}-07-31`],
-    "august": [`${thisYear}-08-01`, `${thisYear}-08-31`],
-    "september": [`${thisYear}-09-01`, `${thisYear}-09-30`],
-    "october": [`${thisYear}-10-01`, `${thisYear}-10-31`],
-    "november": [`${thisYear}-11-01`, `${thisYear}-11-30`],
-    "december": [`${thisYear}-12-01`, `${thisYear}-12-31`],
+    [`january (${currentMonth >= 0 ? thisYear : thisYear - 1})`]: [`${currentMonth >= 0 ? thisYear : thisYear - 1}-01-01`, `${currentMonth >= 0 ? thisYear : thisYear - 1}-01-31`],
+    [`february (${currentMonth >= 1 ? thisYear : thisYear - 1})`]: [`${currentMonth >= 1 ? thisYear : thisYear - 1}-02-01`, `${currentMonth >= 1 ? thisYear : thisYear - 1}-02-28`],
+    [`march (${currentMonth >= 2 ? thisYear : thisYear - 1})`]: [`${currentMonth >= 2 ? thisYear : thisYear - 1}-03-01`, `${currentMonth >= 2 ? thisYear : thisYear - 1}-03-31`],
+    [`april (${currentMonth >= 3 ? thisYear : thisYear - 1})`]: [`${currentMonth >= 3 ? thisYear : thisYear - 1}-04-01`, `${currentMonth >= 3 ? thisYear : thisYear - 1}-04-30`],
+    [`may (${currentMonth >= 4 ? thisYear : thisYear - 1})`]: [`${currentMonth >= 4 ? thisYear : thisYear - 1}-05-01`, `${currentMonth >= 4 ? thisYear : thisYear - 1}-05-31`],
+    [`june (${currentMonth >= 5 ? thisYear : thisYear - 1})`]: [`${currentMonth >= 5 ? thisYear : thisYear - 1}-06-01`, `${currentMonth >= 5 ? thisYear : thisYear - 1}-06-30`],
+    [`july (${currentMonth >= 6 ? thisYear : thisYear - 1})`]: [`${currentMonth >= 6 ? thisYear : thisYear - 1}-07-01`, `${currentMonth >= 6 ? thisYear : thisYear - 1}-07-31`],
+    [`august (${currentMonth >= 7 ? thisYear : thisYear - 1})`]: [`${currentMonth >= 7 ? thisYear : thisYear - 1}-08-01`, `${currentMonth >= 7 ? thisYear : thisYear - 1}-08-31`],
+    [`september (${currentMonth >= 8 ? thisYear : thisYear - 1})`]: [`${currentMonth >= 8 ? thisYear : thisYear - 1}-09-01`, `${currentMonth >= 8 ? thisYear : thisYear - 1}-09-30`],
+    [`october (${currentMonth >= 9 ? thisYear : thisYear - 1})`]: [`${currentMonth >= 9 ? thisYear : thisYear - 1}-10-01`, `${currentMonth >= 9 ? thisYear : thisYear - 1}-10-31`],
+    [`november (${currentMonth >= 10 ? thisYear : thisYear - 1})`]: [`${currentMonth >= 10 ? thisYear : thisYear - 1}-11-01`, `${currentMonth >= 10 ? thisYear : thisYear - 1}-11-30`],
+    [`december (${currentMonth >= 11 ? thisYear : thisYear - 1})`]: [`${currentMonth >= 11 ? thisYear : thisYear - 1}-12-01`, `${currentMonth >= 11 ? thisYear : thisYear - 1}-12-31`],
   }
 
   const [startDate, setStartDate] = React.useState('2021-01-01');
@@ -107,7 +108,7 @@ export function MatchQuality(){
             extraHeader={<>
                   <StyledDropdown
                     value={"all"}
-                    options={["all", "january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"].map(val => ({
+                    options={Object.keys(monthToDatesMap).map(val => ({
                       value: val.toString(),
                       label: val
                     }))}
