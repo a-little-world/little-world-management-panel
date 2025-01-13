@@ -194,16 +194,70 @@ function modifyDataV2(data) {
   return modifiedData
 }
 
+export function MonthTimeSelector({
+  startDate,
+  endDate,
+  setStartDate,
+  setEndDate,
+  mutate,
+}){
+  
+  const today = new Date();
+  const thisYear = today.getFullYear();
+  const currentMonth = today.getMonth(); // 0-11
+  const monthToDatesMap = {
+    "all": ["2021-01-01", today.toISOString().split('T')[0]],
+    [`january (${currentMonth >= 0 ? thisYear : thisYear - 1})`]: [`${currentMonth >= 0 ? thisYear : thisYear - 1}-01-01`, `${currentMonth >= 0 ? thisYear : thisYear - 1}-01-31`],
+    [`february (${currentMonth >= 1 ? thisYear : thisYear - 1})`]: [`${currentMonth >= 1 ? thisYear : thisYear - 1}-02-01`, `${currentMonth >= 1 ? thisYear : thisYear - 1}-02-28`],
+    [`march (${currentMonth >= 2 ? thisYear : thisYear - 1})`]: [`${currentMonth >= 2 ? thisYear : thisYear - 1}-03-01`, `${currentMonth >= 2 ? thisYear : thisYear - 1}-03-31`],
+    [`april (${currentMonth >= 3 ? thisYear : thisYear - 1})`]: [`${currentMonth >= 3 ? thisYear : thisYear - 1}-04-01`, `${currentMonth >= 3 ? thisYear : thisYear - 1}-04-30`],
+    [`may (${currentMonth >= 4 ? thisYear : thisYear - 1})`]: [`${currentMonth >= 4 ? thisYear : thisYear - 1}-05-01`, `${currentMonth >= 4 ? thisYear : thisYear - 1}-05-31`],
+    [`june (${currentMonth >= 5 ? thisYear : thisYear - 1})`]: [`${currentMonth >= 5 ? thisYear : thisYear - 1}-06-01`, `${currentMonth >= 5 ? thisYear : thisYear - 1}-06-30`],
+    [`july (${currentMonth >= 6 ? thisYear : thisYear - 1})`]: [`${currentMonth >= 6 ? thisYear : thisYear - 1}-07-01`, `${currentMonth >= 6 ? thisYear : thisYear - 1}-07-31`],
+    [`august (${currentMonth >= 7 ? thisYear : thisYear - 1})`]: [`${currentMonth >= 7 ? thisYear : thisYear - 1}-08-01`, `${currentMonth >= 7 ? thisYear : thisYear - 1}-08-31`],
+    [`september (${currentMonth >= 8 ? thisYear : thisYear - 1})`]: [`${currentMonth >= 8 ? thisYear : thisYear - 1}-09-01`, `${currentMonth >= 8 ? thisYear : thisYear - 1}-09-30`],
+    [`october (${currentMonth >= 9 ? thisYear : thisYear - 1})`]: [`${currentMonth >= 9 ? thisYear : thisYear - 1}-10-01`, `${currentMonth >= 9 ? thisYear : thisYear - 1}-10-31`],
+    [`november (${currentMonth >= 10 ? thisYear : thisYear - 1})`]: [`${currentMonth >= 10 ? thisYear : thisYear - 1}-11-01`, `${currentMonth >= 10 ? thisYear : thisYear - 1}-11-30`],
+    [`december (${currentMonth >= 11 ? thisYear : thisYear - 1})`]: [`${currentMonth >= 11 ? thisYear : thisYear - 1}-12-01`, `${currentMonth >= 11 ? thisYear : thisYear - 1}-12-31`],
+  }
+
+  return <div>
+    <Dropdown
+      value={startDate}
+      options={Object.keys(monthToDatesMap).map(month => ({
+        value: month,
+        label: month,
+      }))}
+        onValueChange={val => {
+          setStartDate(monthToDatesMap[val][0]);
+          setEndDate(monthToDatesMap[val][1]);
+          setTimeout(() => {
+            mutate();
+          }, 500);
+        }}
+    />
+  </div>
+}
+
 export function BarChartTimeRangedV2({
   initialCategory = 'user-signup-funnel',
+  displayTimeSelection = true,
 }) {
   const [category, setCategory] = React.useState(chartCategories.find(cat => cat.id === initialCategory));
+
+  const today = new Date();
+  const [startDate, setStartDate] = React.useState('2021-01-01');
+  const [endDate, setEndDate] = React.useState(
+      today.toISOString().split('T')[0],
+  );
 
   const random = React.useRef(Date.now() + Math.random());
   const { mutate, error, data, isLoading } = useSWR(
     '/api/matching/users/statistics/user_journey_buckets/?random=' + random.current,
     cratePostFetcher({
       selected_filters: category.filters,
+      start_date: startDate,
+      end_date: endDate,
     }),
     {},
   );
@@ -217,6 +271,13 @@ export function BarChartTimeRangedV2({
   return <Card className="">
         <CardHeader>
         {category?.title}
+        {displayTimeSelection && <MonthTimeSelector
+          startDate={startDate}
+          endDate={endDate}
+          setStartDate={setStartDate}
+          setEndDate={setEndDate}
+          mutate={mutate}
+        />}
       </CardHeader>
       <CardContent className="min-w-[600px]">
         <ChartContainer config={chartConfig}>
