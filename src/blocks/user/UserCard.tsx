@@ -15,7 +15,6 @@ import {
 import { capitalize, isEmpty } from 'lodash';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import styled, { css } from 'styled-components';
 import useSWR from 'swr';
 
 import MatchesIcons from '../../atoms/MatchesIcons';
@@ -23,185 +22,211 @@ import UserImage from '../../atoms/UserImage';
 import { formatDate, formatTimeDistance } from '../../helpers/date';
 import { MATCHING_ROUTE } from '../../routes';
 import { dataFetcher, useGlobalState } from '../../store';
+import {
+  AboutField,
+  ActionContainer,
+  BucketTag,
+  DetailsContainer,
+  DetailsList,
+  HeaderContainer,
+  ImageContainer,
+  InfoRow,
+  MatchesContainer,
+  StatusContainer,
+  StyledCard,
+  UnresponsiveWarning,
+  UserInfoContainer,
+  UserNameContainer,
+} from './UserCard.styles';
 import UserLanguages from './UserLanguages';
 
-const StyledCard = styled.div<{ $horizontal?: boolean }>`
-  width: 100%;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: ${({ theme }) => theme.color.surface.tertiary};
-  margin-bottom: ${({ theme }) => theme.spacing.xxsmall};
-  padding: ${({ theme }) => theme.spacing.small};
-  border: 1px solid ${({ theme }) => theme.color.border.subtle};
-  border-radius: ${({ theme }) => theme.radius.large};
-  height: fit-content;
+interface UserProfile {
+  first_name: string;
+  second_name: string;
+  phone_mobile: string;
+  target_groups?: string[];
+  interests: string[];
+  description: string;
+  lang_skill: any; // Replace 'any' with proper type
+  user_type: 'volunteer' | 'refugee';
+}
 
-  ${({ theme, $horizontal }) =>
-    $horizontal
-      ? css`
-          gap: ${theme.spacing.xlarge};
-        `
-      : css`
-          flex-direction: column;
-          gap: ${theme.spacing.small};
-        `}
-`;
+interface UserState {
+  searching_state: 'searching' | 'matched';
+  email_authenticated: boolean;
+  user_form_state: 'filled' | 'unfilled';
+  had_prematching_call: boolean;
+  unresponsive: boolean;
+}
 
-type UserCardProps = {
-  user: any;
+interface UserMatches {
+  confirmed: { items: any[] };
+  unconfirmed: { items: any[] };
+  proposed: { items: any[] };
+}
+
+interface User {
+  id: string;
+  hash: string;
+  email: string;
+  date_joined: string;
+  profile: UserProfile;
+  state: UserState;
+  matches: UserMatches;
+  bucket?: string;
+}
+
+interface UserCardProps {
+  user: User;
   deselectUser?: (hash: string) => void;
-  selectUserForDetails?: (user: any) => void;
   partial?: boolean;
   horizontal?: boolean;
   tiny?: boolean;
-};
+}
 
-export const UserCard = ({
+// Component parts
+const UserStatus: React.FC<{ user: User }> = ({ user }) => (
+  <StatusContainer>
+    <Text type={TextTypes.Body4} center bold>
+      Current Status
+    </Text>
+    <ul className="steps steps-vertical w-full">
+      <li className="step step-primary text-left">
+        Register {new Date(user.date_joined).toDateString()}
+      </li>
+      <li
+        className={`step text-left ${
+          user.state.email_authenticated ? 'step-primary' : ''
+        }`}
+      >
+        Email Authenticated
+      </li>
+      <li
+        className={`step text-left ${
+          user.state.user_form_state === 'filled' ? 'step-primary' : ''
+        }`}
+      >
+        User Form
+      </li>
+      <li
+        className={`step text-left ${
+          user.state.had_prematching_call ? 'step-primary' : ''
+        }`}
+      >
+        Prematching Call
+      </li>
+      {!isEmpty(user.matches.unconfirmed.items) &&
+        isEmpty(user.matches.confirmed.items) && (
+          <li className="step text-left">Has pending match</li>
+        )}
+      <li
+        className={`step text-left ${
+          !isEmpty(user.matches.confirmed.items) ? 'step-primary' : ''
+        }`}
+      >
+        First Match
+      </li>
+      {!isEmpty(user.matches.unconfirmed.items) &&
+        !isEmpty(user.matches.confirmed.items) && (
+          <li className="step text-left">Has pending match</li>
+        )}
+    </ul>
+  </StatusContainer>
+);
+
+const DetailRow: React.FC<{ label: string; value: string }> = ({
+  label,
+  value,
+}) => (
+  <InfoRow>
+    <Text tag="h4" bold>
+      {label}:
+    </Text>
+    <Text>{value}</Text>
+  </InfoRow>
+);
+
+const UserDetails: React.FC<{ user: User }> = ({ user }) => (
+  <DetailsContainer>
+    <DetailsList>
+      <DetailRow label="Id" value={user.id} />
+      <DetailRow label="Email" value={user.email} />
+      <DetailRow
+        label="Phone Number"
+        value={`${user.profile.phone_mobile} (Notify via ${user.profile.phone_mobile})`}
+      />
+      <InfoRow>
+        <Text tag="h4" bold>
+          Matching State:
+        </Text>
+        <Tag
+          appearance={
+            TagAppearance[
+              user.state.searching_state === 'searching' ? 'error' : 'success'
+            ]
+          }
+          size={TagSizes.small}
+        >
+          {user.state.searching_state}
+        </Tag>
+      </InfoRow>
+      <DetailRow
+        label="Group"
+        value={user.profile.target_groups?.join(', ') ?? ''}
+      />
+      <Text tag="h4" bold>
+        Interests
+      </Text>
+      <Tags className="mb-4" content={user.profile.interests} />
+      <Text tag="h4" bold>
+        About
+      </Text>
+      <AboutField>{user.profile.description}</AboutField>
+      <Text tag="h4" bold>
+        Languages:
+      </Text>
+      <UserLanguages langSkill={user.profile.lang_skill} />
+    </DetailsList>
+    <UserStatus user={user} />
+  </DetailsContainer>
+);
+
+// Main Component
+export const UserCard: React.FC<UserCardProps> = ({
   user,
   deselectUser,
   partial = true,
   tiny = false,
   horizontal = false,
-}: UserCardProps) => {
+}) => {
+  const navigate = useNavigate();
+  const { addUserToMatching } = useGlobalState();
   const {
     data: waitingTime,
     error: waitingTimeError,
     isLoading,
   } = useSWR(`/api/matching/users/${user.id}/match_waiting_time/`, dataFetcher);
-  console.log({ user });
-  const { addUserToMatching } = useGlobalState();
-  const navigate = useNavigate();
+
+  if (!user) return <div>Undefined User</div>;
+
   const onAddToMatching = () => {
     addUserToMatching(user);
     navigate(MATCHING_ROUTE);
   };
-  if (!user) return <div>Undefined User</div>;
 
-  let End = <></>;
-  if (!partial) {
-    End = (
-      <>
-        <div className="flex flex-col gap-4 items-start sm:flex-row mt-2">
-          <div className="w-full flex flex-col content-start justify-start items-start gap-2">
-            <div className="flex flex-row content-center items-start justify-start gap-1">
-              <Text tag="h4" bold type={TextTypes.Heading6}>
-                Id
-              </Text>
-              {user.id}
-            </div>
-            <div className="flex flex-row content-center items-start justify-start gap-1">
-              <Text tag="h4" bold type={TextTypes.Heading6}>
-                Email:
-              </Text>
-              {user.email}
-            </div>
-            <div className="flex flex-row content-center items-start justify-start gap-1">
-              <Text tag="h4" bold type={TextTypes.Heading6}>
-                Phone Number:
-              </Text>
-              {user.profile.phone_mobile} (Nofify via{' '}
-              {user.profile.notify_channel})
-            </div>
-            <div className="flex content-center items-start justify-center gap-1">
-              <Text tag="h4" bold type={TextTypes.Heading6}>
-                Matching State:
-              </Text>
-              <Tag
-                appearance={
-                  TagAppearance[
-                    user.state.searching_state === 'searching'
-                      ? 'error'
-                      : 'success'
-                  ]
-                }
-                size={TagSizes.small}
-              >
-                {user.state.searching_state}
-              </Tag>
-            </div>
-            <div className="flex flex-row content-center items-start justify-start">
-              <Text tag="h4" bold type={TextTypes.Heading6}>
-                Group
-              </Text>
-              : {user.profile.target_groups?.join(', ')}
-            </div>
-            <Text tag="h4" bold type={TextTypes.Heading6}>
-              Interests
-            </Text>
-            <Tags content={user.profile.interests} />
-
-            <Text tag="h4" bold type={TextTypes.Heading6}>
-              About
-            </Text>
-            <Text>{user.profile.description}</Text>
-            <Text tag="h4" bold type={TextTypes.Heading6}>
-              Languages:
-            </Text>
-            <UserLanguages langSkill={user.profile.lang_skill} />
-          </div>
-          <div className="w-full md:w-1/2 bg-white rounded-xl p-3 flex-col border border-slate-200">
-            <Text type={TextTypes.Body4} center bold>
-              Current Status
-            </Text>
-            <ul className="steps steps-vertical w-full">
-              <li className="step step-primary text-left">
-                Register {new Date(user.date_joined).toDateString()}
-              </li>
-
-              <li
-                className={`step text-left ${
-                  user.state.email_authenticated ? 'step-primary' : ''
-                }`}
-              >
-                Email Authenticated
-              </li>
-              <li
-                className={`step text-left ${
-                  user.state.user_form_state === 'filled' ? 'step-primary' : ''
-                }`}
-              >
-                User Form
-              </li>
-              <li
-                className={`step text-left ${
-                  user.state.had_prematching_call ? 'step-primary' : ''
-                }`}
-              >
-                Prematching Call
-              </li>
-              {!isEmpty(user.matches.unconfirmed.items) &&
-                isEmpty(user.matches.confirmed.items) && (
-                  <li className="step text-left">Has pending match</li>
-                )}
-              <li
-                className={`step text-left ${
-                  !isEmpty(user.matches.confirmed.items) ? 'step-primary' : ''
-                }`}
-              >
-                First Match
-              </li>
-              {!isEmpty(user.matches.unconfirmed.items) &&
-                !isEmpty(user.matches.confirmed.items) && (
-                  <li className="step text-left">Has pending match</li>
-                )}
-            </ul>
-          </div>
-        </div>
-      </>
-    );
-  }
+  const handleDeselectUser = (e: React.MouseEvent<HTMLButtonElement>) => {
+    deselectUser?.(user.hash);
+    e.stopPropagation();
+  };
 
   return (
     <StyledCard $horizontal={horizontal}>
       {user.state.unresponsive && (
-        <div className="w-90% p-2 z-10 rounded-md absolute top-3 right-1/2 translate-x-2/4 max-w-ful bg-error text-2xl text-center">
-          Marked as unresponsive
-        </div>
+        <UnresponsiveWarning>Marked as unresponsive</UnresponsiveWarning>
       )}
+
       {!tiny && (
-        <div className="w-full h-fit p-3 flex flex-row justify-between absolute top-0 left-0 z-10">
+        <HeaderContainer>
           <Tag
             bold
             color={
@@ -210,18 +235,15 @@ export const UserCard = ({
           >
             {capitalize(user.profile.user_type)}
           </Tag>
-          {user['bucket'] && (
-            <Tag bold color={'#000000'}>
-              {user['bucket']}
-            </Tag>
+          {user.bucket && (
+            <BucketTag bold color="#000000" $horizontal={horizontal}>
+              {user.bucket}
+            </BucketTag>
           )}
           {partial && (
             <Button
               variation={ButtonVariations.Icon}
-              onClick={e => {
-                deselectUser?.(user.hash);
-                e.stopPropagation();
-              }}
+              onClick={handleDeselectUser}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -239,10 +261,10 @@ export const UserCard = ({
               </svg>
             </Button>
           )}
-        </div>
+        </HeaderContainer>
       )}
 
-      <div className="h-fit flex flex-row items-center content-center justify-center">
+      <ImageContainer>
         <UserImage
           alt="user profile pic"
           user={user.profile}
@@ -251,17 +273,13 @@ export const UserCard = ({
             width: partial ? (tiny ? 50 : 120) : 180,
           }}
         />
-      </div>
+      </ImageContainer>
 
-      <div className="flex flex-col gap-2">
-        <div
-          className={`w-full h-fit text-center ${
-            tiny ? 'text-xs' : 'text-2xl'
-          }`}
-        >
+      <UserInfoContainer $partial={partial}>
+        <UserNameContainer $tiny={tiny}>
           {user.profile.first_name} {user.profile.second_name}
-        </div>
-        <div className="flex flex-row content-center items-start justify-center gap-1">
+        </UserNameContainer>
+        <InfoRow>
           <Text tag="h4" bold>
             Joined:
           </Text>
@@ -269,8 +287,8 @@ export const UserCard = ({
             {formatDate(new Date(user.date_joined))} (
             {formatTimeDistance(new Date(user.date_joined), new Date())})
           </Text>
-        </div>
-        <div className="flex flex-row content-center items-center justify-center gap-1">
+        </InfoRow>
+        <InfoRow>
           <Text className="whitespace-nowrap" tag="h4" bold>
             Match eligibility:
           </Text>
@@ -283,8 +301,8 @@ export const UserCard = ({
               {waitingTime}
             </Text>
           )}
-        </div>
-        <div className="w-full text-xs text-center flex flex-col gap-2 items-center border-blue">
+        </InfoRow>
+        <MatchesContainer $partial={partial}>
           <MatchesIcons
             label="Confirmed"
             matches={user?.matches.confirmed?.items}
@@ -297,27 +315,27 @@ export const UserCard = ({
             label="Proposed"
             matches={user?.matches.proposed?.items}
           />
-        </div>
-      </div>
+        </MatchesContainer>
+      </UserInfoContainer>
 
       {!partial && (
-        <div className="flex flex-row content-center items-start justify-start gap-1 my-2">
-          <Link
-            href={`https://little-world.com/app/profile/${user.hash}`}
-            target="_blank"
-            buttonAppearance={ButtonAppearance.Secondary}
-            buttonSize={ButtonSizes.Stretch}
-          >
-            View App Profile
-          </Link>
-        </div>
+        <>
+          <div className="my-2">
+            <Link
+              href={`https://little-world.com/app/profile/${user.hash}`}
+              target="_blank"
+              buttonAppearance={ButtonAppearance.Secondary}
+              buttonSize={ButtonSizes.Stretch}
+            >
+              View App Profile
+            </Link>
+          </div>
+          <UserDetails user={user} />
+        </>
       )}
+
       {partial && (
-        <div
-          className={`flex gap-4 z-50 ${
-            horizontal ? 'flex-col ' : 'items-center mt-2'
-          }`}
-        >
+        <ActionContainer $horizontal={horizontal}>
           <Link to={`/user/${user.id}`}>View profile</Link>
           <Link to={`/user/${user.id}`} state={{ openTab: 'chat' }}>
             Open chat
@@ -330,9 +348,8 @@ export const UserCard = ({
               Match
             </Button>
           )}
-        </div>
+        </ActionContainer>
       )}
-      {End}
     </StyledCard>
   );
 };

@@ -7,7 +7,6 @@ import {
 import { get, isEmpty } from 'lodash';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useGlobalState } from '../store';
 
 import {
   Table,
@@ -18,6 +17,7 @@ import {
   TableRow,
 } from '../atoms/Table';
 import UserImage from '../atoms/UserImage';
+import { useGlobalState } from '../store';
 
 const MATCHES_FIELDS = [
   { key: 'status', label: 'Status' },
@@ -38,6 +38,7 @@ export function MatchesTable({ matchList, list }) {
         <TableHeader>
           <TableRow>
             <TableHead className="w-[100px]">Selected</TableHead>
+            <TableHead className="w-[100px]">View</TableHead>
             {fields.map(({ key, label }) => (
               <TableHead key={key} className="w-[100px]">
                 {label}
@@ -59,7 +60,6 @@ export function MatchesTable({ matchList, list }) {
                     checked={Object.keys(selectedMatches).includes(match.uuid)}
                     className="checkbox ml-2"
                     onChange={() => {
-                      console.log('match', match, selectedMatches);
                       if (Object.keys(selectedMatches).includes(match.uuid)) {
                         deselectMatch(match.uuid);
                       } else {
@@ -67,6 +67,9 @@ export function MatchesTable({ matchList, list }) {
                       }
                     }}
                   />
+                </TableCell>
+                <TableCell className="w-20">
+                  <Link to={`/match/${match.uuid}`}>View</Link>
                 </TableCell>
                 {fields.map(({ key }) => {
                   if (key === 'user1' || key === 'user2') {

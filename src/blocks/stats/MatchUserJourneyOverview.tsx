@@ -1,12 +1,7 @@
 import {
-  Button,
   Card,
-  CardHeader,
   ChevronRightIcon,
   Link,
-  MessageTypes,
-  Modal,
-  StatusMessage,
   Text,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
@@ -22,18 +17,13 @@ import {
   HoverCardTrigger,
 } from '../../atoms/HoverCard';
 import LoadingSpinner from '../../atoms/LoadingSpinner';
+import Stat from '../../atoms/Stat';
 import { cratePostFetcher } from '../../store';
-import { BarChartCounts } from '../BarChartCounts';
-import DataGraph, { DataGraphTwoCounts } from '../DataGraph';
-import { graphEndpoints } from './RangedDataGraph';
-import {
-  UserSignUpLossStatistic,
-  UserSignUpLossStatisticMonthly,
-} from './UserSignUpLossStatistic';
-import { matchJourneyBuckets, matchJourneyBucketsV4, userJourneyBuckets, userJourneyBucketsV4 } from './buckets';
-import { sub } from 'date-fns';
-import { UserJourneyBucketsOverview } from './UserJourneyBuckets';
+import { DataGraphTwoCounts } from '../DataGraph';
 import { MatchJourneyOverview } from './MatchJourneyBuckets';
+import { UserJourneyBucketsOverview } from './UserJourneyBuckets';
+import { UserSignUpLossStatistic } from './UserSignUpLossStatistic';
+import { matchJourneyBuckets, userJourneyBuckets } from './buckets';
 
 export const SectionTitle = styled(Text)`
   font-weight: bold;
@@ -108,22 +98,6 @@ export const StatsGrouping = styled.ul`
   align-items: flex-start;
 `;
 
-export const Stat = styled.li`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  gap: ${({ theme }) => theme.spacing.xxsmall};
-  flex: 1;
-`;
-
-export const StatDescription = styled(Text)``;
-export const Number = styled(Text)`
-  line-height: 1;
-  color: ${({ theme }) => theme.color.text.title};
-`;
-
 export const StyledChevron = styled(ChevronRightIcon)`
   color: ${({ theme }) => theme.color.text.accent};
 `;
@@ -170,11 +144,7 @@ export function HoverableLiveListDescription({
   );
 }
 
-export function DetailsOpenLink({
-  title,
-  description,
-  onClick = () => {},
-}) {
+export function DetailsOpenLink({ title, description, onClick = () => {} }) {
   return (
     <HoverCard>
       <HoverCardTrigger asChild>
@@ -199,18 +169,18 @@ export function DynamicBucketsV2({
   title,
   description,
   showStatus,
-  excludeBucketsTotalSum=[],
+  excludeBucketsTotalSum = [],
 }) {
   const [detailsVisible, setDetailsVisible] = React.useState(false);
   const categorieTotalCounts = {};
   var totalCount = 0;
   for (let bucket of buckets) {
     let bucketTotalCount = 0;
-    for(let sub_bucket of bucket.sub_buckets) {
+    for (let sub_bucket of bucket.sub_buckets) {
       const count = listCounts?.find(
         item => item.name === sub_bucket.id,
       )?.count;
-      if(count && !excludeBucketsTotalSum.includes(sub_bucket.id)){
+      if (count && !excludeBucketsTotalSum.includes(sub_bucket.id)) {
         bucketTotalCount += count;
         totalCount += count;
       }
@@ -229,7 +199,9 @@ export function DynamicBucketsV2({
             return (
               <>
                 <Bucket key={bucket.id}>
-                  <Text bold>{`${index + 1} ${bucket.title}: (total: ${categorieTotalCounts[bucket.id]})`}</Text>
+                  <Text bold>{`${index + 1} ${bucket.title}: (total: ${
+                    categorieTotalCounts[bucket.id]
+                  })`}</Text>
                   {bucket.sub_buckets.map(sub_bucket => {
                     const count = listCounts?.find(
                       item => item.name === sub_bucket.id,
@@ -253,17 +225,13 @@ export function DynamicBucketsV2({
           })}
         </BucketsContainer>
         <Text bold>Total summed: {totalCount}</Text>
-        {detailsVisible && <>
-        </>}
+        {detailsVisible && <></>}
       </SectionCard>
     </Section>
   );
 }
 
-export function DynamicUserInfluxOverview({
-  data
-}) {
-
+export function DynamicUserInfluxOverview({ data }) {
   return (
     <Section>
       <SectionTitle type={TextTypes.Body4} tag="h2">
@@ -281,12 +249,6 @@ export function DynamicUserInfluxOverview({
   );
 }
 
-const KeyStat = ({ stat }: { stat?: number }) => (
-  <Number bold type={TextTypes.Heading3}>
-    {stat ?? <LoadingSpinner />}
-  </Number>
-);
-
 const MatchingOverview = ({ extraCounts, extraMatchCounts }) => (
   <Section>
     <SectionTitle tag="h2" type={TextTypes.Body4}>
@@ -294,10 +256,9 @@ const MatchingOverview = ({ extraCounts, extraMatchCounts }) => (
     </SectionTitle>
     <SectionCard>
       <StatsGrouping>
-        <Stat>
-          <KeyStat stat={extraCounts['needs_matching']?.count} />
-          <StatDescription>
-            {`No. of users that need matching.
+        <Stat
+          stat={extraCounts['needs_matching']?.count}
+          label={`No. of users that need matching.
             <bold>${
               (extraCounts['needs_matching']?.count ?? 0) -
               (extraCounts['needs_matching_volunteers']?.count ?? 0)
@@ -305,58 +266,50 @@ const MatchingOverview = ({ extraCounts, extraMatchCounts }) => (
             <bold>${
               extraCounts['needs_matching_volunteers']?.count ?? 0
             } Volunteers</bold>`}
-          </StatDescription>
-        </Stat>
-        <Stat>
-          <KeyStat
-            stat={extraMatchCounts['match_journey_v2__match_ongoing']?.count}
-          />
-          <StatDescription>
-            Ongoing matchings: matches in their first 10 weeks and have
-            interacted within the last 3 weeks.
-          </StatDescription>
-        </Stat>
-        <Stat>
-          <KeyStat
-            stat={extraMatchCounts['match_journey_v2__match_free_play']?.count}
-          />
-          <StatDescription>
-            Free-play matchings: matches still interacting but already past
-            their first 10 weeks.
-          </StatDescription>
-        </Stat>
-        <Stat>
-          <KeyStat
-            stat={extraMatchCounts['match_journey_v2__completed_match']?.count}
-          />
-          <StatDescription>Completed Matchings</StatDescription>
-        </Stat>
+        />
+
+        <Stat
+          stat={extraMatchCounts['match_journey_v2__match_ongoing']?.count}
+          label={
+            'Ongoing matchings: matches in their first 10 weeks and have interacted within the last 3 weeks.'
+          }
+        />
+
+        <Stat
+          stat={extraMatchCounts['match_journey_v2__match_free_play']?.count}
+          label={
+            'Free-play matchings: matches still interacting but already past their first 10 weeks.'
+          }
+        />
+        <Stat
+          stat={extraMatchCounts['match_journey_v2__completed_match']?.count}
+          label="Completed Matchings"
+        />
       </StatsGrouping>
     </SectionCard>
   </Section>
 );
 
-export function UserLossStatisticDownloadBlock(){
-
+export function UserLossStatisticDownloadBlock() {
   const [startDate, setStartDate] = React.useState('2021-01-01');
   const today = new Date();
   const [endDate, setEndDate] = React.useState(
-      today.toISOString().split('T')[0],
+    today.toISOString().split('T')[0],
   );
 
   const { data: userSignUpLossStatisticData, mutate } = useSWR(
-      '/api/matching/users/statistics/user_signup_loss/',
-        cratePostFetcher({
-          start_date: startDate,
-          end_date: endDate,
-        }),
+    '/api/matching/users/statistics/user_signup_loss/',
+    cratePostFetcher({
+      start_date: startDate,
+      end_date: endDate,
+    }),
     {},
   );
-  
+
   const onDownload = () => {
     // should start a json Download
     console.log('Download');
-    
+
     const downloadData = JSON.stringify(userSignUpLossStatisticData);
     const blob = new Blob([downloadData], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -364,90 +317,101 @@ export function UserLossStatisticDownloadBlock(){
     a.href = url;
     a.download = 'user_signup_loss.json';
     a.click();
-  }
-  
-  return <div>
-            <SectionTitle type={TextTypes.Body4} tag="h2">
-              User Sign-Up Loss Statistics
-            </SectionTitle>
-            <Text tag="p">This data is cleaned and buckets should be 'destinct' there is a duplication check performed by the backend, found duplicates would be outputted in 'intersecting_ids_lists' some lists maybe be ignored like 'all' they are also listed.</Text>
-            <button onClick={onDownload} className="btn btn-primary">Download</button>
-            <div className="flex flex-row">
-              <DatePicker
-                  date={startDate}
-                  setDate={date => {
-                      setStartDate(date);
-                      setTimeout(() => {
-                          mutate();
-                      }, 500);
-                  }}
-              />
-              <DatePicker
-                  date={endDate}
-                  setDate={date => {
-                      setEndDate(date);
-                      setTimeout(() => {
-                          mutate();
-                      }, 500);
-                  }}
-              />
-            </div>
-          </div>
+  };
+
+  return (
+    <div>
+      <SectionTitle type={TextTypes.Body4} tag="h2">
+        User Sign-Up Loss Statistics
+      </SectionTitle>
+      <Text tag="p">
+        This data is cleaned and buckets should be 'destinct' there is a
+        duplication check performed by the backend, found duplicates would be
+        outputted in 'intersecting_ids_lists' some lists maybe be ignored like
+        'all' they are also listed.
+      </Text>
+      <button onClick={onDownload} className="btn btn-primary">
+        Download
+      </button>
+      <div className="flex flex-row">
+        <DatePicker
+          date={startDate}
+          setDate={date => {
+            setStartDate(date);
+            setTimeout(() => {
+              mutate();
+            }, 500);
+          }}
+        />
+        <DatePicker
+          date={endDate}
+          setDate={date => {
+            setEndDate(date);
+            setTimeout(() => {
+              mutate();
+            }, 500);
+          }}
+        />
+      </div>
+    </div>
+  );
 }
 
-export function AccentureReportDownloadBloack(){
-
+export function AccentureReportDownloadBloack() {
   const [startDate, setStartDate] = React.useState('2021-01-01');
   const today = new Date();
   const [endDate, setEndDate] = React.useState(
-      today.toISOString().split('T')[0],
+    today.toISOString().split('T')[0],
   );
 
   const { data: accentureReport, mutate } = useSWR(
-      '/api/matching/users/statistics/company_report/accenture/',
-        cratePostFetcher({}),
+    '/api/matching/users/statistics/company_report/accenture/',
+    cratePostFetcher({}),
     {},
   );
 
   const onDownload = () => {
     // should start a json Download
     console.log('Download');
-    
+
     const text = accentureReport?.report ?? '';
     const blob = new Blob([text], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    
+
     a.download = 'accenture_report.txt';
     a.click();
-  }
-    
-  
-  return <div>
+  };
+
+  return (
+    <div>
       <SectionTitle type={TextTypes.Body4} tag="h2">
         Accenture Report
       </SectionTitle>
-      <button onClick={onDownload} className="btn btn-primary">Download</button>
+      <button onClick={onDownload} className="btn btn-primary">
+        Download
+      </button>
     </div>
+  );
 }
 
-export function MatchQualitySatisticDownloadBlock(){
+export function MatchQualitySatisticDownloadBlock() {
   const [startDate, setStartDate] = React.useState('2021-01-01');
   const today = new Date();
   const [endDate, setEndDate] = React.useState(
-      today.toISOString().split('T')[0],
+    today.toISOString().split('T')[0],
   );
 
   const { data: matchQualityStatistic, mutate } = useSWR(
-      '/api/matching/users/statistics/match_quality/',
-        cratePostFetcher({
-          start_date: startDate,
-          end_date: endDate,
-        }),
+    '/api/matching/users/statistics/match_quality/',
+    cratePostFetcher({
+      start_date: startDate,
+      end_date: endDate,
+    }),
     {},
   );
-  
+
   const onDownload = () => {
     // should start a json Download
     console.log('Download');
@@ -459,50 +423,58 @@ export function MatchQualitySatisticDownloadBlock(){
     a.href = url;
     a.download = 'match_quality.json';
     a.click();
-  }
+  };
 
-  return <div>
+  return (
+    <div>
       <SectionTitle type={TextTypes.Body4} tag="h2">
         Match Quality Statistic
       </SectionTitle>
-      <Text tag="p">This data is cleaned and buckets should be 'destinct' there is a duplication check performed by the backend, found duplicates would be outputted in 'intersecting_ids_lists' some lists maybe be ignored like 'all' they are also listed.</Text>
-      <button onClick={onDownload} className="btn btn-primary">Download</button>
+      <Text tag="p">
+        This data is cleaned and buckets should be 'destinct' there is a
+        duplication check performed by the backend, found duplicates would be
+        outputted in 'intersecting_ids_lists' some lists maybe be ignored like
+        'all' they are also listed.
+      </Text>
+      <button onClick={onDownload} className="btn btn-primary">
+        Download
+      </button>
       <div className="flex flex-row">
         <DatePicker
-            date={startDate}
-            setDate={date => {
-                setStartDate(date);
-                setTimeout(() => {
-                    mutate();
-                }, 500);
-            }}
+          date={startDate}
+          setDate={date => {
+            setStartDate(date);
+            setTimeout(() => {
+              mutate();
+            }, 500);
+          }}
         />
         <DatePicker
-            date={endDate}
-            setDate={date => {
-                setEndDate(date);
-                setTimeout(() => {
-                    mutate();
-                }, 500);
-            }}
+          date={endDate}
+          setDate={date => {
+            setEndDate(date);
+            setTimeout(() => {
+              mutate();
+            }, 500);
+          }}
         />
       </div>
     </div>
+  );
 }
 
 export function DownloadCenter() {
-  
   return (
-      <div className="flex flex-col">
-        <SectionTitle type={TextTypes.Body4} tag="h2">
-          Download Center
-        </SectionTitle>
-        <div className="w-full flex flex-row">
-          <UserLossStatisticDownloadBlock />
-          <AccentureReportDownloadBloack />
-        </div>
+    <div className="flex flex-col">
+      <SectionTitle type={TextTypes.Body4} tag="h2">
+        Download Center
+      </SectionTitle>
+      <div className="w-full flex flex-row">
+        <UserLossStatisticDownloadBlock />
+        <AccentureReportDownloadBloack />
+      </div>
     </div>
-  )
+  );
 }
 
 export function MatchUserJourneyOverview() {
@@ -518,7 +490,9 @@ export function MatchUserJourneyOverview() {
   const random = React.useRef(Date.now() + Math.random());
 
   const { data: userListCounts } = useSWR(
-    '/api/matching/users/statistics/user_journey_buckets/' + "?random=" + random.current,
+    '/api/matching/users/statistics/user_journey_buckets/' +
+      '?random=' +
+      random.current,
     cratePostFetcher({
       selected_filters: allBucketIds.concat(extraBucketIds),
     }),
@@ -547,7 +521,8 @@ export function MatchUserJourneyOverview() {
   if (userListCounts) {
     for (let i = 0; i < userListCounts?.buckets.length; i++) {
       if (extraBucketIds.includes(userListCounts?.buckets[i].name))
-        extraCounts[userListCounts?.buckets[i].name] = userListCounts?.buckets[i];
+        extraCounts[userListCounts?.buckets[i].name] =
+          userListCounts?.buckets[i];
     }
   }
 
@@ -559,11 +534,15 @@ export function MatchUserJourneyOverview() {
           matchJourneyListCounts?.buckets[i];
     }
   }
-  
-  
+
   const today = new Date();
   const startDate = new Date(Date.now() - 12 * 7 * 24 * 60 * 60 * 1000); // 12 weeks ago
-  const { mutate, error, data: userSignupsData, isLoading } = useSWR(
+  const {
+    mutate,
+    error,
+    data: userSignupsData,
+    isLoading,
+  } = useSWR(
     `/api/matching/users/statistics/signups/?random=${random.current}`,
     cratePostFetcher({
       start_date: startDate.toISOString().split('T')[0],
@@ -582,7 +561,7 @@ export function MatchUserJourneyOverview() {
         {`All the numbers in these overviews <bold>are live statistics</bold> and are <bold>filtered down to the current users access</bold>.`}
       </Description>
       <Sections>
-        <DynamicUserInfluxOverview data={userSignupsData}/>
+        <DynamicUserInfluxOverview data={userSignupsData} />
         <MatchingOverview
           extraCounts={extraCounts}
           extraMatchCounts={extraMatchCounts}

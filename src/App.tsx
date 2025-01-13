@@ -17,13 +17,14 @@ import {
   ALGORITHM_ROUTE,
   BASE_ROUTE,
   CREATE_NEW_EMAIL_ROUTE,
+  DYNAMIC_USER_LISTS_ROUTE,
   EDIT_EMAIL_ROUTE,
   EMAILS_ROUTE,
   EMAIL_HTML_ROUTE,
   EMAIL_ROUTE,
   MATCHES_LIST_ROUTE,
   MATCHING_ROUTE,
-  DYNAMIC_USER_LISTS_ROUTE,
+  MATCH_ROUTE,
   PREMATCH_APPOINTMENTS_ROUTE,
   SCORES_ROUTE,
   SEND_DYNAMIC_EMAIL_ROUTE,
@@ -34,7 +35,9 @@ import {
 } from './routes';
 import { GlobalStateProvider } from './store';
 import Algorithm from './views/Algorithm';
+import { DynamicUserListView } from './views/DynamicUserListView';
 import Home from './views/Home';
+import MatchPanel from './views/MatchPanel';
 import Matches from './views/Matches';
 import Matching from './views/Matching';
 import PrematchingAppointments from './views/PrematchingAppointments';
@@ -47,7 +50,6 @@ import Email from './views/emails/Email';
 import EmailHtml from './views/emails/EmailHtml';
 import Emails from './views/emails/Emails';
 import { SendDynamicTemplateView } from './views/emails/SendDynamicTemplate';
-import { DynamicUserListView } from './views/DynamicUserListView';
 
 export const Root = ({
   children,
@@ -100,6 +102,10 @@ const router = createBrowserRouter(
         {
           path: MATCHES_LIST_ROUTE,
           element: <Matches />,
+        },
+        {
+          path: MATCH_ROUTE,
+          element: <MatchPanel />,
         },
         {
           path: PREMATCH_APPOINTMENTS_ROUTE,

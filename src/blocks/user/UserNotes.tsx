@@ -10,7 +10,7 @@ import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import styled from 'styled-components';
 
-import { updateUserNotes } from '../../api';
+import { updateMatchNotes, updateUserNotes } from '../../api';
 import { registerInput } from '../../store';
 
 const ButtonsContainer = styled.div`
@@ -24,12 +24,24 @@ const ButtonsContainer = styled.div`
   }
 `;
 
-interface UserNotesProps {
+const NotesUseCases = {
+  user: {
+    placeholder: 'Write your notes for this user...',
+    updateNotes: updateUserNotes,
+  },
+  match: {
+    placeholder: 'Write your notes for this match here...',
+    updateNotes: updateMatchNotes,
+  },
+};
+
+interface NotesProps {
+  model: 'user' | 'match';
   notes?: string;
-  userId: string;
+  modelId: string;
 }
 
-const UserNotes = ({ notes, userId }: UserNotesProps) => {
+const Notes = ({ model, notes, modelId }: NotesProps) => {
   const [saved, setSaved] = useState(false);
   const {
     register,
@@ -41,10 +53,11 @@ const UserNotes = ({ notes, userId }: UserNotesProps) => {
   } = useForm({ defaultValues: { notes } });
   const notesVal = watch('notes');
   const displayStatusMessage = saved || !!errors?.root?.serverError;
+  const useCase = NotesUseCases[model];
 
   const handleSave = ({ notes }: { notes: string }) => {
-    updateUserNotes({
-      userId,
+    useCase.updateNotes({
+      id: modelId,
       notes,
       onError: error =>
         setError('root.serverError', {
@@ -66,7 +79,7 @@ const UserNotes = ({ notes, userId }: UserNotesProps) => {
           name: 'notes',
           options: { required: 'Required*' },
         })}
-        placeholder={'Write your notes for this user here...'}
+        placeholder={useCase.placeholder}
         size={TextAreaSize.Large}
         expandable
         error={errors?.notes?.message}
@@ -95,4 +108,4 @@ const UserNotes = ({ notes, userId }: UserNotesProps) => {
   );
 };
 
-export default UserNotes;
+export default Notes;
