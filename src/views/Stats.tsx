@@ -7,6 +7,7 @@ import { UserCountsBucketTable } from '../blocks/stats/JourneyBucketTable';
 import { MatchUserJourneyOverview } from '../blocks/stats/MatchUserJourneyOverview';
 import { UserJourneyBucketsOverview } from '../blocks/stats/UserJourneyBuckets';
 import { RangedDataGraph } from '../blocks/stats/RangedDataGraph';
+import { SignupFunnelEvolution } from '../blocks/stats/BarChartTimeRanged';
 import { BarChartCounts } from '../blocks/BarChartCounts';
 import { Sections, Container, Section, SectionR } from '../blocks/stats/MatchUserJourneyOverview';
 import useSWR from 'swr';
@@ -67,6 +68,7 @@ function Stats() {
           <TabsTrigger value="graphs">Graphs</TabsTrigger>
           <TabsTrigger value="signup-funnel">User Sign-up Funnel</TabsTrigger>
           <TabsTrigger value="simple-journey">Basic Buckets</TabsTrigger>
+          <TabsTrigger value="signup-funnel-evolution">User Sign-up Funnel Evolution</TabsTrigger>
         </TabsList>
         {tab === 'overview' && (
           <TabsContent value="overview" className="">
@@ -88,6 +90,14 @@ function Stats() {
           >
             <BarChartTimeRanged />
             <MatchQuality />
+          </TabsContent>
+        )}
+        {tab === 'signup-funnel-evolution' && (
+          <TabsContent
+            value="signup-funnel-evolution"
+            className="flex flex-col content-center justify-center items-center flex-grow"
+          >
+            <SignupFunnelEvolution />
           </TabsContent>
         )}
         {tab === 'simple-journey' && (
