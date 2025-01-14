@@ -1,6 +1,6 @@
 import { Dropdown } from '@a-little-world/little-world-design-system';
 import React from 'react';
-import { Bar, BarChart, Text, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, Text, XAxis, YAxis } from 'recharts';
 import styled from 'styled-components';
 import useSWR from 'swr';
 
@@ -194,16 +194,237 @@ function modifyDataV2(data) {
   return modifiedData
 }
 
+const StyledChartContainer = styled(ChartContainer)<{
+  $minHeight?: string;
+  $maxHeight?: string;
+}>`
+  max-height: ${({ $maxHeight }) => $maxHeight || '640px'};
+  min-height: ${({ $minHeight }) => $minHeight || '400px'};
+`;
+
+export function DataGraphSingupFunnelEvolution({
+  filters,
+  data,
+  chartConfig,
+  maxHeight,
+  minHeight,
+}) {
+  return (
+    <StyledChartContainer
+      config={chartConfig}
+      $maxHeight={maxHeight}
+      $minHeight={minHeight}
+    >
+      <BarChart accessibilityLayer data={data}>
+        <CartesianGrid vertical={false} />
+        <XAxis
+          dataKey="monthTag"
+          tickLine={true}
+          tickMargin={0}
+          axisLine={true}
+          angle={-20}
+          textAnchor="end"
+          interval={0} 
+          tickFormatter={(value: string) => value.slice(0, 20)}
+        />
+        <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+        {filters.map((item, index) => (
+          <Bar dataKey={item} fill={chartConfig[item].color} radius={[0, 0, 0, 0]} stackId={"a"} />
+        ))}
+      </BarChart>
+    </StyledChartContainer>
+  );
+}
+
+export function SignupFunnelEvolution(){
+  const today = new Date();
+  const thisYear = today.getFullYear();
+  const currentMonth = today.getMonth(); // 0-11
+  const months = [];
+
+  for (let i = 0; i < 12; i++) {
+    const monthIndex = (currentMonth - i + 12) % 12; // Wrap around to previous year
+    const year = currentMonth - i >= 0 ? thisYear : thisYear - 1;
+    const monthNames = [
+      'january', 'february', 'march', 'april', 'may', 'june',
+      'july', 'august', 'september', 'october', 'november', 'december'
+    ];
+    
+    const daysInMonth = new Date(year, monthIndex + 1, 0).getDate(); // Get last day of month
+    
+    months.push({
+      key: `${monthNames[monthIndex]} (${year})`,
+      dates: [
+        `${year}-${String(monthIndex + 1).padStart(2, '0')}-01`,
+        `${year}-${String(monthIndex + 1).padStart(2, '0')}-${daysInMonth}`
+      ]
+    });
+  }
+  const monthToDatesMap = {
+    "all": ["2021-01-01", today.toISOString().split('T')[0]],
+    ...Object.fromEntries(months.reverse().map(m => [m.key, m.dates]))
+  };
+  const monthToDatesKeys = Object.keys(monthToDatesMap)
+  const filters = chartCategories.find(cat => cat.id === 'user-signup-funnel')?.filters || []
+
+  // const tag1Data = useMonthData(filters, monthToDatesKeys[0], monthToDatesMap) we don't need 'all'
+  const tag2Data = useMonthData(filters, monthToDatesKeys[1], monthToDatesMap)
+  const tag3Data = useMonthData(filters, monthToDatesKeys[2], monthToDatesMap)
+  const tag4Data = useMonthData(filters, monthToDatesKeys[3], monthToDatesMap)
+  const tag5Data = useMonthData(filters, monthToDatesKeys[4], monthToDatesMap)
+  const tag6Data = useMonthData(filters, monthToDatesKeys[5], monthToDatesMap)
+  const tag7Data = useMonthData(filters, monthToDatesKeys[6], monthToDatesMap)
+  const tag8Data = useMonthData(filters, monthToDatesKeys[7], monthToDatesMap)
+  const tag9Data = useMonthData(filters, monthToDatesKeys[8], monthToDatesMap)
+  const tag10Data = useMonthData(filters, monthToDatesKeys[9], monthToDatesMap)
+  const tag11Data = useMonthData(filters, monthToDatesKeys[10], monthToDatesMap)
+  const tag12Data = useMonthData(filters, monthToDatesKeys[11], monthToDatesMap)
+  const tag13Data = useMonthData(filters, monthToDatesKeys[12], monthToDatesMap)
+  
+  const data = [tag2Data, tag3Data, tag4Data, tag5Data, tag6Data, tag7Data, tag8Data, tag9Data, tag10Data, tag11Data, tag12Data, tag13Data]
+  const isLoading = data.some(item => item.isLoading)
+  const isError = data.some(item => item.error)
+
+  const pureData = (!isLoading && !isError) ? data.map(item => {
+    console.log("item", item)
+    const modifiedData = modifyDataV2(item.data.buckets)
+    const bucketsMap = modifiedData.reduce((acc, bucket) => {
+      acc[bucket.name] = bucket.count;
+      return acc;
+    }, {})
+
+    return {
+      monthTag: item.monthTag,
+      ...bucketsMap
+    }
+  }) : []
+  
+  // now we need to tranfor all the data into the form [{time: monthTag, count1: 222, count2 ....}]
+  console.log("SignupFunnelEvolution data", pureData)
+
+  const chartConfig = {};
+  filters.forEach((item, index) => {
+    // @ts-ignore
+    chartConfig[item] = {
+      label: item === 'all' ? 'All' : `- (minus) ${item}`,
+      description: item,
+      color: `hsl(var(--chart-${index + 1}))`,
+    };
+  });
+  
+  console.log("SignupFunnelEvolution chartConfig", chartConfig)
+
+  return <div>
+    {isLoading && <div>Loading...</div>}
+    {isError && <div>Error: {isError}</div>}
+    Data
+    <DataGraphSingupFunnelEvolution 
+      filters={filters}
+      data={pureData}
+      chartConfig={chartConfig}
+      maxHeight="640px"
+      minHeight="400px"
+    />
+  </div>
+}
+
+function getMonthDateRange(
+    monthTag: string, 
+    monthToDatesMap: Record<string, string[]>
+) {
+  return monthToDatesMap[monthTag];
+}
+
+function useMonthData(
+    filters: string[], 
+    monthTag: string,
+    monthToDatesMap: Record<string, string[]>
+) {
+
+  const [startDate, endDate] = getMonthDateRange(monthTag, monthToDatesMap);
+  const random = React.useRef(Date.now() + Math.random());
+  const { mutate, error, data, isLoading } = useSWR(
+    `/api/matching/users/statistics/user_journey_buckets/?random=${random.current}`,
+    cratePostFetcher({
+      selected_filters: filters,
+      start_date: startDate,
+      end_date: endDate,
+    }),
+    {},
+  );
+  
+  return {
+    data: data,
+    monthTag: monthTag,
+    isLoading,
+    error,
+  }
+}
+
+export function MonthTimeSelector({
+  startDate,
+  endDate,
+  setStartDate,
+  setEndDate,
+  mutate,
+}){
+  
+  const today = new Date();
+  const thisYear = today.getFullYear();
+  const currentMonth = today.getMonth(); // 0-11
+  const monthToDatesMap = {
+    "all": ["2021-01-01", today.toISOString().split('T')[0]],
+    [`january (${currentMonth >= 0 ? thisYear : thisYear - 1})`]: [`${currentMonth >= 0 ? thisYear : thisYear - 1}-01-01`, `${currentMonth >= 0 ? thisYear : thisYear - 1}-01-31`],
+    [`february (${currentMonth >= 1 ? thisYear : thisYear - 1})`]: [`${currentMonth >= 1 ? thisYear : thisYear - 1}-02-01`, `${currentMonth >= 1 ? thisYear : thisYear - 1}-02-28`],
+    [`march (${currentMonth >= 2 ? thisYear : thisYear - 1})`]: [`${currentMonth >= 2 ? thisYear : thisYear - 1}-03-01`, `${currentMonth >= 2 ? thisYear : thisYear - 1}-03-31`],
+    [`april (${currentMonth >= 3 ? thisYear : thisYear - 1})`]: [`${currentMonth >= 3 ? thisYear : thisYear - 1}-04-01`, `${currentMonth >= 3 ? thisYear : thisYear - 1}-04-30`],
+    [`may (${currentMonth >= 4 ? thisYear : thisYear - 1})`]: [`${currentMonth >= 4 ? thisYear : thisYear - 1}-05-01`, `${currentMonth >= 4 ? thisYear : thisYear - 1}-05-31`],
+    [`june (${currentMonth >= 5 ? thisYear : thisYear - 1})`]: [`${currentMonth >= 5 ? thisYear : thisYear - 1}-06-01`, `${currentMonth >= 5 ? thisYear : thisYear - 1}-06-30`],
+    [`july (${currentMonth >= 6 ? thisYear : thisYear - 1})`]: [`${currentMonth >= 6 ? thisYear : thisYear - 1}-07-01`, `${currentMonth >= 6 ? thisYear : thisYear - 1}-07-31`],
+    [`august (${currentMonth >= 7 ? thisYear : thisYear - 1})`]: [`${currentMonth >= 7 ? thisYear : thisYear - 1}-08-01`, `${currentMonth >= 7 ? thisYear : thisYear - 1}-08-31`],
+    [`september (${currentMonth >= 8 ? thisYear : thisYear - 1})`]: [`${currentMonth >= 8 ? thisYear : thisYear - 1}-09-01`, `${currentMonth >= 8 ? thisYear : thisYear - 1}-09-30`],
+    [`october (${currentMonth >= 9 ? thisYear : thisYear - 1})`]: [`${currentMonth >= 9 ? thisYear : thisYear - 1}-10-01`, `${currentMonth >= 9 ? thisYear : thisYear - 1}-10-31`],
+    [`november (${currentMonth >= 10 ? thisYear : thisYear - 1})`]: [`${currentMonth >= 10 ? thisYear : thisYear - 1}-11-01`, `${currentMonth >= 10 ? thisYear : thisYear - 1}-11-30`],
+    [`december (${currentMonth >= 11 ? thisYear : thisYear - 1})`]: [`${currentMonth >= 11 ? thisYear : thisYear - 1}-12-01`, `${currentMonth >= 11 ? thisYear : thisYear - 1}-12-31`],
+  }
+
+  return <div>
+    <Dropdown
+      value={startDate}
+      options={Object.keys(monthToDatesMap).map(month => ({
+        value: month,
+        label: month,
+      }))}
+        onValueChange={val => {
+          setStartDate(monthToDatesMap[val][0]);
+          setEndDate(monthToDatesMap[val][1]);
+          setTimeout(() => {
+            mutate();
+          }, 500);
+        }}
+    />
+  </div>
+}
+
 export function BarChartTimeRangedV2({
   initialCategory = 'user-signup-funnel',
+  displayTimeSelection = true,
 }) {
   const [category, setCategory] = React.useState(chartCategories.find(cat => cat.id === initialCategory));
+
+  const today = new Date();
+  const [startDate, setStartDate] = React.useState('2021-01-01');
+  const [endDate, setEndDate] = React.useState(
+      today.toISOString().split('T')[0],
+  );
 
   const random = React.useRef(Date.now() + Math.random());
   const { mutate, error, data, isLoading } = useSWR(
     '/api/matching/users/statistics/user_journey_buckets/?random=' + random.current,
     cratePostFetcher({
       selected_filters: category.filters,
+      start_date: startDate,
+      end_date: endDate,
     }),
     {},
   );
@@ -217,6 +438,13 @@ export function BarChartTimeRangedV2({
   return <Card className="">
         <CardHeader>
         {category?.title}
+        {displayTimeSelection && <MonthTimeSelector
+          startDate={startDate}
+          endDate={endDate}
+          setStartDate={setStartDate}
+          setEndDate={setEndDate}
+          mutate={mutate}
+        />}
       </CardHeader>
       <CardContent className="min-w-[600px]">
         <ChartContainer config={chartConfig}>
