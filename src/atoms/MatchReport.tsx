@@ -55,7 +55,7 @@ const MatchReport: React.FC<MatchReportProps> = ({
 
   return (
     <MatchReportContainer className={className}>
-      <Text bold center>{`${inactiveCause}${
+      <Text bold={!isProposed} center>{`${inactiveCause}${
         date ? ` on ${formatDate(new Date(date))}` : ''
       }`}</Text>
       {!isProposed && match.unmatched && (

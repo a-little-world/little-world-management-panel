@@ -54,7 +54,7 @@ const StyledMatchReport = styled(MatchReport)`
 const UserMatch = ({ match, userName }: { match: any; userName: string }) => {
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const isProposed = match.status === MATCH_STATUS.proposed;
-  const inactive = match.closed || !match.active;
+  const inactive = isProposed ? match.closed : match.closed || !match.active;
   const { updateCurrentUser } = useGlobalState();
 
   return (
@@ -142,7 +142,7 @@ const UserMatch = ({ match, userName }: { match: any; userName: string }) => {
             onClick={() => {
               setDialogOpen(true);
             }}
-            size={ButtonSizes.Medium}
+            size={ButtonSizes.Large}
           >
             Remove
           </Button>
