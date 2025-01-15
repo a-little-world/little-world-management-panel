@@ -7,7 +7,7 @@ import { UserCountsBucketTable } from '../blocks/stats/JourneyBucketTable';
 import { MatchUserJourneyOverview } from '../blocks/stats/MatchUserJourneyOverview';
 import { UserJourneyBucketsOverview } from '../blocks/stats/UserJourneyBuckets';
 import { RangedDataGraph } from '../blocks/stats/RangedDataGraph';
-import { SignupFunnelEvolution } from '../blocks/stats/BarChartTimeRanged';
+import { SignupFunnelEvolution, modifyDataToPercentages } from '../blocks/stats/BarChartTimeRanged';
 import { BarChartCounts } from '../blocks/BarChartCounts';
 import { Sections, Container, Section, SectionR } from '../blocks/stats/MatchUserJourneyOverview';
 import useSWR from 'swr';
@@ -98,6 +98,7 @@ function Stats() {
             className="flex flex-col content-center justify-center items-center flex-grow"
           >
             <SignupFunnelEvolution />
+            <SignupFunnelEvolution dataModFunc={modifyDataToPercentages} />
             <BarChartTimeRanged displayExactTimeSelection={true} displayTimeSelection={false}/>
           </TabsContent>
         )}

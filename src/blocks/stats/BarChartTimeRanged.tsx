@@ -199,6 +199,31 @@ function modifyDataV2(data) {
   return modifiedData
 }
 
+export function modifyDataToPercentages(data) {
+  const modifiedData = []
+  const topCount = data.find(item => item.name === 'all').count;
+  var summed = 0;
+  data.forEach((item, index) => {
+    if(item.name !== 'all') {
+      modifiedData.push({
+        name: item.name,
+        count: parseFloat(((item.count / topCount) * 100).toFixed(2)),
+        description: `${item.name} (${item.count}) = ${Math.round((item.count / topCount) * 100)}%`,
+      });  
+        
+      summed += item.count
+    }
+  });
+  
+  modifiedData.push({
+    name: 'all',
+    count: parseFloat((((topCount - summed) / topCount) * 100).toFixed(2)),
+    description: `sum (${summed}) = ${Math.round((summed / topCount) * 100)}%`,
+  });
+  
+  return modifiedData
+}
+
 const StyledChartContainer = styled(ChartContainer)<{
   $minHeight?: string;
   $maxHeight?: string;
@@ -241,7 +266,9 @@ export function DataGraphSingupFunnelEvolution({
   );
 }
 
-export function SignupFunnelEvolution(){
+export function SignupFunnelEvolution({
+  dataModFunc = modifyDataV2,
+}){
   const today = new Date();
   const thisYear = today.getFullYear();
   const currentMonth = today.getMonth(); // 0-11
@@ -292,7 +319,7 @@ export function SignupFunnelEvolution(){
 
   const pureData = (!isLoading && !isError) ? data.map(item => {
     console.log("item", item)
-    const modifiedData = modifyDataV2(item.data.buckets)
+    const modifiedData = dataModFunc(item.data.buckets)
     const bucketsMap = modifiedData.reduce((acc, bucket) => {
       acc[bucket.name] = bucket.count;
       return acc;
