@@ -98,6 +98,7 @@ function Stats() {
             className="flex flex-col content-center justify-center items-center flex-grow"
           >
             <SignupFunnelEvolution />
+            <BarChartTimeRanged displayExactTimeSelection={true} displayTimeSelection={false}/>
           </TabsContent>
         )}
         {tab === 'simple-journey' && (

@@ -1,6 +1,7 @@
 import { Dropdown } from '@a-little-world/little-world-design-system';
 import React from 'react';
 import { Bar, BarChart, CartesianGrid, Text, XAxis, YAxis } from 'recharts';
+import { DatePicker } from '../../atoms/DatePicker';
 import styled from 'styled-components';
 import useSWR from 'swr';
 
@@ -163,7 +164,9 @@ function MultilineTick(props) {
 export function BarChartTimeRanged({
   version = 'v2', // TODO 'v1',
   initialCategory = 'user-signup-funnel',
-  hideCategoryDropdown = true, // TODO false,
+  hideCategoryDropdown = true, // TODO false
+  displayTimeSelection = true,
+  displayExactTimeSelection = false,
 }) {
   return version === 'v1' ? <BarChartTimeRangedV1
     version={version}
@@ -171,6 +174,8 @@ export function BarChartTimeRanged({
     hideCategoryDropdown={hideCategoryDropdown}
     /> : <BarChartTimeRangedV2
         initialCategory={initialCategory}
+        displayTimeSelection={displayTimeSelection}
+        displayExactTimeSelection={displayExactTimeSelection}
       />
 }
 
@@ -361,6 +366,37 @@ function useMonthData(
   }
 }
 
+export function ExactTimeSelector({
+  startDate,
+  endDate,
+  setStartDate,
+  setEndDate,
+  mutate
+}){
+  return <div className="flex flex-row items-center content-center justify-center">
+                  <div className="flex w-full items-start">Start Date:</div>
+                  <DatePicker
+                      date={startDate}
+                      setDate={date => {
+                          setStartDate(date);
+                          setTimeout(() => {
+                              mutate();
+                          }, 500);
+                      }}
+                  />
+                  <div className="flex w-full items-start">End Date</div>
+                  <DatePicker
+                      date={endDate}
+                      setDate={date => {
+                          setEndDate(date);
+                          setTimeout(() => {
+                              mutate();
+                          }, 500);
+                      }}
+                  />
+              </div>
+}
+
 export function MonthTimeSelector({
   startDate,
   endDate,
@@ -409,6 +445,7 @@ export function MonthTimeSelector({
 export function BarChartTimeRangedV2({
   initialCategory = 'user-signup-funnel',
   displayTimeSelection = true,
+  displayExactTimeSelection = false,
 }) {
   const [category, setCategory] = React.useState(chartCategories.find(cat => cat.id === initialCategory));
 
@@ -445,6 +482,15 @@ export function BarChartTimeRangedV2({
           setEndDate={setEndDate}
           mutate={mutate}
         />}
+        {
+          displayExactTimeSelection && <ExactTimeSelector
+            startDate={startDate}
+            endDate={endDate}
+            setStartDate={setStartDate}
+            setEndDate={setEndDate}
+            mutate={mutate}
+          />
+        }
       </CardHeader>
       <CardContent className="min-w-[600px]">
         <ChartContainer config={chartConfig}>
