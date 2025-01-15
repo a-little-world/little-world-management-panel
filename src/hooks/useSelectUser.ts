@@ -17,10 +17,13 @@ const useSelectUser = () => {
 
   const onSelectUser = ({ userHash }: { userHash: string }) => {
     setIsSubmitting(true);
-    addUserByHash(userHash, onError, (res: any) => {
-      setIsSubmitting(false);
-      selectUser(res);
-    });
+    const userHashes = userHash.split(',').map(hash => hash.trim())
+    for (const hash of userHashes) {
+      addUserByHash(hash, onError, (res: any) => {
+        setIsSubmitting(false);
+        selectUser(res);
+      });
+    }
   };
 
   return {
