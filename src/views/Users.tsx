@@ -9,7 +9,7 @@ import {
 import { ArrowsUpDownIcon } from '@heroicons/react/20/solid';
 import { createColumnHelper } from '@tanstack/react-table';
 import { capitalize } from 'lodash';
-import { DownloadIcon, SlidersHorizontalIcon } from 'lucide-react';
+import { DownloadIcon, Settings, SlidersHorizontalIcon } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Link } from 'react-router-dom';
@@ -28,6 +28,7 @@ import SearchBar from '../blocks/SearchBar';
 import { formatDate, formatTimeDistance } from '../helpers/date';
 import { useGlobalState, useUserListData } from '../store';
 import { SelectedUsersSheet } from './../blocks/SelectedUsersSheet';
+import { DownloadSettingsModal, DEFAULT_HEADERS } from '../blocks/DownloadSettingsModal';
 
 const StyledDropdown = styled(Dropdown)`
   div[data-radix-popper-content-wrapper] {
@@ -237,6 +238,8 @@ export function Users() {
 
   const [filters, setFilters] = useState<Filters>({});
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [downloadSettingsOpen, setDownloadSettingsOpen] = useState(false);
+  const [selectedHeaders, setSelectedHeaders] = useState<string[]>(DEFAULT_HEADERS);
 
   const {
     userList,
@@ -301,24 +304,15 @@ export function Users() {
     getUserListExport({
       searchParams: createSearchParams(searchParams),
       onSuccess: response => {
-        // create a csv file and download it in the browser
-        const headers = [
-          'email',
-          'first_name',
-          'user_type',
-          'postal_code',
-          'birth_year',
-          'gender',
-        ].join(',');
+        const headers = selectedHeaders.join(',');
         const csvRows = response.map(row =>
-          [
-            row.email,
-            row.profile.first_name,
-            row.profile.user_type,
-            row.profile.postal_code,
-            row.profile.birth_year,
-            row.profile.gender,
-          ].join(','),
+          selectedHeaders.map(header => {
+            if (header.includes('profile.')) {
+              const [_, field] = header.split('.');
+              return row.profile[field];
+            }
+            return row[header];
+          }).join(','),
         );
 
         const csvContent = [headers, ...csvRows].join('\n');
@@ -334,6 +328,10 @@ export function Users() {
       },
       onError: error => console.log({ error }),
     });
+  };
+
+  const handleSettingsSave = (headers: string[]) => {
+    setSelectedHeaders(headers);
   };
 
   return (
@@ -365,6 +363,14 @@ export function Users() {
           >
             <DownloadIcon />
           </DSButton>
+          <DSButton
+            onClick={() => setDownloadSettingsOpen(true)}
+            disabled={!list}
+            variation={ButtonVariations.Circle}
+            className="shrink-0"
+          >
+            <Settings size={16} />
+          </DSButton>
         </div>
         <div className="flex items-end gap-6 flex-wrap">
           <div className="flex items-center gap-2">
@@ -394,6 +400,13 @@ export function Users() {
         onClose={() => setFiltersOpen(false)}
         onUpdateFilters={updateSearchParams}
         onRemoveFilter={removeSearchParam}
+      />
+      <DownloadSettingsModal
+        selectedHeaders={selectedHeaders}
+        setSelectedHeaders={setSelectedHeaders}
+        open={downloadSettingsOpen}
+        onClose={() => setDownloadSettingsOpen(false)}
+        onSave={handleSettingsSave}
       />
     </>
   );
