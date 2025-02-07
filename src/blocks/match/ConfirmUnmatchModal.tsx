@@ -62,9 +62,9 @@ const ConfirmUnmatchModal = ({
                 onMatchUpdate();
                 onClose();
               },
-              onError: error =>
+              onError: e =>
                 setError(
-                  error?.message ??
+                  e?.message ??
                     'Issue unmatching. Please refresh and try again.',
                 ),
             });

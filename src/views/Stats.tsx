@@ -1,55 +1,23 @@
 import React from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { cratePostFetcher } from '../store';
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../atoms/Tabs';
 import { BarChartTimeRanged } from '../blocks/stats/BarChartTimeRanged';
-import { UserCountsBucketTable } from '../blocks/stats/JourneyBucketTable';
-import { MatchUserJourneyOverview } from '../blocks/stats/MatchUserJourneyOverview';
-import { UserJourneyBucketsOverview } from '../blocks/stats/UserJourneyBuckets';
-import { RangedDataGraph } from '../blocks/stats/RangedDataGraph';
-import { SignupFunnelEvolution, modifyDataToPercentages } from '../blocks/stats/BarChartTimeRanged';
-import { BarChartCounts } from '../blocks/BarChartCounts';
-import { Sections, Container, Section, SectionR } from '../blocks/stats/MatchUserJourneyOverview';
-import useSWR from 'swr';
+import {
+  SignupFunnelEvolution,
+  modifyDataToPercentages,
+} from '../blocks/stats/BarChartTimeRanged';
+import KPIsDashboard from '../blocks/stats/KPIsDashboard';
 import { MatchJourneyOverview } from '../blocks/stats/MatchJourneyBuckets';
 import { MatchQuality } from '../blocks/stats/MatchQualityStatistic';
-
-
-function DebugMatches(){
-  const random = React.useRef(Date.now() + Math.random());
-  const { mutate, error, data, isLoading } = useSWR(
-    '/api/matching/users/statistics/match_journey_buckets/?random=' + random.current,
-    cratePostFetcher({
-      selected_filters: [
-        "match_journey_v2__match_free_play",
-        "match_journey_v2__completed_match"
-      ]
-    }),
-    {},
-  );
-
-  if (isLoading) return <div>Loading...</div>;
-  if (!data) return <div>Error: {error}</div>;
-
-  return <>Test Matches</>
-}
-
-function DebugTab(){
-
-  const random = React.useRef(Date.now() + Math.random());
-  const { mutate, error, data, isLoading } = useSWR(
-    '/api/matching/users/statistics/user_journey_buckets/?random=' + random.current,
-    cratePostFetcher({
-      selected_filters: ["journey_v2__happy_inactive"]
-    }),
-    {},
-  );
-
-  if (isLoading) return <div>Loading...</div>;
-  if (!data) return <div>Error: {error}</div>;
-
-  return <>Test</>
-}
+import { MatchUserJourneyOverview } from '../blocks/stats/MatchUserJourneyOverview';
+import {
+  Container,
+  SectionR,
+  Sections,
+} from '../blocks/stats/MatchUserJourneyOverview';
+import { RangedDataGraph } from '../blocks/stats/RangedDataGraph';
+import { UserJourneyBucketsOverview } from '../blocks/stats/UserJourneyBuckets';
 
 function Stats() {
   let [searchParams, setSearchParams] = useSearchParams();
@@ -64,12 +32,20 @@ function Stats() {
     <div className="flex flex-col min-h-0 w-full relative">
       <Tabs value={tab} onValueChange={onTabChange}>
         <TabsList>
+          <TabsTrigger value="kpis">KPIs</TabsTrigger>
           <TabsTrigger value="overview">User & Match Journey</TabsTrigger>
           <TabsTrigger value="graphs">Graphs</TabsTrigger>
           <TabsTrigger value="signup-funnel">User Sign-up Funnel</TabsTrigger>
           <TabsTrigger value="simple-journey">Basic Buckets</TabsTrigger>
-          <TabsTrigger value="signup-funnel-evolution">User Sign-up Funnel Evolution</TabsTrigger>
+          <TabsTrigger value="signup-funnel-evolution">
+            User Sign-up Funnel Evolution
+          </TabsTrigger>
         </TabsList>
+        {tab === 'kpis' && (
+          <TabsContent value="kpis" className="">
+            <KPIsDashboard />
+          </TabsContent>
+        )}
         {tab === 'overview' && (
           <TabsContent value="overview" className="">
             <MatchUserJourneyOverview />
@@ -99,23 +75,23 @@ function Stats() {
           >
             <SignupFunnelEvolution />
             <SignupFunnelEvolution dataModFunc={modifyDataToPercentages} />
-            <BarChartTimeRanged displayExactTimeSelection={true} displayTimeSelection={false}/>
+            <BarChartTimeRanged
+              displayExactTimeSelection={true}
+              displayTimeSelection={false}
+            />
           </TabsContent>
         )}
         {tab === 'simple-journey' && (
-          <TabsContent
-            value="simple-journey"
-            className=""
-          >
+          <TabsContent value="simple-journey" className="">
             <Container>
-            <Sections>
-            <SectionR $fullWidth>
-              <UserJourneyBucketsOverview />
-            </SectionR>
-            <SectionR $fullWidth>
-              <MatchJourneyOverview />
-            </SectionR>
-            </Sections>
+              <Sections>
+                <SectionR $fullWidth>
+                  <UserJourneyBucketsOverview />
+                </SectionR>
+                <SectionR $fullWidth>
+                  <MatchJourneyOverview />
+                </SectionR>
+              </Sections>
             </Container>
           </TabsContent>
         )}

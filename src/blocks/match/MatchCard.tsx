@@ -13,7 +13,7 @@ import styled from 'styled-components';
 
 import DataField from '../../atoms/DataField';
 import MatchReport from '../../atoms/MatchReport';
-import Stat from '../../atoms/Stat';
+import Stat from '../../atoms/Stats/Stat';
 import UserImage from '../../atoms/UserImage';
 import { MATCH_STATUS } from '../../constants.js';
 import { formatTimeDistance } from '../../helpers/date';

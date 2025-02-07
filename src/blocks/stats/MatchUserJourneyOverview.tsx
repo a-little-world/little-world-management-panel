@@ -17,7 +17,7 @@ import {
   HoverCardTrigger,
 } from '../../atoms/HoverCard';
 import LoadingSpinner from '../../atoms/LoadingSpinner';
-import Stat from '../../atoms/Stat';
+import Stat from '../../atoms/Stats/Stat';
 import { cratePostFetcher } from '../../store';
 import { DataGraphTwoCounts } from '../DataGraph';
 import { MatchJourneyOverview } from './MatchJourneyBuckets';

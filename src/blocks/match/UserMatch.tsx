@@ -56,7 +56,7 @@ const UserMatch = ({ match, userName }: { match: any; userName: string }) => {
   const isProposed = match.status === MATCH_STATUS.proposed;
   const inactive = isProposed ? match.closed : match.closed || !match.active;
   const { updateCurrentUser } = useGlobalState();
-
+  console.log({ match });
   return (
     <UserMatchCard width={CardSizes.Small} $inactive={inactive}>
       <ConfirmUnmatchModal
