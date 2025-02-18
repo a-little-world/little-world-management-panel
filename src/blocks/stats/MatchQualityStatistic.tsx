@@ -84,19 +84,22 @@ export function MatchQuality() {
     'match_journey_v2__proposed_matches',
     'match_journey_v2__expired_proposals',
   ];
+  const selectedBuckets = allBuckets
+    .filter(bucket => !excludeBuckets.includes(bucket.id))
+    .map(bucket => bucket.id);
   const { data, mutate } = useSWR(
     '/api/matching/users/statistics/match_journey_buckets/' +
       '?random=' +
       random.current,
     cratePostFetcher({
-      selected_filters: allBuckets
-        .filter(bucket => !excludeBuckets.includes(bucket.id))
-        .map(bucket => bucket.id),
+      selected_filters: selectedBuckets,
       start_date: startDate,
       end_date: endDate,
     }),
     {},
   );
+  
+  console.log("selectedBuckets", selectedBuckets);
 
   if (!data) return <div>Loading...</div>;
 

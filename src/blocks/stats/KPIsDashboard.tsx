@@ -236,24 +236,30 @@ const KPI: React.FC<KPIProps> = ({
 
 const KPIs: React.FC = () => {
   // Load the current data 
-  const { data: kpisData } = useSWR(
+  const { data: kpisDataUserSignup } = useSWR(
     '/api/matching/users/statistics/kpi_singup/',
     fetcher,
   );
-  console.log('kpisData', kpisData);
+  
+  const { data: kpiDataMatches} = useSWR(
+    '/api/matching/users/statistics/kpi_matching/',
+    fetcher,
+  );
+  console.log('kpisData', kpisDataUserSignup);
+  console.log('kpisDataMatches', kpiDataMatches);
   return (
     <KPIsContainer>
       <KPI
         title="Signup Funnel"
         stats={[
           [
-            { label: 'Total Registered Users', value: kpisData?.total_registered_users },
-            { label: 'Last 7 days', value: kpisData?.last_7_days },
-            { label: '% Volunteers (last 7 days)', value: `${kpisData?.percent_volunteers_last_7_days}%` },
+            { label: 'Total Registered Users', value: kpisDataUserSignup  ?.total_registered_users },
+            { label: 'Last 7 days', value: kpisDataUserSignup?.last_7_days },
+            { label: '% Volunteers (last 7 days)', value: `${kpisDataUserSignup?.percent_volunteers_last_7_days}%` },
           ],
           [
-            { label: '% Onboarded Users* (Total)', value: `${kpisData?.percent_onboarded_users}%` },
-            { label: 'Signups der letzten 30 Tagen', value: kpisData?.signups_last_30_days },
+            { label: '% Onboarded Users* (Total)', value: `${kpisDataUserSignup?.percent_onboarded_users}%` },
+            { label: 'Signups der letzten 30 Tagen', value: kpisDataUserSignup?.signups_last_30_days },
           ],
         ]}
         footnote="Without too low german level"
@@ -265,17 +271,17 @@ const KPIs: React.FC = () => {
           [
             {
               label: '% angenommenen Match proposals  (letzte 2-4 Wochen)',
-              value: '1,245',
+              value: `${kpiDataMatches?.accepted_proposals_two_weeks_percentage}%`,
             },
           ],
           [
             {
               label: '% failed vs ongoing+finished Matches (total)',
-              value: '320',
+              value: `${kpiDataMatches?.failed_vs_ongoing_finished_matches_percentage}%`,
             },
             {
               label: 'Matches gestartet vor 6 bis 12 Wochen',
-              value: '320',
+              value: kpiDataMatches?.matches_started_6_12_weeks_ago,
             },
           ],
         ]}
