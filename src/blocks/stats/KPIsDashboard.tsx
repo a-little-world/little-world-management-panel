@@ -6,10 +6,10 @@ import {
   Text,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
+import useSWR from 'swr';
 import { isNumber } from 'lodash';
 import React from 'react';
 import styled from 'styled-components';
-import useSWR from 'swr';
 
 import LoadingSpinner from '../../atoms/LoadingSpinner';
 import { BarChart } from '../../atoms/Stats/HorizontalBarChart';
@@ -21,6 +21,9 @@ import { cratePostFetcher } from '../../store';
 import { BarChartTimeRangedV2 } from './BarChartTimeRanged';
 import { MatchQuality } from './MatchQualityStatistic';
 import { matchJourneyBuckets, userJourneyBuckets } from './buckets';
+
+const fetcher = (...args) => fetch(...args).then(res => res.json());
+
 
 const SectionTitle = styled(Text)`
   font-weight: bold;
@@ -232,19 +235,25 @@ const KPI: React.FC<KPIProps> = ({
 };
 
 const KPIs: React.FC = () => {
+  // Load the current data 
+  const { data: kpisData } = useSWR(
+    '/api/matching/users/statistics/kpi_singup/',
+    fetcher,
+  );
+  console.log('kpisData', kpisData);
   return (
     <KPIsContainer>
       <KPI
         title="Signup Funnel"
         stats={[
           [
-            { label: 'Total Registered Users', value: '100.000' },
-            { label: 'Last 7 days', value: '1.213' },
-            { label: '% Volunteers', value: '8%' },
+            { label: 'Total Registered Users', value: kpisData?.total_registered_users },
+            { label: 'Last 7 days', value: kpisData?.last_7_days },
+            { label: '% Volunteers (last 7 days)', value: `${kpisData?.percent_volunteers_last_7_days}%` },
           ],
           [
-            { label: '% Onboarded Users* (Total)', value: '15.3%' },
-            { label: 'Signups der letzten 30 Tagen', value: '15.3%' },
+            { label: '% Onboarded Users* (Total)', value: `${kpisData?.percent_onboarded_users}%` },
+            { label: 'Signups der letzten 30 Tagen', value: kpisData?.signups_last_30_days },
           ],
         ]}
         footnote="Without too low german level"
