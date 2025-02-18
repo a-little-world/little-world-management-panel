@@ -1,4 +1,4 @@
-export function modifyData(data) {
+export function modifyData(data, bucketDescriptionMap={}) {
   const modifiedData = [];
   const topCount = data[0].count;
   let currentCount = topCount;
@@ -10,7 +10,7 @@ export function modifyData(data) {
     }
     const percentage = Math.round((currentCount / topCount) * 100);
     modifiedData.push({
-      name: item.name,
+      name: bucketDescriptionMap.hasOwnProperty(item.name) ? bucketDescriptionMap[item.name] : item.name,
       count: currentCount,
       longDescription: `${index !== 0 ? '-' : ''} ${item.name} (${
         item.count

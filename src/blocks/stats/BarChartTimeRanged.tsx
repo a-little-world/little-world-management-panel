@@ -67,9 +67,9 @@ const chartCategories = [
     chartBackend: 'v2',
     filters: [
       'all',
-      'journey_v2__never_active',
+      'journey_v2__never_active_or_deleted',
       'journey_v2__user_created',
-      'journey_v2__user_deleted',
+      //'journey_v2__user_deleted', is within the first bucket now!
       'journey_v2__email_verified',
       'journey_v2__user_form_completed',
       'journey_v2__too_low_german_level',
@@ -499,6 +499,7 @@ export function BarChartTimeRangedV2({
   initialCategory = 'user-signup-funnel',
   displayTimeSelection = true,
   displayExactTimeSelection = false,
+  listDescriptionMap = {},
 }) {
   const [category, setCategory] = React.useState(
     chartCategories.find(cat => cat.id === initialCategory),
@@ -525,7 +526,7 @@ export function BarChartTimeRangedV2({
   if (isLoading) return <div>Loading...</div>;
   if (!data) return <div>Error: {error}</div>;
 
-  const modifiedData = modifyData(data?.buckets);
+  const modifiedData = modifyData(data?.buckets, listDescriptionMap);
   const chartConfig = createChartConfig(modifiedData);
   console.log({ modifiedData, chartConfig });
   return (

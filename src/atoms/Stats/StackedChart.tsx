@@ -92,6 +92,7 @@ interface StackedChartProps {
   elementsConfig: ElementType[];
   title?: string;
   type?: 'bar' | 'area';
+  listDescriptionMap?: { [key: string]: string };
 }
 
 const StackedChart = ({
@@ -99,6 +100,7 @@ const StackedChart = ({
   elementsConfig = example_elements_config,
   title,
   type = 'bar',
+  listDescriptionMap={},
 }: StackedChartProps) => {
   const theme = useTheme();
   const ChartType = type === 'area' ? AreaChart : BarChart;

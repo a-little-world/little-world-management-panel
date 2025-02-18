@@ -406,7 +406,20 @@ function KPIsDashboard() {
       </Description>
       <Sections>
         <KPIs />
-        <BarChartTimeRangedV2 displayTimeSelection={false} />
+        <BarChartTimeRangedV2 
+          displayTimeSelection={false} 
+          listDescriptionMap={{
+            all: "Total registered users",
+            journey_v2__never_active_or_deleted: "Registered users (adjusted)",
+            journey_v2__user_created: "Users unverified",
+            journey_v2__email_verified: "Users verified",
+            journey_v2__user_form_completed: "User filled form",
+            journey_v2__too_low_german_level: "Users with B1+ German level",
+            journey_v2__user_form_completed_volunteer: "Users filled form (volunteers)",
+            journey_v2__booked_onboarding_call: "Users booked onboarding call in the past",
+            journey_v2__no_show: "Onboarded users"
+          }}
+        />
 
         <StackedChart
           title="Sign Up Evolution"
