@@ -18,12 +18,12 @@ import StackedAreaChart from '../../atoms/Stats/StackedChart';
 import StackedChart from '../../atoms/Stats/StackedChart';
 import Stat from '../../atoms/Stats/Stat';
 import { cratePostFetcher } from '../../store';
-import { BarChartTimeRangedV2 } from './BarChartTimeRanged';
+import { BarChartTimeRangedV2, SignupFunnelEvolution } from './BarChartTimeRanged';
+import { modifyDataToPercentages } from '../../helpers/stats';
 import { MatchQuality } from './MatchQualityStatistic';
 import { matchJourneyBuckets, userJourneyBuckets } from './buckets';
 
 const fetcher = (...args) => fetch(...args).then(res => res.json());
-
 
 const SectionTitle = styled(Text)`
   font-weight: bold;
@@ -420,11 +420,8 @@ function KPIsDashboard() {
             journey_v2__no_show: "Onboarded users"
           }}
         />
-
-        <StackedChart
-          title="Sign Up Evolution"
-          // elementsConfig={SIGN_UP_CONFIG}
-        />
+        
+          <SignupFunnelEvolution dataModFunc={modifyDataToPercentages} />
         <MatchSection>
           {/* <StackedChart title="Match Evolution" elementsConfig={MATCH_EVOLUTION_CONFIG} /> */}
           <MatchQuality />
