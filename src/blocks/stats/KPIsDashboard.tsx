@@ -245,8 +245,14 @@ const KPIs: React.FC = () => {
     '/api/matching/users/statistics/kpi_matching/',
     fetcher,
   );
+
+  const { data: kpiDataSearching} = useSWR(
+    '/api/matching/users/statistics/kpi_searching/',
+    fetcher,
+  );
   console.log('kpisData', kpisDataUserSignup);
   console.log('kpisDataMatches', kpiDataMatches);
+  console.log('kpisDataSearching', kpiDataSearching);
   return (
     <KPIsContainer>
       <KPI
@@ -292,18 +298,19 @@ const KPIs: React.FC = () => {
         title="Users Waiting"
         matrixData={{
           xLabels: [
-            "users searching for 'first-match' now ",
-            "users searching for 'another-match' now ",
+            "Volunteers",
+            "Learners",
           ],
-          yLabels: ['Learners', 'Volunteers'],
+          yLabels: ["users searching for 'first-match'", "users searching for 'another-match'"],
           cells: [
-            { title: 'Learners', content: '99.9%', color: '#4299E1' },
-            { title: 'Volunteers', content: '120ms', color: '#4299E1' },
-            { content: '120ms', color: '#4299E1' },
-            { content: '120ms', color: '#4299E1' },
+            { title: 'Volunteers', content: kpiDataSearching?.first_search_volunteers, color: '#4299E1' },
+            { title: 'Learners', content: kpiDataSearching?.first_search_learners, color: '#4299E1' },
+            { title: 'Volunteers', content: kpiDataSearching?.searching_again_volunteers, color: '#4299E1' },
+            { title: 'Learners', content: kpiDataSearching?.searching_again_learners, color: '#4299E1' },
           ],
         }}
         color="#4299E1"
+        footnote="Exludes users searching that have open proposals"
       />
     </KPIsContainer>
   );
