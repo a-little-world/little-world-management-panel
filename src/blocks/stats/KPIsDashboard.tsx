@@ -289,9 +289,13 @@ const KPIs: React.FC = () => {
               label: 'Matches gestartet vor 6 bis 12 Wochen',
               value: kpiDataMatches?.matches_started_6_12_weeks_ago,
             },
+            {
+              label: '% failed vs ongoing+finished Matches (6-12 Wochen)',
+              value: `${kpiDataMatches?.matches_6_12_weeks_ago_failed_vs_ongoing_finished_percentage}%`,
+            },
           ],
         ]}
-        footnote="Monthly active users"
+        footnote="% failed vs ongoing+finished Matches = 100.0 - (% failed / ongoing+finished Matches (total))"
         color="#ED8936"
       />
       <KPI
