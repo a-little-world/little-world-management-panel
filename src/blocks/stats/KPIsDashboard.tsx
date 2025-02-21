@@ -295,7 +295,7 @@ const KPIs: React.FC = () => {
             },
           ],
         ]}
-        footnote="% failed vs ongoing+finished Matches = 100.0 - (% failed / ongoing+finished Matches (total))"
+        footnote="% failed vs ongoing+finished Matches = 100.0 - (% failed / Matches (total, ongoing+finished+failed+(in-progress)))"
         color="#ED8936"
       />
       <KPI
@@ -432,7 +432,7 @@ function KPIsDashboard() {
           }}
         />
         
-          <SignupFunnelEvolution dataModFunc={modifyDataToPercentages} />
+          <SignupFunnelEvolution dataModFunc={modifyDataToPercentages} dataset="simplified-user-signup-funnel" />
         <MatchSection>
           {/* <StackedChart title="Match Evolution" elementsConfig={MATCH_EVOLUTION_CONFIG} /> */}
           <MatchQuality />

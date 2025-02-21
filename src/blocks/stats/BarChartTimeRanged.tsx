@@ -78,6 +78,19 @@ const chartCategories = [
     ],
   },
   {
+    id: "simplified-user-signup-funnel",
+    title: "Simplified User Signup Funnel",
+    filters: [
+      'all',
+      // Registered users
+      'journey_v2__never_active_or_deleted_or_created',
+      // Verified users
+      'journey_v2__email_verified_and_form_completed',
+      // Not onboarded users
+      'journey_v2__too_low_german_level_or_not_onboarded',
+    ],
+  },
+  {
     id: 'in-reg',
     title: 'Users still in Registration Process',
     filters: [
@@ -215,7 +228,10 @@ export function DataGraphSingupFunnelEvolution({
   );
 }
 
-export function SignupFunnelEvolution({ dataModFunc = modifyData }) {
+export function SignupFunnelEvolution({ 
+  dataModFunc = modifyData ,
+  dataset = 'user-signup-funnel'
+}) {
   const today = new Date();
   const thisYear = today.getFullYear();
   const currentMonth = today.getMonth(); // 0-11
@@ -255,7 +271,7 @@ export function SignupFunnelEvolution({ dataModFunc = modifyData }) {
   };
   const monthToDatesKeys = Object.keys(monthToDatesMap);
   const filters =
-    chartCategories.find(cat => cat.id === 'user-signup-funnel')?.filters || [];
+    chartCategories.find(cat => cat.id === dataset)?.filters || [];
 
   // const tag1Data = useMonthData(filters, monthToDatesKeys[0], monthToDatesMap) we don't need 'all'
   const tag2Data = useMonthData(filters, monthToDatesKeys[1], monthToDatesMap);
