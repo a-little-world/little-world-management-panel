@@ -18,7 +18,7 @@ import StackedAreaChart from '../../atoms/Stats/StackedChart';
 import StackedChart from '../../atoms/Stats/StackedChart';
 import Stat from '../../atoms/Stats/Stat';
 import { cratePostFetcher } from '../../store';
-import { BarChartTimeRangedV2, SignupFunnelEvolution } from './BarChartTimeRanged';
+import { BarChartTimeRangedV2, MatchingFunnelEvolution, SignupFunnelEvolution } from './BarChartTimeRanged';
 import { modifyDataToPercentages } from '../../helpers/stats';
 import { MatchQuality } from './MatchQualityStatistic';
 import { matchJourneyBuckets, userJourneyBuckets } from './buckets';
@@ -433,6 +433,7 @@ function KPIsDashboard() {
         />
         
           <SignupFunnelEvolution dataModFunc={modifyDataToPercentages} dataset="simplified-user-signup-funnel" />
+          <MatchingFunnelEvolution dataModFunc={modifyDataToPercentages} dataset="match-journey" />
         <MatchSection>
           {/* <StackedChart title="Match Evolution" elementsConfig={MATCH_EVOLUTION_CONFIG} /> */}
           <MatchQuality />

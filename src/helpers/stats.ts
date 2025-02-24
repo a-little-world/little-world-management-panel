@@ -24,9 +24,11 @@ export function modifyData(data, bucketDescriptionMap={}) {
 export function modifyDataToPercentages(data) {
   const modifiedData = [];
   const topCount = data.find(item => item.name === 'all').count;
+  //console.log("TOP COUNT", topCount);
   var summed = 0;
   data.forEach((item, index) => {
-    if (item.name !== 'all') {
+    //console.log("ITEM", item);
+    if (item.name !== 'all' && item.name !== 'match_journey_v2__all') {
       modifiedData.push({
         name: item.name,
         count: parseFloat(((item.count / topCount) * 100).toFixed(2)),
@@ -45,5 +47,20 @@ export function modifyDataToPercentages(data) {
     description: `sum (${summed}) = ${Math.round((summed / topCount) * 100)}%`,
   });
 
+  //console.log("MODIFIED DATA", modifiedData[modifiedData.length - 1]);
+
   return modifiedData;
+}
+
+export function modifyDataToPercentagesNonCummulative(data) {
+  const modifiedData = [];
+  const topCount = data[0].count;
+  let currentCount = topCount;
+  let lastName = '';
+
+  data.forEach((item, index) => {
+    if (index !== 0) {
+      currentCount -= item.count;
+    }
+  });
 }
