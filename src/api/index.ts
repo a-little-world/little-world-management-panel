@@ -462,3 +462,38 @@ export const updateDynamicTemplate = async ({
     onError(error);
   }
 };
+
+export const setUserSearching = async ({
+  userId,
+  onError,
+  onSuccess,
+  searching
+}) => {
+  try {
+    console.log('Current searching state:', searching);
+    const response = await fetch(
+      `/api/matching/users/${userId}/change_searching_state/`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookiesAsObject().csrftoken,
+        },
+        body: JSON.stringify({
+          searching_state: searching ? 'searching' : 'idle',
+        }),
+      },
+    );
+
+    if (response.ok) {
+      const responseBody = await response?.json();
+      onSuccess(responseBody);
+    } else {
+      const responseBody = await response?.json();
+      const error = formatApiError(responseBody, response);
+      throw error;
+    }
+  } catch (error) {
+    onError(error);
+  }
+};
