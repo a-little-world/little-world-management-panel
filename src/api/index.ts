@@ -470,8 +470,7 @@ export const setUserSearching = async ({
   searching
 }) => {
   try {
-    console.log('Current searching state:', searching);
-    const response = await fetch(
+    const result = await apiFetch(
       `/api/matching/users/${userId}/change_searching_state/`,
       {
         method: 'POST',
@@ -479,21 +478,13 @@ export const setUserSearching = async ({
           'Content-Type': 'application/json',
           'X-CSRFToken': getCookiesAsObject().csrftoken,
         },
-        body: JSON.stringify({
+        body: {
           searching_state: searching ? 'searching' : 'idle',
-        }),
+        },
       },
     );
-
-    if (response.ok) {
-      const responseBody = await response?.json();
-      onSuccess(responseBody);
-    } else {
-      const responseBody = await response?.json();
-      const error = formatApiError(responseBody, response);
-      throw error;
-    }
+    onSuccess(result);
   } catch (error) {
-    onError(error);
+    onError(error)
   }
 };

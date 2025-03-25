@@ -241,6 +241,7 @@ const UserActions = ({
               defaultChecked={value}
               error={error?.message}
               label="This user is no longer responsive?"
+              required={false}
             />
           )}
         />
@@ -262,6 +263,7 @@ const UserActions = ({
               defaultChecked={value}
               error={error?.message}
               label={'Is user searching for another match?'}
+              required={false}
             />
           )}
         />
