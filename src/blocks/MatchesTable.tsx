@@ -24,6 +24,7 @@ const MATCHES_FIELDS = [
   { key: 'uuid', label: 'Match ID' },
   { key: 'user1', label: 'User 1' },
   { key: 'user2', label: 'User 2' },
+  { key: 'bucket', label: 'Bucket' },
   { key: 'created_at', label: 'Created At' },
   { key: 'updated_at', label: 'Last Activity' },
 ];
