@@ -150,7 +150,7 @@ const UserActions = ({
 
   return (
     <div className="w-full">
-      <SendSms userId={user} />
+      <SendSms userId={user.id} />
       <Separator />
       <form
         className="mb-4"
