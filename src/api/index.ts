@@ -101,14 +101,14 @@ export const markMessageAsRead = ({ messageId, userId, onError, onSuccess }) =>
 export const deleteMessage = ({}) => null;
 
 export const sendSms = ({ userId, message, onError, onSuccess }) =>
-  fetch(`/api/admin/quick_actions/send_sms_to_user/`, {
+  fetch(`/api/matching/users/${userId}/sms/`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'X-CSRFToken': getCookiesAsObject().csrftoken,
     },
     body: JSON.stringify({
-      message,
+      message: message.smsMessage,
       user_id: userId,
     }),
   })
@@ -491,5 +491,31 @@ export const setMatchCompletedOffplattform = async ({
     }
   } catch (error) {
     onError(error);
+  }
+};
+
+export const setUserSearching = async ({
+  userId,
+  onError,
+  onSuccess,
+  searching
+}) => {
+  try {
+    const result = await apiFetch(
+      `/api/matching/users/${userId}/change_searching_state/`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookiesAsObject().csrftoken,
+        },
+        body: {
+          searching_state: searching ? 'searching' : 'idle',
+        },
+      },
+    );
+    onSuccess(result);
+  } catch (error) {
+    onError(error)
   }
 };

@@ -19,6 +19,7 @@ import {
   sendSms,
   setHadPrematchingCall,
   setNewsletterSubscribed,
+  setUserSearching,
   setUserUnresponsive,
 } from '../../api/index';
 import { Card, CardFooter, CardHeader, CardTitle } from '../../atoms/Card';
@@ -117,6 +118,8 @@ const UserActions = ({
           func = setHadPrematchingCall;
         } else if (key === 'newsletter') {
           func = setNewsletterSubscribed;
+        } else if (key === 'searching') {
+          func = setUserSearching;
         } else {
           console.error(`No function mapped for key: ${key}`);
           return Promise.reject(
@@ -147,7 +150,7 @@ const UserActions = ({
 
   return (
     <div className="w-full">
-      <SendSms userId={user} />
+      <SendSms userId={user.id} />
       <Separator />
       <form
         className="mb-4"
@@ -238,6 +241,29 @@ const UserActions = ({
               defaultChecked={value}
               error={error?.message}
               label="This user is no longer responsive?"
+              required={false}
+            />
+          )}
+        />
+        <Controller
+          defaultValue={user.state.searching_state === 'idle' ? false : true}
+          name="searching"
+          control={control}
+          render={({
+            field: { onChange, onBlur, value, name, ref },
+            fieldState: { error },
+          }) => (
+            <Checkbox
+              id="searching"
+              name={name}
+              inputRef={ref}
+              onCheckedChange={val => onChange({ target: { value: val } })}
+              onBlur={onBlur}
+              value={value}
+              defaultChecked={value}
+              error={error?.message}
+              label={'Is user searching for another match?'}
+              required={false}
             />
           )}
         />
