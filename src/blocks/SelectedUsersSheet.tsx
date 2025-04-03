@@ -47,11 +47,6 @@ export function SelectedUsersSheet() {
           </StyledSheetButton>
         </SheetTrigger>
       )}
-      {!isEmpty(selectedMatches) && (
-          <StyledSheetButton className="fixed bottom-14 right-3/4 translate-x-2/4">
-            View Selected Matches ({size(selectedMatches)})
-          </StyledSheetButton>
-      )}
       <SheetContent>
         <SheetHeader>
           <SheetTitle>Selected Users</SheetTitle>

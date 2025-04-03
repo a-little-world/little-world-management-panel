@@ -178,4 +178,82 @@ const MatchCard = ({
   );
 };
 
+const SelectedMatchCardContainer = styled.div`
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  width: 300px;
+`;
+
+const SelectedMatchUsers = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const SelectedInfo = styled.div`
+  margin-top: 10px;
+`;
+
+const SelectedStats = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+`;
+
+const ViewDetailsButton = styled(Button)`
+  margin-top: 10px;
+`;
+
+export const SelectedMatchCard = ({
+  match,
+  onViewDetails,
+}: {
+  match: any;
+  onViewDetails: () => void;
+}) => {
+  const isProposed = match.status === MATCH_STATUS.proposed;
+
+  return (
+    <SelectedMatchCardContainer>
+      <SelectedMatchUsers>
+        <UserInfo user={match.user1} match={match} />
+        <Logo label="Little World Logo" labelId="LW" width={'32px'} />
+        <UserInfo user={match.user2} match={match} />
+      </SelectedMatchUsers>
+      <SelectedInfo>
+        <DataField title="Status" value={match.status} />
+        <DataField
+          title="Matched"
+          value={formatTimeDistance(new Date(match.created_at), new Date())}
+        />
+        <DataField
+          title="Last interaction"
+          value={formatTimeDistance(
+            new Date(match.latest_interaction_at),
+            new Date(),
+          )}
+        />
+      </SelectedInfo>
+      <SelectedStats>
+        <Stat
+          label="Messages"
+          stat={match.total_messages_counter}
+        />
+        <Stat
+          label="Video Calls"
+          stat={match.total_mutal_video_calls_counter}
+        />
+      </SelectedStats>
+      <ViewDetailsButton
+        appearance={ButtonAppearance.Secondary}
+        size={ButtonSizes.Small}
+        onClick={onViewDetails}
+      >
+        View Details
+      </ViewDetailsButton>
+    </SelectedMatchCardContainer>
+  );
+};
+
 export default MatchCard;
