@@ -101,14 +101,14 @@ export const markMessageAsRead = ({ messageId, userId, onError, onSuccess }) =>
 export const deleteMessage = ({}) => null;
 
 export const sendSms = ({ userId, message, onError, onSuccess }) =>
-  fetch(`/api/matching/users/${userId}/sms/`, {
+  fetch(`/api/admin/quick_actions/send_sms_to_user/`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'X-CSRFToken': getCookiesAsObject().csrftoken,
     },
     body: JSON.stringify({
-      message: message.smsMessage,
+      message,
       user_id: userId,
     }),
   })
