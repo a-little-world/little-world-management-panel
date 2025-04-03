@@ -1,7 +1,11 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
+import { isEmpty, map } from 'lodash';
 import { useSearchParams } from 'react-router-dom';
 import useSWR from 'swr';
+import { Controller, useForm } from 'react-hook-form';
+import { Checkbox, Button, StatusMessage, MessageTypes } from '@a-little-world/little-world-design-system';
+import { setMatchCompletedOffplattform } from '../api';
 
 import {
   Section,
@@ -20,8 +24,63 @@ const MATCH_TABS = [
   { key: 'overview', label: 'Overview' },
   { key: 'stats', label: 'Stats' },
   { key: 'notes', label: 'Notes' },
-  // { key: 'actions', label: 'Actions' },
+  { key: 'actions', label: 'Actions' },
 ];
+
+const MatchActions = ({ match, onUpdate }: { match: any; onUpdate: () => void }) => {
+  console.log({ match });
+  const { control, handleSubmit, formState: { dirtyFields, errors }, setError } = useForm({
+    defaultValues: {
+      completed_off_plattform: match.completed_off_plattform,
+    },
+  });
+
+  const saveChanges = data => {
+    if (isEmpty(dirtyFields)) return;
+    // Assume setMatchCompletedOffplattform is a function to update the match status
+    setMatchCompletedOffplattform({
+      matchId: match.uuid,
+      completed_off_plattform: data.completed_off_plattform,
+      onError: error => {
+        setError('completed_off_plattform', error.message);
+      },
+      onSuccess: () => {
+        onUpdate();
+      },
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit(saveChanges)}>
+      <Controller
+        name="completed_off_plattform"
+        control={control}
+        render={({ field: { onChange, onBlur, value, name, ref }, fieldState: { error } }) => (
+          <Checkbox
+            id="completed_off_plattform"
+            name={name}
+            inputRef={ref}
+            onCheckedChange={val => onChange({ target: { value: val } })}
+            onBlur={onBlur}
+            value={value}
+            defaultChecked={value}
+            error={error?.message}
+            label="Match completed off-platform"
+          />
+        )}
+      />
+      <StatusMessage
+        $visible={!!errors?.completed_off_plattform}
+        $type={MessageTypes.Error}
+      >
+        {errors?.completed_off_plattform?.message}
+      </StatusMessage>
+      <Button type="submit" disabled={isEmpty(dirtyFields)}>
+        Save Changes
+      </Button>
+    </form>
+  );
+};
 
 const MatchPanelContent = ({
   tab,
@@ -41,6 +100,10 @@ const MatchPanelContent = ({
     return (
       <UserNotes notes={match?.notes} modelId={match.uuid} model="match" />
     );
+
+  if (tab === 'actions')
+    return <MatchActions match={match} onUpdate={onUpdate} />;
+
   return null;
 };
 

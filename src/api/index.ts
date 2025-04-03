@@ -462,3 +462,34 @@ export const updateDynamicTemplate = async ({
     onError(error);
   }
 };
+
+export const setMatchCompletedOffplattform = async ({
+  matchId,
+  completed_off_plattform,
+  onError,
+  onSuccess,
+}) => {
+  try {
+    const response = await fetch(`/api/matching/matches/${matchId}/completed_off_plattform/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookiesAsObject().csrftoken,
+      },
+      body: JSON.stringify({
+        completed_off_plattform,
+      }),
+    });
+
+    if (response.ok) {
+      const responseBody = await response.json();
+      onSuccess(responseBody);
+    } else {
+      const responseBody = await response.json();
+      const error = formatApiError(responseBody, response);
+      throw error;
+    }
+  } catch (error) {
+    onError(error);
+  }
+};
