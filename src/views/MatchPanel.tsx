@@ -6,7 +6,6 @@ import useSWR from 'swr';
 import { Controller, useForm } from 'react-hook-form';
 import { Checkbox, Button, StatusMessage, MessageTypes } from '@a-little-world/little-world-design-system';
 import { setMatchCompletedOffplattform } from '../api';
-
 import {
   Section,
   SectionContent,
