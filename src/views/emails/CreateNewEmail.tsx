@@ -123,12 +123,74 @@ const swapArrayElements = ({
   return array;
 };
 
-const HrefEditor = ({ handleUpdate, href, text }) => {
+const HrefEditor = ({ handleUpdate, href, leftHref, rightHref, text, leftText, rightText, type }) => {
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
+  
+  if (type === ContentTypes.TwoButtons) {
+    return (
+      <Card width={CardSizes.Small}>
+        <form onSubmit={handleSubmit(handleUpdate)}>
+          <TextInput
+            {...registerInput({
+              register,
+              name: 'leftText',
+              options: { required: 'Required' },
+            })}
+            id="edit_left_text"
+            error={errors?.leftText?.message}
+            placeholder="Enter text for left button"
+            label={'Left Button Text'}
+            defaultValue={leftText ?? 'Left Button'}
+          />
+          <TextInput
+            {...registerInput({
+              register,
+              name: 'leftUrl',
+              options: { required: 'Required' },
+            })}
+            id="edit_left_url"
+            label="Left Button URL"
+            error={errors?.leftUrl?.message}
+            placeholder={'URL for left button'}
+            defaultValue={leftHref ?? null}
+          />
+          <TextInput
+            {...registerInput({
+              register,
+              name: 'rightText',
+              options: { required: 'Required' },
+            })}
+            id="edit_right_text"
+            error={errors?.rightText?.message}
+            placeholder="Enter text for right button"
+            label={'Right Button Text'}
+            defaultValue={rightText ?? 'Right Button'}
+          />
+          <TextInput
+            {...registerInput({
+              register,
+              name: 'rightUrl',
+              options: { required: 'Required' },
+            })}
+            id="edit_right_url"
+            label="Right Button URL"
+            error={errors?.rightUrl?.message}
+            placeholder={'URL for right button'}
+            defaultValue={rightHref ?? null}
+          />
+          <Button type="submit" size={ButtonSizes.Stretch}>
+            Update Buttons
+          </Button>
+        </form>
+      </Card>
+    );
+  }
+  
+  // Original code for other link types
   return (
     <Card width={CardSizes.Small}>
       <form onSubmit={handleSubmit(handleUpdate)}>
@@ -301,8 +363,18 @@ const CreateNewEmail = () => {
 
   const handleHrefUpdate = data => {
     const dataCopy = [...newEmail];
-    dataCopy[showHrefEditor].href = data.url;
-    dataCopy[showHrefEditor].text = data.text;
+    
+    if (dataCopy[showHrefEditor].type === ContentTypes.TwoButtons) {
+      dataCopy[showHrefEditor].leftHref = data.leftUrl;
+      dataCopy[showHrefEditor].rightHref = data.rightUrl;
+      dataCopy[showHrefEditor].leftText = data.leftText;
+      dataCopy[showHrefEditor].rightText = data.rightText;
+      // Keep the main text field for compatibility
+      dataCopy[showHrefEditor].text = `${data.leftText} | ${data.rightText}`;
+    } else {
+      dataCopy[showHrefEditor].href = data.url;
+      dataCopy[showHrefEditor].text = data.text;
+    }
 
     setNewEmail(dataCopy);
     setShowHrefEditor(null);
@@ -527,7 +599,12 @@ const CreateNewEmail = () => {
         <HrefEditor
           handleUpdate={handleHrefUpdate}
           href={newEmail?.[showHrefEditor]?.href}
+          leftHref={newEmail?.[showHrefEditor]?.leftHref}
+          rightHref={newEmail?.[showHrefEditor]?.rightHref}
           text={newEmail?.[showHrefEditor]?.text}
+          leftText={newEmail?.[showHrefEditor]?.leftText}
+          rightText={newEmail?.[showHrefEditor]?.rightText}
+          type={newEmail?.[showHrefEditor]?.type}
         />
       </Modal>
     </Container>

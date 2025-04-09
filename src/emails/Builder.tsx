@@ -25,6 +25,7 @@ import {
   title,
 } from './shared/styles';
 import { Theme } from './shared/theme';
+import TwoButtons from './shared/TwoButtons';
 
 export enum ContentTypes {
   Title = 'title',
@@ -34,6 +35,7 @@ export enum ContentTypes {
   // Illustration = 'illustration',
   Button = 'button',
   Link = 'link',
+  TwoButtons = 'twoButtons',
 }
 
 interface BlockDataType {
@@ -45,6 +47,10 @@ interface BlockDataType {
     alt: string;
   };
   href?: string;
+  leftHref?: string;
+  rightHref?: string;
+  leftText?: string;
+  rightText?: string;
   text: string;
   listItems?: string[];
 }
@@ -94,12 +100,16 @@ const ChevronUpIcon = styled(ChevronDownIcon)`
   transform: rotate(180deg);
 `;
 
-export const BlocksWithLink = [ContentTypes.Button, ContentTypes.Link];
+export const BlocksWithLink = [ContentTypes.Button, ContentTypes.Link, ContentTypes.TwoButtons];
 
 const EmailBlock = ({
   centred,
   href,
+  leftHref,
+  rightHref,
   text,
+  leftText,
+  rightText,
   type,
   imgProps,
   updateText,
@@ -155,6 +165,22 @@ const EmailBlock = ({
         defaultText={text}
         Component={ButtonLink}
         componentProps={{ style: button, href }}
+      />
+    );
+    
+  if (type === ContentTypes.TwoButtons)
+    return (
+      <EditableText
+        key={text}
+        defaultText={text}
+        updateText={updateText}
+        Component={TwoButtons}
+        componentProps={{
+          leftHref: leftHref || href || '#',
+          rightHref: rightHref || '#',
+          leftChildren: leftText || 'Left Button',
+          rightChildren: rightText || 'Right Button'
+        }}
       />
     );
 
