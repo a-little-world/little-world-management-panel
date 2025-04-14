@@ -688,12 +688,14 @@ export function MonthTimeSelector({
 export function BarChartTimeRangedV2({
   initialCategory = 'user-signup-funnel',
   displayTimeSelection = true,
+  displayVolunteersOnlyCheckbox = true,
   displayExactTimeSelection = false,
   listDescriptionMap = {},
 }) {
   const [category, setCategory] = React.useState(
     chartCategories.find(cat => cat.id === initialCategory),
   );
+  const [volunteersOnly, setVolunteersOnly] = React.useState(false);
 
   const today = new Date();
   const [startDate, setStartDate] = React.useState('2021-01-01');
@@ -709,6 +711,7 @@ export function BarChartTimeRangedV2({
       selected_filters: category.filters,
       start_date: startDate,
       end_date: endDate,
+      volunteers_only: volunteersOnly,
     }),
     {},
   );
@@ -723,24 +726,45 @@ export function BarChartTimeRangedV2({
     <Card className="">
       <CardHeader>
         {category?.title}
-        {displayTimeSelection && (
-          <MonthTimeSelector
-            startDate={startDate}
-            endDate={endDate}
-            setStartDate={setStartDate}
-            setEndDate={setEndDate}
-            mutate={mutate}
-          />
-        )}
-        {displayExactTimeSelection && (
-          <ExactTimeSelector
-            startDate={startDate}
-            endDate={endDate}
-            setStartDate={setStartDate}
-            setEndDate={setEndDate}
-            mutate={mutate}
-          />
-        )}
+        <div className="flex flex-col gap-4">
+          {displayTimeSelection && (
+            <MonthTimeSelector
+              startDate={startDate}
+              endDate={endDate}
+              setStartDate={setStartDate}
+              setEndDate={setEndDate}
+              mutate={mutate}
+            />
+          )}
+          {displayExactTimeSelection && (
+            <ExactTimeSelector
+              startDate={startDate}
+              endDate={endDate}
+              setStartDate={setStartDate}
+              setEndDate={setEndDate}
+              mutate={mutate}
+            />
+          )}
+          {displayVolunteersOnlyCheckbox && (
+            <div className="flex items-center space-x-2 mt-2">
+              <input
+                type="checkbox"
+                id="volunteers-only"
+                checked={volunteersOnly}
+                onChange={(e) => {
+                  setVolunteersOnly(e.target.checked);
+                  setTimeout(() => {
+                    mutate();
+                  }, 500);
+                }}
+                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+              />
+              <label htmlFor="volunteers-only" className="text-sm font-medium text-gray-700">
+                Volunteers only
+              </label>
+            </div>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="min-w-[600px]">
         <HorizontalBarChart data={modifiedData} />

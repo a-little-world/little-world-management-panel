@@ -418,7 +418,8 @@ function KPIsDashboard() {
       <Sections>
         <KPIs />
         <BarChartTimeRangedV2 
-          displayTimeSelection={false} 
+          displayTimeSelection={true} 
+          displayVolunteersOnlyCheckbox={true}
           listDescriptionMap={{
             all: "Total registered users",
             journey_v2__never_active_or_deleted: "Registered users (adjusted)",
