@@ -617,7 +617,8 @@ const automatedEmails = {
     preview: automatedText['new-match-engage.preview'],
     subject: automatedText['engage-new-match.subject'],
     content: [
-      { type: ContentTypes.Title, text: automatedText['engage-new-match.block-1'] },
+      { type: ContentTypes.Title,
+        text: automatedText['engage-new-match.block-1'] },
       {
         type: ContentTypes.Paragraph,
         text: automatedText['engage-new-match.block-2'],
