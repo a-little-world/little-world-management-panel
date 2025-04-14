@@ -123,7 +123,7 @@ const swapArrayElements = ({
   return array;
 };
 
-const HrefEditor = ({ handleUpdate, href, leftHref, rightHref, text, leftText, rightText, type }) => {
+const HrefEditor = ({ handleUpdate, href, leftHref, rightHref, text, leftText, rightText, leftColor, rightColor, type }) => {
   const {
     register,
     handleSubmit,
@@ -161,6 +161,17 @@ const HrefEditor = ({ handleUpdate, href, leftHref, rightHref, text, leftText, r
           <TextInput
             {...registerInput({
               register,
+              name: 'leftColor',
+            })}
+            id="edit_left_color"
+            label="Left Button Color"
+            error={errors?.leftColor?.message}
+            placeholder={'#0063AF (default)'}
+            defaultValue={leftColor ?? null}
+          />
+          <TextInput
+            {...registerInput({
+              register,
               name: 'rightText',
               options: { required: 'Required' },
             })}
@@ -181,6 +192,17 @@ const HrefEditor = ({ handleUpdate, href, leftHref, rightHref, text, leftText, r
             error={errors?.rightUrl?.message}
             placeholder={'URL for right button'}
             defaultValue={rightHref ?? null}
+          />
+          <TextInput
+            {...registerInput({
+              register,
+              name: 'rightColor',
+            })}
+            id="edit_right_color"
+            label="Right Button Color"
+            error={errors?.rightColor?.message}
+            placeholder={'#0063AF (default)'}
+            defaultValue={rightColor ?? null}
           />
           <Button type="submit" size={ButtonSizes.Stretch}>
             Update Buttons
@@ -369,6 +391,8 @@ const CreateNewEmail = () => {
       dataCopy[showHrefEditor].rightHref = data.rightUrl;
       dataCopy[showHrefEditor].leftText = data.leftText;
       dataCopy[showHrefEditor].rightText = data.rightText;
+      dataCopy[showHrefEditor].leftColor = data.leftColor;
+      dataCopy[showHrefEditor].rightColor = data.rightColor;
       // Keep the main text field for compatibility
       dataCopy[showHrefEditor].text = `${data.leftText} | ${data.rightText}`;
     } else {
@@ -604,6 +628,8 @@ const CreateNewEmail = () => {
           text={newEmail?.[showHrefEditor]?.text}
           leftText={newEmail?.[showHrefEditor]?.leftText}
           rightText={newEmail?.[showHrefEditor]?.rightText}
+          leftColor={newEmail?.[showHrefEditor]?.leftColor}
+          rightColor={newEmail?.[showHrefEditor]?.rightColor}
           type={newEmail?.[showHrefEditor]?.type}
         />
       </Modal>

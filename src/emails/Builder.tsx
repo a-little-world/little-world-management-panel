@@ -51,6 +51,8 @@ interface BlockDataType {
   rightHref?: string;
   leftText?: string;
   rightText?: string;
+  leftColor?: string;
+  rightColor?: string;
   text: string;
   listItems?: string[];
 }
@@ -113,6 +115,8 @@ const EmailBlock = ({
   type,
   imgProps,
   updateText,
+  leftColor,
+  rightColor,
 }: BlockDataType) => {
   if (type === ContentTypes.Title)
     return (
@@ -179,7 +183,9 @@ const EmailBlock = ({
           leftHref: leftHref || href || '#',
           rightHref: rightHref || '#',
           leftChildren: leftText || 'Left Button',
-          rightChildren: rightText || 'Right Button'
+          rightChildren: rightText || 'Right Button',
+          leftColor: leftColor,
+          rightColor: rightColor
         }}
       />
     );
