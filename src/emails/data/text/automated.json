@@ -117,8 +117,8 @@
   "verify-email.block-4": "E-mail bestätigen",
   "engage-new-match.preview": "Du hast seit längerem keinen neuen Partner*in gesucht, möchtest du einen neuen Partner?",
   "engage-new-match.subject": "Lust auf ein neuen Match?",
-  "engage-new-match.block-1": "Hi {{ first_name }}!",
-  "engage-new-match.block-2": "Danke für dein Engagement bei Little World! Du hast seit längerem kein neuen Partner*in gesucht und wollte dich fragen, ob du Interesse hast einen neuen Match zu suchen?",
-  "engage-new-match.block-3": "Wenn du Interesse hast bitte melde dich hier an und suche deinen nächsten Match.",
-  "engage-new-match.block-4": "Solltest du dich nicht bei Little World registriert haben, kannst du diese E-Mail ignorieren."
+  "engage-new-match.block-1": "Liebe*r {{ first_name }}!",
+  "engage-new-match.block-2": "hast du Lust, dich erneut auf eine Gesprächspartner:in einzulassen? :heart_hands:",
+  "engage-new-match.block-3": "Wenn du Interesse hast, klicke unter 'Start' auf 'Gesprächspartner finden' oder melde dich einfach bei uns - wir kümmern uns um den Rest und finden einen passenden Gesprächspartner:in für dich.\nDanke, dass du Teil unserer Community bist! :star2:",
+  "engage-new-match.block-4": "Viele Grüße\nDein Team von Little World"
 }
