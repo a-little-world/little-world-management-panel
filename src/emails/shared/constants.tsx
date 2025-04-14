@@ -17,6 +17,7 @@ export const BackendVars = {
   confirmContactUrl: '{{ confirm_in_contact_url }}',
   messagesUrl: '{{ messages_url }}',
   profileUrlUrl: '{{ profile_link_url }}',
+  loginUrl: 'https://little-world.com/login',
   partnerProfileUrl: '{{ partner_profile_url }}',
   restartSearchUrl: '{{ restart_search_url }}',
   confirmationUrl: '{{ verification_url }}',
