@@ -114,5 +114,11 @@
   "verify-email.block-1": "Bitte bestätige deine E-Mail-Adresse für Little World",
   "verify-email.block-2": "Hallo {{ first_name }},",
   "verify-email.block-3": "du hast dich kürzlich bei Little World registriert, aber deine E-Mail-Adresse noch nicht bestätigt. Um alle Funktionen unserer Plattform nutzen zu können und mit Menschen aus aller Welt in Kontakt zu treten, bitten wir dich, deine E-Mail-Adresse zu bestätigen.",
-  "verify-email.block-4": "E-mail bestätigen"
+  "verify-email.block-4": "E-mail bestätigen",
+  "engage-new-match.preview": "Du hast seit längerem keinen neuen Partner*in gesucht, möchtest du einen neuen Partner?",
+  "engage-new-match.subject": "Lust auf ein neuen Match?",
+  "engage-new-match.block-1": "Hi {{ first_name }}!",
+  "engage-new-match.block-2": "Danke für dein Engagement bei Little World! Du hast seit längerem kein neuen Partner*in gesucht und wollte dich fragen, ob du Interesse hast einen neuen Match zu suchen?",
+  "engage-new-match.block-3": "Wenn du Interesse hast bitte melde dich hier an und suche deinen nächsten Match.",
+  "engage-new-match.block-4": "Solltest du dich nicht bei Little World registriert haben, kannst du diese E-Mail ignorieren."
 }

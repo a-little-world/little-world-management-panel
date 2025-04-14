@@ -610,6 +610,28 @@ const automatedEmails = {
       },
     ],
   },
+  'new-match-engage': {
+    id: 'new-match-engage',
+    label: 'new-match-engage',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['new-match-engage.preview'],
+    subject: automatedText['engage-new-match.subject'],
+    content: [
+      { type: ContentTypes.Title, text: automatedText['engage-new-match.block-1'] },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['engage-new-match.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['engage-new-match.block-3'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['engage-new-match.block-4'],
+      },
+    ],
+  },
 };
 
 export function getAutomatedPatentmatchEmails() {
