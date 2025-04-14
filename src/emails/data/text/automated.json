@@ -121,5 +121,14 @@
   "engage-new-match.block-2": "hast du Lust, dich erneut auf eine Gesprächspartner:in einzulassen? 🫶",
   "engage-new-match.block-3": "Wenn du Interesse hast, klicke unter 'Start' auf 'Gesprächspartner finden' oder melde dich einfach bei uns - wir kümmern uns um den Rest und finden einen passenden Gesprächspartner:in für dich.\nDanke, dass du Teil unserer Community bist! ✨",
   "engage-new-match.block-4": "Viele Grüße\nDein Team von Little World",
-  "engage-new-match.block-5": "Gesprächspartner finden"
+  "engage-new-match.block-5": "Gesprächspartner finden",
+  "still-in-contact-inactive.preview": "Wir haben bemerkt, dass du und {{ partner_first_name }} seit einiger Zeit nicht mehr über Little World kommuniziert habt.",
+  "still-in-contact-inactive.subject": "Bist du noch in Kontakt mit {{ partner_first_name }}?",
+  "still-in-contact-inactive.block-1": "Bist du noch in Kontakt mit {{ partner_first_name }}?",
+  "still-in-contact-inactive.block-2": "Hallo {{ first_name }},",
+  "still-in-contact-inactive.block-3": "Wir haben bemerkt, dass du und {{ partner_first_name }} seit einiger Zeit nicht mehr über Little World kommuniziert habt. Manchmal verlagern sich Gespräche auf andere Plattformen wie WhatsApp, Telegram oder andere Messenger.",
+  "still-in-contact-inactive.block-4": "Für unsere Wirkungsmessung und um unser Angebot zu verbessern, würden wir gerne wissen: Stehst du noch mit {{ partner_first_name }} in Kontakt, nur eben über einen anderen Kanal?",
+  "still-in-contact-inactive.block-5": "Ja, wir sind noch in Kontakt",
+  "still-in-contact-inactive.block-6": "Nein, wir sind nicht mehr in Kontakt",
+  "still-in-contact-inactive.block-7": "Deine Antwort hilft uns, unsere Plattform zu verbessern und erfolgreiche Verbindungen besser zu verstehen. Vielen Dank für deine Unterstützung!"
 }

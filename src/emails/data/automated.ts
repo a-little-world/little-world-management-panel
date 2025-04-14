@@ -528,6 +528,42 @@ const automatedEmails = {
       },
     ],
   },
+  'still-in-contact-inactive': {
+    id: 'still-in-contact-inactive',
+    label: 'Still in Contact (Inactive Match)',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['still-in-contact-inactive.preview'],
+    subject: automatedText['still-in-contact-inactive.subject'],
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: automatedText['still-in-contact-inactive.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['still-in-contact-inactive.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['still-in-contact-inactive.block-3'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['still-in-contact-inactive.block-4'],
+      },
+      {
+        type: ContentTypes.TwoButtons,
+        leftText: automatedText['still-in-contact-inactive.block-5'],
+        rightText: automatedText['still-in-contact-inactive.block-6'],
+        leftHref: BackendVars.stillInContactYesUrl,
+        rightHref: BackendVars.stillInContactNoUrl,
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['still-in-contact-inactive.block-7'],
+      },
+    ],
+  },
   unfinished_user_form_1: {
     id: 'unfinished_user_form_1',
     label: 'User Form Reminder 1',

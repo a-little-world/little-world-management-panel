@@ -24,6 +24,8 @@ export const BackendVars = {
   userFormUrl: '{{ user_form_url }}',
   linkUrl: '{{ link_url }}',
   unsubscribeUrl: '{{ unsubscribe_url }}',
+  stillInContactYesUrl: '{{ still_in_contact_yes_url }}',
+  stillInContactNoUrl: '{{ still_in_contact_no_url }}',
 };
 
 export const THEMES = {
