@@ -696,6 +696,7 @@ export function BarChartTimeRangedV2({
     chartCategories.find(cat => cat.id === initialCategory),
   );
   const [volunteersOnly, setVolunteersOnly] = React.useState(false);
+  const [showSettings, setShowSettings] = React.useState(false);
 
   const today = new Date();
   const [startDate, setStartDate] = React.useState('2021-01-01');
@@ -725,46 +726,65 @@ export function BarChartTimeRangedV2({
   return (
     <Card className="">
       <CardHeader>
-        {category?.title}
-        <div className="flex flex-col gap-4">
-          {displayTimeSelection && (
-            <MonthTimeSelector
-              startDate={startDate}
-              endDate={endDate}
-              setStartDate={setStartDate}
-              setEndDate={setEndDate}
-              mutate={mutate}
-            />
-          )}
-          {displayExactTimeSelection && (
-            <ExactTimeSelector
-              startDate={startDate}
-              endDate={endDate}
-              setStartDate={setStartDate}
-              setEndDate={setEndDate}
-              mutate={mutate}
-            />
-          )}
-          {displayVolunteersOnlyCheckbox && (
-            <div className="flex items-center space-x-2 mt-2">
-              <input
-                type="checkbox"
-                id="volunteers-only"
-                checked={volunteersOnly}
-                onChange={(e) => {
-                  setVolunteersOnly(e.target.checked);
-                  setTimeout(() => {
-                    mutate();
-                  }, 500);
-                }}
-                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-              />
-              <label htmlFor="volunteers-only" className="text-sm font-medium text-gray-700">
-                Volunteers only
-              </label>
-            </div>
-          )}
+        <div className="flex justify-between items-center">
+          <span>{category?.title}</span>
+          <button 
+            onClick={() => setShowSettings(!showSettings)}
+            className="p-2 rounded-full hover:bg-gray-100"
+            title="Toggle settings"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </button>
         </div>
+        
+        {showSettings && (
+          <div className="flex flex-row items-center gap-4 mt-3">
+            {displayTimeSelection && (
+              <div className="flex-1">
+                <MonthTimeSelector
+                  startDate={startDate}
+                  endDate={endDate}
+                  setStartDate={setStartDate}
+                  setEndDate={setEndDate}
+                  mutate={mutate}
+                />
+              </div>
+            )}
+            {displayExactTimeSelection && (
+              <div className="flex-1">
+                <ExactTimeSelector
+                  startDate={startDate}
+                  endDate={endDate}
+                  setStartDate={setStartDate}
+                  setEndDate={setEndDate}
+                  mutate={mutate}
+                />
+              </div>
+            )}
+            {displayVolunteersOnlyCheckbox && (
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="volunteers-only"
+                  checked={volunteersOnly}
+                  onChange={(e) => {
+                    setVolunteersOnly(e.target.checked);
+                    setTimeout(() => {
+                      mutate();
+                    }, 500);
+                  }}
+                  className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                />
+                <label htmlFor="volunteers-only" className="text-sm font-medium text-gray-700">
+                  Volunteers only
+                </label>
+              </div>
+            )}
+          </div>
+        )}
       </CardHeader>
       <CardContent className="min-w-[600px]">
         <HorizontalBarChart data={modifiedData} />
