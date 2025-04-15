@@ -668,9 +668,17 @@ const automatedEmails = {
         text: automatedText['engage-new-match.block-4'],
       },
       {
-        type: ContentTypes.Button,
+        type: ContentTypes.Paragraph,
         text: automatedText['engage-new-match.block-5'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['engage-new-match.block-6'],
         href: BackendVars.loginUrl,
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['engage-new-match.block-7'],
       },
     ],
   },
