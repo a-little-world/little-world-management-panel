@@ -641,9 +641,17 @@ const automatedEmails = {
       },
       {
         type: ContentTypes.Button,
-        text: automatedText['verify-email.block-4'],
+        text: automatedText['verify-email.block-5'],
         href: BackendVars.confirmationUrl,
       },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['verify-email.block-4'],
+      },
+      {
+        type: ContentTypes.Code,
+        text: BackendVars.verificationCode,
+      }
     ],
   },
   'new-match-engage': {
