@@ -45,6 +45,8 @@ interface UserProfile {
   second_name: string;
   phone_mobile: string;
   target_groups?: string[];
+  job_search: boolean;
+  job_skill_description: string;
   interests: string[];
   description: string;
   lang_skill: any; // Replace 'any' with proper type
@@ -174,6 +176,15 @@ const UserDetails: React.FC<{ user: User }> = ({ user }) => (
         label="Group"
         value={user.profile.target_groups?.join(', ') ?? ''}
       />
+      <InfoRow>
+        <Text tag="h4" bold>
+          Job Search:
+        </Text>
+        <Text>{user.profile.job_search ? 'Yes' : 'No'}</Text>
+      </InfoRow>
+      {user.profile.job_skill_description && (
+        <AboutField>{user.profile.job_skill_description}</AboutField>
+      )}
       <Text tag="h4" bold>
         Interests
       </Text>
