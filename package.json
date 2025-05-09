@@ -43,7 +43,7 @@
     "react-hook-form": "^7.51.5",
     "react-markdown": "^8.0.4",
     "react-multi-select-component": "^4.3.4",
-    "react-nice-avatar": "^1.2.4",
+    "react-nice-avatar": "file:prebuild/react-nice-avatar-1.6.1.tgz",
     "react-plotly.js": "^2.6.0",
     "react-router-dom": "^6.17.0",
     "react-scripts": "5.0.1",
