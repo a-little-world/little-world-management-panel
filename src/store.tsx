@@ -1,4 +1,4 @@
-import { filter, unset, update } from 'lodash';
+import { filter, unset } from 'lodash';
 import React, { createContext, useCallback, useState } from 'react';
 import useSWR from 'swr';
 
@@ -159,15 +159,17 @@ export const usePrematchAppointmentsListData = (searchParams: string) => {
   };
 };
 
-export const useDynamicUserListData = (message_list_id) => {
+export const useDynamicUserListData = message_list_id => {
   const { data, error, mutate, isLoading } = useSWR(
-    message_list_id ? `/api/dynamic_user_lists/${message_list_id}/` : '/api/dynamic_user_lists/',
+    message_list_id
+      ? `/api/dynamic_user_lists/${message_list_id}/`
+      : '/api/dynamic_user_lists/',
     dataFetcher,
     {
       revalidateOnFocus: true,
       revalidateOnMount: true,
-      refreshInterval: 0
-    }
+      refreshInterval: 0,
+    },
   );
 
   return {
@@ -236,13 +238,14 @@ export const useScoresListData = (searchParams: string) => {
 
 const GlobalStateContext = createContext({
   selectedUsers: [],
-  selectedMatches: []
+  selectedMatches: [],
 });
 
 export function GlobalStateProvider(props) {
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [selectedMatches, setSelectedMatches] = useState([]);
-  const [prematchingAppointmentUsers, setPrematchingAppointmentUsers] = useState([]);
+  const [prematchingAppointmentUsers, setPrematchingAppointmentUsers] =
+    useState([]);
   const [potentialMatch, setPotentialMatch] = useState<any[]>([]);
   const [apiOptions] = useState(props?.apiOptions || {});
   const [apiTranslations] = useState(props?.apiTranslations || {});
@@ -257,7 +260,7 @@ export function GlobalStateProvider(props) {
     },
     [setSelectedUsers],
   );
-  
+
   const selectMatch = useCallback(
     (match: any) => {
       setSelectedMatches(currentMatches => ({
@@ -267,7 +270,7 @@ export function GlobalStateProvider(props) {
     },
     [setSelectedMatches],
   );
-  
+
   const deselectMatch = useCallback(
     (matchHash: string) => {
       setSelectedMatches(currentMatches => {
@@ -293,7 +296,6 @@ export function GlobalStateProvider(props) {
   const addUserToMatching = useCallback(
     (user: any) => {
       setPotentialMatch(current => {
-        console.log({ user, current });
         return current.length === 2 ? [current[0], user] : [...current, user];
       });
     },

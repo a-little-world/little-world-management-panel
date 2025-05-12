@@ -16,7 +16,7 @@ const getDefaultColor = (total: number, index: number) => {
     index + 1 === total
       ? '#16891c'
       : `#1c64f2${index ? Math.floor((1 - index / total) * 100) : ''}`;
-  console.log({ color });
+
   return color;
 };
 

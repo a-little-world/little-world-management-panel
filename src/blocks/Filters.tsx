@@ -7,7 +7,7 @@ import {
   Text,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
-import { includes, isEmpty, isString, map, some, values } from 'lodash';
+import { includes, isEmpty, isString, map, some } from 'lodash';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
@@ -123,10 +123,12 @@ const Filters: React.FC<FiltersProps> = ({
             key={FilterKeys.UserList + filters[FilterKeys.UserList]}
             label={'User List'}
             value={filters[FilterKeys.UserList]}
-            options={userListOptions?.lists.map(({ name, description }) => ({
-              value: name,
-              label: description,
-            }))}
+            options={
+              userListOptions?.lists?.map(({ name, description }) => ({
+                value: name,
+                label: description,
+              })) ?? []
+            }
             onValueChange={val => onUpdateFilters(FilterKeys.UserList, val)}
             placeholder="Select a user list..."
           />

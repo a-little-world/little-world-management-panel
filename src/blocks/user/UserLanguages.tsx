@@ -24,7 +24,6 @@ const secondDropdownProps = {
 
 const UserLanguages = ({ langSkill }: UserLanguagesProps) => {
   const { apiOptions, apiTranslations } = useGlobalState();
-  console.log({ apiOptions, langSkill, apiTranslations });
 
   return (
     <MultiDropdown

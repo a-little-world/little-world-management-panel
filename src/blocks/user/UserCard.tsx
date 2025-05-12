@@ -157,21 +157,23 @@ const UserDetails: React.FC<{ user: User }> = ({ user }) => (
         label="Phone Number"
         value={`${user.profile.phone_mobile} (Notify via ${user.profile.phone_mobile})`}
       />
-      <InfoRow>
-        <Text tag="h4" bold>
-          Matching State:
-        </Text>
-        <Tag
-          appearance={
-            TagAppearance[
-              user.state.searching_state === 'searching' ? 'error' : 'success'
-            ]
-          }
-          size={TagSizes.small}
-        >
-          {user.state.searching_state}
-        </Tag>
-      </InfoRow>
+      {user.state.had_prematching_call && (
+        <InfoRow>
+          <Text tag="h4" bold>
+            Matching State:
+          </Text>
+          <Tag
+            appearance={
+              TagAppearance[
+                user.state.searching_state === 'searching' ? 'error' : 'success'
+              ]
+            }
+            size={TagSizes.small}
+          >
+            {user.state.searching_state}
+          </Tag>
+        </InfoRow>
+      )}
       <DetailRow
         label="Group"
         value={user.profile.target_groups?.join(', ') ?? ''}

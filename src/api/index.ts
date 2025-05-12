@@ -356,7 +356,6 @@ export const getTaskStatus = async ({ taskId, onSuccess, onError }) => {
 
     if (response.ok) {
       const responseBody = await response?.json();
-      console.log({ responseBody });
       onSuccess(responseBody);
     } else {
       const responseBody = await response?.json();
@@ -470,16 +469,19 @@ export const setMatchCompletedOffplattform = async ({
   onSuccess,
 }) => {
   try {
-    const response = await fetch(`/api/matching/matches/${matchId}/completed_off_plattform/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCookiesAsObject().csrftoken,
+    const response = await fetch(
+      `/api/matching/matches/${matchId}/completed_off_plattform/`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookiesAsObject().csrftoken,
+        },
+        body: JSON.stringify({
+          completed_off_plattform,
+        }),
       },
-      body: JSON.stringify({
-        completed_off_plattform,
-      }),
-    });
+    );
 
     if (response.ok) {
       const responseBody = await response.json();
@@ -498,7 +500,7 @@ export const setUserSearching = async ({
   userId,
   onError,
   onSuccess,
-  searching
+  searching,
 }) => {
   try {
     const result = await apiFetch(
@@ -516,6 +518,6 @@ export const setUserSearching = async ({
     );
     onSuccess(result);
   } catch (error) {
-    onError(error)
+    onError(error);
   }
 };

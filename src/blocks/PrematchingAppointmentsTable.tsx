@@ -62,7 +62,6 @@ export function PrematchingAppointmentsTable({ appointments, list }) {
                     )}
                     className="checkbox ml-2"
                     onChange={() => {
-                      console.log('appointment', appointment);
                       if (
                         Object.keys(selectedUsers).includes(
                           appointment.user.hash,

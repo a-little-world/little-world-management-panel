@@ -123,13 +123,24 @@ const swapArrayElements = ({
   return array;
 };
 
-const HrefEditor = ({ handleUpdate, href, leftHref, rightHref, text, leftText, rightText, leftColor, rightColor, type }) => {
+const HrefEditor = ({
+  handleUpdate,
+  href,
+  leftHref,
+  rightHref,
+  text,
+  leftText,
+  rightText,
+  leftColor,
+  rightColor,
+  type,
+}) => {
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
-  
+
   if (type === ContentTypes.TwoButtons) {
     return (
       <Card width={CardSizes.Small}>
@@ -211,7 +222,7 @@ const HrefEditor = ({ handleUpdate, href, leftHref, rightHref, text, leftText, r
       </Card>
     );
   }
-  
+
   // Original code for other link types
   return (
     <Card width={CardSizes.Small}>
@@ -283,7 +294,7 @@ const CreateNewEmail = () => {
   const templateName = watch('template_name');
   const subject = watch('subject');
   const category = watch('category');
-  const senderId = 'noreply'
+  const senderId = 'noreply';
   const shouldSave =
     !templateSaved && subject && templateName && !isEmpty(newEmail);
   const { emailTheme, setEmailTheme } = React.useContext(EmailThemeContext)!;
@@ -385,7 +396,7 @@ const CreateNewEmail = () => {
 
   const handleHrefUpdate = data => {
     const dataCopy = [...newEmail];
-    
+
     if (dataCopy[showHrefEditor].type === ContentTypes.TwoButtons) {
       dataCopy[showHrefEditor].leftHref = data.leftUrl;
       dataCopy[showHrefEditor].rightHref = data.rightUrl;
@@ -433,7 +444,7 @@ const CreateNewEmail = () => {
       });
     });
   };
-  console.log({ emailTheme });
+
   return (
     <Container>
       <PageHeading type={TextTypes.Heading4}>New Email Creator</PageHeading>

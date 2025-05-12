@@ -1,9 +1,4 @@
-import {
-  Button,
-  ButtonSizes,
-  TextInput,
-} from '@a-little-world/little-world-design-system';
-import MatchCard, { SelectedMatchCard } from './match/MatchCard';
+import { Button } from '@a-little-world/little-world-design-system';
 import { ScrollArea } from '@radix-ui/react-scroll-area';
 import { isEmpty, map, size } from 'lodash';
 import React from 'react';
@@ -20,9 +15,9 @@ import {
   SheetTrigger,
 } from '../atoms/Sheet';
 import useSelectUser from '../hooks/useSelectUser';
-import { registerInput, useGlobalState } from '../store';
+import { useGlobalState } from '../store';
 import SearchBar from './SearchBar';
-import UserDetailsCard from './user/UserCard';
+import { SelectedMatchCard } from './match/MatchCard';
 
 const StyledSheetButton = styled(Button)`
   position: fixed;
@@ -39,8 +34,6 @@ export function SelectedMatchesSheet() {
 
   const { selectedMatches, deselectMatch } = useGlobalState();
   const { isSubmitting, onSelectUser, error } = useSelectUser();
-  
-  console.log('selectedMatches', selectedMatches);
 
   return (
     <Sheet>
@@ -59,11 +52,9 @@ export function SelectedMatchesSheet() {
           </SheetDescription>
         </SheetHeader>
         <ScrollArea className="h-full overflow-scroll">
-            {map(selectedMatches, match => {
-                return (
-                    <SelectedMatchCard match={match} onViewDetails={() => {}} />
-                )
-            })}
+          {map(selectedMatches, match => {
+            return <SelectedMatchCard match={match} onViewDetails={() => {}} />;
+          })}
         </ScrollArea>
         <SheetFooter>
           <SearchBar
@@ -77,4 +68,4 @@ export function SelectedMatchesSheet() {
       </SheetContent>
     </Sheet>
   );
-} 
+}

@@ -1,10 +1,15 @@
+import {
+  Button,
+  Checkbox,
+  MessageTypes,
+  StatusMessage,
+} from '@a-little-world/little-world-design-system';
+import { isEmpty } from 'lodash';
 import React from 'react';
-import { useParams } from 'react-router-dom';
-import { isEmpty, map } from 'lodash';
-import { useSearchParams } from 'react-router-dom';
-import useSWR from 'swr';
 import { Controller, useForm } from 'react-hook-form';
-import { Checkbox, Button, StatusMessage, MessageTypes } from '@a-little-world/little-world-design-system';
+import { useParams, useSearchParams } from 'react-router-dom';
+import useSWR from 'swr';
+
 import { setMatchCompletedOffplattform } from '../api';
 import {
   Section,
@@ -26,9 +31,19 @@ const MATCH_TABS = [
   { key: 'actions', label: 'Actions' },
 ];
 
-const MatchActions = ({ match, onUpdate }: { match: any; onUpdate: () => void }) => {
-  console.log({ match });
-  const { control, handleSubmit, formState: { dirtyFields, errors }, setError } = useForm({
+const MatchActions = ({
+  match,
+  onUpdate,
+}: {
+  match: any;
+  onUpdate: () => void;
+}) => {
+  const {
+    control,
+    handleSubmit,
+    formState: { dirtyFields, errors },
+    setError,
+  } = useForm({
     defaultValues: {
       completed_off_plattform: match.completed_off_plattform,
     },
@@ -54,7 +69,10 @@ const MatchActions = ({ match, onUpdate }: { match: any; onUpdate: () => void })
       <Controller
         name="completed_off_plattform"
         control={control}
-        render={({ field: { onChange, onBlur, value, name, ref }, fieldState: { error } }) => (
+        render={({
+          field: { onChange, onBlur, value, name, ref },
+          fieldState: { error },
+        }) => (
           <Checkbox
             id="completed_off_plattform"
             name={name}
@@ -118,7 +136,6 @@ const MatchPanel = () => {
     mutate,
   } = useSWR(`/api/matching/matches/${matchId}/`, dataFetcher);
 
-  console.log({ match });
   if (isLoading && !error)
     return <div className="w-full p-3 text-center">Loading</div>;
   if (error)

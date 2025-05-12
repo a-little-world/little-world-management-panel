@@ -111,7 +111,7 @@ const MatchCard = ({
 }) => {
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const isProposed = match.status === MATCH_STATUS.proposed;
-  console.log({ match });
+
   return (
     <>
       <Container>
@@ -236,10 +236,7 @@ export const SelectedMatchCard = ({
         />
       </SelectedInfo>
       <SelectedStats>
-        <Stat
-          label="Messages"
-          stat={match.total_messages_counter}
-        />
+        <Stat label="Messages" stat={match.total_messages_counter} />
         <Stat
           label="Video Calls"
           stat={match.total_mutal_video_calls_counter}

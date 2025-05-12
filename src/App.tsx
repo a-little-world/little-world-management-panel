@@ -2,9 +2,15 @@ import {
   CustomThemeProvider,
   GlobalStyles,
 } from '@a-little-world/little-world-design-system';
-import React, { PropsWithChildren } from 'react';
-import { RouterProvider, ScrollRestoration } from 'react-router-dom';
-import { Outlet, createBrowserRouter } from 'react-router-dom';
+import React, { PropsWithChildren, useEffect } from 'react';
+import {
+  Outlet,
+  RouterProvider,
+  ScrollRestoration,
+  createBrowserRouter,
+  useLocation,
+  useNavigationType,
+} from 'react-router-dom';
 
 import Layout from './blocks/Layout';
 import UserPanel from './blocks/user/UserPanel';
@@ -51,6 +57,23 @@ import EmailHtml from './views/emails/EmailHtml';
 import Emails from './views/emails/Emails';
 import { SendDynamicTemplateView } from './views/emails/SendDynamicTemplate';
 
+const NavigationLogger = () => {
+  const location = useLocation();
+  const navigationType = useNavigationType();
+
+  useEffect(() => {
+    console.log('[Navigation Event]', {
+      path: location.pathname,
+      search: location.search,
+      hash: location.hash,
+      type: navigationType,
+      timestamp: new Date().toISOString(),
+    });
+  }, [location, navigationType]);
+
+  return null;
+};
+
 export const Root = ({
   children,
   restoreScroll = true,
@@ -60,6 +83,7 @@ export const Root = ({
     <EmailThemeProvider>
       {restoreScroll && <ScrollRestoration />}
       <GlobalStyles />
+      <NavigationLogger />
       {withLayout ? (
         <Layout>{children || <Outlet />}</Layout>
       ) : (
@@ -158,8 +182,47 @@ const router = createBrowserRouter(
       element: <AdminPanelV2_EmailDetails />,
     },
   ],
-  { basename: BASE_ROUTE },
+  {
+    basename: BASE_ROUTE,
+    future: {
+      v7_startTransition: true,
+    },
+  },
 );
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeunload', event => {
+    console.log('[Before Unload]', {
+      timestamp: new Date().toISOString(),
+      event: event.type,
+    });
+  });
+
+  window.addEventListener('popstate', event => {
+    console.log('[Pop State]', {
+      timestamp: new Date().toISOString(),
+      state: event.state,
+    });
+  });
+
+  const originalPushState = window.history.pushState;
+  window.history.pushState = function (...args) {
+    console.log('[History Push]', {
+      timestamp: new Date().toISOString(),
+      args,
+    });
+    return originalPushState.apply(this, args);
+  };
+
+  const originalReplaceState = window.history.replaceState;
+  window.history.replaceState = function (...args) {
+    console.log('[History Replace]', {
+      timestamp: new Date().toISOString(),
+      args,
+    });
+    return originalReplaceState.apply(this, args);
+  };
+}
 
 export function MatchingPannel({ apiOptions, apiTranslations }) {
   return (
