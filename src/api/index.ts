@@ -121,6 +121,29 @@ export const sendSms = ({ userId, message, onError, onSuccess }) =>
     })
     .catch(onError);
 
+export const sendPushNotification = ({ userId, message, onError, onSuccess }) =>
+  fetch(`/api/push_notifications/send`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookiesAsObject().csrftoken,
+    },
+    body: JSON.stringify({
+      user: userId,
+      headline: message.pushNotificationHeadline,
+      title: message.pushNotificationTitle,
+      description: message.pushNotificationDescription,
+    }),
+  })
+    .then(res => {
+      if (res.ok) {
+        onSuccess();
+      } else {
+        res.text().then(onError);
+      }
+    })
+    .catch(onError);
+
 export const setUserUnresponsive = async ({
   userId,
   unresponsive,

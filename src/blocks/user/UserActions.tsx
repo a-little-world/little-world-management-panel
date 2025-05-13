@@ -8,6 +8,7 @@ import {
   StatusMessage,
   Text,
   TextArea,
+  TextInput,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
 import { isEmpty, map } from 'lodash';
@@ -16,6 +17,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { useTheme } from 'styled-components';
 
 import {
+  sendPushNotification,
   sendSms,
   setHadPrematchingCall,
   setNewsletterSubscribed,
@@ -86,6 +88,79 @@ function SendSms({ userId }: { userId: string }) {
   );
 }
 
+function SendPushNotification({ userId }: { userId: string }) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [sentSuccessfully, setSentSuccessfully] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setError,
+  } = useForm();
+
+  const onError = error => {
+    setError('pushNotificationDescription', {
+      message: error?.message || 'Issue sending push notification',
+    });
+    setIsSubmitting(false);
+  };
+
+  const onSendPushNotification = data => {
+    console.log(data);
+    setIsSubmitting(true);
+    sendPushNotification({
+      userId: userId,
+      message: data,
+      onError,
+      onSuccess: () => {
+        setIsSubmitting(false);
+        setSentSuccessfully(true);
+      },
+    });
+  };
+
+  return (
+    <form className="mb-4" onSubmit={handleSubmit(onSendPushNotification)}>
+      <TextInput
+        {...registerInput({
+          register,
+          name: 'pushNotificationHeadline',
+          options: {},
+        })}
+        onChange={() => setSentSuccessfully(false)}
+        label={'Send the user a push notification'}
+        placeholder="Headline"
+        error={errors?.pushNotificationHeadline?.message}
+      />
+      <TextInput
+        {...registerInput({
+          register,
+          name: 'pushNotificationTitle',
+          options: {},
+        })}
+        onChange={() => setSentSuccessfully(false)}
+        placeholder="Title"
+        error={errors?.pushNotificationTitle?.message}
+      />
+      <TextArea
+        {...registerInput({
+          register,
+          name: 'pushNotificationDescription',
+          options: {},
+        })}
+        onChange={() => setSentSuccessfully(false)}
+        placeholder={'Write your message here...'}
+        error={errors?.pushNotificationDescription?.message}
+      />
+
+      {sentSuccessfully && <div>Push notification sent successfully</div>}
+      <Button type="submit" disabled={isSubmitting || sentSuccessfully}>
+        Send push notification
+      </Button>
+    </form>
+  );
+}
+
 const UserActions = ({
   user,
   onUpdate,
@@ -151,6 +226,7 @@ const UserActions = ({
   return (
     <div className="w-full">
       <SendSms userId={user.id} />
+      <SendPushNotification userId={user.id} />
       <Separator />
       <form
         className="mb-4"
