@@ -98,7 +98,7 @@ export const markMessageAsRead = ({ messageId, userId, onError, onSuccess }) =>
     })
     .catch(onError);
 
-export const deleteMessage = ({}) => null;
+export const deleteMessage = ({ }) => null;
 
 export const sendSms = ({ userId, message, onError, onSuccess }) =>
   fetch(`/api/matching/users/${userId}/sms/`, {
@@ -260,19 +260,45 @@ export const setHadPrematchingCall = async ({
   onSuccess,
 }) => {
   try {
-    const response = await fetch(
-      `/api/matching/users/${userId}/mark_prematching_call_completed/`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': getCookiesAsObject().csrftoken,
-        },
-        body: JSON.stringify({
-          had_prematching_call: completed,
-        }),
+    const response = await fetch(`/api/matching/users/${userId}/mark_prematching_call_completed/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookiesAsObject().csrftoken,
       },
+      body: JSON.stringify({
+        had_prematching_call: completed,
+      }),
+    },
     );
+
+    if (response.ok) {
+      const responseBody = await response?.json();
+      onSuccess(responseBody);
+    } else {
+      const responseBody = await response?.json();
+      const error = formatApiError(responseBody, response);
+      throw error;
+    }
+  } catch (error) {
+    onError(error);
+  }
+};
+
+export const getHadPrematchingCall = async ({
+  userId,
+  completed,
+  onError,
+  onSuccess,
+}) => {
+  try {
+    const response = await fetch(`/api/matching/users/${userId}/mark_prematching_call_completed/`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookiesAsObject().csrftoken,
+      },
+    });
 
     if (response.ok) {
       const responseBody = await response?.json();
@@ -463,8 +489,7 @@ export const updateDynamicTemplate = async ({
 }) => {
   try {
     const result = await apiFetch(
-      `/api/matching/emails/dynamic_templates/${
-        existingTemplate ? `${templateName}/` : ''
+      `/api/matching/emails/dynamic_templates/${existingTemplate ? `${templateName}/` : ''
       }`,
       {
         method: existingTemplate ? 'PATCH' : 'POST',
