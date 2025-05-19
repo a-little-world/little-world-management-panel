@@ -45,6 +45,12 @@ const SCORE_FUNCTION_LABELS = {
   postal_code_distance: 'Postal Code Distance',
   gender: 'Gender Preference',
   interest_overlap: 'Interest Overlap',
+  language_level: 'Language Level',
+  learner_vs_volunteer: 'Learner vs Volunteer',
+  already_matched_or_proposed: 'Already Matched or Proposed',
+  learner_no_match_bonus: 'Learner No Match Bonus',
+  match_in_past: 'Match History',
+  target_group: 'Target Group',
 };
 
 const ScoreCategory = styled.div<{ $matchable: boolean }>`
@@ -201,7 +207,7 @@ const Matching = ({
               name={name}
               inputRef={null}
               onCheckedChange={setForceMatch}
-              onBlur={() => {}}
+              onBlur={() => { }}
               value={forceMatch}
               defaultChecked={false}
               error={null}
@@ -257,7 +263,7 @@ const Matching = ({
                     <Tag
                       appearance={
                         TagAppearance[
-                          scoreData?.matchable ? 'success' : 'error'
+                        scoreData?.matchable ? 'success' : 'error'
                         ]
                       }
                       size={TagSizes.small}
@@ -270,11 +276,9 @@ const Matching = ({
               </div>
               {(matchSucces || submitError) && (
                 <div
-                  className={`${
-                    matchSucces || submitError ? 'opacity-100' : 'opacity-0'
-                  } w-full h-12 p-4 flex flex-column items-center justify-center ${
-                    submitError ? 'bg-red-200' : 'bg-green-200'
-                  }`}
+                  className={`${matchSucces || submitError ? 'opacity-100' : 'opacity-0'
+                    } w-full h-12 p-4 flex flex-column items-center justify-center ${submitError ? 'bg-red-200' : 'bg-green-200'
+                    }`}
                 >
                   {matchSucces || submitError}
                 </div>
