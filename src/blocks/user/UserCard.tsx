@@ -310,8 +310,14 @@ export const UserCard: React.FC<UserCardProps> = ({
           ) : waitingTimeError ? (
             <Text>Error fetching</Text>
           ) : (
-            <Text color={waitingTime?.includes('Waiting') ? 'red' : 'black'}>
-              {waitingTime}
+            <Text
+              color={
+                waitingTime?.first_search && waitingTime?.number_of_days > 0
+                  ? 'red'
+                  : 'black'
+              }
+            >
+              {waitingTime.waiting_time_string}
             </Text>
           )}
         </InfoRow>

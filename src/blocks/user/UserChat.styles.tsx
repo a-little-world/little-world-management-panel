@@ -6,27 +6,37 @@ import {
 } from '@a-little-world/little-world-design-system';
 import styled, { css } from 'styled-components';
 
-export const SendButton = styled(Button)`
-  flex-shrink: 0;
-`;
-
 export const ChatContainer = styled.div`
-  position: relative;
   display: flex;
+  position: relative;
   flex-direction: column;
   flex: 1;
   gap: ${({ theme }) => theme.spacing.small};
+  overflow: visible;
+  min-height: 0;
   width: 100%;
   height: 100%;
 `;
 
+export const ActionsContainer = styled.div`
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: ${({ theme }) => theme.spacing.xsmall};
+`;
+
 export const WriteSection = styled.form`
+  position: relative;
+  z-index: 1; // prevents overlap issues with messages
   display: flex;
   align-items: flex-start;
-  gap: ${({ theme }) => theme.spacing.xxsmall};
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.xsmall};
+  overflow: visible;
 `;
 
 export const Messages = styled.div`
+  position: relative;
   height: 100%;
   border: 2px solid ${({ theme }) => theme.color.border.minimal};
   border-radius: 20px;
@@ -35,8 +45,31 @@ export const Messages = styled.div`
   flex-direction: column-reverse;
   gap: ${({ theme }) => theme.spacing.small};
   padding: ${({ theme }) => theme.spacing.small};
-  overflow-y: scroll;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+  -webkit-overflow-scrolling: touch;
+`;
+
+export const MessageGroup = styled.div`
   position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xxsmall};
+`;
+
+export const StickyDateHeader = styled.div<{ $isSticky: boolean }>`
+  position: ${({ $isSticky }) => ($isSticky ? 'sticky' : 'relative')};
+  top: ${({ $isSticky }) => ($isSticky ? '0' : 'auto')};
+  z-index: 2;
+  background: ${({ theme }) => theme.color.surface.primary};
+  padding: ${({ theme }) => theme.spacing.xxsmall}
+    ${({ theme }) => theme.spacing.small};
+  border-radius: ${({ theme }) => theme.radius.medium};
+  margin: ${({ theme }) => theme.spacing.xxsmall} 0;
+  align-self: center;
+  box-shadow: ${({ $isSticky, theme }) =>
+    $isSticky ? `0 2px 4px ${theme.color.border.subtle}` : 'none'};
 `;
 
 export const Message = styled.div<{ $isSelf: boolean }>`
@@ -47,12 +80,22 @@ export const Message = styled.div<{ $isSelf: boolean }>`
   width: 90%;
 `;
 
-export const MessageText = styled(Text)<{ $isSelf: boolean }>`
+export const MessageText = styled(Text)<{
+  $isSelf: boolean;
+  $isWidget: boolean;
+}>`
   position: relative;
-  padding: ${({ theme }) => `${theme.spacing.xxsmall} ${theme.spacing.xsmall}`};
+  padding: ${({ theme, $isWidget }) =>
+    $isWidget
+      ? theme.spacing.xxxsmall
+      : `${theme.spacing.xxsmall} ${theme.spacing.xsmall}`};
   border: 1px solid ${({ theme }) => theme.color.border.subtle};
-  border-radius: 24px;
+  border-radius: ${({ theme }) => theme.radius.medium};
   margin-bottom: ${({ theme }) => theme.spacing.xxsmall};
+  max-width: 100%;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+  hyphens: auto;
 
   ${({ $isSelf, theme }) =>
     $isSelf &&
@@ -110,11 +153,7 @@ export const MessageText = styled(Text)<{ $isSelf: boolean }>`
 `;
 
 export const MessageBox = styled(TextArea)`
-  height: 44px;
-  border-radius: ${({ theme }) => theme.radius.large};
   background: ${({ theme }) => theme.color.surface.secondary};
-  padding: ${({ theme }) => theme.spacing.xsmall};
-  line-height: normal;
 `;
 
 export const UnreadCheckbox = styled(Checkbox)`
@@ -146,4 +185,26 @@ export const Time = styled(Text)`
   color: ${({ theme }) => theme.color.text.secondary};
   padding-left: ${({ theme }) => theme.spacing.small};
   gap: ${({ theme }) => theme.spacing.xxxsmall};
+`;
+
+const TOOLBAR_BTN_CSS = css`
+  flex-shrink: 0;
+`;
+
+export const Attachment = styled.div`
+  ${TOOLBAR_BTN_CSS}
+  position: relative;
+  display: flex;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  color: ${({ theme }) => theme.color.text.tertiary};
+`;
+
+export const SendButton = styled(Button)`
+  ${TOOLBAR_BTN_CSS}
+`;
+
+export const AttachmentButton = styled(Button)`
+  ${TOOLBAR_BTN_CSS}
 `;
