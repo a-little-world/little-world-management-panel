@@ -58,25 +58,40 @@ export const getUserListExport = async ({
   }
 };
 
-export const sendChatMessage = ({ userId, message, onError, onSuccess }) =>
-  fetch(`/api/matching/users/${userId}/message_reply/`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': getCookiesAsObject().csrftoken,
-    },
-    body: JSON.stringify({
-      message,
-    }),
-  })
-    .then(res => {
-      if (res.ok) {
-        res.json().then(onSuccess);
-      } else {
-        res.text().then(onError);
-      }
-    })
-    .catch(onError);
+export const sendFileAttachmentMessage = async ({
+  file,
+  text,
+  chatId,
+  onSuccess,
+  onError,
+}) => {
+  const data = new FormData();
+  data.append('file', file);
+  data.append('text', text);
+  try {
+    const result = await apiFetch(`/api/messages/${chatId}/send_attachment/`, {
+      method: 'POST',
+      useTagsOnly: true,
+      body: data,
+    });
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
+  }
+};
+
+export const sendChatMessage = async ({ chatId, text, onSuccess, onError }) => {
+  try {
+    const result = await apiFetch(`/api/messages/${chatId}/send/`, {
+      method: 'POST',
+      useTagsOnly: true,
+      body: { text },
+    });
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
+  }
+};
 
 export const markMessageAsRead = ({ messageId, userId, onError, onSuccess }) =>
   fetch(`/api/matching/users/${userId}/message_mark_read/`, {

@@ -1,32 +1,53 @@
 import {
+  AttachmentIcon,
   Button,
   ButtonSizes,
   ButtonVariations,
+  CloseIcon,
   DotsIcon,
+  PlusIcon,
   Popover,
   SendIcon,
+  Text,
   TextAreaSize,
   TextTypes,
   TickDoubleIcon,
   TickIcon,
+  textParser,
 } from '@a-little-world/little-world-design-system';
+import { isSameDay } from 'date-fns';
 import { isEmpty } from 'lodash';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTheme } from 'styled-components';
 
-import { markMessageAsRead, sendChatMessage } from '../../api/index';
-import { formatTimeDistance } from '../../helpers/date';
+import {
+  markMessageAsRead,
+  sendChatMessage,
+  sendFileAttachmentMessage,
+} from '../../api/index';
+import UnreadDot from '../../atoms/UnreadDot';
+import {
+  formatFileName,
+  getCustomChatElements,
+  messageContainsWidget,
+} from '../../helpers/chat.ts';
+import { formatMessageDate, formatTime } from '../../helpers/date';
 import useInfiniteScroll from '../../hooks/useInfiniteScroll';
 import { registerInput } from '../../store';
 import {
+  ActionsContainer,
+  Attachment,
+  AttachmentButton,
   ChatContainer,
   Message,
   MessageBox,
+  MessageGroup,
   MessageText,
   Messages,
   NoMessages,
   SendButton,
+  StickyDateHeader,
   Time,
   UnreadCheckbox,
   WriteSection,
@@ -37,13 +58,17 @@ const UserChat = ({ user }) => {
   const [unreadOnly, setUnreadOnly] = useState(false);
   const messagesRef = useRef();
   const theme = useTheme();
-
+  const [selectedFile, setSelectedFile] = useState(null);
+  const fileInputRef = useRef();
+  const [messagesSent, setMessagesSent] = useState(0);
+  const chatId = user.matches.support.items[0].chatId;
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
     setError,
+    setFocus,
   } = useForm();
 
   const onError = error => {
@@ -52,7 +77,6 @@ const UserChat = ({ user }) => {
   };
 
   const {
-    data,
     results,
     setResults,
     loading: isLoading,
@@ -67,18 +91,61 @@ const UserChat = ({ user }) => {
     ? results?.filter(message => !message.read)
     : results;
 
-  const sendNewMessage = payload => {
+  useEffect(() => {
+    setFocus('text');
+  }, [setFocus]);
+
+  const handleFileSelect = event => {
+    const file = event.target.files[0];
+    if (file) {
+      // Create a new File object with explicit metadata
+      const fileWithMetadata = new File([file], formatFileName(file.name), {
+        type: file.type,
+        lastModified: file.lastModified,
+      });
+      setSelectedFile(fileWithMetadata);
+    }
+  };
+
+  const handleAttachmentClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const clearSelectedFile = () => {
+    setSelectedFile(null);
+    reset();
+    fileInputRef.current.value = ''; // Reset file input
+  };
+
+  const onMessageSent = message => {
+    reset();
+    clearSelectedFile();
+    setIsSubmitting(false);
+    setResults([message, ...results]);
+    messagesRef.current.scrollTop = 0;
+    setMessagesSent(curr => curr + 1);
+  };
+
+  const onSendMessage = ({ text }) => {
     setIsSubmitting(true);
-    sendChatMessage({
-      userId: user.id,
-      message: payload.newMessage,
-      onError,
-      onSuccess: message => {
-        reset();
-        setResults([message, ...results]);
-        setIsSubmitting(false);
-      },
-    });
+
+    if (selectedFile) {
+      sendFileAttachmentMessage({
+        file: selectedFile,
+        text,
+        chatId,
+        onError,
+        onSuccess: onMessageSent,
+      });
+    } else {
+      sendChatMessage({
+        text,
+        userId: user.id,
+        chatId,
+        onError,
+        onSuccess: onMessageSent,
+      });
+    }
   };
 
   const handleReadMessage = messageId => {
@@ -89,6 +156,31 @@ const UserChat = ({ user }) => {
       onSuccess: () => mutate(),
     });
   };
+
+  const groupMessagesByDate = messages => {
+    if (!messages) return [];
+
+    return messages.reduce((groups, message) => {
+      const messageDate = new Date(message.created);
+      const prevGroup = groups[groups.length - 1];
+
+      // If this is the first message or the date is different from the last group
+      if (!prevGroup || !isSameDay(messageDate, prevGroup.date)) {
+        groups.push({
+          date: messageDate,
+          formattedDate: formatMessageDate(messageDate, 'de'),
+          messages: [message],
+        });
+      } else {
+        // Add message to existing group
+        prevGroup.messages.unshift(message);
+      }
+
+      return groups;
+    }, []);
+  };
+
+  const messageGroups = groupMessagesByDate(messages);
 
   return (
     <ChatContainer>
@@ -111,87 +203,175 @@ const UserChat = ({ user }) => {
           </NoMessages>
         ) : (
           <>
-            {messages?.map(message => (
-              <Message
-                $isSelf={message.sender !== user.hash}
-                key={message.uuid}
-              >
-                <MessageText
-                  $isSelf={message.sender !== user.hash}
-                  disableParser={!message.parsable}
+            {messageGroups.map((group, groupIndex) => (
+              <MessageGroup key={group.date.toISOString()}>
+                <StickyDateHeader
+                  $isSticky={groupIndex !== messageGroups.length - 1}
                 >
-                  {message.text}
-                </MessageText>
-                <div className="flex flex-end justify-end align-center">
-                  <Popover
-                    trigger={
-                      <Button type="button" variation={ButtonVariations.Icon}>
-                        <DotsIcon
-                          circular
-                          height="16px"
-                          width="16px"
-                          label="message menu icon"
-                          labelId="messageMenuIcon"
-                          color={theme.color.surface.quaternary}
-                        />
-                      </Button>
-                    }
-                  >
-                    <Button
-                      variation={ButtonVariations.Inline}
-                      disabled={message.sender !== user.hash || message.read}
-                      onClick={() => handleReadMessage(message.uuid)}
+                  <Text type={TextTypes.Body6}>{group.formattedDate}</Text>
+                </StickyDateHeader>
+                {group.messages.map(message => {
+                  const customChatElements = message?.parsable
+                    ? getCustomChatElements({
+                        message,
+                        userId: user.hash,
+                      })
+                    : [];
+
+                  return (
+                    <Message
+                      $isSelf={message.sender !== user.hash}
+                      key={message.uuid}
                     >
-                      Mark as Read
-                    </Button>
-                    <Button
-                      variation={ButtonVariations.Inline}
-                      disabled={message.sender === user.hash}
-                    >
-                      Delete Message
-                    </Button>
-                  </Popover>
-                  <Time type={TextTypes.Body6}>
-                    {message.read ? (
-                      <TickDoubleIcon
-                        labelId="messageReadIcon"
-                        label="message read icon"
-                        color={theme.color.status.info}
-                        width="16px"
-                        height="16px"
-                      />
-                    ) : (
-                      <TickIcon
-                        labelId="messageUnreadIcon"
-                        label="message unread icon"
-                        width="16px"
-                        height="16px"
-                      />
-                    )}
-                    {formatTimeDistance(message.created, new Date(), 'en')}
-                  </Time>
-                </div>
-              </Message>
+                      <ActionsContainer>
+                        <Popover
+                          trigger={
+                            <Button
+                              type="button"
+                              variation={ButtonVariations.Icon}
+                            >
+                              <DotsIcon
+                                circular
+                                height="16px"
+                                width="16px"
+                                label="message menu icon"
+                                labelId="messageMenuIcon"
+                                color={theme.color.surface.quaternary}
+                              />
+                            </Button>
+                          }
+                        >
+                          <Button
+                            variation={ButtonVariations.Inline}
+                            disabled={
+                              message.sender !== user.hash || message.read
+                            }
+                            onClick={() => handleReadMessage(message.uuid)}
+                          >
+                            Mark as Read
+                          </Button>
+                          <Button
+                            variation={ButtonVariations.Inline}
+                            disabled={message.sender === user.hash}
+                          >
+                            Delete Message
+                          </Button>
+                        </Popover>
+
+                        <MessageText
+                          {...(message.parsable &&
+                            messageContainsWidget(message.text) && {
+                              as: 'div',
+                            })}
+                          disableParser={!message.parsable}
+                          $isSelf={message.sender !== user.hash}
+                          $isWidget={
+                            message.parsable &&
+                            messageContainsWidget(message.text)
+                          }
+                        >
+                          {textParser(message.text, {
+                            customElements: customChatElements,
+                            onlyLinks: !message.parsable,
+                          })}
+                        </MessageText>
+                      </ActionsContainer>
+                      <Time type={TextTypes.Body6}>
+                        {message.read ? (
+                          <TickDoubleIcon
+                            labelId="messageReadIcon"
+                            label="message read icon"
+                            color={theme.color.status.info}
+                            width="16px"
+                            height="16px"
+                          />
+                        ) : (
+                          <TickIcon
+                            labelId="messageUnreadIcon"
+                            label="message unread icon"
+                            width="16px"
+                            height="16px"
+                          />
+                        )}
+                        {formatTime(new Date(message.created))}
+                      </Time>
+                    </Message>
+                  );
+                })}
+              </MessageGroup>
             ))}
             <div ref={scrollRef} />
           </>
         )}
       </Messages>
 
-      <WriteSection onSubmit={handleSubmit(sendNewMessage)}>
+      <WriteSection onSubmit={handleSubmit(onSendMessage)}>
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileSelect}
+          style={{ display: 'none' }}
+          accept="application/pdf, .pdf,.doc,.docx,.txt,.rtf,.odt,
+                    .jpg,.jpeg,.png,.gif,.bmp,.webp,.tiff,
+                    .ppt,.pptx,.xls,.xlsx,.csv, image/*"
+        />
+
         <MessageBox
           {...registerInput({
             register,
-            name: 'newMessage',
-            options: { required: 'error.required' },
+            name: 'text',
+            options: { required: !selectedFile },
           })}
-          id="newMessage"
+          key={`message ${messagesSent}`}
+          id="text"
           error={errors?.newMessage?.message}
-          placeholder="Write a message here..."
-          onSubmit={() => handleSubmit(sendNewMessage)()}
+          expandable
+          placeholder={'Write a message...'}
+          onSubmit={() => handleSubmit(onSendMessage)()}
           size={TextAreaSize.Medium}
         />
-
+        {!!selectedFile && (
+          <Attachment>
+            <AttachmentIcon
+              label={`Selected file: ${selectedFile.name}`}
+              height={40}
+              width={40}
+            />
+            <UnreadDot count={1} height="18px" top="0px" right="22px" />
+          </Attachment>
+        )}
+        <AttachmentButton
+          size={ButtonSizes.Large}
+          type="button"
+          variation={ButtonVariations.Circle}
+          backgroundColor={
+            selectedFile
+              ? theme.color.status.error
+              : theme.color.surface.primary
+          }
+          borderColor={theme.color.text.title}
+          color={
+            selectedFile ? theme.color.text.reversed : theme.color.text.title
+          }
+          onClick={selectedFile ? clearSelectedFile : handleAttachmentClick}
+        >
+          {selectedFile ? (
+            <CloseIcon
+              label="Remove attachment"
+              labelId="remove_attachment"
+              onClick={clearSelectedFile}
+              width="20"
+              height="20"
+            />
+          ) : (
+            <PlusIcon
+              label={'upload attachment'}
+              labelId="attachment_icon"
+              width="20"
+              height="20"
+            />
+          )}
+        </AttachmentButton>
         <SendButton
           size={ButtonSizes.Large}
           type="submit"
@@ -200,8 +380,8 @@ const UserChat = ({ user }) => {
           backgroundColor={theme.color.gradient.orange10}
         >
           <SendIcon
-            label={'send new message icon'}
-            labelId={'send_icon'}
+            label={'Send message'}
+            labelId="send_icon"
             color={theme.color.text.reversed}
             width="20"
             height="20"

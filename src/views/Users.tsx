@@ -8,12 +8,10 @@ import {
 } from '@a-little-world/little-world-design-system';
 import { ArrowsUpDownIcon } from '@heroicons/react/20/solid';
 import { createColumnHelper } from '@tanstack/react-table';
-import { capitalize } from 'lodash';
+import { capitalize, isNumber } from 'lodash';
 import { DownloadIcon, Settings, SlidersHorizontalIcon } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Link } from 'react-router-dom';
-import { createSearchParams } from 'react-router-dom';
+import { Link, createSearchParams, useSearchParams } from 'react-router-dom';
 import styled, { css } from 'styled-components';
 
 import { getUserListExport } from '../api/index';
@@ -23,12 +21,15 @@ import { PageSizeDropdown } from '../atoms/PageSizeDropdown';
 import Pagination from '../atoms/Pagination';
 import UserImage from '../atoms/UserImage';
 import { DataTable } from '../blocks/DataTable';
+import {
+  DEFAULT_HEADERS,
+  DownloadSettingsModal,
+} from '../blocks/DownloadSettingsModal';
 import Filters, { containsFilterKey } from '../blocks/Filters';
 import SearchBar from '../blocks/SearchBar';
 import { formatDate, formatTimeDistance } from '../helpers/date';
 import { useGlobalState, useUserListData } from '../store';
 import { SelectedUsersSheet } from './../blocks/SelectedUsersSheet';
-import { DownloadSettingsModal, DEFAULT_HEADERS } from '../blocks/DownloadSettingsModal';
 
 const StyledDropdown = styled(Dropdown)`
   div[data-radix-popper-content-wrapper] {
@@ -190,6 +191,25 @@ const userColumns = [
         new Date(),
       )})`,
   }),
+  columnHelper.accessor('waiting_time.number_of_days', {
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Waiting time (days)
+          <ArrowsUpDownIcon className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) =>
+      `${
+        isNumber(row.original.waiting_time?.number_of_days)
+          ? row.original.waiting_time?.number_of_days
+          : row.original.waiting_time?.waiting_time_string
+      }`,
+  }),
 ];
 
 export function UsersTable({ userList }) {
@@ -239,7 +259,8 @@ export function Users() {
   const [filters, setFilters] = useState<Filters>({});
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [downloadSettingsOpen, setDownloadSettingsOpen] = useState(false);
-  const [selectedHeaders, setSelectedHeaders] = useState<string[]>(DEFAULT_HEADERS);
+  const [selectedHeaders, setSelectedHeaders] =
+    useState<string[]>(DEFAULT_HEADERS);
 
   const {
     userList,
@@ -300,19 +321,22 @@ export function Users() {
       }));
     }
   };
+
   const handleDownload = () => {
     getUserListExport({
       searchParams: createSearchParams(searchParams),
       onSuccess: response => {
         const headers = selectedHeaders.join(',');
         const csvRows = response.map(row =>
-          selectedHeaders.map(header => {
-            if (header.includes('profile.')) {
-              const [_, field] = header.split('.');
-              return row.profile[field];
-            }
-            return row[header];
-          }).join(','),
+          selectedHeaders
+            .map(header => {
+              if (header.includes('profile.')) {
+                const [_, field] = header.split('.');
+                return row.profile[field];
+              }
+              return row[header];
+            })
+            .join(','),
         );
 
         const csvContent = [headers, ...csvRows].join('\n');
