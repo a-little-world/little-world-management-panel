@@ -6,16 +6,16 @@ import {
   CardSizes,
   Dropdown,
   Modal,
+  Popover,
   ProgressBar,
   Text,
 } from '@a-little-world/little-world-design-system';
 import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { createSearchParams } from 'react-router-dom';
+import { createSearchParams, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import useSWR from 'swr';
 
-import { burstUpdateMatchingScores, getTaskStatus } from '../api/index';
+import { burstUpdateMatchingScores } from '../api/index';
 import Pagination from '../atoms/Pagination';
 import { ScoresTable } from '../blocks/ScoresTable';
 import { formatTime } from '../helpers/date';
@@ -26,6 +26,34 @@ import {
   useScoresListData,
 } from '../store';
 import Matching from '../views/Matching';
+
+interface BurstMatchingState {
+  active: boolean;
+  tasks?: Task[];
+}
+
+interface Task {
+  state: string;
+  info?: TaskInfo | string;
+}
+
+interface RunningTask extends Task {
+  state: 'STARTED';
+  info: TaskInfo;
+}
+
+interface TaskInfo {
+  progress: TaskProgress;
+}
+
+interface TaskProgress {
+  total_combinations: number;
+  combinations_processed: number;
+}
+
+function isRunningTask(task: Task): task is RunningTask {
+  return task.state === 'STARTED';
+}
 
 export const TaskMonitorComponent = ({ task_id, finishedCallback }) => {
   const fetcher = (...args) => fetch(...args).then(res => res.json());
@@ -151,6 +179,8 @@ export function Scores() {
 
   // Score calculation
   const [burstUpdateDialogOpen, setBurstUpdateDialogOpen] = useState(false);
+  const [burstUpdateProgressPopoverOpen, setburstUpdateProgressPopoverOpen] =
+    useState(false);
   const [burstTasks, setBurstTasks] = useState([]);
   const [burstProgress, setBurstProgress] = useState(0);
 
@@ -159,12 +189,29 @@ export function Scores() {
     error,
     mutate: mutateBurstUpdateState,
     isLoading: burstLoading,
-  } = useSWR(`/api/matching/get_active_burst_calculation/`, dataFetcher, {
-    refreshInterval: 1000,
-  });
+  } = useSWR<BurstMatchingState>(
+    `/api/matching/get_active_burst_calculation/`,
+    dataFetcher,
+    {
+      refreshInterval: 1000,
+    },
+  );
   const activeScoreCalculation = burstMatchingState?.active;
-
-  console.log({ burstMatchingState, error, burstLoading });
+  const totalCombinations = burstMatchingState?.tasks?.reduce(
+    (acc, task) =>
+      acc + (isRunningTask(task) ? task.info.progress.total_combinations : 0),
+    0,
+  );
+  const combinations_processed = burstMatchingState?.tasks?.reduce(
+    (acc, task) =>
+      acc +
+      (isRunningTask(task) ? task.info.progress.combinations_processed : 0),
+    0,
+  );
+  const scoreCalculationProgress =
+    combinations_processed !== undefined && totalCombinations !== undefined
+      ? (combinations_processed / totalCombinations) * 100
+      : 0;
 
   // Quick matching
   const [selectedMatch, setSelectedMatch] = useState(null);
@@ -186,25 +233,12 @@ export function Scores() {
     } else if (value === 'matchable_scores') {
       searchParams.set('matchable', 'true');
       searchParams.delete('current_match_suggestion');
-    }else{
+    } else {
       searchParams.delete('current_match_suggestion');
       searchParams.delete('matchable');
     }
     setSearchParams(searchParams);
   };
-
-  // useEffect(() => {
-  //   if (burstMatchingState?.active) {
-  //     if (isEmpty(burstTasks)) setBurstTasks(burstMatchingState.tasks);
-  //     burstTasks?.forEach(taskId =>
-  //       getTaskStatus({
-  //         taskId,
-  //         onSuccess: res => console.log({ res }),
-  //         onError: error => console.log({ error }),
-  //       }),
-  //     );
-  //   }
-  // }, [burstTasks, burstMatchingState?.active]);
 
   const scoresUpdating =
     activeScoreCalculation || burstLoading || scoresLoading;
@@ -213,7 +247,12 @@ export function Scores() {
     clearMatching();
   }, []);
 
-  const currentDropdownValue = searchParams.get('current_match_suggestion') === 'true' ? 'current_suggestion' : (searchParams.get('matchable') === 'true' ? 'matchable_scores' : 'all_scores');
+  const currentDropdownValue =
+    searchParams.get('current_match_suggestion') === 'true'
+      ? 'current_suggestion'
+      : searchParams.get('matchable') === 'true'
+      ? 'matchable_scores'
+      : 'all_scores';
 
   return (
     <>
@@ -249,26 +288,49 @@ export function Scores() {
                 {
                   label: 'Matchable Scores',
                   value: 'matchable_scores',
-                }
+                },
               ]}
               onValueChange={changeList}
               placeholder="Select a score list..."
               cannotError
             />
-            <Button
-              disabled={scoresUpdating}
-              onClick={() => {
-                setBurstUpdateDialogOpen(true);
-              }}
-              backgroundColor={scoresUpdating ? 'gray' : undefined}
+            <Popover
+              trigger={
+                <Button
+                  onClick={() => {
+                    if (!scoresUpdating) {
+                      setBurstUpdateDialogOpen(true);
+                    }
+                  }}
+                >
+                  {scoresUpdating
+                    ? `Scores updating... ${scoreCalculationProgress.toFixed(
+                        2,
+                      )}%`
+                    : 'Update Scores'}
+                </Button>
+              }
             >
-              {scoresUpdating ? 'Scores updating...' : 'Update Scores'}
-            </Button>
+              {burstMatchingState?.tasks?.map(task => {
+                return (
+                  <div>
+                    {isRunningTask(task) ? (
+                      <ProgressBar
+                        className={''}
+                        max={task.info.progress.total_combinations}
+                        value={task.info.progress.combinations_processed}
+                      ></ProgressBar>
+                    ) : (
+                      <div>{task.state}</div>
+                    )}
+                  </div>
+                );
+              })}
+            </Popover>
             {scoresUpdated && (
               <Text>Scores Updated at {formatTime(scoresUpdated)}</Text>
             )}
             <Pagination list={scoresList} />
-            {/* <ProgressBar max={burstTasks.length} value={burstProgress} /> */}
           </div>
         )}
       </div>
