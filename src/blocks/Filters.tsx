@@ -12,7 +12,7 @@ import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 import { Card, CardContent, CardFooter, CardHeader } from '../atoms/Card';
-import { USER_GROUPS } from '../constants.js';
+import { USER_GROUPS } from '../constants';
 import { useFilterOptions } from '../store';
 
 const FiltersModal = styled(Modal)`
@@ -29,6 +29,7 @@ interface FiltersProps {
 
 enum FilterKeys {
   Company = 'state__company',
+  JobSearch = 'profile__job_search',
   EmailAuthenticated = 'state__email_authenticated',
   HadPreMatchingCall = 'state__had_prematching_call',
   TargetGroups = 'profile__target_groups',
@@ -83,6 +84,12 @@ const formatDefaultValues = (defaultValues: any) => {
     formattedValues.user_journey = [
       ...formattedValues.user_journey,
       FilterKeys.HadPreMatchingCall,
+    ];
+  }
+  if (defaultValues[FilterKeys.JobSearch]) {
+    formattedValues.user_journey = [
+      ...formattedValues.user_journey,
+      FilterKeys.JobSearch,
     ];
   }
 
@@ -166,6 +173,7 @@ const Filters: React.FC<FiltersProps> = ({
                 [
                   { key: FilterKeys.EmailAuthenticated, value: 'true' },
                   { key: FilterKeys.HadPreMatchingCall, value: 'true' },
+                  { key: FilterKeys.JobSearch, value: 'true' },
                 ],
                 onUpdateFilters,
                 onRemoveFilter,
@@ -179,6 +187,10 @@ const Filters: React.FC<FiltersProps> = ({
               {
                 label: 'Had pre-matching call',
                 value: FilterKeys.HadPreMatchingCall,
+              },
+              {
+                label: 'Searching for a job',
+                value: FilterKeys.JobSearch,
               },
             ]}
             preSelected={filters.user_journey}

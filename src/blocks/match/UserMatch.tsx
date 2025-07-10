@@ -15,7 +15,7 @@ import styled, { css } from 'styled-components';
 
 import MatchReport from '../../atoms/MatchReport';
 import UserImage from '../../atoms/UserImage';
-import { MATCH_STATUS } from '../../constants.js';
+import { MATCH_STATUS } from '../../constants';
 import { formatTimeDistance } from '../../helpers/date';
 import { useGlobalState } from '../../store';
 import ConfirmUnmatchModal from './ConfirmUnmatchModal';
@@ -23,6 +23,7 @@ import ConfirmUnmatchModal from './ConfirmUnmatchModal';
 const UserMatchCard = styled(Card)<{ $inactive: boolean }>`
  display: inline-flex;
  margin-bottom: ${({ theme }) => theme.spacing.xsmall};
+ vertical-align: top;
 
  &:not(:last-child) {
     margin-right: ${({ theme }) => theme.spacing.xsmall};
@@ -49,6 +50,10 @@ const Info = styled.div`
 
 const StyledMatchReport = styled(MatchReport)`
   margin-top: ${({ theme }) => theme.spacing.xxsmall};
+`;
+
+const Bucket = styled(Tag)`
+  margin: ${({ theme }) => theme.spacing.xxsmall} auto;
 `;
 
 const UserMatch = ({ match, userName }: { match: any; userName: string }) => {
@@ -81,7 +86,7 @@ const UserMatch = ({ match, userName }: { match: any; userName: string }) => {
 
         <Tag
           bold
-          className="absolute top-2 left-2"
+          className="absolute top-0 left-0"
           color={
             match.partner.user_type === 'volunteer' ? '#9631c5' : '#ec2525'
           }
@@ -89,20 +94,15 @@ const UserMatch = ({ match, userName }: { match: any; userName: string }) => {
         >
           {match.partner.user_type}
         </Tag>
-        {match.bucket && (
-          <Tag
-            bold
-            className="absolute top-2 right-2"
-            color={'#000000'}
-            size={TagSizes.small}
-          >
-            {match?.bucket}
-          </Tag>
-        )}
         <Overview>
           <Text bold>
             {match.partner.first_name} {match.partner.second_name}
           </Text>
+          {match.bucket && (
+            <Bucket bold color={'#000000'} size={TagSizes.small}>
+              {match?.bucket}
+            </Bucket>
+          )}
           <StyledMatchReport
             match={match}
             inactive={inactive}

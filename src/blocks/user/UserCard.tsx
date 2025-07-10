@@ -44,6 +44,7 @@ interface UserProfile {
   first_name: string;
   second_name: string;
   phone_mobile: string;
+  target_group: string;
   target_groups?: string[];
   job_search: boolean;
   job_skill_description: string;
@@ -54,6 +55,7 @@ interface UserProfile {
 }
 
 interface UserState {
+  company?: string;
   searching_state: 'searching' | 'matched';
   email_authenticated: boolean;
   user_form_state: 'filled' | 'unfilled';
@@ -62,9 +64,9 @@ interface UserState {
 }
 
 interface UserMatches {
-  confirmed: { items: any[] };
-  unconfirmed: { items: any[] };
-  proposed: { items: any[] };
+  confirmed: { results: any[] };
+  unconfirmed: { results: any[] };
+  proposed: { results: any[] };
 }
 
 interface User {
@@ -97,39 +99,35 @@ const UserStatus: React.FC<{ user: User }> = ({ user }) => (
         Register {new Date(user.date_joined).toDateString()}
       </li>
       <li
-        className={`step text-left ${
-          user.state.email_authenticated ? 'step-primary' : ''
-        }`}
+        className={`step text-left ${user.state.email_authenticated ? 'step-primary' : ''
+          }`}
       >
         Email Authenticated
       </li>
       <li
-        className={`step text-left ${
-          user.state.user_form_state === 'filled' ? 'step-primary' : ''
-        }`}
+        className={`step text-left ${user.state.user_form_state === 'filled' ? 'step-primary' : ''
+          }`}
       >
         User Form
       </li>
       <li
-        className={`step text-left ${
-          user.state.had_prematching_call ? 'step-primary' : ''
-        }`}
+        className={`step text-left ${user.state.had_prematching_call ? 'step-primary' : ''
+          }`}
       >
         Prematching Call
       </li>
-      {!isEmpty(user.matches.unconfirmed.items) &&
-        isEmpty(user.matches.confirmed.items) && (
+      {!isEmpty(user.matches.unconfirmed.results) &&
+        isEmpty(user.matches.confirmed.results) && (
           <li className="step text-left">Has pending match</li>
         )}
       <li
-        className={`step text-left ${
-          !isEmpty(user.matches.confirmed.items) ? 'step-primary' : ''
-        }`}
+        className={`step text-left ${!isEmpty(user.matches.confirmed.results) ? 'step-primary' : ''
+          }`}
       >
         First Match
       </li>
-      {!isEmpty(user.matches.unconfirmed.items) &&
-        !isEmpty(user.matches.confirmed.items) && (
+      {!isEmpty(user.matches.unconfirmed.results) &&
+        !isEmpty(user.matches.confirmed.results) && (
           <li className="step text-left">Has pending match</li>
         )}
     </ul>
@@ -148,11 +146,15 @@ const DetailRow: React.FC<{ label: string; value: string }> = ({
   </InfoRow>
 );
 
-const UserDetails: React.FC<{ user: User }> = ({ user }) => (
+const UserDetails: React.FC<{
+  user: User;
+  isVolunteer: boolean;
+}> = ({ user, isVolunteer }) => (
   <DetailsContainer>
     <DetailsList>
       <DetailRow label="Id" value={user.id} />
       <DetailRow label="Email" value={user.email} />
+      <DetailRow label="Company" value={user.state.company || '-'} />
       <DetailRow
         label="Phone Number"
         value={`${user.profile.phone_mobile} (Notify via ${user.profile.phone_mobile})`}
@@ -165,7 +167,7 @@ const UserDetails: React.FC<{ user: User }> = ({ user }) => (
           <Tag
             appearance={
               TagAppearance[
-                user.state.searching_state === 'searching' ? 'error' : 'success'
+              user.state.searching_state === 'searching' ? 'error' : 'success'
               ]
             }
             size={TagSizes.small}
@@ -175,8 +177,12 @@ const UserDetails: React.FC<{ user: User }> = ({ user }) => (
         </InfoRow>
       )}
       <DetailRow
-        label="Group"
-        value={user.profile.target_groups?.join(', ') ?? ''}
+        label={isVolunteer ? 'Target Group' : 'Group'}
+        value={
+          isVolunteer
+            ? user.profile.target_group ?? 'No target group'
+            : user.profile.target_groups?.join(', ') ?? 'No groups'
+        }
       />
       <InfoRow>
         <Text tag="h4" bold>
@@ -221,6 +227,8 @@ export const UserCard: React.FC<UserCardProps> = ({
   } = useSWR(`/api/matching/users/${user.id}/match_waiting_time/`, dataFetcher);
 
   if (!user) return <div>Undefined User</div>;
+  console.log({ user });
+  const isVolunteer = user.profile.user_type === 'volunteer';
 
   const onAddToMatching = () => {
     addUserToMatching(user);
@@ -240,12 +248,7 @@ export const UserCard: React.FC<UserCardProps> = ({
 
       {!tiny && (
         <HeaderContainer>
-          <Tag
-            bold
-            color={
-              user.profile.user_type === 'volunteer' ? '#9631c5' : '#ec2525'
-            }
-          >
+          <Tag bold color={isVolunteer ? '#9631c5' : '#ec2525'}>
             {capitalize(user.profile.user_type)}
           </Tag>
           {user.bucket && (
@@ -324,15 +327,15 @@ export const UserCard: React.FC<UserCardProps> = ({
         <MatchesContainer $partial={partial}>
           <MatchesIcons
             label="Confirmed"
-            matches={user?.matches.confirmed?.items}
+            matches={user?.matches.confirmed?.results}
           />
           <MatchesIcons
             label="Unconfirmed"
-            matches={user?.matches.unconfirmed?.items}
+            matches={user?.matches.unconfirmed?.results}
           />
           <MatchesIcons
             label="Proposed"
-            matches={user?.matches.proposed?.items}
+            matches={user?.matches.proposed?.results}
           />
         </MatchesContainer>
       </UserInfoContainer>
@@ -349,7 +352,7 @@ export const UserCard: React.FC<UserCardProps> = ({
               View App Profile
             </Link>
           </div>
-          <UserDetails user={user} />
+          <UserDetails user={user} isVolunteer={isVolunteer} />
         </>
       )}
 

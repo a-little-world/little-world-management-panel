@@ -61,7 +61,7 @@ const UserChat = ({ user }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const fileInputRef = useRef();
   const [messagesSent, setMessagesSent] = useState(0);
-  const chatId = user.matches.support.items[0].chatId;
+  const chatId = user.matches.support.results[0].chatId;
   const {
     register,
     handleSubmit,
@@ -196,10 +196,10 @@ const UserChat = ({ user }) => {
             {fetchError
               ? 'Error fetching messages'
               : isLoading
-              ? 'Loading messages'
-              : unreadOnly
-              ? 'No unread messages'
-              : 'No messages sent yet'}
+                ? 'Loading messages'
+                : unreadOnly
+                  ? 'No unread messages'
+                  : 'No messages sent yet'}
           </NoMessages>
         ) : (
           <>
@@ -213,9 +213,9 @@ const UserChat = ({ user }) => {
                 {group.messages.map(message => {
                   const customChatElements = message?.parsable
                     ? getCustomChatElements({
-                        message,
-                        userId: user.hash,
-                      })
+                      message,
+                      userId: user.hash,
+                    })
                     : [];
 
                   return (
@@ -261,8 +261,8 @@ const UserChat = ({ user }) => {
                         <MessageText
                           {...(message.parsable &&
                             messageContainsWidget(message.text) && {
-                              as: 'div',
-                            })}
+                            as: 'div',
+                          })}
                           disableParser={!message.parsable}
                           $isSelf={message.sender !== user.hash}
                           $isWidget={

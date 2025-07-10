@@ -1,25 +1,25 @@
-import React, { Component } from "react";
 import {
-  getTemplate,
-  getWidget,
-  getUiOptions,
-  isFixedItems,
   allowAdditionalItems,
-  isCustomWidget,
-  optionsList,
   ArrayFieldTemplateProps,
   ErrorSchema,
   Field,
   FieldProps,
+  getTemplate,
+  getUiOptions,
+  getWidget,
   IdSchema,
+  isCustomWidget,
+  isFixedItems,
+  ITEMS_KEY,
+  optionsList,
   RJSFSchema,
   UiSchema,
-  ITEMS_KEY,
 } from "@rjsf/utils";
 import get from "lodash/get";
 import isObject from "lodash/isObject";
 import set from "lodash/set";
 import { nanoid } from "nanoid";
+import React, { Component } from "react";
 
 /** Type used to represent the keyed form data used in the state */
 type KeyedFormDataType<T> = { key: string; item: T };
@@ -46,11 +46,11 @@ function generateKeyedFormData<T>(formData: T[]): KeyedFormDataType<T>[] {
   return !Array.isArray(formData)
     ? []
     : formData.map((item) => {
-        return {
-          key: generateRowId(),
-          item,
-        };
-      });
+      return {
+        key: generateRowId(),
+        item,
+      };
+    });
 }
 
 /** Converts `KeyedFormDataType` data into the inner `formData`
@@ -111,19 +111,19 @@ class ArrayField<T = any, F = any> extends Component<
     const newKeyedFormData =
       nextFormData.length === previousKeyedFormData.length
         ? previousKeyedFormData.map((previousKeyedFormDatum, index) => {
-            return {
-              key: previousKeyedFormDatum.key,
-              item: nextFormData[index],
-            };
-          })
+          return {
+            key: previousKeyedFormDatum.key,
+            item: nextFormData[index],
+          };
+        })
         : generateKeyedFormData<T>(nextFormData);
     return {
       keyedFormData: newKeyedFormData,
     };
   }
 
-  /** Returns the appropriate title for an item by getting first the title from the schema.items, then falling back to
-   * the description from the schema.items, and finally the string "Item"
+  /** Returns the appropriate title for an item by getting first the title from the schema.results, then falling back to
+   * the description from the schema.results, and finally the string "Item"
    */
   get itemTitle() {
     const { schema } = this.props;
@@ -356,10 +356,10 @@ class ArrayField<T = any, F = any> extends Component<
       onChange(
         newFormData,
         errorSchema &&
-          errorSchema && {
-            ...errorSchema,
-            [index]: newErrorSchema,
-          },
+        errorSchema && {
+          ...errorSchema,
+          [index]: newErrorSchema,
+        },
       );
     };
   };
@@ -712,8 +712,8 @@ class ArrayField<T = any, F = any> extends Component<
         const itemUiSchema = additional
           ? uiSchema.additionalItems || {}
           : Array.isArray(uiSchema.items)
-          ? uiSchema.items[index]
-          : uiSchema.items || {};
+            ? uiSchema.items[index]
+            : uiSchema.items || {};
         const itemErrorSchema = errorSchema
           ? (errorSchema[index] as ErrorSchema<T[]>)
           : undefined;

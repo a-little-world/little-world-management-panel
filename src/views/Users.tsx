@@ -37,7 +37,7 @@ const StyledDropdown = styled(Dropdown)`
   }
 `;
 
-const FilterButton = styled(DSButton)<{ $active: boolean }>`
+const FilterButton = styled(DSButton) <{ $active: boolean }>`
   ${({ $active, theme }) =>
     $active &&
     css`
@@ -158,19 +158,19 @@ const userColumns = [
   columnHelper.accessor('matches.confirmed', {
     header: 'Confirmed',
     cell: ({ row }) => {
-      return <MatchesIcons matches={row.original.matches.confirmed.items} />;
+      return <MatchesIcons matches={row.original.matches.confirmed.results} />;
     },
   }),
   columnHelper.accessor('matches.unconfirmed', {
     header: 'Unconfirmed',
     cell: ({ row }) => (
-      <MatchesIcons matches={row.original.matches.unconfirmed.items} />
+      <MatchesIcons matches={row.original.matches.unconfirmed.results} />
     ),
   }),
   columnHelper.accessor('matches.proposed', {
     header: 'Proposed',
     cell: ({ row }) => (
-      <MatchesIcons matches={row.original.matches.proposed.items} />
+      <MatchesIcons matches={row.original.matches.proposed.results} />
     ),
   }),
   columnHelper.accessor('date_joined', {
@@ -204,10 +204,9 @@ const userColumns = [
       );
     },
     cell: ({ row }) =>
-      `${
-        isNumber(row.original.waiting_time?.number_of_days)
-          ? row.original.waiting_time?.number_of_days
-          : row.original.waiting_time?.waiting_time_string
+      `${isNumber(row.original.waiting_time?.number_of_days)
+        ? row.original.waiting_time?.number_of_days
+        : row.original.waiting_time?.waiting_time_string
       }`,
   }),
 ];

@@ -43,9 +43,11 @@ export const UnresponsiveWarning = styled.div`
 export const HeaderContainer = styled.div`
   width: 100%;
   height: fit-content;
-  padding: 0.75rem;
+  padding: ${({ theme }) => theme.spacing.xsmall};
+  gap: ${({ theme }) => theme.spacing.xxxsmall};
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   justify-content: space-between;
   position: absolute;
   top: 0;

@@ -349,10 +349,13 @@ export const burstUpdateMatchingScores = async ({ parallel_tasks }) => {
   return result;
 };
 
-export const removeMatch = async ({ id, onError, onSuccess }) => {
+export const removeMatch = async ({ id, reason, onError, onSuccess }) => {
   try {
     const result = await apiFetch(`/api/matching/matches/${id}/resolve/`, {
       method: 'POST',
+      body: {
+        reason,
+      },
     });
     onSuccess(result);
   } catch (error) {

@@ -1,6 +1,6 @@
 import { Accordion, Text } from '@a-little-world/little-world-design-system';
 import React from 'react';
-import styled, { css, useTheme } from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 import useSWR from 'swr';
 
 import { formatDate, formatTime } from '../../helpers/date';
@@ -20,10 +20,11 @@ const UserMatches = ({ user }) => {
     dataFetcher,
   );
   const theme = useTheme();
+  console.log({user})
   const proposedText =
-    user?.matches.proposed?.items.length ||
-    user?.matches.old_proposals?.items.length
-      ? `${user?.matches.proposed?.items.length} active | ${user?.matches.old_proposals?.items.length} old`
+    user?.matches.proposed?.results.length ||
+      user?.matches.old_proposals?.results.length
+      ? `${user?.matches.proposed?.results.length} active | ${user?.matches.old_proposals?.results.length} old`
       : '0';
 
   return (
@@ -49,39 +50,39 @@ const UserMatches = ({ user }) => {
       <Accordion
         items={[
           {
-            content: user?.matches.confirmed?.items.map(match => (
+            content: user?.matches.confirmed?.results.map(match => (
               <UserMatch
                 key={match.id}
                 match={match}
                 userName={user.profile.first_name}
               />
             )),
-            header: `Confirmed (${user?.matches.confirmed?.items.length})`,
+            header: `Confirmed (${user?.matches.confirmed?.results.length})`,
           },
           {
-            content: user?.matches.inactive?.items.map(match => (
+            content: user?.matches.inactive?.results.map(match => (
               <UserMatch
                 key={match.id}
                 match={match}
                 userName={user.profile.first_name}
               />
             )),
-            header: `Inactive (${user?.matches.inactive?.items.length})`,
+            header: `Inactive (${user?.matches.inactive?.results.length})`,
           },
           {
-            content: user?.matches.unconfirmed?.items.map(match => (
+            content: user?.matches.unconfirmed?.results.map(match => (
               <UserMatch
                 key={match.id}
                 match={match}
                 userName={user.profile.first_name}
               />
             )),
-            header: `Unconfirmed (${user?.matches.unconfirmed?.items.length})`,
+            header: `Unconfirmed (${user?.matches.unconfirmed?.results.length})`,
           },
           {
             content: [
-              ...user?.matches.proposed?.items,
-              ...user?.matches.old_proposals?.items,
+              ...user?.matches.proposed?.results,
+              ...user?.matches.old_proposals?.results,
             ].map(match => (
               <UserMatch
                 key={match.id}
@@ -92,14 +93,14 @@ const UserMatches = ({ user }) => {
             header: `Proposed (${proposedText})`,
           },
           {
-            content: user?.matches.support?.items.map(match => (
+            content: user?.matches.support?.results.map(match => (
               <UserMatch
                 key={match.id}
                 match={match}
                 userName={user.profile.first_name}
               />
             )),
-            header: `Support (${user?.matches.support?.items.length})`,
+            header: `Support (${user?.matches.support?.results.length})`,
           },
         ]}
       />

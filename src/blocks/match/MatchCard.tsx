@@ -15,7 +15,7 @@ import DataField from '../../atoms/DataField';
 import MatchReport from '../../atoms/MatchReport';
 import Stat from '../../atoms/Stats/Stat';
 import UserImage from '../../atoms/UserImage';
-import { MATCH_STATUS } from '../../constants.js';
+import { MATCH_STATUS } from '../../constants';
 import { formatTimeDistance } from '../../helpers/date';
 import ConfirmUnmatchModal from './ConfirmUnmatchModal';
 

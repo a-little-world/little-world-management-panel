@@ -1,4 +1,4 @@
-import { USER_FILTERS, baseLogin, baseUrl } from './constants';
+import { USER_FILTERS, baseLogin, baseUrl } from './constants.ts';
 import * as utils from './lib/utils.ts';
 
 /*

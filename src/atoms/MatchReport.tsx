@@ -15,10 +15,34 @@ const Reason = styled(Text)`
   text-align: left;
 `;
 
+const getDate = ({
+  isProposed,
+  match,
+}: {
+  isProposed: boolean;
+  match: Match;
+}): string | undefined => {
+  console.log({ match });
+  return isProposed
+    ? match.rejected_on ?? match.expires_at
+    : match.report_unmatch?.[0]?.time;
+};
+
+const getInactiveCause = ({
+  isProposed,
+  rejected,
+}: {
+  isProposed: boolean;
+  rejected: boolean;
+}) => {
+  if (!isProposed) return 'Unmatched';
+  return rejected ? 'Proposal Rejected' : 'Proposal Expired';
+};
+
 interface Match {
   rejected_on?: string;
   expires_at?: string;
-  unmatched: { time: string; reason: string }[];
+  report_unmatch: { time: string; reason: string }[];
   rejected?: boolean;
 }
 
@@ -39,27 +63,19 @@ const MatchReport: React.FC<MatchReportProps> = ({
     return null;
   }
 
-  const getDate = (): string | undefined => {
-    return isProposed
-      ? match.rejected_on ?? match.expires_at
-      : match.unmatched[0]?.time;
-  };
-
-  const getInactiveCause = (): string => {
-    if (!isProposed) return 'Unmatched';
-    return match.rejected ? 'Proposal Rejected' : 'Proposal Expired';
-  };
-
-  const date = getDate();
-  const inactiveCause = getInactiveCause();
+  const date = getDate({ isProposed, match });
+  const inactiveCause = getInactiveCause({
+    isProposed,
+    rejected: match.rejected ?? false,
+  });
 
   return (
     <MatchReportContainer className={className}>
       <Text bold={!isProposed} center>{`${inactiveCause}${
         date ? ` on ${formatDate(new Date(date))}` : ''
       }`}</Text>
-      {!isProposed && match.unmatched && (
-        <Reason>Reason: {match.unmatched[0]?.reason}</Reason>
+      {!isProposed && match.report_unmatch && (
+        <Reason>Reason: {match.report_unmatch[0]?.reason}</Reason>
       )}
     </MatchReportContainer>
   );
