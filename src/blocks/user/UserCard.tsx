@@ -46,6 +46,7 @@ interface UserProfile {
   phone_mobile: string;
   target_group: string;
   target_groups?: string[];
+  partner_gender: string;
   job_search: boolean;
   job_skill_description: string;
   interests: string[];
@@ -99,20 +100,23 @@ const UserStatus: React.FC<{ user: User }> = ({ user }) => (
         Register {new Date(user.date_joined).toDateString()}
       </li>
       <li
-        className={`step text-left ${user.state.email_authenticated ? 'step-primary' : ''
-          }`}
+        className={`step text-left ${
+          user.state.email_authenticated ? 'step-primary' : ''
+        }`}
       >
         Email Authenticated
       </li>
       <li
-        className={`step text-left ${user.state.user_form_state === 'filled' ? 'step-primary' : ''
-          }`}
+        className={`step text-left ${
+          user.state.user_form_state === 'filled' ? 'step-primary' : ''
+        }`}
       >
         User Form
       </li>
       <li
-        className={`step text-left ${user.state.had_prematching_call ? 'step-primary' : ''
-          }`}
+        className={`step text-left ${
+          user.state.had_prematching_call ? 'step-primary' : ''
+        }`}
       >
         Prematching Call
       </li>
@@ -121,8 +125,9 @@ const UserStatus: React.FC<{ user: User }> = ({ user }) => (
           <li className="step text-left">Has pending match</li>
         )}
       <li
-        className={`step text-left ${!isEmpty(user.matches.confirmed.results) ? 'step-primary' : ''
-          }`}
+        className={`step text-left ${
+          !isEmpty(user.matches.confirmed.results) ? 'step-primary' : ''
+        }`}
       >
         First Match
       </li>
@@ -167,7 +172,7 @@ const UserDetails: React.FC<{
           <Tag
             appearance={
               TagAppearance[
-              user.state.searching_state === 'searching' ? 'error' : 'success'
+                user.state.searching_state === 'searching' ? 'error' : 'success'
               ]
             }
             size={TagSizes.small}
@@ -183,6 +188,10 @@ const UserDetails: React.FC<{
             ? user.profile.target_group ?? 'No target group'
             : user.profile.target_groups?.join(', ') ?? 'No groups'
         }
+      />
+      <DetailRow
+        label={'Gender Preference'}
+        value={user.profile.partner_gender}
       />
       <InfoRow>
         <Text tag="h4" bold>
@@ -227,7 +236,7 @@ export const UserCard: React.FC<UserCardProps> = ({
   } = useSWR(`/api/matching/users/${user.id}/match_waiting_time/`, dataFetcher);
 
   if (!user) return <div>Undefined User</div>;
-  console.log({ user });
+
   const isVolunteer = user.profile.user_type === 'volunteer';
 
   const onAddToMatching = () => {
