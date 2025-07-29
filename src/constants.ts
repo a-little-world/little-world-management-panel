@@ -287,3 +287,5 @@ export const MATCH_STATUS = {
   confirmed: 'confirmed',
   unconfirmed: 'unconfirmed',
 };
+
+export const UNAVAILABLE = 'n/a';

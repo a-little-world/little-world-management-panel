@@ -9,9 +9,10 @@ import { LinkIcon } from 'lucide-react';
 import React, { useCallback, useState } from 'react';
 import styled from 'styled-components';
 
-import EditableText from '../atoms/EditableText';
+import EditableText from '../components/atoms/EditableText';
 import ButtonLink from './shared/ButtonLink';
 import { EmailLayout } from './shared/Layout';
+import TwoButtons from './shared/TwoButtons';
 import { THEMES } from './shared/constants';
 import {
   button,
@@ -25,7 +26,6 @@ import {
   title,
 } from './shared/styles';
 import { Theme } from './shared/theme';
-import TwoButtons from './shared/TwoButtons';
 
 export enum ContentTypes {
   Title = 'title',
@@ -102,7 +102,11 @@ const ChevronUpIcon = styled(ChevronDownIcon)`
   transform: rotate(180deg);
 `;
 
-export const BlocksWithLink = [ContentTypes.Button, ContentTypes.Link, ContentTypes.TwoButtons];
+export const BlocksWithLink = [
+  ContentTypes.Button,
+  ContentTypes.Link,
+  ContentTypes.TwoButtons,
+];
 
 const EmailBlock = ({
   centred,
@@ -171,7 +175,7 @@ const EmailBlock = ({
         componentProps={{ style: button, href }}
       />
     );
-    
+
   if (type === ContentTypes.TwoButtons)
     return (
       <EditableText
@@ -185,7 +189,7 @@ const EmailBlock = ({
           leftChildren: leftText || 'Left Button',
           rightChildren: rightText || 'Right Button',
           leftColor: leftColor,
-          rightColor: rightColor
+          rightColor: rightColor,
         }}
       />
     );

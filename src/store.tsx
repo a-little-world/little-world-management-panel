@@ -237,15 +237,37 @@ export const useScoresListData = (searchParams: string) => {
 };
 
 const GlobalStateContext = createContext({
-  selectedUsers: [],
-  selectedMatches: [],
+  selectedUsers: {},
+  selectedMatches: {},
+  allPrematchingAppointmentUsers: {},
+  selectedPrematchingAppointmentUsers: {},
+  setAllPrematchingAppointmentUsers: (users: any) => {},
+  selectPrematchingAppointmentUser: (user: any) => {},
+  deselectPrematchingAppointmentUser: (userHash: string) => {},
+  clearSelectedPrematchingAppointmentUsers: () => {},
+  selectUser: (user: any) => {},
+  deselectUser: (userHash: string) => {},
+  selectMatch: (match: any) => {},
+  deselectMatch: (matchHash: string) => {},
+  clearMatching: () => {},
+  addUserToMatching: (user: any) => {},
+  removeUserFromMatching: (userHash: string) => {},
+  potentialMatch: [],
+  apiOptions: {},
+  apiTranslations: {},
+  updateCurrentUser: () => null,
+  setUpdateCurrentUser: (fn: () => void) => {},
 });
 
 export function GlobalStateProvider(props) {
-  const [selectedUsers, setSelectedUsers] = useState([]);
-  const [selectedMatches, setSelectedMatches] = useState([]);
-  const [prematchingAppointmentUsers, setPrematchingAppointmentUsers] =
-    useState([]);
+  const [selectedUsers, setSelectedUsers] = useState({});
+  const [selectedMatches, setSelectedMatches] = useState({});
+  const [allPrematchingAppointmentUsers, setAllPrematchingAppointmentUsers] =
+    useState({});
+  const [
+    selectedPrematchingAppointmentUsers,
+    setSelectedPrematchingAppointmentUsers,
+  ] = useState({});
   const [potentialMatch, setPotentialMatch] = useState<any[]>([]);
   const [apiOptions] = useState(props?.apiOptions || {});
   const [apiTranslations] = useState(props?.apiTranslations || {});
@@ -293,6 +315,31 @@ export function GlobalStateProvider(props) {
     [setSelectedUsers],
   );
 
+  const selectPrematchingAppointmentUser = useCallback(
+    (user: any) => {
+      setSelectedPrematchingAppointmentUsers(currentUsers => ({
+        ...currentUsers,
+        [user.hash]: user,
+      }));
+    },
+    [setSelectedPrematchingAppointmentUsers],
+  );
+
+  const deselectPrematchingAppointmentUser = useCallback(
+    (userHash: string) => {
+      setSelectedPrematchingAppointmentUsers(currentUsers => {
+        const newUsers = { ...currentUsers };
+        unset(newUsers, userHash);
+        return newUsers;
+      });
+    },
+    [setSelectedPrematchingAppointmentUsers],
+  );
+
+  const clearSelectedPrematchingAppointmentUsers = useCallback(() => {
+    setSelectedPrematchingAppointmentUsers({});
+  }, [setSelectedPrematchingAppointmentUsers]);
+
   const addUserToMatching = useCallback(
     (user: any) => {
       setPotentialMatch(current => {
@@ -331,8 +378,13 @@ export function GlobalStateProvider(props) {
       apiTranslations,
       updateCurrentUser,
       setUpdateCurrentUser,
-      prematchingAppointmentUsers,
-      setPrematchingAppointmentUsers,
+      allPrematchingAppointmentUsers,
+      setAllPrematchingAppointmentUsers,
+      selectedPrematchingAppointmentUsers,
+      setSelectedPrematchingAppointmentUsers,
+      selectPrematchingAppointmentUser,
+      deselectPrematchingAppointmentUser,
+      clearSelectedPrematchingAppointmentUsers,
     }),
     [
       addUserToMatching,
@@ -349,8 +401,13 @@ export function GlobalStateProvider(props) {
       apiTranslations,
       updateCurrentUser,
       setUpdateCurrentUser,
-      prematchingAppointmentUsers,
-      setPrematchingAppointmentUsers,
+      allPrematchingAppointmentUsers,
+      setAllPrematchingAppointmentUsers,
+      selectedPrematchingAppointmentUsers,
+      setSelectedPrematchingAppointmentUsers,
+      selectPrematchingAppointmentUser,
+      deselectPrematchingAppointmentUser,
+      clearSelectedPrematchingAppointmentUsers,
     ],
   );
   return <GlobalStateContext.Provider value={value} {...props} />;

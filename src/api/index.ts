@@ -562,3 +562,29 @@ export const setUserSearching = async ({
     onError(error);
   }
 };
+
+export const completePrematchingCall = async ({
+  appointmentDate,
+  selectedUsers,
+  sendMail,
+  onSuccess,
+  onError,
+}) => {
+  try {
+    const result = await apiFetch(
+      '/api/matching/users/complete_prematching_call/',
+      {
+        method: 'POST',
+        body: {
+          appointment_date: appointmentDate,
+          selected_users: selectedUsers,
+          send_mail: sendMail,
+        },
+      },
+    );
+    console.log({ result });
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
+  }
+};

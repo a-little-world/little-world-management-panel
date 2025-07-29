@@ -1,11 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 
-import { MatchingPannel } from './App.tsx';
+import { MatchingPannel } from './App';
 import { LOCAL_DEV } from './ENVIRONMENT.js';
+import { EmailHtmlRenderer } from './components/views/emails/EmailHtml';
 import './index.css';
 import { simulatedAutoLogin } from './loginSimulator.js';
-import { EmailHtmlRenderer } from './views/emails/EmailHtml';
 
 function renderApp({ apiOptions, apiTranslations }) {
   const root = ReactDOM.createRoot(document.getElementById('root'));

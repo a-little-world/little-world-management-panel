@@ -10,17 +10,31 @@ import {
   createBrowserRouter,
 } from 'react-router-dom';
 
-import Layout from './blocks/Layout';
-import UserPanel from './blocks/user/UserPanel';
+import Layout from './components/blocks/Layout';
+import UserPanel from './components/blocks/user/UserPanel';
+import Algorithm from './components/views/Algorithm';
+import Documentation from './components/views/Documentation';
+import { DynamicUserListView } from './components/views/DynamicUserListView';
+import Home from './components/views/Home';
+import MatchPanel from './components/views/MatchPanel';
+import Matches from './components/views/Matches';
+import Matching from './components/views/Matching';
+import PrematchingAppointments from './components/views/PrematchingAppointments';
+import Scores from './components/views/Scores';
+import Stats from './components/views/Stats';
+import Users from './components/views/Users';
+import VideoCalls from './components/views/VideoCalls';
+import CreateNewEmail from './components/views/emails/CreateNewEmail';
+import Email from './components/views/emails/Email';
+import EmailHtml from './components/views/emails/EmailHtml';
+import Emails from './components/views/emails/Emails';
+import { SendDynamicTemplateView } from './components/views/emails/SendDynamicTemplate';
 import { EmailThemeProvider } from './emails/shared/theme';
-import {
-  AdminPanelV2_EmailDetails,
-  AdminPanelV2_Emails,
-} from './panel_v2/AdminPanelEmails.jsx';
 import {
   ALGORITHM_ROUTE,
   BASE_ROUTE,
   CREATE_NEW_EMAIL_ROUTE,
+  DOCUMENTATION_ROUTE,
   DYNAMIC_USER_LISTS_ROUTE,
   EDIT_EMAIL_ROUTE,
   EMAILS_ROUTE,
@@ -38,22 +52,6 @@ import {
   VIDEO_CALLS_ROUTE,
 } from './routes';
 import { GlobalStateProvider } from './store';
-import Algorithm from './views/Algorithm';
-import { DynamicUserListView } from './views/DynamicUserListView';
-import Home from './views/Home';
-import MatchPanel from './views/MatchPanel';
-import Matches from './views/Matches';
-import Matching from './views/Matching';
-import PrematchingAppointments from './views/PrematchingAppointments';
-import Scores from './views/Scores';
-import Stats from './views/Stats';
-import Users from './views/Users';
-import VideoCalls from './views/VideoCalls';
-import CreateNewEmail from './views/emails/CreateNewEmail';
-import Email from './views/emails/Email';
-import EmailHtml from './views/emails/EmailHtml';
-import Emails from './views/emails/Emails';
-import { SendDynamicTemplateView } from './views/emails/SendDynamicTemplate';
 
 export const Root = ({
   children,
@@ -147,19 +145,15 @@ const router = createBrowserRouter(
           path: ALGORITHM_ROUTE,
           element: <Algorithm />,
         },
+        {
+          path: DOCUMENTATION_ROUTE,
+          element: <Documentation />,
+        },
       ],
     },
     {
       path: EMAIL_HTML_ROUTE,
       element: <EmailHtml />,
-    },
-    {
-      path: 'old-emails',
-      element: <AdminPanelV2_Emails />,
-    },
-    {
-      path: 'old-emails/:emailTemplateName',
-      element: <AdminPanelV2_EmailDetails />,
     },
   ],
   { basename: BASE_ROUTE },
