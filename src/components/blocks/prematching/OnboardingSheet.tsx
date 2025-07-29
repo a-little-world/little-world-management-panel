@@ -1,6 +1,7 @@
 import {
   Button,
   ButtonAppearance,
+  Checkbox,
   Text,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
@@ -21,7 +22,6 @@ import {
 } from '../../atoms/Sheet';
 import {
   AppointmentDateText,
-  Checkbox,
   ErrorMessage,
   SectionDescription,
   SectionTitle,
@@ -33,7 +33,6 @@ import {
   UserListContainer,
   UserListItem,
   UserListSectionsContainer,
-  UserName,
 } from './OnboardingSheet.styles';
 
 // Types
@@ -105,8 +104,8 @@ export function SelectedUsersPrematchingCallAttended({
 
   // Initialize email preferences when entering confirmation screen
   useEffect(() => {
-    if (isConfirming) {
-      const initialEmailPrefs = Object.keys(safeSelectedUsers).reduce(
+    if (isConfirming && !showSuccessMessage) {
+      const initialAttendedUsers = Object.keys(safeSelectedUsers).reduce(
         (acc, hash) => {
           acc[hash] = true;
           return acc;
@@ -119,8 +118,9 @@ export function SelectedUsersPrematchingCallAttended({
         return acc;
       }, {} as Record<string, boolean>);
 
-      setUsersToEmail({ ...initialEmailPrefs, ...initialAdditionalUsers });
+      setUsersToEmail({ ...initialAttendedUsers, ...initialAdditionalUsers });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isConfirming, safeSelectedUsers, unselectedUsers]);
 
   const handleUserEmailToggle = useCallback((hash: string) => {
@@ -129,6 +129,15 @@ export function SelectedUsersPrematchingCallAttended({
       [hash]: !prev[hash],
     }));
   }, []);
+
+  const handleClose = useCallback(() => {
+    setIsOpen(false);
+    setIsConfirming(false);
+    setShowSuccessMessage(false);
+    setError(null);
+    setUsersToEmail({});
+    if (showSuccessMessage) clearSelectedPrematchingAppointmentUsers();
+  }, [clearSelectedPrematchingAppointmentUsers, showSuccessMessage]);
 
   const handleAction = useCallback(async () => {
     setShowSuccessMessage(false);
@@ -149,8 +158,6 @@ export function SelectedUsersPrematchingCallAttended({
       onSuccess: (res: any) => {
         setShowSuccessMessage(true);
         mutateBaseList();
-        setUsersToEmail({});
-        clearSelectedPrematchingAppointmentUsers();
       },
       onError: (err: unknown) =>
         setError(err instanceof Error ? err.message : 'An error occurred'),
@@ -161,7 +168,6 @@ export function SelectedUsersPrematchingCallAttended({
     list,
     selectedUserIds,
     mutateBaseList,
-    clearSelectedPrematchingAppointmentUsers,
   ]);
 
   const handleSheetOpenChange = useCallback((open: boolean) => {
@@ -198,16 +204,19 @@ export function SelectedUsersPrematchingCallAttended({
         ) : (
           users.map(([hash, user]) => (
             <UserListItem key={hash}>
-              {showCheckboxes && (
+              {showCheckboxes ? (
                 <Checkbox
-                  type="checkbox"
+                  readOnly={showSuccessMessage}
+                  required={false}
                   checked={usersToEmail[hash] || false}
-                  onChange={() => handleUserEmailToggle(hash)}
+                  onCheckedChange={() => handleUserEmailToggle(hash)}
+                  label={`${user.profile.first_name} ${user.profile.second_name}`}
                 />
+              ) : (
+                <Text type={TextTypes.Body5}>
+                  {user.profile.first_name} {user.profile.second_name}
+                </Text>
               )}
-              <UserName type={TextTypes.Body5}>
-                {user.profile.first_name} {user.profile.second_name}
-              </UserName>
             </UserListItem>
           ))
         )}
@@ -269,7 +278,7 @@ export function SelectedUsersPrematchingCallAttended({
             <SheetFooter>
               <Button
                 appearance={ButtonAppearance.Secondary}
-                onClick={() => setIsOpen(false)}
+                onClick={handleClose}
               >
                 Cancel
               </Button>
@@ -326,7 +335,7 @@ export function SelectedUsersPrematchingCallAttended({
                 Back
               </Button>
               {showSuccessMessage ? (
-                <Button onClick={() => setIsOpen(false)}>Close</Button>
+                <Button onClick={handleClose}>Close</Button>
               ) : (
                 <Button onClick={handleAction}>Confirm</Button>
               )}

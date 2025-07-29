@@ -37,15 +37,6 @@ export const UserListItem = styled.div`
   }
 `;
 
-export const Checkbox = styled.input`
-  margin-right: ${({ theme }) => theme.spacing.small};
-  cursor: pointer;
-`;
-
-export const UserName = styled(Text)`
-  flex: 1;
-`;
-
 export const SectionTitle = styled(Text)`
   line-height: 1;
   margin-bottom: ${({ theme }) => theme.spacing.xxsmall};

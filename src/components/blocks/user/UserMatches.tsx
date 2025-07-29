@@ -20,7 +20,7 @@ const UserMatches = ({ user }) => {
     dataFetcher,
   );
   const theme = useTheme();
-  console.log({ user });
+
   const proposedText =
     user?.matches.proposed?.results.length ||
     user?.matches.old_proposals?.results.length

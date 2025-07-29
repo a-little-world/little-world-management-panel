@@ -582,7 +582,6 @@ export const completePrematchingCall = async ({
         },
       },
     );
-    console.log({ result });
     onSuccess(result);
   } catch (error) {
     onError(error);
