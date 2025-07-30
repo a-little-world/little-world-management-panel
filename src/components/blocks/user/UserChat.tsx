@@ -22,6 +22,7 @@ import { useForm } from 'react-hook-form';
 import { useTheme } from 'styled-components';
 
 import {
+  deleteMessage,
   markMessageAsRead,
   sendChatMessage,
   sendFileAttachmentMessage,
@@ -140,7 +141,6 @@ const UserChat = ({ user }) => {
     } else {
       sendChatMessage({
         text,
-        userId: user.id,
         chatId,
         onError,
         onSuccess: onMessageSent,
@@ -150,6 +150,15 @@ const UserChat = ({ user }) => {
 
   const handleReadMessage = messageId => {
     markMessageAsRead({
+      userId: user.id,
+      messageId,
+      onError: error => console.log({ error }),
+      onSuccess: () => mutate(),
+    });
+  };
+
+  const handleDeleteMessage = messageId => {
+    deleteMessage({
       userId: user.id,
       messageId,
       onError: error => console.log({ error }),
@@ -211,9 +220,76 @@ const UserChat = ({ user }) => {
                   <Text type={TextTypes.Body6}>{group.formattedDate}</Text>
                 </StickyDateHeader>
                 {group.messages.map(message => {
+                  // Specific fix for known AttachmentWidget format from backend
+                  let processedMessageText = message.text;
+
+                  if (message.parsable && messageContainsWidget(message.text)) {
+                    // Only fix messages that are actually malformed (old data)
+                    // Check if the JSON parsing would fail due to unescaped content
+                    const widgetStartTag = '<AttachmentWidget ';
+                    const widgetEndTag = ' ></AttachmentWidget>';
+
+                    const widgetStart = message.text.indexOf(widgetStartTag);
+                    const widgetEnd = message.text.indexOf(widgetEndTag);
+
+                    if (widgetStart !== -1 && widgetEnd > widgetStart) {
+                      const jsonStart = widgetStart + widgetStartTag.length;
+                      const jsonPart = message.text.substring(
+                        jsonStart,
+                        widgetEnd,
+                      );
+
+                      try {
+                        // Try to parse the JSON - if it works, don't modify it
+                        JSON.parse(jsonPart);
+                        // JSON is valid, use as-is
+                      } catch (_e) {
+                        // JSON is malformed, try to fix it
+                        if (
+                          jsonPart.includes('"caption": "') &&
+                          !jsonPart.includes('\\"')
+                        ) {
+                          // Find the caption content between "caption": " and the next "
+                          const captionStart =
+                            jsonPart.indexOf('"caption": "') + 12;
+                          const remainingText =
+                            jsonPart.substring(captionStart);
+                          const captionEnd =
+                            remainingText.indexOf('", ') !== -1
+                              ? remainingText.indexOf('", ')
+                              : remainingText.indexOf('"} >') !== -1
+                              ? remainingText.indexOf('"} >')
+                              : remainingText.indexOf('"}');
+
+                          if (captionEnd > 0) {
+                            const captionContent = remainingText.substring(
+                              0,
+                              captionEnd,
+                            );
+                            // Escape only the necessary characters for JSON, preserving line breaks
+                            const escapedCaption = captionContent
+                              .replace(/\\/g, '\\\\') // Escape backslashes
+                              .replace(/"/g, '\\"'); // Escape quotes
+
+                            // Replace the unescaped caption with the escaped version
+                            const fixedJsonPart = jsonPart.replace(
+                              `"caption": "${captionContent}"`,
+                              `"caption": "${escapedCaption}"`,
+                            );
+
+                            processedMessageText = message.text.replace(
+                              jsonPart,
+                              fixedJsonPart,
+                            );
+                          }
+                        }
+                      }
+                    }
+                  }
+
                   const customChatElements = message?.parsable
                     ? getCustomChatElements({
-                        message,
+                        message: { ...message, text: processedMessageText },
                         userId: user.hash,
                       })
                     : [];
@@ -250,27 +326,30 @@ const UserChat = ({ user }) => {
                           >
                             Mark as Read
                           </Button>
-                          <Button
-                            variation={ButtonVariations.Inline}
-                            disabled={message.sender === user.hash}
-                          >
-                            Delete Message
-                          </Button>
+                          {message.sender !== user.hash && (
+                            <Button
+                              variation={ButtonVariations.Inline}
+                              disabled={message.sender === user.hash}
+                              onClick={() => handleDeleteMessage(message.uuid)}
+                            >
+                              Delete Message
+                            </Button>
+                          )}
                         </Popover>
 
                         <MessageText
                           {...(message.parsable &&
-                            messageContainsWidget(message.text) && {
+                            messageContainsWidget(processedMessageText) && {
                               as: 'div',
                             })}
                           disableParser={!message.parsable}
                           $isSelf={message.sender !== user.hash}
                           $isWidget={
                             message.parsable &&
-                            messageContainsWidget(message.text)
+                            messageContainsWidget(processedMessageText)
                           }
                         >
-                          {textParser(message.text, {
+                          {textParser(processedMessageText, {
                             customElements: customChatElements,
                             onlyLinks: !message.parsable,
                           })}

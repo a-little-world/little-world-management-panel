@@ -113,7 +113,25 @@ export const markMessageAsRead = ({ messageId, userId, onError, onSuccess }) =>
     })
     .catch(onError);
 
-export const deleteMessage = ({}) => null;
+export const deleteMessage = ({ messageId, userId, onError, onSuccess }) =>
+  fetch(`/api/matching/users/${userId}/delete_message/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookiesAsObject().csrftoken,
+    },
+    body: JSON.stringify({
+      message_id: messageId,
+    }),
+  })
+    .then(res => {
+      if (res.ok) {
+        onSuccess();
+      } else {
+        onError();
+      }
+    })
+    .catch(onError);
 
 export const sendSms = ({ userId, message, onError, onSuccess }) =>
   fetch(`/api/matching/users/${userId}/sms/`, {
