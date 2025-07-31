@@ -31,6 +31,7 @@ import {
   formatFileName,
   getCustomChatElements,
   messageContainsWidget,
+  processAttachmentWidgets,
 } from '../../../helpers/chat';
 import { formatMessageDate, formatTime } from '../../../helpers/date';
 import useInfiniteScroll from '../../../hooks/useInfiniteScroll';
@@ -220,72 +221,13 @@ const UserChat = ({ user }) => {
                   <Text type={TextTypes.Body6}>{group.formattedDate}</Text>
                 </StickyDateHeader>
                 {group.messages.map(message => {
-                  // Specific fix for known AttachmentWidget format from backend
-                  let processedMessageText = message.text;
-
-                  if (message.parsable && messageContainsWidget(message.text)) {
-                    // Only fix messages that are actually malformed (old data)
-                    // Check if the JSON parsing would fail due to unescaped content
-                    const widgetStartTag = '<AttachmentWidget ';
-                    const widgetEndTag = ' ></AttachmentWidget>';
-
-                    const widgetStart = message.text.indexOf(widgetStartTag);
-                    const widgetEnd = message.text.indexOf(widgetEndTag);
-
-                    if (widgetStart !== -1 && widgetEnd > widgetStart) {
-                      const jsonStart = widgetStart + widgetStartTag.length;
-                      const jsonPart = message.text.substring(
-                        jsonStart,
-                        widgetEnd,
-                      );
-
-                      try {
-                        // Try to parse the JSON - if it works, don't modify it
-                        JSON.parse(jsonPart);
-                        // JSON is valid, use as-is
-                      } catch (_e) {
-                        // JSON is malformed, try to fix it
-                        if (
-                          jsonPart.includes('"caption": "') &&
-                          !jsonPart.includes('\\"')
-                        ) {
-                          // Find the caption content between "caption": " and the next "
-                          const captionStart =
-                            jsonPart.indexOf('"caption": "') + 12;
-                          const remainingText =
-                            jsonPart.substring(captionStart);
-                          const captionEnd =
-                            remainingText.indexOf('", ') !== -1
-                              ? remainingText.indexOf('", ')
-                              : remainingText.indexOf('"} >') !== -1
-                              ? remainingText.indexOf('"} >')
-                              : remainingText.indexOf('"}');
-
-                          if (captionEnd > 0) {
-                            const captionContent = remainingText.substring(
-                              0,
-                              captionEnd,
-                            );
-                            // Escape only the necessary characters for JSON, preserving line breaks
-                            const escapedCaption = captionContent
-                              .replace(/\\/g, '\\\\') // Escape backslashes
-                              .replace(/"/g, '\\"'); // Escape quotes
-
-                            // Replace the unescaped caption with the escaped version
-                            const fixedJsonPart = jsonPart.replace(
-                              `"caption": "${captionContent}"`,
-                              `"caption": "${escapedCaption}"`,
-                            );
-
-                            processedMessageText = message.text.replace(
-                              jsonPart,
-                              fixedJsonPart,
-                            );
-                          }
-                        }
-                      }
-                    }
-                  }
+                  // Process attachment widgets for malformed JSON
+                  const errorMessage =
+                    '[Attachment could not be displayed due to processing error]';
+                  const processedMessageText = processAttachmentWidgets(
+                    message,
+                    errorMessage,
+                  );
 
                   const customChatElements = message?.parsable
                     ? getCustomChatElements({

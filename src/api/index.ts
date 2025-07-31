@@ -114,16 +114,16 @@ export const markMessageAsRead = ({ messageId, userId, onError, onSuccess }) =>
     .catch(onError);
 
 export const deleteMessage = ({ messageId, userId, onError, onSuccess }) =>
-  fetch(`/api/matching/users/${userId}/delete_message/`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': getCookiesAsObject().csrftoken,
+  fetch(
+    `/api/matching/users/${userId}/delete_message/?message_id=${messageId}`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookiesAsObject().csrftoken,
+      },
     },
-    body: JSON.stringify({
-      message_id: messageId,
-    }),
-  })
+  )
     .then(res => {
       if (res.ok) {
         onSuccess();

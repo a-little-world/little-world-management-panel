@@ -95,3 +95,37 @@ export const formatFileName = (fileName: string): string => {
 
 export const messageContainsWidget = (message: string): boolean =>
   /AttachmentWidget|CallWidget/.test(message);
+
+export const processAttachmentWidgets = (
+  message: any,
+  errorMessage: string,
+): string => {
+  let processedMessageText = message.text;
+
+  if (message.parsable && messageContainsWidget(message.text)) {
+    // Simple check: if the widget JSON is malformed, replace with error message
+    const widgetStartTag = '<AttachmentWidget ';
+    const widgetEndTag = ' ></AttachmentWidget>';
+
+    const widgetStart = message.text.indexOf(widgetStartTag);
+    const widgetEnd = message.text.indexOf(widgetEndTag);
+
+    if (widgetStart !== -1 && widgetEnd > widgetStart) {
+      const jsonStart = widgetStart + widgetStartTag.length;
+      const jsonPart = message.text.substring(jsonStart, widgetEnd);
+
+      try {
+        // Try to parse the JSON - if it works, use as-is
+        JSON.parse(jsonPart);
+      } catch (_e) {
+        // JSON is malformed, replace entire widget with error message
+        processedMessageText = message.text.replace(
+          message.text.substring(widgetStart, widgetEnd + widgetEndTag.length),
+          errorMessage,
+        );
+      }
+    }
+  }
+
+  return processedMessageText;
+};
