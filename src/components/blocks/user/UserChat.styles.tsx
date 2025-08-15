@@ -170,7 +170,7 @@ export const UnreadCheckbox = styled(Checkbox)`
 
 export const NoMessages = styled(Text)`
   height: 100%;
-  background: ${({ theme }) => theme.color.surface.tertiary};
+  background: ${({ theme }) => theme.color.surface.secondary};
   border-radius: 10px;
   align-items: center;
   justify-content: center;

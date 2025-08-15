@@ -1,8 +1,8 @@
 import {
   Button,
   ButtonAppearance,
-  MessageTypes,
   StatusMessage,
+  StatusTypes,
   TextArea,
   TextAreaSize,
 } from '@a-little-world/little-world-design-system';
@@ -97,7 +97,7 @@ const Notes = ({ model, notes, modelId }: NotesProps) => {
       {displayStatusMessage && (
         <StatusMessage
           $visible={displayStatusMessage}
-          $type={saved ? MessageTypes.Success : MessageTypes.Error}
+          $type={saved ? StatusTypes.Success : StatusTypes.Error}
         >
           {saved
             ? 'Notes saved successfully'

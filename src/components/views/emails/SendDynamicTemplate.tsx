@@ -2,8 +2,8 @@ import {
   ButtonAppearance,
   Link,
   Loading,
+  LoadingSizes,
 } from '@a-little-world/little-world-design-system';
-import { LoadingSizes } from '@a-little-world/little-world-design-system/dist/esm/components/Loading/Loading';
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components';

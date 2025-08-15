@@ -197,12 +197,7 @@ const SheetContent = React.forwardRef<
     <StyledSheetContent ref={ref} side={side} {...props}>
       {children}
       <StyledCloseButton>
-        <CloseIcon
-          width="16"
-          height="16"
-          label="close sheet"
-          labelId="closeSheet"
-        />
+        <CloseIcon width="16" height="16" label="close sheet" />
       </StyledCloseButton>
     </StyledSheetContent>
   </SheetPortal>

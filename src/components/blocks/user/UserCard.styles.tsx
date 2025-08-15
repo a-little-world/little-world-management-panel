@@ -7,7 +7,7 @@ export const StyledCard = styled.div<{ $horizontal?: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  background: ${({ theme }) => theme.color.surface.tertiary};
+  background: ${({ theme }) => theme.color.surface.secondary};
   margin-bottom: ${({ theme }) => theme.spacing.xxsmall};
   padding: ${({ theme }) => theme.spacing.small};
   border: 1px solid ${({ theme }) => theme.color.border.subtle};

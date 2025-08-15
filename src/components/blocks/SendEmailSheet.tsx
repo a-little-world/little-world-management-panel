@@ -2,8 +2,8 @@ import {
   Button,
   Dropdown,
   Loading,
-  MessageTypes,
   StatusMessage,
+  StatusTypes,
   Text,
 } from '@a-little-world/little-world-design-system';
 import { ScrollArea } from '@radix-ui/react-scroll-area';
@@ -129,7 +129,7 @@ export function SendEmailSheet({
             </Recipients>
             <StatusMessage
               $visible={emailSent || !!errors?.root?.serverError}
-              $type={emailSent ? MessageTypes.Success : MessageTypes.Error}
+              $type={emailSent ? StatusTypes.Success : StatusTypes.Error}
             >
               {emailSent
                 ? 'Email successfully sent'

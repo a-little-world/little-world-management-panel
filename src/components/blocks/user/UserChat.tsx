@@ -253,7 +253,6 @@ const UserChat = ({ user }) => {
                                 height="16px"
                                 width="16px"
                                 label="message menu icon"
-                                labelId="messageMenuIcon"
                                 color={theme.color.surface.quaternary}
                               />
                             </Button>
@@ -300,7 +299,6 @@ const UserChat = ({ user }) => {
                       <Time type={TextTypes.Body6}>
                         {message.read ? (
                           <TickDoubleIcon
-                            labelId="messageReadIcon"
                             label="message read icon"
                             color={theme.color.status.info}
                             width="16px"
@@ -308,7 +306,6 @@ const UserChat = ({ user }) => {
                           />
                         ) : (
                           <TickIcon
-                            labelId="messageUnreadIcon"
                             label="message unread icon"
                             width="16px"
                             height="16px"
@@ -379,18 +376,12 @@ const UserChat = ({ user }) => {
           {selectedFile ? (
             <CloseIcon
               label="Remove attachment"
-              labelId="remove_attachment"
               onClick={clearSelectedFile}
               width="20"
               height="20"
             />
           ) : (
-            <PlusIcon
-              label={'upload attachment'}
-              labelId="attachment_icon"
-              width="20"
-              height="20"
-            />
+            <PlusIcon label={'upload attachment'} width="20" height="20" />
           )}
         </AttachmentButton>
         <SendButton
@@ -402,7 +393,6 @@ const UserChat = ({ user }) => {
         >
           <SendIcon
             label={'Send message'}
-            labelId="send_icon"
             color={theme.color.text.reversed}
             width="20"
             height="20"

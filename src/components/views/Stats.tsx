@@ -1,11 +1,11 @@
 import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 
+import { modifyDataToPercentages } from '../../helpers/stats';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../atoms/Tabs';
 import {
   BarChartTimeRanged,
   SignupFunnelEvolution,
-  modifyDataToPercentages,
 } from '../blocks/stats/BarChartTimeRanged';
 import KPIsDashboard from '../blocks/stats/KPIsDashboard';
 import { MatchJourneyOverview } from '../blocks/stats/MatchJourneyBuckets';

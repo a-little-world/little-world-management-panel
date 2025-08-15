@@ -569,12 +569,7 @@ const CreateNewEmail = () => {
                 size={ButtonSizes.Large}
                 color={theme.color.surface.bold}
               >
-                <InfoIcon
-                  width="20"
-                  height="20"
-                  label="infoIcon"
-                  labelId="infoIcon"
-                />
+                <InfoIcon width="20" height="20" label="infoIcon" />
               </Button>
             }
             text={`Available dynamic variables:

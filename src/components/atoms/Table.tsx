@@ -1,6 +1,6 @@
-import { cn } from '@/lib/utils';
 import * as React from 'react';
 
+import { cn } from '../../lib/utils';
 import { ScrollArea, ScrollBar } from './ScrollArea';
 
 const Table = React.forwardRef<
@@ -113,11 +113,11 @@ TableCaption.displayName = 'TableCaption';
 
 export {
   Table,
-  TableHeader,
   TableBody,
+  TableCaption,
+  TableCell,
   TableFooter,
   TableHead,
+  TableHeader,
   TableRow,
-  TableCell,
-  TableCaption,
 };

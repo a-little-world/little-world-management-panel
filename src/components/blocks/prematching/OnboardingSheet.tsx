@@ -42,6 +42,7 @@ interface User {
   profile: {
     first_name: string;
     second_name: string;
+    user_type: 'volunteer' | 'learner';
   };
   email: string;
 }
@@ -114,7 +115,7 @@ export function SelectedUsersPrematchingCallAttended({
       );
 
       const initialAdditionalUsers = unselectedUsers.reduce((acc, [hash]) => {
-        acc[hash] = false;
+        acc[hash] = true; // Start unselected users as selected (true)
         return acc;
       }, {} as Record<string, boolean>);
 
@@ -210,11 +211,11 @@ export function SelectedUsersPrematchingCallAttended({
                   required={false}
                   checked={usersToEmail[hash] || false}
                   onCheckedChange={() => handleUserEmailToggle(hash)}
-                  label={`${user.profile.first_name} ${user.profile.second_name}`}
+                  label={`${user.profile.first_name} ${user.profile.second_name} (${user.profile.user_type})`}
                 />
               ) : (
                 <Text type={TextTypes.Body5}>
-                  {user.profile.first_name} {user.profile.second_name}
+                  {user.profile.first_name} {user.profile.second_name} ({user.profile.user_type})
                 </Text>
               )}
             </UserListItem>

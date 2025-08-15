@@ -117,7 +117,7 @@ const MatchCard = ({
       <Container>
         <MatchUsers>
           <UserInfo user={match.user1} match={match} />
-          <Logo label="Little World Logo" labelId="LW" width={'64px'} />
+          <Logo label="Little World Logo" width={'64px'} />
           <UserInfo user={match.user2} match={match} />
         </MatchUsers>
         <Info>
@@ -221,7 +221,7 @@ export const SelectedMatchCard = ({
     <SelectedMatchCardContainer>
       <SelectedMatchUsers>
         <UserInfo user={match.user1} match={match} />
-        <Logo label="Little World Logo" labelId="LW" width={'32px'} />
+        <Logo label="Little World Logo" width={'32px'} />
         <UserInfo user={match.user2} match={match} />
       </SelectedMatchUsers>
       <SelectedInfo>

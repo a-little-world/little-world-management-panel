@@ -132,7 +132,6 @@ const UserPanel = () => {
                 <PlusIcon
                   color={theme.color.surface.primary}
                   label="select user"
-                  labelId="selectUser"
                   width={16}
                   height={16}
                 />

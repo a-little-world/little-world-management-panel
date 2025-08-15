@@ -1,8 +1,8 @@
 import {
   Button,
   Checkbox,
-  MessageTypes,
   StatusMessage,
+  StatusTypes,
 } from '@a-little-world/little-world-design-system';
 import { isEmpty } from 'lodash';
 import React from 'react';
@@ -88,7 +88,7 @@ const MatchActions = ({
       />
       <StatusMessage
         $visible={!!errors?.completed_off_plattform}
-        $type={MessageTypes.Error}
+        $type={StatusTypes.Error}
       >
         {errors?.completed_off_plattform?.message}
       </StatusMessage>

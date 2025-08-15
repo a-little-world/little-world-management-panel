@@ -1,4 +1,5 @@
 import {
+  ButtonAppearance,
   ButtonSizes,
   ButtonVariations,
   Card,
@@ -102,32 +103,28 @@ function CreateListModal({ open, onClose, onSubmit }: CreateListModalProps) {
             placeholder="Enter list description"
           />
           <div className="space-y-2">
-            <Text variant="body-small" weight="medium">
-              Selected Users:
-            </Text>
+            <Text bold>Selected Users:</Text>
             <div className="max-h-40 overflow-y-auto border rounded p-2">
               {Object.values(selectedUsers).map(user => (
                 <div key={user.hash} className="flex items-center gap-2 py-1">
-                  <Text variant="body-small">{user.email}</Text>
+                  <Text>{user.email}</Text>
                 </div>
               ))}
               {Object.keys(selectedUsers).length === 0 && (
-                <Text variant="body-small" className="text-gray-500">
-                  No users selected
-                </Text>
+                <Text className="text-gray-500">No users selected</Text>
               )}
             </div>
           </div>
           <div className="flex justify-end gap-2">
             <DSButton
-              variation={ButtonVariations.secondary}
+              appearance={ButtonAppearance.Secondary}
               onClick={onClose}
               disabled={isSubmitting}
             >
               Cancel
             </DSButton>
             <DSButton
-              variation={ButtonVariations.primary}
+              appearance={ButtonAppearance.Primary}
               onClick={handleSubmit}
               disabled={!name || !description || isSubmitting}
             >
@@ -200,14 +197,14 @@ function ModifyListModal({
           </div>
           <div className="flex justify-end gap-2">
             <DSButton
-              variation={ButtonVariations.secondary}
+              appearance={ButtonAppearance.Secondary}
               onClick={onClose}
               disabled={isSubmitting}
             >
               Cancel
             </DSButton>
             <DSButton
-              variation={ButtonVariations.primary}
+              appearance={ButtonAppearance.Primary}
               onClick={handleSubmit}
               disabled={!name || !description || isSubmitting}
             >

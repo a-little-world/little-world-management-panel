@@ -5,9 +5,9 @@ import {
   Card,
   CardHeader,
   CardSizes,
-  MessageTypes,
   Modal,
   StatusMessage,
+  StatusTypes,
   Text,
   TextArea,
 } from '@a-little-world/little-world-design-system';
@@ -122,7 +122,7 @@ const ConfirmUnmatchModal = ({
             error={errors.reason?.message}
           />
           {error && (
-            <StatusMessage $type={MessageTypes.Error} $visible>
+            <StatusMessage $type={StatusTypes.Error} $visible>
               {error}
             </StatusMessage>
           )}

@@ -5,8 +5,8 @@ import {
   ButtonSizes,
   Link,
   Loading,
-  MessageTypes,
   StatusMessage,
+  StatusTypes,
   Text,
   TextInput,
   TextTypes,
@@ -183,7 +183,7 @@ const Email = () => {
                     <StatusMessage
                       $visible={emailSent || !!errors?.root?.serverError}
                       $type={
-                        emailSent ? MessageTypes.Success : MessageTypes.Error
+                        emailSent ? StatusTypes.Success : StatusTypes.Error
                       }
                     >
                       {emailSent
@@ -262,12 +262,7 @@ const Email = () => {
                     size={ButtonSizes.Small}
                     onClick={() => setShowBackendPreview(!showBackendPreview)}
                   >
-                    <ArrowLeftIcon
-                      height={16}
-                      width={16}
-                      label="back icon"
-                      labelId="backIconId"
-                    />{' '}
+                    <ArrowLeftIcon height={16} width={16} label="back icon" />{' '}
                     Back to Email Builder
                   </Button>
                 )}

@@ -2,10 +2,10 @@ import {
   Button,
   Checkbox,
   Dropdown,
-  MessageTypes,
   Modal,
   Separator,
   StatusMessage,
+  StatusTypes,
   Text,
   TextArea,
   TextInput,
@@ -346,7 +346,7 @@ const UserActions = ({
 
         <StatusMessage
           $visible={changesSaved || !!errors?.root?.serverError}
-          $type={changesSaved ? MessageTypes.Success : MessageTypes.Error}
+          $type={changesSaved ? StatusTypes.Success : StatusTypes.Error}
         >
           {changesSaved
             ? 'Changes updated successfully'

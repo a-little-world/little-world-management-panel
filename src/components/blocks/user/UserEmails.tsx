@@ -130,7 +130,7 @@ const UserEmails = ({ user }) => {
                         return (
                           <TableCell key={email + key}>
                             <Text tag="span" type={TextTypes.Body5}>
-                              {formatDate(new Date(email.time))}{' '}
+                              {formatDate(new Date(email.time), 'P')}{' '}
                               {formatTime(new Date(email.time))}
                             </Text>
                           </TableCell>
@@ -147,12 +147,10 @@ const UserEmails = ({ user }) => {
                                 backgroundColor="green"
                                 color="white"
                                 label="email successful icon"
-                                labelId="emailSuccess"
                               />
                             ) : (
                               <ExclamationIcon
                                 label="email unsuccessful icon"
-                                labelId="emailUnsuccessful"
                                 height={24}
                                 width={24}
                               />

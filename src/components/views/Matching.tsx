@@ -204,7 +204,7 @@ const Matching = ({
             />
             <Checkbox
               id="completed"
-              name={name}
+              name="forceMatch"
               inputRef={null}
               onCheckedChange={setForceMatch}
               onBlur={() => {}}

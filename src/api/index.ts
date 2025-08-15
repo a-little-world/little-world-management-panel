@@ -40,6 +40,10 @@ export const getUserListExport = async ({
   searchParams,
   onError,
   onSuccess,
+}: {
+  searchParams: string;
+  onError: (error: any) => void;
+  onSuccess: (result: any) => void;
 }) => {
   try {
     const result = await apiFetch(
@@ -64,6 +68,12 @@ export const sendFileAttachmentMessage = async ({
   chatId,
   onSuccess,
   onError,
+}: {
+  file: File;
+  text: string;
+  chatId: string;
+  onSuccess: (result: any) => void;
+  onError: (error: any) => void;
 }) => {
   const data = new FormData();
   data.append('file', file);
@@ -80,7 +90,17 @@ export const sendFileAttachmentMessage = async ({
   }
 };
 
-export const sendChatMessage = async ({ chatId, text, onSuccess, onError }) => {
+export const sendChatMessage = async ({ 
+  chatId, 
+  text, 
+  onSuccess, 
+  onError 
+}: {
+  chatId: string;
+  text: string;
+  onSuccess: (result: any) => void;
+  onError: (error: any) => void;
+}) => {
   try {
     const result = await apiFetch(`/api/messages/${chatId}/send/`, {
       method: 'POST',
@@ -93,7 +113,17 @@ export const sendChatMessage = async ({ chatId, text, onSuccess, onError }) => {
   }
 };
 
-export const markMessageAsRead = ({ messageId, userId, onError, onSuccess }) =>
+export const markMessageAsRead = ({ 
+  messageId, 
+  userId, 
+  onError, 
+  onSuccess 
+}: {
+  messageId: string;
+  userId: string;
+  onError: (error: any) => void;
+  onSuccess: () => void;
+}) =>
   fetch(`/api/matching/users/${userId}/message_mark_read/`, {
     method: 'POST',
     headers: {
@@ -108,12 +138,22 @@ export const markMessageAsRead = ({ messageId, userId, onError, onSuccess }) =>
       if (res.ok) {
         onSuccess();
       } else {
-        onError();
+        onError('Request failed');
       }
     })
     .catch(onError);
 
-export const deleteMessage = ({ messageId, userId, onError, onSuccess }) =>
+export const deleteMessage = ({ 
+  messageId, 
+  userId, 
+  onError, 
+  onSuccess 
+}: {
+  messageId: string;
+  userId: string;
+  onError: (error: any) => void;
+  onSuccess: () => void;
+}) =>
   fetch(
     `/api/matching/users/${userId}/delete_message/?message_id=${messageId}`,
     {
@@ -128,7 +168,7 @@ export const deleteMessage = ({ messageId, userId, onError, onSuccess }) =>
       if (res.ok) {
         onSuccess();
       } else {
-        onError();
+        onError('Request failed');
       }
     })
     .catch(onError);

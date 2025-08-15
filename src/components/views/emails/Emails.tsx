@@ -1,5 +1,6 @@
 import {
   Accordion,
+  AccordionContent,
   Button,
   ButtonAppearance,
   ButtonSizes,
@@ -10,7 +11,7 @@ import {
 import { render as renderEmail } from '@react-email/render';
 import { map } from 'lodash';
 import React from 'react';
-import styled, { css } from 'styled-components';
+import styled from 'styled-components';
 import useSWR from 'swr';
 
 import EmailBuilder from '../../../emails/Builder';
@@ -56,18 +57,16 @@ const Template = styled(Link)`
   width: fit-content;
 `;
 
-const EMAIL_GROUPING_CSS = css`
-  display: flex;
-  gap: ${({ theme }) => theme.spacing.xxsmall};
+const EmailGrouping = styled(AccordionContent)`
+  flex-direction: row;
   flex-wrap: wrap;
-
-  &[hidden] {
-    display: none;
-  }
 `;
 
 const DynamicEmails = styled.div`
-  ${EMAIL_GROUPING_CSS}
+  display: flex;
+  flex-direction: row;
+  gap: ${({ theme }) => theme.spacing.xxsmall};
+  flex-wrap: wrap;
 `;
 
 const GROUPED_TEMPLATES = {
@@ -183,7 +182,7 @@ const Emails = () => {
         You may edit all of them in emails.json.
       </Text>
       <Accordion
-        contentCss={EMAIL_GROUPING_CSS}
+        ContentWrapper={EmailGrouping}
         items={map(GROUPED_TEMPLATES, (item, header) => {
           return {
             header,

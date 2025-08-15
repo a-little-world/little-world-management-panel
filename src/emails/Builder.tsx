@@ -249,12 +249,7 @@ const EditableEmailBlock: React.FC = ({
               variation={ButtonVariations.Icon}
               onClick={() => deleteBlock(index)}
             >
-              <TrashIcon
-                label="delete block"
-                labelId="deleteBlockIcon"
-                width={16}
-                height={16}
-              />
+              <TrashIcon label="delete block" width={16} height={16} />
             </DSButton>
             <DSButton
               variation={ButtonVariations.Icon}
@@ -263,7 +258,6 @@ const EditableEmailBlock: React.FC = ({
             >
               <ChevronDownIcon
                 label="shift block down"
-                labelId="moveBlockDownIcon"
                 width={16}
                 height={16}
               />
@@ -273,12 +267,7 @@ const EditableEmailBlock: React.FC = ({
               onClick={() => moveBlock(index, index - 1)}
               disabled={Boolean(!index)}
             >
-              <ChevronUpIcon
-                label="shift block up"
-                labelId="moveBlockUpIcon"
-                width={16}
-                height={16}
-              />
+              <ChevronUpIcon label="shift block up" width={16} height={16} />
             </DSButton>
           </EditActions>
         )}
