@@ -1,5 +1,11 @@
 import {
   Button,
+  ButtonSizes,
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardSizes,
   Checkbox,
   Dropdown,
   Modal,
@@ -17,6 +23,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { useTheme } from 'styled-components';
 
 import {
+  deleteUser,
   sendPushNotification,
   sendSms,
   setHadPrematchingCall,
@@ -25,7 +32,6 @@ import {
   setUserUnresponsive,
 } from '../../../api/index';
 import { registerInput } from '../../../store';
-import { Card, CardFooter, CardHeader, CardTitle } from '../../atoms/Card';
 
 const SUPPORT_USERS = [
   {
@@ -223,6 +229,23 @@ const UserActions = ({
       });
   };
 
+  const onDeleteUser = () => {
+    setIsSubmitting(true);
+    setChangesSaved(false);
+    deleteUser({
+      id: user.id,
+      onError: error => {
+        console.error(error);
+        setIsSubmitting(false);
+      },
+      onSuccess: () => {
+        setIsSubmitting(false);
+        setChangesSaved(true);
+        onUpdate();
+      },
+    });
+  };
+
   return (
     <div className="w-full">
       <SendSms userId={user.id} />
@@ -375,12 +398,23 @@ const UserActions = ({
         open={deleteUserModalOpen}
         onClose={() => setDeleteUserModalOpen(false)}
       >
-        <Card>
-          <CardHeader>
-            <CardTitle>Are you sure you want to delete this user</CardTitle>
-          </CardHeader>
+        <Card width={CardSizes.Medium}>
+          <CardHeader>Are you sure you want to delete this user?</CardHeader>
+          <CardContent>
+            <StatusMessage $type={StatusTypes.Error} $visible={true}>
+              Cannot delete the user via this view. Please request admin user to
+              delete the user.
+            </StatusMessage>
+          </CardContent>
           <CardFooter>
-            <Button>Delete Account</Button>
+            <Button
+              onClick={onDeleteUser}
+              backgroundColor={theme.color.status.error}
+              disabled
+              size={ButtonSizes.Stretch}
+            >
+              Delete Account
+            </Button>
           </CardFooter>
         </Card>
       </Modal>

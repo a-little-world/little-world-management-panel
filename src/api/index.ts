@@ -90,11 +90,11 @@ export const sendFileAttachmentMessage = async ({
   }
 };
 
-export const sendChatMessage = async ({ 
-  chatId, 
-  text, 
-  onSuccess, 
-  onError 
+export const sendChatMessage = async ({
+  chatId,
+  text,
+  onSuccess,
+  onError,
 }: {
   chatId: string;
   text: string;
@@ -113,11 +113,11 @@ export const sendChatMessage = async ({
   }
 };
 
-export const markMessageAsRead = ({ 
-  messageId, 
-  userId, 
-  onError, 
-  onSuccess 
+export const markMessageAsRead = ({
+  messageId,
+  userId,
+  onError,
+  onSuccess,
 }: {
   messageId: string;
   userId: string;
@@ -143,11 +143,11 @@ export const markMessageAsRead = ({
     })
     .catch(onError);
 
-export const deleteMessage = ({ 
-  messageId, 
-  userId, 
-  onError, 
-  onSuccess 
+export const deleteMessage = ({
+  messageId,
+  userId,
+  onError,
+  onSuccess,
 }: {
   messageId: string;
   userId: string;
@@ -386,6 +386,18 @@ export const updateMatchNotes = async ({ id, notes, onSuccess, onError }) => {
   } catch (error) {
     onError(error);
   }
+};
+
+export const deleteUser = async ({ id, onError, onSuccess }) => {
+  // api needs to be added to delete user by id
+  // try {
+  //   const result = await apiFetch(`/api/matching/users/${id}/delete/`, {
+  //     method: 'POST',
+  //   });
+  //   onSuccess(result);
+  // } catch (error) {
+  //   onError(error);
+  // }
 };
 
 export const burstUpdateMatchingScores = async ({ parallel_tasks }) => {
