@@ -134,6 +134,17 @@ const HrefEditor = ({
   leftColor,
   rightColor,
   type,
+}: {
+  handleUpdate: (data: any) => void;
+  href?: string;
+  leftHref?: string;
+  rightHref?: string;
+  text?: string;
+  leftText?: string;
+  rightText?: string;
+  leftColor?: string;
+  rightColor?: string;
+  type?: string;
 }) => {
   const {
     register,
@@ -261,7 +272,7 @@ const HrefEditor = ({
 };
 
 const CreateNewEmail = () => {
-  const [newEmail, setNewEmail] = useState([]);
+  const [newEmail, setNewEmail] = useState<any[]>([]);
   const [templateSaved, setTemplateSaved] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -294,39 +305,46 @@ const CreateNewEmail = () => {
   const templateName = watch('template_name');
   const subject = watch('subject');
   const category = watch('category');
-  const senderId = 'noreply';
   const shouldSave =
     !templateSaved && subject && templateName && !isEmpty(newEmail);
   const { emailTheme, setEmailTheme } = React.useContext(EmailThemeContext)!;
 
-  const onSaveDynamicTemplate = () => {
+  const onSaveDynamicTemplate = async () => {
     setSaving(true);
-    updateDynamicTemplate({
-      existingTemplate: Boolean(templateId),
-      category,
-      templateName,
-      template: renderEmail(
+    try {
+      const renderedTemplate = await renderEmail(
         <EmailBuilder
           content={newEmail}
           preview={''}
           theme={emailTheme}
           unsubscribeLink={getUnsubscribeUrl(category)}
         />,
-      ),
-      templateContent: newEmail,
-      subject,
-      theme: emailTheme,
-      onSuccess: () => {
-        setSaving(false);
-        mutate();
-        setTemplateSaved(true);
-      },
-      onError: error => {
-        console.error(error);
-        setSaving(false);
-        setError('template_name', { message: 'Error saving' });
-      },
-    });
+      );
+
+      updateDynamicTemplate({
+        existingTemplate: Boolean(templateId),
+        category,
+        templateName,
+        template: renderedTemplate,
+        templateContent: newEmail,
+        subject,
+        theme: emailTheme,
+        onSuccess: () => {
+          setSaving(false);
+          mutate();
+          setTemplateSaved(true);
+        },
+        onError: error => {
+          console.error(error);
+          setSaving(false);
+          setError('template_name', { message: 'Error saving' });
+        },
+      });
+    } catch (error) {
+      console.error('Error rendering email:', error);
+      setSaving(false);
+      setError('template_name', { message: 'Error rendering email' });
+    }
   };
 
   useAutosave({
@@ -396,6 +414,7 @@ const CreateNewEmail = () => {
 
   const handleHrefUpdate = data => {
     const dataCopy = [...newEmail];
+    if (showHrefEditor === null) return;
 
     if (dataCopy[showHrefEditor].type === ContentTypes.TwoButtons) {
       dataCopy[showHrefEditor].leftHref = data.leftUrl;
@@ -448,7 +467,11 @@ const CreateNewEmail = () => {
   return (
     <Container>
       <PageHeading type={TextTypes.Heading4}>New Email Creator</PageHeading>
-      <SaveTemplateForm onSubmit={submitTemplate(onSaveDynamicTemplate)}>
+      <SaveTemplateForm
+        onSubmit={submitTemplate(async () => {
+          await onSaveDynamicTemplate();
+        })}
+      >
         <Dropdown
           onValueChange={setEmailTheme}
           key={emailTheme}
@@ -626,18 +649,20 @@ const CreateNewEmail = () => {
         open={isNumber(showHrefEditor)}
         onClose={() => setShowHrefEditor(null)}
       >
-        <HrefEditor
-          handleUpdate={handleHrefUpdate}
-          href={newEmail?.[showHrefEditor]?.href}
-          leftHref={newEmail?.[showHrefEditor]?.leftHref}
-          rightHref={newEmail?.[showHrefEditor]?.rightHref}
-          text={newEmail?.[showHrefEditor]?.text}
-          leftText={newEmail?.[showHrefEditor]?.leftText}
-          rightText={newEmail?.[showHrefEditor]?.rightText}
-          leftColor={newEmail?.[showHrefEditor]?.leftColor}
-          rightColor={newEmail?.[showHrefEditor]?.rightColor}
-          type={newEmail?.[showHrefEditor]?.type}
-        />
+        {showHrefEditor !== null && (
+          <HrefEditor
+            handleUpdate={handleHrefUpdate}
+            href={newEmail?.[showHrefEditor]?.href}
+            leftHref={newEmail?.[showHrefEditor]?.leftHref}
+            rightHref={newEmail?.[showHrefEditor]?.rightHref}
+            text={newEmail?.[showHrefEditor]?.text}
+            leftText={newEmail?.[showHrefEditor]?.leftText}
+            rightText={newEmail?.[showHrefEditor]?.rightText}
+            leftColor={newEmail?.[showHrefEditor]?.leftColor}
+            rightColor={newEmail?.[showHrefEditor]?.rightColor}
+            type={newEmail?.[showHrefEditor]?.type}
+          />
+        )}
       </Modal>
     </Container>
   );

@@ -97,8 +97,8 @@ const Email = () => {
     });
   };
 
-  const onDownload = () => {
-    const html = renderEmail(
+  const onDownload = async () => {
+    const html = await renderEmail(
       <EmailBuilder
         content={email.content}
         preview={email.preview}

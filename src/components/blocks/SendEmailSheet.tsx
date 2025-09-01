@@ -41,7 +41,11 @@ export function SendEmailSheet({
     sendToCount: 0,
     unsubscribedCount: 0,
   });
-  const { filterOptions, isLoading } = useFilterOptions();
+  const {
+    filterOptions,
+    error: filterOptionsError,
+    isLoading,
+  } = useFilterOptions();
   const {
     handleSubmit,
     getValues,
@@ -55,7 +59,10 @@ export function SendEmailSheet({
   );
 
   const recipients = userList?.count ?? 0;
-  const [, ...optionsWithoutAll] = isLoading ? [[], []] : filterOptions?.lists;
+  // Handle undefined filterOptions gracefully when API fails
+  const [, ...optionsWithoutAll] = isLoading
+    ? [[], []]
+    : filterOptions?.lists || [[], []];
 
   const onError = e => {
     setIsSubmitting(false);
@@ -97,31 +104,43 @@ export function SendEmailSheet({
           <form onSubmit={handleSubmit(onSendEmail)}>
             <TextField>{subject}</TextField>
             {!isLoading && (
-              <Controller
-                defaultValue={null}
-                name={'user_list'}
-                control={control}
-                rules={{ required: 'Required' }}
-                render={({
-                  field: { onChange, onBlur, value, name, ref },
-                  fieldState: { error },
-                }) => (
-                  <Dropdown
-                    name={name}
-                    inputRef={ref}
-                    onValueChange={val => onChange({ target: { value: val } })}
-                    onBlur={onBlur}
-                    value={value}
-                    error={error?.message}
-                    label={'User List'}
-                    placeholder="Select a user list..."
-                    options={optionsWithoutAll.map(({ name, description }) => ({
-                      value: name,
-                      label: description,
-                    }))}
+              <>
+                {filterOptionsError ? (
+                  <Text type="Body4" color="error">
+                    Failed to load user lists. Please try refreshing the page.
+                  </Text>
+                ) : (
+                  <Controller
+                    defaultValue={null}
+                    name={'user_list'}
+                    control={control}
+                    rules={{ required: 'Required' }}
+                    render={({
+                      field: { onChange, onBlur, value, name, ref },
+                      fieldState: { error },
+                    }) => (
+                      <Dropdown
+                        name={name}
+                        inputRef={ref}
+                        onValueChange={val =>
+                          onChange({ target: { value: val } })
+                        }
+                        onBlur={onBlur}
+                        value={value}
+                        error={error?.message}
+                        label={'User List'}
+                        placeholder="Select a user list..."
+                        options={optionsWithoutAll.map(
+                          ({ name, description }) => ({
+                            value: name,
+                            label: description,
+                          }),
+                        )}
+                      />
+                    )}
                   />
                 )}
-              />
+              </>
             )}
             <Recipients>
               Number of recipients:{' '}

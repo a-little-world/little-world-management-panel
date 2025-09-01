@@ -76,7 +76,7 @@ const GROUPED_TEMPLATES = {
   AutomatedPatenmatch: map(getAutomatedPatentmatchEmails()),
 };
 
-function developmentUpdateBackendEmailTemplatesAndConfiguration({
+async function developmentUpdateBackendEmailTemplatesAndConfiguration({
   backendEmailConfig,
 }) {
   console.log('Syncing backend emails');
@@ -107,10 +107,12 @@ function developmentUpdateBackendEmailTemplatesAndConfiguration({
 
   const newEmailConfig = backendEmailConfig;
   const templateToUpload = [];
+
+  // Process all templates sequentially since renderEmail is now async
   for (const [key, value] of Object.entries(emailData)) {
     console.log(`TEMPLATE: ${key}: ${value}`, value);
     const email = value;
-    const html = renderEmail(
+    const html = await renderEmail(
       <EmailBuilder
         content={email.content}
         preview={email.preview}
@@ -156,11 +158,11 @@ const Emails = () => {
     {},
   );
 
-  const onSyncBackendEmails = () => {
+  const onSyncBackendEmails = async () => {
     // 1 - fetches the current email confirguration from the backend
     // 2 - injects all the new email templates into the json
     // 3 - creates on zip file to download continaing all the email htmls and an updated emails.json
-    developmentUpdateBackendEmailTemplatesAndConfiguration({
+    await developmentUpdateBackendEmailTemplatesAndConfiguration({
       backendEmailConfig: backendEmailConfiguration,
     });
   };

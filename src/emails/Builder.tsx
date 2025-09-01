@@ -11,7 +11,8 @@ import styled from 'styled-components';
 
 import EditableText from '../components/atoms/EditableText';
 import ButtonLink from './shared/ButtonLink';
-import { EmailLayout } from './shared/Layout';
+import EmailContent from './shared/EmailContent';
+import EmailLayout from './shared/Layout';
 import TwoButtons from './shared/TwoButtons';
 import { THEMES } from './shared/constants';
 import {
@@ -89,12 +90,9 @@ const EditWrapper = styled.div`
   position: relative;
   border-radius: ${({ theme }) => theme.radius.small};
   &:hover {
-    box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px,
+    box-shadow:
+      rgba(0, 0, 0, 0.16) 0px 1px 4px,
       ${({ theme }) => theme.color.border.selected} 0px 0px 0px 3px;
-
-    // ${EditActions} {
-    //   display: flex;
-    // }
   }
 `;
 
@@ -289,28 +287,43 @@ const EmailBuilder = ({
   theme = 'little_world',
   unsubscribeLink,
 }: Props) => {
+  // Render content blocks
+  const contentBlocks = content?.map((blockData, index) =>
+    editable ? (
+      <EditableEmailBlock
+        key={index + blockData.type}
+        blockData={blockData}
+        index={index}
+        moveBlock={moveBlock}
+        deleteBlock={deleteBlock}
+        totalBlocks={content.length}
+        updateText={(text: string) => updateText?.({ text, index })}
+        openHrefEditor={() => openHrefEditor?.(index)}
+      />
+    ) : (
+      <EmailBlock key={index + blockData.type} {...blockData} />
+    ),
+  );
+
+  if (editable) {
+    return (
+      <EmailContent
+        themeContent={THEMES[theme]}
+        unsubscribeLink={unsubscribeLink}
+      >
+        {contentBlocks}
+      </EmailContent>
+    );
+  }
+
   return (
     <EmailLayout
       previewText={preview}
       unsubscribeLink={unsubscribeLink}
       themeContent={THEMES[theme]}
+      fullHtml={true}
     >
-      {content?.map((blockData, index) =>
-        editable ? (
-          <EditableEmailBlock
-            key={index + blockData.type}
-            blockData={blockData}
-            index={index}
-            moveBlock={moveBlock}
-            deleteBlock={deleteBlock}
-            totalBlocks={content.length}
-            updateText={(text: string) => updateText({ text, index })}
-            openHrefEditor={() => openHrefEditor(index)}
-          />
-        ) : (
-          <EmailBlock key={index + blockData.type} {...blockData} />
-        ),
-      )}
+      {contentBlocks}
     </EmailLayout>
   );
 };

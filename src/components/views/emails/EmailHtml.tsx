@@ -16,7 +16,7 @@ const useQueryParams = (): Record<string, string> => {
   return queryParams;
 };
 
-const EmailHtml = () => {
+const EmailHtml = async () => {
   const paths = window?.location.pathname.split('/');
   const emailTemplateName = paths[3];
 
@@ -24,7 +24,7 @@ const EmailHtml = () => {
   const emailProps = useQueryParams();
   if (!email) return 'Invalid Email Path';
 
-  return renderEmail(
+  const html = await renderEmail(
     <EmailBuilder
       content={email?.content}
       preview={email?.preview}
@@ -36,13 +36,15 @@ const EmailHtml = () => {
       pretty: true,
     },
   );
+
+  return html;
 };
 
-export const EmailHtmlRenderer = ({ template, params }) => {
+export const EmailHtmlRenderer = async ({ template, params }) => {
   const email = emailsData[template];
 
   if (!email) return 'Invalid Email Path';
-  const emailHtml = renderEmail(
+  const emailHtml = await renderEmail(
     <EmailBuilder
       content={email?.content}
       preview={email?.preview}

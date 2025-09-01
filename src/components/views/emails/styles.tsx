@@ -47,7 +47,7 @@ export const OptionsContainer = styled.div`
 `;
 
 export const TemplateWrapper = styled.div`
-  background: ${({ theme }) => theme.color.surface.primary};
+  background: #fafbfb;
   padding: ${({ theme }) => theme.spacing.small};
   border: 1px solid ${({ theme }) => theme.color.border.subtle};
   border-radius: ${({ theme }) => theme.radius.xxsmall};

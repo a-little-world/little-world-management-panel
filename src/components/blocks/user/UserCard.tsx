@@ -90,7 +90,6 @@ interface UserCardProps {
   tiny?: boolean;
 }
 
-// Component parts
 const UserStatus: React.FC<{ user: User }> = ({ user }) => (
   <StatusContainer>
     <Text type={TextTypes.Body4} center bold>

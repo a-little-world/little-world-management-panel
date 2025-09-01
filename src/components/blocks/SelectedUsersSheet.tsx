@@ -17,7 +17,7 @@ import SearchBar from './SearchBar';
 import UserDetailsCard from './user/UserCard';
 
 export function SelectedUsersSheet() {
-  const { selectedUsers, deselectUser, selectedMatches } = useGlobalState();
+  const { selectedUsers, deselectUser } = useGlobalState();
   const { isSubmitting, onSelectUser, error } = useSelectUser();
 
   return (
@@ -35,7 +35,7 @@ export function SelectedUsersSheet() {
           </SheetDescription>
         </SheetHeader>
         <SheetScrollableContent className="h-full overflow-scroll">
-          {selectedUsers &&
+          {!isEmpty(selectedUsers) &&
             map(selectedUsers, user => {
               return (
                 <UserDetailsCard

@@ -1,18 +1,9 @@
-import {
-  Body,
-  Container,
-  Head,
-  Html,
-  Img,
-  Preview,
-  Section,
-  Text,
-} from '@react-email/components';
+import { Body, Head, Html, Preview } from '@react-email/components';
 import * as React from 'react';
 
-import Footer from './Footer';
+import EmailContent from './EmailContent';
 import { THEMES } from './constants';
-import { body, content, contentContainer, logo, sentence } from './styles';
+import { body } from './styles';
 
 interface EmailLayoutProps {
   children: React.ReactNode;
@@ -38,33 +29,12 @@ export const EmailLayout = ({
       </Head>
       <Preview>{previewText}</Preview>
       <Body style={body}>
-        <Container>
-          <Section>
-            <Img
-              width={themeContent.logoWidth}
-              height={themeContent.logoHeight}
-              style={{
-                ...logo,
-                width: themeContent.logoWidth,
-                maxWidth: themeContent.logoWidth,
-                height: themeContent.logoHeight,
-              }}
-              src={themeContent.logo}
-              alt={themeContent.logoAlt}
-            />
-          </Section>
-          <Container style={contentContainer}>
-            <Section style={content}>
-              {children}
-              <Text style={sentence}>Beste Grüße,</Text>
-              <Text style={sentence}>{themeContent.from}</Text>
-            </Section>
-          </Container>
-          <Footer
-            unsubscribeLink={unsubscribeLink}
-            themeContent={themeContent}
-          />
-        </Container>
+        <EmailContent
+          themeContent={themeContent}
+          unsubscribeLink={unsubscribeLink}
+        >
+          {children}
+        </EmailContent>
       </Body>
     </Html>
   );
