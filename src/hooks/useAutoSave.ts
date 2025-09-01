@@ -5,7 +5,7 @@ const useAutosave = ({
   delay,
   shouldSave,
 }: {
-  callback: () => void;
+  callback: () => void | Promise<void>;
   delay: number;
   shouldSave: boolean;
 }) => {
@@ -18,8 +18,12 @@ const useAutosave = ({
   useEffect(() => {
     if (!shouldSave) return;
 
-    const timer = setInterval(() => {
-      savedCallback.current();
+    const timer = setInterval(async () => {
+      try {
+        await savedCallback.current();
+      } catch (error) {
+        console.error('Autosave error:', error);
+      }
     }, delay);
 
     return () => clearInterval(timer);

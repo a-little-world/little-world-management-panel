@@ -1,6 +1,5 @@
 import { isEmpty, map, size } from 'lodash';
 import React from 'react';
-import { useForm } from 'react-hook-form';
 
 import useSelectUser from '../../hooks/useSelectUser';
 import { useGlobalState } from '../../store';
@@ -18,13 +17,6 @@ import SearchBar from './SearchBar';
 import UserDetailsCard from './user/UserCard';
 
 export function SelectedUsersSheet() {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    setError,
-  } = useForm();
-
   const { selectedUsers, deselectUser, selectedMatches } = useGlobalState();
   const { isSubmitting, onSelectUser, error } = useSelectUser();
 
@@ -43,15 +35,16 @@ export function SelectedUsersSheet() {
           </SheetDescription>
         </SheetHeader>
         <SheetScrollableContent className="h-full overflow-scroll">
-          {map(selectedUsers, user => {
-            return (
-              <UserDetailsCard
-                key={'card' + user.hash}
-                user={user}
-                deselectUser={deselectUser}
-              />
-            );
-          })}
+          {selectedUsers &&
+            map(selectedUsers, user => {
+              return (
+                <UserDetailsCard
+                  key={'card' + user.hash}
+                  user={user}
+                  deselectUser={deselectUser}
+                />
+              );
+            })}
         </SheetScrollableContent>
         <SheetFooter>
           <SearchBar
