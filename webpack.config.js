@@ -2,20 +2,19 @@ const path = require('path');
 const webpack = require('webpack');
 const BundleTracker = require('webpack-bundle-tracker');
 const CompressionPlugin = require('compression-webpack-plugin');
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 /*
  * For this one we needed to uninstall react-error-overlay see: https://stackoverflow.com/questions/70368760/react-uncaught-referenceerror-process-is-not-defined
  */
 
 var config = function (env) {
   let p_path = '/static/little-world-frontend/dist/';
-  console.log(env.LOCAL_DEBUG);
 
   if (env.LOCAL_DEBUG != '1') {
     p_path =
       'https://fra1.digitaloceanspaces.com/lw-object-storage-bucket/static/little-world-frontend/dist/'; //TODO: handle differently
   }
-  console.log(p_path);
+
   return {
     context: __dirname,
     entry: {
@@ -36,7 +35,8 @@ var config = function (env) {
 
     plugins: [
       new BundleTracker({
-        filename: path.join(__dirname, './webpack-stats.json'),
+        filename: 'webpack-stats.json',
+        path: __dirname,
       }),
       new CompressionPlugin(),
       new webpack.DefinePlugin({
@@ -45,26 +45,37 @@ var config = function (env) {
       ...(env.LOCAL_DEBUG === '1'
         ? []
         : [
-            new UglifyJsPlugin({
-              // Adds uglyfy ls only if in production
-              test: /\.(js|jsx|tsx|ts)$/,
-              uglifyOptions: {
-                comments: false,
-                warnings: false,
-                parse: {},
-                compress: {},
-                mangle: true, // Note `mangle.properties` is `false` by default.
-                output: null,
-                toplevel: false,
-                nameCache: null,
-                ie8: false,
-                keep_fnames: false,
+            new TerserPlugin({
+              terserOptions: {
+                compress: {
+                  drop_console: true,
+                  drop_debugger: true,
+                },
+                mangle: true,
+                output: {
+                  comments: false,
+                },
               },
+              extractComments: false,
             }),
           ]),
     ],
     devtool:
       env.LOCAL_DEBUG === '1' ? 'eval-cheap-module-source-map' : 'source-map',
+    optimization: {
+      moduleIds: 'deterministic',
+      chunkIds: 'deterministic',
+      splitChunks: {
+        chunks: 'all',
+        cacheGroups: {
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendors',
+            chunks: 'all',
+          },
+        },
+      },
+    },
     module: {
       rules: [
         {
@@ -78,23 +89,21 @@ var config = function (env) {
         },
         {
           test: /\.svg$/,
-          issuer: /\.jsx?$/,
           use: [
-            'babel-loader',
             {
-              loader: 'react-svg-loader',
-              options: {
-                svgo: {
-                  plugins: [{ removeTitle: false }],
-                  floatPrecision: 2,
-                },
-                jsx: true,
-              },
+              loader: '@svgr/webpack',
+            },
+            {
+              loader: 'file-loader',
             },
           ],
+          type: 'javascript/auto',
+          issuer: {
+            and: [/\.(ts|tsx|js|jsx|md|mdx)$/],
+          },
         },
         {
-          test: /\.(ttf)$/,
+          test: /\.(jpg|png|webp|gif|ttf|woff|woff2|eot|otf)$/,
           use: {
             loader: 'file-loader',
             options: {
@@ -104,11 +113,7 @@ var config = function (env) {
         },
         {
           test: /\.css$/,
-          use: ['style-loader', 'css-loader'],
-        },
-        {
-          test: /\.(png|jpg|gif)$/,
-          use: ['file-loader'],
+          use: ['style-loader', 'css-loader', 'postcss-loader'],
         },
       ],
     },

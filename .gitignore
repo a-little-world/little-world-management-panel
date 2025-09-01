@@ -10,6 +10,9 @@
 
 # production
 /build
+dist/
+assets/
+webpack-stats.json
 
 # misc
 .DS_Store

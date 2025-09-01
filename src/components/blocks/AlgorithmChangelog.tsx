@@ -33,6 +33,14 @@ const ChangelogDescription = styled(Text)`
 
 const algorithmChangelog: ChangelogEntry[] = [
   {
+    date: '2025-08-29',
+    element: 'Country of residence',
+    oldScore: 'Learners living in any country were eligible for matching',
+    newScore: 'Only Learners living in Germany are eligible for matching',
+    reason:
+      'Helps us streamline our matching and suppport process whilst also focussing on our key funding and organisational goals - helping migrants in Germany integrate into society, make connections and improve their German.',
+  },
+  {
     date: '2025-07-29',
     element: 'Time Slot Overlap',
     oldScore: '0 slots = -15 points',

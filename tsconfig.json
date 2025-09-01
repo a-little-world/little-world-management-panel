@@ -11,7 +11,7 @@
     "outDir": "dist",
     "rootDir": "src",
     "strict": true,
-    "target": "ES5",
+    "target": "ES6",
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"]

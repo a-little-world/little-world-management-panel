@@ -173,7 +173,17 @@ export const deleteMessage = ({
     })
     .catch(onError);
 
-export const sendSms = ({ userId, message, onError, onSuccess }) =>
+export const sendSms = ({
+  userId,
+  message,
+  onError,
+  onSuccess,
+}: {
+  userId: string;
+  message: { smsMessage: string };
+  onError: (error: any) => void;
+  onSuccess: (data: any) => void;
+}) =>
   fetch(`/api/matching/users/${userId}/sms/`, {
     method: 'POST',
     headers: {
@@ -194,7 +204,21 @@ export const sendSms = ({ userId, message, onError, onSuccess }) =>
     })
     .catch(onError);
 
-export const sendPushNotification = ({ userId, message, onError, onSuccess }) =>
+export const sendPushNotification = ({
+  userId,
+  message,
+  onError,
+  onSuccess,
+}: {
+  userId: string;
+  message: {
+    pushNotificationHeadline: string;
+    pushNotificationTitle: string;
+    pushNotificationDescription: string;
+  };
+  onError: (error: any) => void;
+  onSuccess: () => void;
+}) =>
   fetch(`/api/push_notifications/send`, {
     method: 'POST',
     headers: {
@@ -222,6 +246,11 @@ export const setUserUnresponsive = async ({
   unresponsive,
   onError,
   onSuccess,
+}: {
+  userId: string;
+  unresponsive: boolean;
+  onError: (error: any) => void;
+  onSuccess: (data: any) => void;
 }) => {
   try {
     const response = await fetch(

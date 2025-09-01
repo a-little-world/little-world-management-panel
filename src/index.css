@@ -2,15 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  overflow: hidden;
-}
-
-dialog {
-  color: black;
-}
-
 @layer base {
+  body {
+    overflow: hidden;
+  }
+  
+  dialog {
+    color: black;
+  }
+  
   :root {
     /* 14 distinct colors for light mode */
     --chart-1: 0 65% 55%;

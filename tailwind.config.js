@@ -1,7 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: 'selector',
-  content: ['./src/**/*.{ts,tsx}'],
+  content: ['./src/**/*.{js,jsx,ts,tsx,html}'],
   prefix: '',
   daisyUI: {
     darkMode: 'selector',
@@ -9,6 +9,7 @@ module.exports = {
   theme: {
     screens: {
       mid: '800px',
+      '3xl': '1920px',
     },
     container: {
       center: true,
@@ -18,7 +19,32 @@ module.exports = {
       },
     },
     extend: {
+      width: {
+        120: '30rem',
+        140: '35rem',
+        160: '40rem',
+        180: '45rem',
+        200: '50rem',
+        240: '60rem',
+        280: '70rem',
+        320: '80rem',
+        360: '90rem',
+        400: '100rem',
+      },
       zIndex: {
+        60: '60',
+        70: '70',
+        80: '80',
+        90: '90',
+        100: '100',
+        110: '110',
+        120: '120',
+        130: '130',
+        140: '140',
+        150: '150',
+        160: '160',
+        170: '170',
+        180: '180',
         1000: '1000',
       },
       keyframes: {
@@ -37,5 +63,10 @@ module.exports = {
       },
     },
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [
+    require('tailwindcss-animate'),
+    require('daisyui'),
+    require('flowbite/plugin'),
+    require('@tailwindcss/typography'),
+  ],
 };

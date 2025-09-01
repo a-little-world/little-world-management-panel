@@ -33,6 +33,16 @@ const scoreVariables = [
     ),
   },
   {
+    header: 'Learner Country of residence',
+    content: (
+      <Text>
+        {`We only include learners registered with us who are currenlty living in Germany.
+
+        Volunteers are not affected by this rule.`}
+      </Text>
+    ),
+  },
+  {
     header: 'Gender',
     content: (
       <Text>

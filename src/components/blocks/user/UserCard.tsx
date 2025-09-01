@@ -43,6 +43,7 @@ import UserLanguages from './UserLanguages';
 interface UserProfile {
   first_name: string;
   second_name: string;
+  country_of_residence?: string | null;
   phone_mobile: string;
   target_group: string;
   target_groups?: string[];
@@ -177,6 +178,10 @@ const UserDetails: React.FC<{
       <DetailRow label="Id" value={user.id} />
       <DetailRow label="Email" value={user.email} />
       <DetailRow label="Company" value={user.state.company || '-'} />
+      <DetailRow
+        label="Residence"
+        value={user.profile.country_of_residence || '-'}
+      />
       <DetailRow
         label="Phone Number"
         value={`${user.profile.phone_mobile} (Notify via ${user.profile.phone_mobile})`}
