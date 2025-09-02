@@ -1,4 +1,5 @@
 import {
+  Button,
   Card,
   ChevronRightIcon,
   Link,
@@ -330,9 +331,7 @@ export function UserLossStatisticDownloadBlock() {
         outputted in 'intersecting_ids_lists' some lists maybe be ignored like
         'all' they are also listed.
       </Text>
-      <button onClick={onDownload} className="btn btn-primary">
-        Download
-      </button>
+      <Button onClick={onDownload}>Download</Button>
       <div className="flex flex-row">
         <DatePicker
           date={startDate}
@@ -389,9 +388,7 @@ export function AccentureReportDownloadBloack() {
       <SectionTitle type={TextTypes.Body4} tag="h2">
         Accenture Report
       </SectionTitle>
-      <button onClick={onDownload} className="btn btn-primary">
-        Download
-      </button>
+      <Button onClick={onDownload}>Download</Button>
     </div>
   );
 }
@@ -436,9 +433,7 @@ export function MatchQualitySatisticDownloadBlock() {
         outputted in 'intersecting_ids_lists' some lists maybe be ignored like
         'all' they are also listed.
       </Text>
-      <button onClick={onDownload} className="btn btn-primary">
-        Download
-      </button>
+      <Button onClick={onDownload}>Download</Button>
       <div className="flex flex-row">
         <DatePicker
           date={startDate}

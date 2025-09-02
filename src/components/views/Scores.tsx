@@ -240,8 +240,7 @@ export function Scores() {
     setSearchParams(searchParams);
   };
 
-  const scoresUpdating =
-    activeScoreCalculation || burstLoading || scoresLoading;
+  const scoresUpdating = activeScoreCalculation;
 
   useEffect(() => {
     clearMatching();
@@ -251,8 +250,8 @@ export function Scores() {
     searchParams.get('current_match_suggestion') === 'true'
       ? 'current_suggestion'
       : searchParams.get('matchable') === 'true'
-      ? 'matchable_scores'
-      : 'all_scores';
+        ? 'matchable_scores'
+        : 'all_scores';
 
   return (
     <>
@@ -297,6 +296,7 @@ export function Scores() {
             <Popover
               trigger={
                 <Button
+                  disabled={burstLoading || scoresLoading}
                   onClick={() => {
                     if (!scoresUpdating) {
                       setBurstUpdateDialogOpen(true);
@@ -317,9 +317,9 @@ export function Scores() {
                     {isRunningTask(task) ? (
                       <ProgressBar
                         className={''}
-                        max={task.info.progress.total_combinations}
-                        value={task.info.progress.combinations_processed}
-                      ></ProgressBar>
+                        max={task.info?.progress?.total_combinations}
+                        value={task.info?.progress?.combinations_processed}
+                      />
                     ) : (
                       <div>{task.state}</div>
                     )}
