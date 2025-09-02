@@ -39,19 +39,25 @@ const USER_TABS = [
 const UserPanelContent = ({
   tab,
   user,
+  appointment,
   onUpdate,
 }: {
   tab: string;
   user: any;
+  appointment: any;
   onUpdate: () => void;
 }) => {
-  if (tab === 'profile') return <UserDetailsCard user={user} partial={false} />;
+  if (tab === 'profile')
+    return (
+      <UserDetailsCard user={user} appointment={appointment} partial={false} />
+    );
 
   if (tab === 'chat') return <UserChat user={user} />;
 
   if (tab === 'emails') return <UserEmails user={user} />;
 
-  if (tab === 'matches') return <UserMatches user={user} />;
+  if (tab === 'matches')
+    return <UserMatches user={user} appointment={appointment} />;
 
   if (tab === 'notes')
     return (
@@ -76,6 +82,15 @@ const UserPanel = () => {
     isLoading,
     mutate,
   } = useSWR(`/api/matching/users/${userId}/?messages=include`, dataFetcher);
+
+  const {
+    data: appointment,
+    error: appointmentError,
+    isLoading: appointmentLoading,
+  } = useSWR(
+    user ? `/api/matching/users/${user.hash}/prematching_appointment/` : null,
+    dataFetcher,
+  );
 
   const onAddToMatching = () => {
     addUserToMatching(user);
@@ -138,7 +153,12 @@ const UserPanel = () => {
               </Button>
             </SectionHeader>
             <SectionContent>
-              <UserPanelContent tab={tab.key} user={user} onUpdate={mutate} />
+              <UserPanelContent
+                tab={tab.key}
+                user={user}
+                appointment={appointment}
+                onUpdate={mutate}
+              />
             </SectionContent>
           </Section>
         </TabsContent>

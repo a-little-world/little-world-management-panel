@@ -1,10 +1,8 @@
 import { Accordion, Text } from '@a-little-world/little-world-design-system';
 import React from 'react';
 import styled, { useTheme } from 'styled-components';
-import useSWR from 'swr';
 
 import { formatDate, formatTime } from '../../../helpers/date';
-import { dataFetcher } from '../../../store';
 import UserMatch from '../match/UserMatch';
 
 const PrematchingAppointment = styled.div`
@@ -14,11 +12,12 @@ const PrematchingAppointment = styled.div`
   margin-bottom: ${({ theme }) => theme.spacing.small};
 `;
 
-const UserMatches = ({ user }) => {
-  const { data: appointment } = useSWR(
-    `/api/matching/users/${user.hash}/prematching_appointments/`,
-    dataFetcher,
-  );
+interface UserMatchesProps {
+  user: any;
+  appointment?: any;
+}
+
+const UserMatches = ({ user, appointment }: UserMatchesProps) => {
   const theme = useTheme();
 
   const proposedText =
@@ -29,28 +28,37 @@ const UserMatches = ({ user }) => {
 
   return (
     <div className="w-full">
-      {appointment && (
-        <PrematchingAppointment>
-          <Text bold tag="h3">
-            Prematching call:
-          </Text>
-          <Text color={theme.color.text.title} bold>
-            {formatDate(
-              new Date(appointment?.start_time),
-              'cccc, do LLLL',
-              'en',
-            )}
-          </Text>
-          <Text color={theme.color.text.title} bold>
-            {formatTime(new Date(appointment?.start_time))} -{' '}
-            {formatTime(new Date(appointment?.end_time))}
-          </Text>
-        </PrematchingAppointment>
-      )}
+      <PrematchingAppointment>
+        <Text bold tag="h3">
+          Prematching call:
+        </Text>
+        {appointment ? (
+          <>
+            <Text color={theme.color.text.title}>
+              {formatDate(
+                new Date(appointment?.start_time),
+                'cccc, do LLLL',
+                'en',
+              )}
+            </Text>
+            <Text color={theme.color.text.title}>
+              {formatTime(new Date(appointment?.start_time))} -{' '}
+              {formatTime(new Date(appointment?.end_time))}
+            </Text>
+            <Text color={theme.color.text.secondary}>
+              {user.state.had_prematching_call
+                ? '(Attended)'
+                : '(Not Attended)'}
+            </Text>
+          </>
+        ) : (
+          <Text color={theme.color.text.secondary}>Not booked</Text>
+        )}
+      </PrematchingAppointment>
       <Accordion
         items={[
           {
-            content: user?.matches.confirmed?.results.map(match => (
+            content: user?.matches.confirmed?.results.map((match: any) => (
               <UserMatch
                 key={match.id}
                 match={match}
@@ -60,7 +68,7 @@ const UserMatches = ({ user }) => {
             header: `Confirmed (${user?.matches.confirmed?.results.length})`,
           },
           {
-            content: user?.matches.inactive?.results.map(match => (
+            content: user?.matches.inactive?.results.map((match: any) => (
               <UserMatch
                 key={match.id}
                 match={match}
@@ -70,7 +78,7 @@ const UserMatches = ({ user }) => {
             header: `Inactive (${user?.matches.inactive?.results.length})`,
           },
           {
-            content: user?.matches.unconfirmed?.results.map(match => (
+            content: user?.matches.unconfirmed?.results.map((match: any) => (
               <UserMatch
                 key={match.id}
                 match={match}
@@ -83,7 +91,7 @@ const UserMatches = ({ user }) => {
             content: [
               ...user?.matches.proposed?.results,
               ...user?.matches.old_proposals?.results,
-            ].map(match => (
+            ].map((match: any) => (
               <UserMatch
                 key={match.id}
                 match={match}
@@ -93,7 +101,7 @@ const UserMatches = ({ user }) => {
             header: `Proposed (${proposedText})`,
           },
           {
-            content: user?.matches.support?.results.map(match => (
+            content: user?.matches.support?.results.map((match: any) => (
               <UserMatch
                 key={match.id}
                 match={match}

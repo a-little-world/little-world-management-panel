@@ -12,7 +12,7 @@ import {
   Text,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
-import { capitalize, isEmpty } from 'lodash';
+import { capitalize } from 'lodash';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import useSWR from 'swr';
@@ -21,6 +21,7 @@ import { formatDate, formatTimeDistance } from '../../../helpers/date';
 import { MATCHING_ROUTE } from '../../../routes';
 import { dataFetcher, useGlobalState } from '../../../store';
 import MatchesIcons from '../../atoms/MatchesIcons';
+import Stepper from '../../atoms/Stepper';
 import UserImage from '../../atoms/UserImage';
 import {
   AboutField,
@@ -84,58 +85,80 @@ interface User {
 
 interface UserCardProps {
   user: User;
+  appointment?: any;
   deselectUser?: (hash: string) => void;
   partial?: boolean;
   horizontal?: boolean;
   tiny?: boolean;
 }
 
-const UserStatus: React.FC<{ user: User }> = ({ user }) => (
+const UserStatus: React.FC<{ user: User; appointment?: any }> = ({
+  user,
+  appointment,
+}) => (
   <StatusContainer>
     <Text type={TextTypes.Body4} center bold>
       Current Status
     </Text>
-    <ul className="steps steps-vertical w-full">
-      <li className="step step-primary text-left">
-        Register {new Date(user.date_joined).toDateString()}
-      </li>
-      <li
-        className={`step text-left ${
-          user.state.email_authenticated ? 'step-primary' : ''
-        }`}
-      >
-        Email Authenticated
-      </li>
-      <li
-        className={`step text-left ${
-          user.state.user_form_state === 'filled' ? 'step-primary' : ''
-        }`}
-      >
-        User Form
-      </li>
-      <li
-        className={`step text-left ${
-          user.state.had_prematching_call ? 'step-primary' : ''
-        }`}
-      >
-        Prematching Call
-      </li>
-      {!isEmpty(user.matches.unconfirmed.results) &&
-        isEmpty(user.matches.confirmed.results) && (
-          <li className="step text-left">Has pending match</li>
-        )}
-      <li
-        className={`step text-left ${
-          !isEmpty(user.matches.confirmed.results) ? 'step-primary' : ''
-        }`}
-      >
-        First Match
-      </li>
-      {!isEmpty(user.matches.unconfirmed.results) &&
-        !isEmpty(user.matches.confirmed.results) && (
-          <li className="step text-left">Has pending match</li>
-        )}
-    </ul>
+    <Stepper
+      steps={[
+        {
+          id: 'register',
+          label: `Register ${new Date(user.date_joined).toDateString()}`,
+          isCompleted: true,
+        },
+        {
+          id: 'email-auth',
+          label: 'Email Authenticated',
+          isCompleted: user.state.email_authenticated,
+        },
+        {
+          id: 'user-form',
+          label: 'User Form',
+          isCompleted: user.state.user_form_state === 'filled',
+        },
+        {
+          id: 'prematching-call-booked',
+          label: 'Prematching Call',
+          description: appointment
+            ? `Booked: ${new Date(appointment.start_time).toLocaleDateString()}`
+            : undefined,
+          isCompleted: !!appointment,
+        },
+        {
+          id: 'prematching-call-completed',
+          label: 'Call Attended',
+          isCompleted: user.state.had_prematching_call,
+        },
+        ...(user.matches.unconfirmed.results.length > 0 &&
+        user.matches.confirmed.results.length === 0
+          ? [
+              {
+                id: 'pending-match-1',
+                label: 'Has pending match',
+                isCompleted: false,
+              },
+            ]
+          : []),
+        {
+          id: 'first-match',
+          label: 'First Match',
+          isCompleted: user.matches.confirmed.results.length > 0,
+        },
+        ...(user.matches.unconfirmed.results.length > 0 &&
+        user.matches.confirmed.results.length > 0
+          ? [
+              {
+                id: 'pending-match-2',
+                label: 'Has pending match',
+                isCompleted: false,
+              },
+            ]
+          : []),
+      ]}
+      orientation="vertical"
+      size="medium"
+    />
   </StatusContainer>
 );
 
@@ -153,8 +176,9 @@ const DetailRow: React.FC<{ label: string; value: string }> = ({
 
 const UserDetails: React.FC<{
   user: User;
+  appointment?: any;
   isVolunteer: boolean;
-}> = ({ user, isVolunteer }) => (
+}> = ({ user, appointment, isVolunteer }) => (
   <DetailsContainer>
     <DetailsList>
       {user.state.had_prematching_call && (
@@ -219,13 +243,14 @@ const UserDetails: React.FC<{
       </Text>
       <UserLanguages langSkill={user.profile.lang_skill} />
     </DetailsList>
-    <UserStatus user={user} />
+    <UserStatus user={user} appointment={appointment} />
   </DetailsContainer>
 );
 
 // Main Component
 export const UserCard: React.FC<UserCardProps> = ({
   user,
+  appointment,
   deselectUser,
   partial = true,
   tiny = false,
@@ -313,8 +338,8 @@ export const UserCard: React.FC<UserCardProps> = ({
             Joined:
           </Text>
           <Text>
-            {formatDate(new Date(user.date_joined))} (
-            {formatTimeDistance(new Date(user.date_joined), new Date())})
+            {formatDate(new Date(user.date_joined), 'cccc, LLLL do', 'en')} (
+            {formatTimeDistance(new Date(user.date_joined), new Date(), 'en')})
           </Text>
         </InfoRow>
         <InfoRow>
@@ -365,7 +390,11 @@ export const UserCard: React.FC<UserCardProps> = ({
               View App Profile
             </Link>
           </div>
-          <UserDetails user={user} isVolunteer={isVolunteer} />
+          <UserDetails
+            user={user}
+            appointment={appointment}
+            isVolunteer={isVolunteer}
+          />
         </>
       )}
 

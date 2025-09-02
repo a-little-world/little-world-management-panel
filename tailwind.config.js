@@ -66,7 +66,6 @@ module.exports = {
   plugins: [
     require('tailwindcss-animate'),
     require('daisyui'),
-    require('flowbite/plugin'),
     require('@tailwindcss/typography'),
   ],
 };

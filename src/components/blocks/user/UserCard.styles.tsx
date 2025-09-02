@@ -101,15 +101,17 @@ export const MatchesContainer = styled.div<{ $partial?: boolean }>`
 
 export const StatusContainer = styled.div`
   width: 100%;
-  @media (min-width: 768px) {
-    width: 50%;
-  }
-  background: white;
-  border-radius: 0.75rem;
-  padding: 0.75rem;
+  background: ${({ theme }) => theme.color.surface.primary};
+  border-radius: ${({ theme }) => theme.radius.xsmall};
+  padding: ${({ theme }) => theme.spacing.xsmall};
   display: flex;
   flex-direction: column;
   border: 1px solid ${({ theme }) => theme.color.border.subtle};
+  gap: ${({ theme }) => theme.spacing.xsmall};
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.medium}) {
+    width: 50%;
+  }
 `;
 
 export const DetailsContainer = styled.div`
