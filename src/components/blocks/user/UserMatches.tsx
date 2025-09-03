@@ -14,7 +14,7 @@ const PrematchingAppointment = styled.div`
 
 interface UserMatchesProps {
   user: any;
-  appointment?: any;
+  appointment?: { start_time: string; end_time: string };
 }
 
 const UserMatches = ({ user, appointment }: UserMatchesProps) => {

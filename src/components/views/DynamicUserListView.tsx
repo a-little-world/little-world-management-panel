@@ -16,6 +16,7 @@ import { useSearchParams } from 'react-router-dom';
 import { apiFetch } from '../../api/helpers';
 import { formatDate } from '../../helpers/date';
 import { useDynamicUserListData, useGlobalState } from '../../store';
+import SelectBox from '../atoms/SelectBox';
 import { DataTable } from '../blocks/DataTable';
 
 interface DynamicUserList {
@@ -426,9 +427,7 @@ export function MessageListsTable({ messageLists, onSelectionChange }) {
       header: 'Selected',
       cell: ({ row }) => (
         <div className="flex items-center justify-center">
-          <input
-            type="checkbox"
-            className="checkbox"
+          <SelectBox
             checked={selectedRows.includes(row.original.id)}
             onChange={() => handleCheckboxChange(row.original.id)}
           />

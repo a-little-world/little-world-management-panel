@@ -9,6 +9,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { useGlobalState } from '../../store';
+import SelectBox from '../atoms/SelectBox';
 import {
   Table,
   TableBody,
@@ -56,10 +57,8 @@ export function MatchesTable({ matchList, list }) {
             {matchList?.results.map(match => (
               <TableRow key={match.uuid}>
                 <TableCell className="w-20">
-                  <input
-                    type="checkbox"
+                  <SelectBox
                     checked={Object.keys(selectedMatches).includes(match.uuid)}
-                    className="checkbox ml-2"
                     onChange={() => {
                       if (Object.keys(selectedMatches).includes(match.uuid)) {
                         deselectMatch(match.uuid);

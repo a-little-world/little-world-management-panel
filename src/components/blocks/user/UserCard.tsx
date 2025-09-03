@@ -85,7 +85,7 @@ interface User {
 
 interface UserCardProps {
   user: User;
-  appointment?: any;
+  appointment?: { start_time: string; end_time: string };
   deselectUser?: (hash: string) => void;
   partial?: boolean;
   horizontal?: boolean;

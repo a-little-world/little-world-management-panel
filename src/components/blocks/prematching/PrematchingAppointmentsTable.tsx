@@ -9,6 +9,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { useGlobalState } from '../../../store';
+import SelectBox from '../../atoms/SelectBox';
 import {
   Table,
   TableBody,
@@ -58,12 +59,10 @@ export function PrematchingAppointmentsTable({ appointments, list }) {
             {appointments?.results.map(appointment => (
               <TableRow key={appointment.uuid}>
                 <TableCell className="w-20">
-                  <input
-                    type="checkbox"
+                  <SelectBox
                     checked={Object.keys(
                       selectedPrematchingAppointmentUsers,
                     ).includes(appointment.user.hash)}
-                    className="checkbox ml-2"
                     onChange={() => {
                       if (
                         Object.keys(

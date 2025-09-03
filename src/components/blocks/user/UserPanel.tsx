@@ -44,7 +44,7 @@ const UserPanelContent = ({
 }: {
   tab: string;
   user: any;
-  appointment: any;
+  appointment?: { start_time: string; end_time: string };
   onUpdate: () => void;
 }) => {
   if (tab === 'profile')
@@ -156,7 +156,7 @@ const UserPanel = () => {
               <UserPanelContent
                 tab={tab.key}
                 user={user}
-                appointment={appointment}
+                appointment={appointment?.start_time ? appointment : undefined}
                 onUpdate={mutate}
               />
             </SectionContent>

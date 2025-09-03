@@ -16,6 +16,7 @@ import { formatDate, formatTimeDistance } from '../../helpers/date';
 import { useGlobalState, useUserListData } from '../../store';
 import { Button } from '../atoms/Button';
 import MatchesIcons from '../atoms/MatchesIcons';
+import SelectBox from '../atoms/SelectBox';
 import UserImage from '../atoms/UserImage';
 import { DataTable } from '../blocks/DataTable';
 import {
@@ -59,12 +60,10 @@ const userColumns = [
     id: 'select',
     header: 'Selected',
     cell: ({ table, row }) => (
-      <input
-        type="checkbox"
+      <SelectBox
         checked={Object.keys(table.options.meta.selectedUsers).includes(
           row.original.hash,
         )}
-        className="checkbox ml-2"
         onChange={() => {
           if (
             Object.keys(table.options.meta.selectedUsers).includes(
