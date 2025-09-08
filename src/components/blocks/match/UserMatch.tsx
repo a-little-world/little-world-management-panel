@@ -21,21 +21,20 @@ import UserImage from '../../atoms/UserImage';
 import ConfirmUnmatchModal from './ConfirmUnmatchModal';
 
 const UserMatchCard = styled(Card)<{ $inactive: boolean }>`
- display: inline-flex;
- margin-bottom: ${({ theme }) => theme.spacing.xsmall};
- vertical-align: top;
+  display: inline-flex;
+  margin-bottom: ${({ theme }) => theme.spacing.xsmall};
+  vertical-align: top;
 
- &:not(:last-child) {
+  &:not(:last-child) {
     margin-right: ${({ theme }) => theme.spacing.xsmall};
-  } 
-}
+  }
 
-${({ $inactive, theme }) =>
-  $inactive &&
-  css`
-    background: ${theme.color.surface.error};
-    border: 1px solid ${theme.color.border.error};
-  `}
+  ${({ $inactive, theme }) =>
+    $inactive &&
+    css`
+      background: ${theme.color.surface.error};
+      border: 1px solid ${theme.color.border.error};
+    `}
 `;
 
 const Overview = styled.div`
@@ -59,7 +58,9 @@ const Bucket = styled(Tag)`
 const UserMatch = ({ match, userName }: { match: any; userName: string }) => {
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const isProposed = match.status === MATCH_STATUS.proposed;
-  const inactive = isProposed ? match.closed : match.closed || !match.active;
+  const inactive = isProposed
+    ? match.closed
+    : match.closed || !match.active || match.partner?.isDeleted;
   const { updateCurrentUser } = useGlobalState();
 
   return (

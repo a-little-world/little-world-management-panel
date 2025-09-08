@@ -122,7 +122,7 @@ const UserStatus: React.FC<{ user: User; appointment?: any }> = ({
           label: 'Prematching Call',
           description: appointment
             ? `Booked: ${new Date(appointment.start_time).toLocaleDateString()}`
-            : undefined,
+            : 'Not booked',
           isCompleted: !!appointment,
         },
         {
@@ -213,8 +213,8 @@ const UserDetails: React.FC<{
         label={isVolunteer ? 'Target Group' : 'Group'}
         value={
           isVolunteer
-            ? user.profile.target_group ?? 'No target group'
-            : user.profile.target_groups?.join(', ') ?? 'No groups'
+            ? (user.profile.target_group ?? 'No target group')
+            : (user.profile.target_groups?.join(', ') ?? 'No groups')
         }
       />
       <DetailRow

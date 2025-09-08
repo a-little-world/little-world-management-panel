@@ -32,26 +32,31 @@ export const getMatchReportProps = (
   unmatcherType?: string;
   showUnmatcher: boolean;
 } => {
+  const reportUnmatch =
+    match.report_unmatch?.[0] ||
+    (match.partner?.isDeleted
+      ? { kind: 'user_deleted', reason: 'User account was deleted' }
+      : {});
   const inactiveCause = isProposed
     ? match.rejected
       ? 'Proposal Rejected by Learner'
       : 'Proposal Expired'
-    : capitalize(`${match.report_unmatch?.[0]?.kind}ed`);
+    : capitalize(
+        `${reportUnmatch.kind}${match.partner?.isDeleted ? '' : 'ed'}`,
+      );
 
   const date = isProposed
-    ? match.rejected_at ?? match.expires_at
-    : match.report_unmatch?.[0]?.time;
+    ? (match.rejected_at ?? match.expires_at)
+    : match.reoportUnmatch?.time;
 
   const reason =
-    (isProposed ? match.rejected_reason : match.report_unmatch?.[0]?.reason) ||
-    UNAVAILABLE;
+    (isProposed ? match.rejected_reason : reportUnmatch?.reason) || UNAVAILABLE;
 
   // Get unmatcher info directly from enriched report_unmatch data
-  const reportUnmatch = match.report_unmatch?.[0];
   const unmatcherName = reportUnmatch?.user_first_name;
   const unmatcherType = reportUnmatch?.user_type;
 
-  const showUnmatcher = match.report_unmatch?.[0]?.kind;
+  const showUnmatcher = !!reportUnmatch?.kind;
 
   return {
     date,
