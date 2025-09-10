@@ -156,7 +156,7 @@ function BurstUpdateDialog({
           appearance={ButtonAppearance.Primary}
           onClick={() => {
             setIsSubmitting(true);
-            burstUpdateMatchingScores({ parallel_tasks: 10 }).then(results => {
+            burstUpdateMatchingScores({ parallel_tasks: 20 }).then(results => {
               //TODO: returns the task ID's so a progress monitor should be displayed
               console.log('BURST UPDATE RESULTS', results);
               onClose();
