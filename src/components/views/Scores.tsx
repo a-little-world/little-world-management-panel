@@ -52,7 +52,8 @@ interface TaskProgress {
 }
 
 function isRunningTask(task: Task): task is RunningTask {
-  return task.state === 'STARTED';
+  console.log({ task });
+  return task.state === 'STARTED' && !!task.info?.progress?.total_combinations;
 }
 
 export const TaskMonitorComponent = ({ task_id, finishedCallback }) => {
@@ -141,7 +142,6 @@ function BurstUpdateDialog({
   taskIds,
   setTaskIds,
 }) {
-  const activeScoreCalculation = burstMatchingState?.active || true;
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   return (
@@ -179,15 +179,11 @@ export function Scores() {
 
   // Score calculation
   const [burstUpdateDialogOpen, setBurstUpdateDialogOpen] = useState(false);
-  const [burstUpdateProgressPopoverOpen, setburstUpdateProgressPopoverOpen] =
-    useState(false);
   const [burstTasks, setBurstTasks] = useState([]);
-  const [burstProgress, setBurstProgress] = useState(0);
 
   const {
     data: burstMatchingState,
     error,
-    mutate: mutateBurstUpdateState,
     isLoading: burstLoading,
   } = useSWR<BurstMatchingState>(
     `/api/matching/get_active_burst_calculation/`,
@@ -199,13 +195,13 @@ export function Scores() {
   const activeScoreCalculation = burstMatchingState?.active;
   const totalCombinations = burstMatchingState?.tasks?.reduce(
     (acc, task) =>
-      acc + (isRunningTask(task) ? task.info.progress.total_combinations : 0),
+      acc + (isRunningTask(task) ? task.info.progress?.total_combinations : 0),
     0,
   );
   const combinations_processed = burstMatchingState?.tasks?.reduce(
     (acc, task) =>
       acc +
-      (isRunningTask(task) ? task.info.progress.combinations_processed : 0),
+      (isRunningTask(task) ? task.info.progress?.combinations_processed : 0),
     0,
   );
   const scoreCalculationProgress =
@@ -218,7 +214,7 @@ export function Scores() {
 
   // Score api lookup
   const { isLoading: filtersLoading } = useScoresFilterOptions();
-  const [scoresUpdated, setScoresUpdated] = useState(new Date());
+  const [scoresUpdated] = useState(new Date());
 
   const {
     scoresList,
