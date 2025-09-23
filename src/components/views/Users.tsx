@@ -1,5 +1,4 @@
 import {
-  Button as DSButton,
   Dropdown,
   Tag,
   TagSizes,
@@ -9,7 +8,6 @@ import { createColumnHelper } from '@tanstack/react-table';
 import { capitalize, isNumber } from 'lodash';
 import React, { useEffect, useState } from 'react';
 import { Link, createSearchParams, useSearchParams } from 'react-router-dom';
-import styled, { css } from 'styled-components';
 
 import { getUserListExport } from '../../api/index';
 import { formatDate, formatTimeDistance } from '../../helpers/date';
@@ -26,32 +24,6 @@ import {
 import Filters, { containsFilterKey } from '../blocks/Filters';
 import FiltersToolbar from '../blocks/FiltersToolbar';
 import { SelectedUsersSheet } from '../blocks/SelectedUsersSheet';
-
-const StyledDropdown = styled(Dropdown)`
-  div[data-radix-popper-content-wrapper] {
-    z-index: 20 !important;
-  }
-`;
-
-const FilterButton = styled(DSButton)<{ $active: boolean }>`
-  ${({ $active, theme }) =>
-    $active &&
-    css`
-      border: 1px solid ${theme.color.border.selected};
-      &:before {
-        content: '';
-        display: inline-block;
-        position: absolute;
-        top: -1px;
-        right: -2px;
-        width: 15px;
-        height: 15px;
-        border-radius: ${theme.radius.full};
-        background-color: ${theme.color.surface.highlight};
-        color: ${theme.color.text.primary};
-      }
-    `}
-`;
 
 const columnHelper = createColumnHelper();
 
@@ -105,7 +77,7 @@ const userColumns = [
         </Button>
       );
     },
-    cell: ({ row, cell }) => {
+    cell: ({ row }) => {
       return `${row?.original.profile.first_name} ${row?.original.profile.second_name}`;
     },
   }),
@@ -132,6 +104,20 @@ const userColumns = [
         {capitalize(row.original.profile.user_type)}
       </Tag>
     ),
+  }),
+  columnHelper.accessor('state.company', {
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Company
+          <ArrowsUpDownIcon className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => row.original.state.company,
   }),
   columnHelper.accessor('profile.target_groups', {
     header: ({ column }) => {

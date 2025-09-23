@@ -5,17 +5,17 @@ import {
   StatusTypes,
 } from '@a-little-world/little-world-design-system';
 import { isEmpty } from 'lodash';
-import React from 'react';
+import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useParams, useSearchParams } from 'react-router-dom';
 import useSWR from 'swr';
 
+import styled from 'styled-components';
 import { setMatchCompletedOffplattform } from '../../api';
 import { dataFetcher } from '../../store';
 import {
   Section,
   SectionContent,
-  SectionDescription,
   SectionHeader,
   SectionTitle,
 } from '../atoms/Section';
@@ -31,6 +31,10 @@ const MATCH_TABS = [
   { key: 'actions', label: 'Actions' },
 ];
 
+const StyledStatusMessage = styled(StatusMessage)`
+  margin-bottom: ${({ theme }) => theme.spacing.small};
+`;
+
 const MatchActions = ({
   match,
   onUpdate,
@@ -38,28 +42,36 @@ const MatchActions = ({
   match: any;
   onUpdate: () => void;
 }) => {
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+
   const {
     control,
     handleSubmit,
     formState: { dirtyFields, errors },
     setError,
+    reset,
   } = useForm({
     defaultValues: {
       completed_off_plattform: match.completed_off_plattform,
     },
   });
 
-  const saveChanges = data => {
+  const saveChanges = (data: any) => {
     if (isEmpty(dirtyFields)) return;
+    setShowSuccessMessage(false);
+
     // Assume setMatchCompletedOffplattform is a function to update the match status
     setMatchCompletedOffplattform({
       matchId: match.uuid,
       completed_off_plattform: data.completed_off_plattform,
-      onError: error => {
+      onError: (error: any) => {
         setError('completed_off_plattform', error.message);
+        setShowSuccessMessage(false);
       },
       onSuccess: () => {
+        setShowSuccessMessage(true);
         onUpdate();
+        reset(data); // Reset form to reflect the saved state
       },
     });
   };
@@ -76,7 +88,7 @@ const MatchActions = ({
           <Checkbox
             id="completed_off_plattform"
             name={name}
-            inputRef={ref}
+            inputRef={ref as unknown as React.RefObject<HTMLButtonElement>}
             onCheckedChange={val => onChange({ target: { value: val } })}
             onBlur={onBlur}
             value={value}
@@ -86,12 +98,15 @@ const MatchActions = ({
           />
         )}
       />
-      <StatusMessage
-        $visible={!!errors?.completed_off_plattform}
-        $type={StatusTypes.Error}
+      <StyledStatusMessage
+        visible={!!errors?.completed_off_plattform || showSuccessMessage}
+        type={showSuccessMessage ? StatusTypes.Success : StatusTypes.Error}
       >
-        {errors?.completed_off_plattform?.message}
-      </StatusMessage>
+        {String(
+          errors?.completed_off_plattform?.message ||
+            '✅ Changes successfully updated!',
+        )}
+      </StyledStatusMessage>
       <Button type="submit" disabled={isEmpty(dirtyFields)}>
         Save Changes
       </Button>
@@ -165,12 +180,9 @@ const MatchPanel = () => {
           <Section>
             <SectionHeader>
               <div>
-                <SectionTitle inactive={!match.active}>{`${
+                <SectionTitle>{`${
                   match.active ? '' : 'Inactive '
                 }Match: ${match.uuid}`}</SectionTitle>
-                {tab.description && (
-                  <SectionDescription>{tab.description}</SectionDescription>
-                )}
               </div>
             </SectionHeader>
             <SectionContent>

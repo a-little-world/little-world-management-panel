@@ -7,7 +7,7 @@ import {
   Text,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
-import { includes, isEmpty, isString, map, some } from 'lodash';
+import { find, includes, isEmpty, isString, map, some } from 'lodash';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
@@ -46,7 +46,7 @@ type OnUpdateFilters = (key: string, value: string) => void;
 type OnRemoveFilter = (key: string) => void;
 
 const handleFilterSelection = (
-  selectedOptions: [string] | null,
+  selectedOptions: string[] | null,
   filters: string | Record<string, FilterOption>,
   onUpdateFilters: OnUpdateFilters,
   onRemoveFilter: OnRemoveFilter,
@@ -103,9 +103,12 @@ const Filters: React.FC<FiltersProps> = ({
   onRemoveFilter,
   defaultValues,
 }) => {
-  const [filters, setFilters] = useState({});
-  const { filterOptions: userListOptions, isLoading: filtersLoading } =
-    useFilterOptions();
+  const [filters, setFilters] = useState<Record<string, any>>({});
+  const { filterOptions, isLoading: filtersLoading } = useFilterOptions();
+  const companyChoices = find(
+    filterOptions?.filters,
+    element => element.name === FilterKeys.Company,
+  )?.choices;
 
   const handleReset = () => {
     map(FilterKeys, filter => {
@@ -131,7 +134,7 @@ const Filters: React.FC<FiltersProps> = ({
             label={'User List'}
             value={filters[FilterKeys.UserList]}
             options={
-              userListOptions?.lists?.map(({ name, description }) => ({
+              filterOptions?.lists?.map(({ name, description }: any) => ({
                 value: name,
                 label: description,
               })) ?? []
@@ -161,7 +164,17 @@ const Filters: React.FC<FiltersProps> = ({
             value={filters[FilterKeys.Company]}
             label={'Company'}
             placeholder="Select a company"
-            options={[{ label: 'Accenture', value: 'accenture' }]}
+            disabled={filtersLoading}
+            options={
+              isEmpty(companyChoices)
+                ? []
+                : companyChoices.map(
+                    ({ tag, value }: { tag: string; value: string }) => ({
+                      label: tag,
+                      value: value,
+                    }),
+                  )
+            }
           />
 
           <MultiCheckbox
