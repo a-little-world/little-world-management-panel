@@ -432,6 +432,52 @@ const automatedEmails = {
         },
       ],
     },
+      'automatic-emails-u083': {
+        id: 'automatic-emails-u083',
+        label: 'Availability Reminder',
+        category_id: EmailCategories.Automated,
+        preview: automatedText['automatic-emails-u083.preview'],
+        subject: automatedText['automatic-emails-u083.subject'],
+        content: [
+          {
+            type: ContentTypes.Title,
+            text: automatedText['automatic-emails-u083.block-1'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-u083.block-2'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-u083.block-3'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-u083.block-4'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-u083.block-5'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-u083.block-6'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-u083.block-7'],
+          },
+          {
+            type: ContentTypes.Button,
+            text: automatedText['automatic-emails-u083.block-8'],
+            href: '{{ availability_url }}',
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-u083.block-9'],
+          },
+        ],
+      },
     'automatic-emails-u084': {
       id: 'automatic-emails-u084',
       label: 'Delayed Match Update',
