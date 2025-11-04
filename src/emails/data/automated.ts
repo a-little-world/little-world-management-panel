@@ -478,6 +478,52 @@ const automatedEmails = {
         },
       ],
     },
+      'automatic-emails-u073': {
+        id: 'automatic-emails-u073',
+        label: 'Availability Reminder',
+        category_id: EmailCategories.Automated,
+        preview: automatedText['automatic-emails-u073.preview'],
+        subject: automatedText['automatic-emails-u073.subject'],
+        content: [
+          {
+            type: ContentTypes.Title,
+            text: automatedText['automatic-emails-u073.block-1'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-u073.block-2'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-u073.block-3'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-u073.block-4'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-u073.block-5'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-u073.block-6'],
+          },
+          {
+            type: ContentTypes.Button,
+            text: automatedText['automatic-emails-u073.block-7'],
+            href: automatedText['automatic-emails-u073.cta-href'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-u073.block-8'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-u073.block-9'],
+          },
+        ],
+      },
   'match-resolved': {
     id: 'match-resolved',
     label: 'Match Resolved',
