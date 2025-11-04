@@ -432,6 +432,65 @@ const automatedEmails = {
         },
       ],
     },
+    'automatic-emails-u081': {
+      id: 'automatic-emails-u081',
+      label: 'Search Started',
+      category_id: EmailCategories.Automated,
+      preview: automatedText['automatic-emails-u081.preview'],
+      subject: automatedText['automatic-emails-u081.subject'],
+      content: [
+        {
+          type: ContentTypes.Title,
+          text: automatedText['automatic-emails-u081.block-1'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u081.block-2'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u081.block-3'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u081.block-4'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u081.block-5'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u081.block-6'],
+        },
+        {
+          type: ContentTypes.Button,
+          text: automatedText['automatic-emails-u081.block-7'],
+          href: 'https://home.little-world.com/#gruppentermine',
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u081.block-8'],
+        },
+        {
+          type: ContentTypes.Button,
+          text: automatedText['automatic-emails-u081.block-9'],
+          href: 'https://home.little-world.com/#ressourcen',
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u081.block-10'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u081.block-11'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u081.block-12'],
+        },
+      ],
+    },
     'automatic-emails-u084': {
       id: 'automatic-emails-u084',
       label: 'Delayed Match Update',
