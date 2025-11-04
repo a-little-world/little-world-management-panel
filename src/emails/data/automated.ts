@@ -610,6 +610,48 @@ const automatedEmails = {
       },
     ],
   },
+    'automatic-emails-u072': {
+      id: 'automatic-emails-u072',
+      label: 'Delayed Match Group Conversations',
+      category_id: EmailCategories.Automated,
+      preview: automatedText['automatic-emails-u072.preview'],
+      subject: automatedText['automatic-emails-u072.subject'],
+      content: [
+        {
+          type: ContentTypes.Title,
+          text: automatedText['automatic-emails-u072.block-1'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u072.block-2'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u072.block-3'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u072.block-4'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u072.block-5'],
+        },
+        {
+          type: ContentTypes.Button,
+          text: automatedText['automatic-emails-u072.block-6'],
+          href: 'https://home.little-world.com/#gruppentermine',
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u072.block-7'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u072.block-8'],
+        },
+      ],
+    },
   unfinished_user_form_1: {
     id: 'unfinished_user_form_1',
     label: 'User Form Reminder 1',
