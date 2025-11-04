@@ -1,29 +1,23 @@
-## Admin Panel Automated Email Playbook
+## Cursor Agent Rules: Automated Email Data Updates
 
 ### Scope
-- Follow this playbook when adding or revising automated email templates in this frontend repository (`front/apps/admin_panel_frontend`).
-- All tasks here cover the React email builder source only—HTML generation and backend sync happen elsewhere.
+- Apply these rules inside this frontend repository when adding or updating automated-email data that powers the React email builder.
+- Work is limited to adjusting `src/emails/data/automated.ts` and `src/emails/data/text/automated.json` so new backend templates (for example `automatic-emails-u084`) render correctly.
 
-### Key Files
-- `src/emails/data/automated.ts` – exports the `automatedEmails` map consumed by the builder UI; source of structure, metadata, and content blocks.
-- `src/emails/data/text/automated.json` – provides localized strings for automated templates (`preview`, `subject`, and numbered `block-*` entries).
+### Primary TODOs
+1. Append the provided translation entries to `src/emails/data/text/automated.json` using two-space indentation.
+2. Register the matching template object in `src/emails/data/automated.ts`, placing it near related automated templates (e.g. after `new-messages`).
+3. Reference every string via `automatedText['<slug>.<section>']` and keep all `ContentTypes` assignments consistent with the requested blocks.
+4. If a button URL is supplied, add it directly to the `href` field; otherwise reuse an existing `BackendVars` constant.
+5. Run a formatting/self-check pass (lint/tests optional if time is constrained) to ensure the builder can serialize the new entry.
 
 ### Guardrails
-- Reuse the slug provided by backend/product (for example `automatic-emails-u084`) verbatim across both files.
-- Insert new entries alongside their peers: keep the `automatedEmails` object logically grouped (place the new key near related automated templates such as `new-messages`) and maintain alphabetical ordering inside `automated.json` when practical.
-- Reference text via `automatedText['<slug>.<section>']`; never inline literal copy inside `automated.ts`.
-- Use existing `ContentTypes`, `EmailCategories`, and `BackendVars` imports—do not introduce new enums or categories for recurring automated emails.
-- Preserve file style: single quotes in TypeScript objects, trailing commas where present, and two-space indentation in JSON.
+- Do not create or modify files outside `src/emails/data/automated.ts` and `src/emails/data/text/automated.json` for this workflow.
+- Keep the slug identical across both files; never rename categories or introduce new enums.
+- Preserve the surrounding code style: single quotes in TypeScript, trailing commas where present, and sorted JSON keys where practical.
+- Avoid hard-coding copy inside `automated.ts`; all text must live in the JSON file.
 
-### Required Steps for a New Automated Email
-1. **Populate copy** – Append the provided key/value pairs to `src/emails/data/text/automated.json`, matching the established indentation and quoting. Include every block referenced by the template (`preview`, `subject`, `block-*`, button URLs, etc.).
-2. **Register the template** – In `src/emails/data/automated.ts` add a new entry to the `automatedEmails` map using the same slug. Place it near the existing automated templates (e.g. immediately after `new-messages`). Wire each `content` item to the corresponding `automatedText[...]` key and reuse existing `ContentTypes` members.
-3. **Check imports** – Ensure any required assets or constants (for example `BackendVars` URLs or static links) already exist. If a new hard-coded URL is specified, include it directly in the `href` property.
-4. **Quick sanity review** – Confirm there are no dangling commas, duplicated keys, or missing text entries. If time allows, run `npm test -- src/__tests__/utils.test.js` to validate serialization helpers used by the email builder.
-
-### Final Agent Handoff
-- In the completion message, summarise the updates and include two standalone JSON payloads that describe the exact modifications (one JSON object for `src/emails/data/automated.ts`, one for `src/emails/data/text/automated.json`). These payloads should mirror the structure below so a sibling agent can apply the edits directly:
-  - `file`, `placement`, `object_key`, and `object_value` for the TypeScript map entry.
-  - `file`, `placement`, and an `entries` object for the JSON copy block.
-
-These steps keep the admin panel’s automated email data aligned with backend expectations so templates like `automatic-emails-u084` render correctly during the sync process.
+### Completion Checklist
+- [ ] `automated.json` contains every key referenced by the new template (`preview`, `subject`, and `block-*`).
+- [ ] `automated.ts` registers the new map entry with the correct slug, category, and content structure.
+- [ ] The final assistant message includes two JSON payloads describing the exact edits (one for the TypeScript object insertion, one for the JSON copy additions) so a sibling agent can apply them verbatim.
