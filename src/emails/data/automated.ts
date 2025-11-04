@@ -478,36 +478,74 @@ const automatedEmails = {
         },
       ],
     },
-  'match-resolved': {
-    id: 'match-resolved',
-    label: 'Match Resolved',
-    category_id: EmailCategories.Automated,
-    subject: automatedText['match-resolved.subject'],
-    preview: automatedText['match-resolved.preview'],
-    content: [
-      {
-        type: ContentTypes.Title,
-        text: automatedText['match-resolved.block-1'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['match-resolved.block-2'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['match-resolved.block-3'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['match-resolved.block-4'],
-      },
-      {
-        type: ContentTypes.Button,
-        text: automatedText['match-resolved.block-5'],
-        href: BackendVars.restartSearchUrl,
-      },
-    ],
-  },
+    'automatic-emails-u023': {
+      id: 'automatic-emails-u023',
+      label: 'Onboarding Reminder',
+      category_id: EmailCategories.Automated,
+      preview: automatedText['automatic-emails-u023.preview'],
+      subject: automatedText['automatic-emails-u023.subject'],
+      content: [
+        {
+          type: ContentTypes.Title,
+          text: automatedText['automatic-emails-u023.block-1'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u023.block-2'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u023.block-3'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u023.block-4'],
+        },
+        {
+          type: ContentTypes.Button,
+          text: automatedText['automatic-emails-u023.block-5'],
+          href: '{{ link_url }}',
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u023.block-6'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u023.block-7'],
+        },
+      ],
+    },
+    'match-resolved': {
+      id: 'match-resolved',
+      label: 'Match Resolved',
+      category_id: EmailCategories.Automated,
+      subject: automatedText['match-resolved.subject'],
+      preview: automatedText['match-resolved.preview'],
+      content: [
+        {
+          type: ContentTypes.Title,
+          text: automatedText['match-resolved.block-1'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['match-resolved.block-2'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['match-resolved.block-3'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['match-resolved.block-4'],
+        },
+        {
+          type: ContentTypes.Button,
+          text: automatedText['match-resolved.block-5'],
+          href: BackendVars.restartSearchUrl,
+        },
+      ],
+    },
   'reset-password': {
     id: 'reset-password',
     label: 'Reset Password',
