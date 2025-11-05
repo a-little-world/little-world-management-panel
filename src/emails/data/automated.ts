@@ -558,36 +558,95 @@ const automatedEmails = {
         },
       ],
     },
-  'match-resolved': {
-    id: 'match-resolved',
-    label: 'Match Resolved',
-    category_id: EmailCategories.Automated,
-    subject: automatedText['match-resolved.subject'],
-    preview: automatedText['match-resolved.preview'],
-    content: [
-      {
-        type: ContentTypes.Title,
-        text: automatedText['match-resolved.block-1'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['match-resolved.block-2'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['match-resolved.block-3'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['match-resolved.block-4'],
-      },
-      {
-        type: ContentTypes.Button,
-        text: automatedText['match-resolved.block-5'],
-        href: BackendVars.restartSearchUrl,
-      },
-    ],
-  },
+    'automatic-emails-u081': {
+      id: 'automatic-emails-u081',
+      label: 'U081 - Matching gestartet',
+      category_id: EmailCategories.Automated,
+      preview: automatedText['automatic-emails-u081.preview'],
+      subject: automatedText['automatic-emails-u081.subject'],
+      content: [
+        {
+          type: ContentTypes.Title,
+          text: automatedText['automatic-emails-u081.block-1'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u081.block-2'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u081.block-3'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u081.block-4'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u081.block-5'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u081.block-6'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u081.block-7'],
+        },
+        {
+          type: ContentTypes.Button,
+          text: automatedText['automatic-emails-u081.block-8'],
+          href: 'https://home.little-world.com/#gruppentermine',
+        },
+        {
+          type: ContentTypes.Button,
+          text: automatedText['automatic-emails-u081.block-9'],
+          href: 'https://home.little-world.com/#ressourcen',
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u081.block-10'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u081.block-11'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u081.block-12'],
+        },
+      ],
+    },
+    'match-resolved': {
+      id: 'match-resolved',
+      label: 'Match Resolved',
+      category_id: EmailCategories.Automated,
+      subject: automatedText['match-resolved.subject'],
+      preview: automatedText['match-resolved.preview'],
+      content: [
+        {
+          type: ContentTypes.Title,
+          text: automatedText['match-resolved.block-1'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['match-resolved.block-2'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['match-resolved.block-3'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['match-resolved.block-4'],
+        },
+        {
+          type: ContentTypes.Button,
+          text: automatedText['match-resolved.block-5'],
+          href: BackendVars.restartSearchUrl,
+        },
+      ],
+    },
   'reset-password': {
     id: 'reset-password',
     label: 'Reset Password',
