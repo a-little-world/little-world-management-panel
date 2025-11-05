@@ -372,7 +372,7 @@ const automatedEmails = {
       },
     ],
   },
-  'new-match': {
+    'new-match': {
     id: 'new-match',
     label: 'New Match',
     category_id: EmailCategories.Automated,
@@ -429,6 +429,44 @@ const automatedEmails = {
           type: ContentTypes.Button,
           text: automatedText['new-messages.block-4'],
           href: BackendVars.messagesUrl,
+        },
+      ],
+    },
+    'automatic-emails-u023': {
+      id: 'automatic-emails-u023',
+      label: 'Onboarding Reminder',
+      category_id: EmailCategories.Automated,
+      preview: automatedText['automatic-emails-u023.preview'],
+      subject: automatedText['automatic-emails-u023.subject'],
+      content: [
+        {
+          type: ContentTypes.Title,
+          text: automatedText['automatic-emails-u023.block-1'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u023.block-2'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u023.block-3'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u023.block-4'],
+        },
+        {
+          type: ContentTypes.Button,
+          text: automatedText['automatic-emails-u023.block-7'],
+          href: '{{ prematching_call_booking_link }}',
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u023.block-5'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u023.block-6'],
         },
       ],
     },
