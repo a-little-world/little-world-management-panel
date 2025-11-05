@@ -516,36 +516,78 @@ const automatedEmails = {
         },
       ],
     },
-  'match-resolved': {
-    id: 'match-resolved',
-    label: 'Match Resolved',
-    category_id: EmailCategories.Automated,
-    subject: automatedText['match-resolved.subject'],
-    preview: automatedText['match-resolved.preview'],
-    content: [
-      {
-        type: ContentTypes.Title,
-        text: automatedText['match-resolved.block-1'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['match-resolved.block-2'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['match-resolved.block-3'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['match-resolved.block-4'],
-      },
-      {
-        type: ContentTypes.Button,
-        text: automatedText['match-resolved.block-5'],
-        href: BackendVars.restartSearchUrl,
-      },
-    ],
-  },
+    'automatic-emails-u072': {
+      id: 'automatic-emails-u072',
+      label: 'Delayed Match Group Calls',
+      category_id: EmailCategories.Automated,
+      preview: automatedText['automatic-emails-u072.preview'],
+      subject: automatedText['automatic-emails-u072.subject'],
+      content: [
+        {
+          type: ContentTypes.Title,
+          text: automatedText['automatic-emails-u072.block-1'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u072.block-2'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u072.block-3'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u072.block-4'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u072.block-5'],
+        },
+        {
+          type: ContentTypes.Button,
+          text: automatedText['automatic-emails-u072.block-6'],
+          href: 'https://home.little-world.com/#gruppentermine',
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u072.block-7'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u072.block-8'],
+        },
+      ],
+    },
+    'match-resolved': {
+      id: 'match-resolved',
+      label: 'Match Resolved',
+      category_id: EmailCategories.Automated,
+      subject: automatedText['match-resolved.subject'],
+      preview: automatedText['match-resolved.preview'],
+      content: [
+        {
+          type: ContentTypes.Title,
+          text: automatedText['match-resolved.block-1'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['match-resolved.block-2'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['match-resolved.block-3'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['match-resolved.block-4'],
+        },
+        {
+          type: ContentTypes.Button,
+          text: automatedText['match-resolved.block-5'],
+          href: BackendVars.restartSearchUrl,
+        },
+      ],
+    },
   'reset-password': {
     id: 'reset-password',
     label: 'Reset Password',

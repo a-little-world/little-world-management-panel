@@ -153,5 +153,15 @@
   "automatic-emails-u084.block-6": "In der Zwischenzeit kannst du gern bei unseren Gruppengesprächen mitmachen:",
   "automatic-emails-u084.block-7": "👉 Zu den Gruppengesprächen",
   "automatic-emails-u084.block-8": "Danke für deine Geduld und dein Vertrauen!",
-  "automatic-emails-u084.block-9": "Dein Little World Team"
+  "automatic-emails-u084.block-9": "Dein Little World Team",
+  "automatic-emails-u072.preview": "Wir halten dich auf dem Laufenden und laden dich zu unseren Gruppengesprächen ein.",
+  "automatic-emails-u072.subject": "Wir suchen noch – bis dahin: Gruppengespräche!",
+  "automatic-emails-u072.block-1": "Wir suchen noch – bis dahin: Gruppengespräche!",
+  "automatic-emails-u072.block-2": "Hallo {{ first_name }},",
+  "automatic-emails-u072.block-3": "du hast dein Onboarding schon gemacht – super! Wir suchen gerade eine passende Person für dich.",
+  "automatic-emails-u072.block-4": "In der Zwischenzeit bist du herzlich zu unseren Gruppengesprächen eingeladen. Dort triffst du tolle Menschen und kannst direkt erste Erfahrungen in einer vielfältigen Gemeinschaft machen.",
+  "automatic-emails-u072.block-5": "👉 Hier findest du alle Infos zu den Gruppengesprächen:",
+  "automatic-emails-u072.block-6": "👉 Zu den Gruppengesprächen",
+  "automatic-emails-u072.block-7": "Danke für deine Geduld und dein Engagement!",
+  "automatic-emails-u072.block-8": "Dein Little World Team"
 }
