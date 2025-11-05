@@ -470,6 +470,57 @@ const automatedEmails = {
         },
       ],
     },
+    'automatic-emails-u053': {
+      id: 'automatic-emails-u053',
+      label: 'Onboarding Reminder (No Show)',
+      category_id: EmailCategories.Automated,
+      preview: automatedText['automatic-emails-u053.preview'],
+      subject: automatedText['automatic-emails-u053.subject'],
+      content: [
+        {
+          type: ContentTypes.Title,
+          text: automatedText['automatic-emails-u053.block-1'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u053.block-2'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u053.block-3'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u053.block-4'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u053.block-5'],
+        },
+        {
+          type: ContentTypes.Button,
+          text: automatedText['automatic-emails-u053.block-6'],
+          href: '{{ prematching_call_booking_link }}',
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u053.block-7'],
+        },
+        {
+          type: ContentTypes.Button,
+          text: automatedText['automatic-emails-u053.block-8'],
+          href: '{{ messages_url }}',
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u053.block-9'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u053.block-10'],
+        },
+      ],
+    },
     'automatic-emails-u084': {
       id: 'automatic-emails-u084',
       label: 'Delayed Match Update',
