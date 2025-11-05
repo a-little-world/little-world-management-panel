@@ -470,6 +470,48 @@ const automatedEmails = {
         },
       ],
     },
+    'automatic-emails-u082': {
+      id: 'automatic-emails-u082',
+      label: 'Group Calls Invitation',
+      category_id: EmailCategories.Automated,
+      preview: automatedText['automatic-emails-u082.preview'],
+      subject: automatedText['automatic-emails-u082.subject'],
+      content: [
+        {
+          type: ContentTypes.Title,
+          text: automatedText['automatic-emails-u082.block-1'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u082.block-2'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u082.block-3'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u082.block-4'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u082.block-5'],
+        },
+        {
+          type: ContentTypes.Button,
+          text: automatedText['automatic-emails-u082.block-6'],
+          href: 'https://home.little-world.com/#gruppentermine',
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u082.block-7'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u082.block-8'],
+        },
+      ],
+    },
     'automatic-emails-u084': {
       id: 'automatic-emails-u084',
       label: 'Delayed Match Update',
