@@ -470,6 +470,52 @@ const automatedEmails = {
         },
       ],
     },
+    'automatic-emails-u073': {
+      id: 'automatic-emails-u073',
+      label: 'Delayed Match Availability Reminder',
+      category_id: EmailCategories.Automated,
+      preview: automatedText['automatic-emails-u073.preview'],
+      subject: automatedText['automatic-emails-u073.subject'],
+      content: [
+        {
+          type: ContentTypes.Title,
+          text: automatedText['automatic-emails-u073.block-1'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u073.block-2'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u073.block-3'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u073.block-4'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u073.block-5'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u073.block-6'],
+        },
+        {
+          type: ContentTypes.Button,
+          text: automatedText['automatic-emails-u073.block-7'],
+          href: BackendVars.userFormUrl,
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u073.block-8'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u073.block-9'],
+        },
+      ],
+    },
     'automatic-emails-u082': {
       id: 'automatic-emails-u082',
       label: 'Group Calls Invitation',
