@@ -153,5 +153,16 @@
   "automatic-emails-u084.block-6": "In der Zwischenzeit kannst du gern bei unseren Gruppengesprächen mitmachen:",
   "automatic-emails-u084.block-7": "👉 Zu den Gruppengesprächen",
   "automatic-emails-u084.block-8": "Danke für deine Geduld und dein Vertrauen!",
-  "automatic-emails-u084.block-9": "Dein Little World Team"
+  "automatic-emails-u084.block-9": "Dein Little World Team",
+  "automatic-emails-m054.preview": "Teile deine Erfahrungen und sag uns Bescheid, falls ihr nicht mehr im Gespräch seid.",
+  "automatic-emails-m054.subject": "✨ Teile deine Geschichte und inspiriere andere",
+  "automatic-emails-m054.block-1": "Teile deine Geschichte und inspiriere andere",
+  "automatic-emails-m054.block-2": "Hallo {{ first_name }},",
+  "automatic-emails-m054.block-3": "seit 8 Wochen im Gespräch – so schnell kann die Zeit vergehen!",
+  "automatic-emails-m054.block-4": "Wir würden uns freuen, wenn du deine Erfahrungen teilst und andere damit inspirierst.",
+  "automatic-emails-m054.block-5": "Du kannst auch angeben, wenn du Lust auf ein kurzes Interview hast.",
+  "automatic-emails-m054.block-6": "Hier deine Geschichte teilen",
+  "automatic-emails-m054.block-7": "Wir sind nicht mehr im Gespräch",
+  "automatic-emails-m054.block-8": "Danke, dass du deine Erfahrungen mit unserer Community teilst!",
+  "automatic-emails-m054.block-9": "Dein Little World Team"
 }
