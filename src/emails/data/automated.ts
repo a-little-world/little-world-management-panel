@@ -432,6 +432,57 @@ const automatedEmails = {
         },
       ],
     },
+      'automatic-emails-u044': {
+        id: 'automatic-emails-u044',
+        label: 'Onboarding Call Reminder',
+        category_id: EmailCategories.Automated,
+        preview: automatedText['automatic-emails-u044.preview'],
+        subject: automatedText['automatic-emails-u044.subject'],
+        content: [
+          {
+            type: ContentTypes.Title,
+            text: automatedText['automatic-emails-u044.block-1'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-u044.block-2'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-u044.block-3'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-u044.block-4'],
+          },
+          {
+            type: ContentTypes.Button,
+            text: automatedText['automatic-emails-u044.block-5'],
+            href: automatedText['automatic-emails-u044.call-link'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-u044.block-6'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-u044.block-7'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-u044.block-8'],
+          },
+          {
+            type: ContentTypes.Link,
+            text: automatedText['automatic-emails-u044.rebooking-cta'],
+            href: automatedText['automatic-emails-u044.rebooking-link'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-u044.block-9'],
+          },
+        ],
+      },
     'automatic-emails-u023': {
       id: 'automatic-emails-u023',
       label: 'Onboarding Reminder',

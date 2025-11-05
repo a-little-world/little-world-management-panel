@@ -153,5 +153,19 @@
   "automatic-emails-u084.block-6": "In der Zwischenzeit kannst du gern bei unseren Gruppengesprächen mitmachen:",
   "automatic-emails-u084.block-7": "👉 Zu den Gruppengesprächen",
   "automatic-emails-u084.block-8": "Danke für deine Geduld und dein Vertrauen!",
-  "automatic-emails-u084.block-9": "Dein Little World Team"
+  "automatic-emails-u084.block-9": "Dein Little World Team",
+  "automatic-emails-u044.preview": "Erinnerung: Dein Onboarding startet gleich – hier ist der Call-Link.",
+  "automatic-emails-u044.subject": "In einer Stunde startet dein Onboarding",
+  "automatic-emails-u044.block-1": "In einer Stunde startet dein Onboarding",
+  "automatic-emails-u044.block-2": "Hallo {{ first_name }},",
+  "automatic-emails-u044.block-3": "bald ist es so weit: In einer Stunde beginnt dein Onboarding-Gespräch bei Little World.",
+  "automatic-emails-u044.block-4": "📍 Hier kommst du direkt zum Videoanruf:",
+  "automatic-emails-u044.block-5": "Zum Gespräch beitreten",
+  "automatic-emails-u044.call-link": "{{ call_link }}",
+  "automatic-emails-u044.block-6": "Wir freuen uns auf dich!",
+  "automatic-emails-u044.block-7": "Dein Little World Team",
+  "automatic-emails-u044.block-8": "PS: Falls dir etwas dazwischengekommen ist und du an diesem Termin nicht teilnehmen kannst, kein Problem! Du kannst ganz einfach einen neuen Termin über diesen Link buchen:",
+  "automatic-emails-u044.rebooking-cta": "Neuen Termin buchen",
+  "automatic-emails-u044.rebooking-link": "{{ prematching_call_booking_link }}",
+  "automatic-emails-u044.block-9": "Danach finden wir gemeinsam eine:n passende:n Gesprächspartner:in für dich – und schon kann’s losgehen!"
 }
