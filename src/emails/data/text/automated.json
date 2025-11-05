@@ -133,5 +133,16 @@
   "still-in-contact-inactive.block-4": "Für unsere Wirkungsmessung und um unser Angebot zu verbessern, würden wir gerne wissen: Stehst du noch mit {{ partner_first_name }} in Kontakt, nur eben über einen anderen Kanal?",
   "still-in-contact-inactive.block-5": "Ja, wir sind noch in Kontakt",
   "still-in-contact-inactive.block-6": "Nein, wir sind nicht mehr in Kontakt",
-  "still-in-contact-inactive.block-7": "Deine Antwort hilft uns, unsere Plattform zu verbessern und erfolgreiche Verbindungen besser zu verstehen. Vielen Dank für deine Unterstützung!"
+  "still-in-contact-inactive.block-7": "Deine Antwort hilft uns, unsere Plattform zu verbessern und erfolgreiche Verbindungen besser zu verstehen. Vielen Dank für deine Unterstützung!",
+  "automatic-emails-u084.preview": "Wir haben dich nicht vergessen – wir suchen weiter nach einer passenden Person für dich.",
+  "automatic-emails-u084.subject": "Wir haben dich nicht vergessen",
+  "automatic-emails-u084.block-1": "Wir haben dich nicht vergessen",
+  "automatic-emails-u084.block-2": "Hallo {{ first_name }},",
+  "automatic-emails-u084.block-3": "wir wissen, dass du schon länger wartest – das tut uns leid.",
+  "automatic-emails-u084.block-4": "Normalerweise klappt ein Match innerhalb von drei Wochen. Gerade melden sich aber viele Menschen an, deshalb dauert es manchmal etwas länger.",
+  "automatic-emails-u084.block-5": "Unser Team sucht weiterhin aktiv für dich. Wir hoffen, dir in den nächsten zwei Wochen eine passende Person vorzuschlagen.",
+  "automatic-emails-u084.block-6": "In der Zwischenzeit kannst du gern bei unseren Gruppengesprächen mitmachen:",
+  "automatic-emails-u084.block-7": "👉 Zu den Gruppengesprächen",
+  "automatic-emails-u084.block-8": "Danke für deine Geduld und dein Vertrauen!",
+  "automatic-emails-u084.block-9": "Dein Little World Team"
 }
