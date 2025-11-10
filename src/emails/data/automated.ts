@@ -372,7 +372,7 @@ const automatedEmails = {
       },
     ],
   },
-  'new-match': {
+    'new-match': {
     id: 'new-match',
     label: 'New Match',
     category_id: EmailCategories.Automated,
@@ -406,62 +406,247 @@ const automatedEmails = {
       },
     ],
   },
-  'new-messages': {
-    id: 'new-messages',
-    label: 'New Messages',
-    category_id: EmailCategories.Automated,
-    preview: automatedText['new-messages.preview'],
-    subject: automatedText['new-messages.subject'],
-    content: [
-      {
-        type: ContentTypes.Title,
-        text: automatedText['new-messages.block-1'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['new-messages.block-2'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['new-messages.block-3'],
-      },
-      {
-        type: ContentTypes.Button,
-        text: automatedText['new-messages.block-4'],
-        href: BackendVars.messagesUrl,
-      },
-    ],
-  },
-  'match-resolved': {
-    id: 'match-resolved',
-    label: 'Match Resolved',
-    category_id: EmailCategories.Automated,
-    subject: automatedText['match-resolved.subject'],
-    preview: automatedText['match-resolved.preview'],
-    content: [
-      {
-        type: ContentTypes.Title,
-        text: automatedText['match-resolved.block-1'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['match-resolved.block-2'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['match-resolved.block-3'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['match-resolved.block-4'],
-      },
-      {
-        type: ContentTypes.Button,
-        text: automatedText['match-resolved.block-5'],
-        href: BackendVars.restartSearchUrl,
-      },
-    ],
-  },
+    'new-messages': {
+      id: 'new-messages',
+      label: 'New Messages',
+      category_id: EmailCategories.Automated,
+      preview: automatedText['new-messages.preview'],
+      subject: automatedText['new-messages.subject'],
+      content: [
+        {
+          type: ContentTypes.Title,
+          text: automatedText['new-messages.block-1'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['new-messages.block-2'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['new-messages.block-3'],
+        },
+        {
+          type: ContentTypes.Button,
+          text: automatedText['new-messages.block-4'],
+          href: BackendVars.messagesUrl,
+        },
+      ],
+    },
+    'automatic-emails-u023': {
+      id: 'automatic-emails-u023',
+      label: 'Onboarding Reminder',
+      category_id: EmailCategories.Automated,
+      preview: automatedText['automatic-emails-u023.preview'],
+      subject: automatedText['automatic-emails-u023.subject'],
+      content: [
+        {
+          type: ContentTypes.Title,
+          text: automatedText['automatic-emails-u023.block-1'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u023.block-2'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u023.block-3'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u023.block-4'],
+        },
+        {
+          type: ContentTypes.Button,
+          text: automatedText['automatic-emails-u023.block-7'],
+          href: '{{ prematching_call_booking_link }}',
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u023.block-5'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u023.block-6'],
+        },
+      ],
+    },
+    'automatic-emails-u082': {
+      id: 'automatic-emails-u082',
+      label: 'Group Calls Invitation',
+      category_id: EmailCategories.Automated,
+      preview: automatedText['automatic-emails-u082.preview'],
+      subject: automatedText['automatic-emails-u082.subject'],
+      content: [
+        {
+          type: ContentTypes.Title,
+          text: automatedText['automatic-emails-u082.block-1'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u082.block-2'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u082.block-3'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u082.block-4'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u082.block-5'],
+        },
+        {
+          type: ContentTypes.Button,
+          text: automatedText['automatic-emails-u082.block-6'],
+          href: 'https://home.little-world.com/#gruppentermine',
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u082.block-7'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u082.block-8'],
+        },
+      ],
+    },
+    'automatic-emails-u084': {
+      id: 'automatic-emails-u084',
+      label: 'Delayed Match Update',
+      category_id: EmailCategories.Automated,
+      preview: automatedText['automatic-emails-u084.preview'],
+      subject: automatedText['automatic-emails-u084.subject'],
+      content: [
+        {
+          type: ContentTypes.Title,
+          text: automatedText['automatic-emails-u084.block-1'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u084.block-2'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u084.block-3'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u084.block-4'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u084.block-5'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u084.block-6'],
+        },
+        {
+          type: ContentTypes.Button,
+          text: automatedText['automatic-emails-u084.block-7'],
+          href: 'https://home.little-world.com/#gruppentermine',
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u084.block-8'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u084.block-9'],
+        },
+      ],
+    },
+    'automatic-emails-u081': {
+      id: 'automatic-emails-u081',
+      label: 'U081 - Matching gestartet',
+      category_id: EmailCategories.Automated,
+      preview: automatedText['automatic-emails-u081.preview'],
+      subject: automatedText['automatic-emails-u081.subject'],
+      content: [
+        {
+          type: ContentTypes.Title,
+          text: automatedText['automatic-emails-u081.block-1'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u081.block-2'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u081.block-3'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u081.block-4'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u081.block-5'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u081.block-6'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u081.block-7'],
+        },
+        {
+          type: ContentTypes.Button,
+          text: automatedText['automatic-emails-u081.block-8'],
+          href: 'https://home.little-world.com/#gruppentermine',
+        },
+        {
+          type: ContentTypes.Button,
+          text: automatedText['automatic-emails-u081.block-9'],
+          href: 'https://home.little-world.com/#ressourcen',
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u081.block-10'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u081.block-11'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u081.block-12'],
+        },
+      ],
+    },
+    'match-resolved': {
+      id: 'match-resolved',
+      label: 'Match Resolved',
+      category_id: EmailCategories.Automated,
+      subject: automatedText['match-resolved.subject'],
+      preview: automatedText['match-resolved.preview'],
+      content: [
+        {
+          type: ContentTypes.Title,
+          text: automatedText['match-resolved.block-1'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['match-resolved.block-2'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['match-resolved.block-3'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['match-resolved.block-4'],
+        },
+        {
+          type: ContentTypes.Button,
+          text: automatedText['match-resolved.block-5'],
+          href: BackendVars.restartSearchUrl,
+        },
+      ],
+    },
   'reset-password': {
     id: 'reset-password',
     label: 'Reset Password',
