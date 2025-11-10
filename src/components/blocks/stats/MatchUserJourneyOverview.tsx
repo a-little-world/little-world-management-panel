@@ -28,7 +28,7 @@ import { matchJourneyBuckets, userJourneyBuckets } from './buckets';
 
 export const SectionTitle = styled(Text)`
   font-weight: bold;
-  margin-bottom: ${({ theme }) => theme.spacing.small};
+  margin-bottom: ${({ theme }) => theme.spacing.xxsmall};
 `;
 
 export const Container = styled.div`
@@ -321,8 +321,8 @@ export function UserLossStatisticDownloadBlock() {
   };
 
   return (
-    <div>
-      <SectionTitle type={TextTypes.Body4} tag="h2">
+    <DownloadBlock>
+      <SectionTitle type={TextTypes.Body4} tag="h3">
         User Sign-Up Loss Statistics
       </SectionTitle>
       <Text tag="p">
@@ -352,9 +352,19 @@ export function UserLossStatisticDownloadBlock() {
           }}
         />
       </div>
-    </div>
+    </DownloadBlock>
   );
 }
+
+const DownloadBlock = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.small};
+  border-bottom: 1px solid ${({ theme }) => theme.color.border.subtle};
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding-bottom: ${({ theme }) => theme.spacing.medium};
+`;
 
 export function AccentureReportDownloadBloack() {
   const [startDate, setStartDate] = React.useState('2021-01-01');
@@ -384,12 +394,69 @@ export function AccentureReportDownloadBloack() {
   };
 
   return (
-    <div>
-      <SectionTitle type={TextTypes.Body4} tag="h2">
+    <DownloadBlock>
+      <SectionTitle type={TextTypes.Body4} tag="h3">
         Accenture Report
       </SectionTitle>
       <Button onClick={onDownload}>Download</Button>
-    </div>
+    </DownloadBlock>
+  );
+}
+
+export function MarketingCampaignReportDownloadBlock() {
+  const [startDate, setStartDate] = React.useState('2025-10-01');
+  const today = new Date();
+  const [endDate, setEndDate] = React.useState(
+    today.toISOString().split('T')[0],
+  );
+
+  const { data: marketingCampaignReport, mutate } = useSWR(
+    '/api/matching/users/statistics/marketing_campaign/',
+    cratePostFetcher({
+      start_date: startDate,
+      end_date: endDate,
+    }),
+    {},
+  );
+
+  const onDownload = () => {
+    const text = marketingCampaignReport?.report ?? '';
+    const blob = new Blob([text], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+
+    a.download = `marketing_campaign_report_${startDate}_to_${endDate}.txt`;
+    a.click();
+  };
+
+  return (
+    <DownloadBlock>
+      <SectionTitle type={TextTypes.Body4} tag="h3">
+        Marketing Campaign Report
+      </SectionTitle>
+      <Button onClick={onDownload}>Download</Button>
+      <div className="flex flex-row">
+        <DatePicker
+          date={startDate}
+          setDate={date => {
+            setStartDate(date);
+            setTimeout(() => {
+              mutate();
+            }, 500);
+          }}
+        />
+        <DatePicker
+          date={endDate}
+          setDate={date => {
+            setEndDate(date);
+            setTimeout(() => {
+              mutate();
+            }, 500);
+          }}
+        />
+      </div>
+    </DownloadBlock>
   );
 }
 
@@ -423,8 +490,8 @@ export function MatchQualitySatisticDownloadBlock() {
   };
 
   return (
-    <div>
-      <SectionTitle type={TextTypes.Body4} tag="h2">
+    <DownloadBlock>
+      <SectionTitle type={TextTypes.Body4} tag="h3">
         Match Quality Statistic
       </SectionTitle>
       <Text tag="p">
@@ -454,19 +521,20 @@ export function MatchQualitySatisticDownloadBlock() {
           }}
         />
       </div>
-    </div>
+    </DownloadBlock>
   );
 }
 
 export function DownloadCenter() {
   return (
     <div className="flex flex-col">
-      <SectionTitle type={TextTypes.Body4} tag="h2">
+      <SectionTitle type={TextTypes.Body3} tag="h2">
         Download Center
       </SectionTitle>
-      <div className="w-full flex flex-row">
+      <div className="w-full flex flex-col gap-6">
         <UserLossStatisticDownloadBlock />
         <AccentureReportDownloadBloack />
+        <MarketingCampaignReportDownloadBlock />
       </div>
     </div>
   );
