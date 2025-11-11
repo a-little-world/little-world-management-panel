@@ -281,5 +281,17 @@
   "automatic-emails-m051.block-4": "Es ist schön zu hören, dass ihr euren Austausch fortsetzt. Wir wünschen euch weiterhin inspirierende Gespräche.",
   "automatic-emails-m051.block-5": "Unsere Gruppengespräche stehen euch jederzeit offen. Schaut gern vorbei, wenn ihr wieder Lust auf Austausch in unserer Community habt.",
   "automatic-emails-m051.block-6": "Falls du Unterstützung brauchst oder Fragen hast, schreib uns jederzeit – wir sind für dich da.",
-  "automatic-emails-m051.block-7": "Dein Little World Team"
+  "automatic-emails-m051.block-7": "Dein Little World Team",
+  "automatic-emails-m055.preview": "Erzähl uns, wie euch die 10 Wochen mit {{ partner_first_name }} gefallen haben.",
+  "automatic-emails-m055.subject": "🏆 Glückwunsch! 10 Wochen Austausch mit {{ partner_first_name }}",
+  "automatic-emails-m055.block-1": "🏆 Glückwunsch zu 10 Wochen mit {{ partner_first_name }}!",
+  "automatic-emails-m055.block-2": "Hallo {{ first_name }},",
+  "automatic-emails-m055.block-3": "herzlichen Glückwunsch! Du und {{ partner_first_name }} habt erfolgreich den gesamten Match-Prozess durchlaufen und 10 Videocalls miteinander gemeistert.",
+  "automatic-emails-m055.block-4": "Wir möchten gern erfahren, wie es euch dabei ergangen ist und wie dich der Austausch unterstützt hat. Deine Rückmeldung hilft uns, Little World weiter zu verbessern.",
+  "automatic-emails-m055.block-5": "Ihr könnt natürlich weiterhin miteinander sprechen – vielleicht ist schon eine Freundschaft entstanden. Wenn du bereit für ein neues Match bist, klicke einfach auf das „+“ auf der Startseite der Plattform.",
+  "automatic-emails-m055.block-6": "Falls ihr nicht mehr im Gespräch seid, gib uns bitte kurz Bescheid.",
+  "automatic-emails-m055.block-7": "Zur Umfrage",
+  "automatic-emails-m055.block-8": "Wir sind nicht mehr im Gespräch",
+  "automatic-emails-m055.block-9": "Danke, dass du Teil von Little World bist!",
+  "automatic-emails-m055.block-10": "Dein Little World Team"
 }
