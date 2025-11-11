@@ -558,6 +558,53 @@ const automatedEmails = {
         },
       ],
     },
+      'automatic-emails-u044': {
+        id: 'automatic-emails-u044',
+        label: 'Onboarding Call Reminder (1h)',
+        category_id: EmailCategories.Automated,
+        preview: automatedText['automatic-emails-u044.preview'],
+        subject: automatedText['automatic-emails-u044.subject'],
+        content: [
+          {
+            type: ContentTypes.Title,
+            text: automatedText['automatic-emails-u044.block-1'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-u044.block-2'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-u044.block-3'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-u044.block-4'],
+          },
+          {
+            type: ContentTypes.Button,
+            text: automatedText['automatic-emails-u044.block-5'],
+            href: '{{ call_link }}',
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-u044.block-6'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-u044.block-7'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-u044.block-8'],
+          },
+          {
+            type: ContentTypes.Link,
+            text: automatedText['automatic-emails-u044.ps-link-label'],
+            href: '{{ prematching_call_booking_link }}',
+          },
+        ],
+      },
     'automatic-emails-u072': {
       id: 'automatic-emails-u072',
       label: 'Group Calls Follow-up',
