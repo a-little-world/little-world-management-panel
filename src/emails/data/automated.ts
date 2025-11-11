@@ -507,6 +507,52 @@ const automatedEmails = {
         },
       ],
     },
+    'automatic-emails-u024': {
+      id: 'automatic-emails-u024',
+      label: 'Hast du dein Onboarding schon gebucht?',
+      category_id: EmailCategories.Automated,
+      preview: automatedText['automatic-emails-u024.preview'],
+      subject: automatedText['automatic-emails-u024.subject'],
+      content: [
+        {
+          type: ContentTypes.Title,
+          text: automatedText['automatic-emails-u024.block-1'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u024.block-2'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u024.block-3'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u024.block-4'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u024.block-5'],
+        },
+        {
+          type: ContentTypes.Button,
+          text: automatedText['automatic-emails-u024.block-6'],
+          href: '{{ prematching_call_booking_link }}',
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u024.block-7'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u024.block-8'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-u024.block-9'],
+        },
+      ],
+    },
       'automatic-emails-u025': {
         id: 'automatic-emails-u025',
         label: 'Viele Lernende warten – bist du dabei?',
