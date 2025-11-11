@@ -507,6 +507,79 @@ const automatedEmails = {
         },
       ],
     },
+      'automatic-emails-u043': {
+        id: 'automatic-emails-u043',
+        label: 'Onboarding Call Reminder (24h)',
+        category_id: EmailCategories.Automated,
+        preview: automatedText['automatic-emails-u043.preview'],
+        subject: automatedText['automatic-emails-u043.subject'],
+        content: [
+          {
+            type: ContentTypes.Title,
+            text: automatedText['automatic-emails-u043.block-1'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-u043.block-2'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-u043.block-3'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-u043.block-4'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-u043.block-5'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-u043.block-6'],
+          },
+          {
+            type: ContentTypes.Button,
+            text: automatedText['automatic-emails-u043.block-7'],
+            href: '{{ call_link }}',
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-u043.block-8'],
+          },
+          {
+            type: ContentTypes.Link,
+            text: automatedText['automatic-emails-u043.link-reschedule'],
+            href: '{{ prematching_call_booking_link }}',
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-u043.block-9'],
+          },
+          {
+            type: ContentTypes.Link,
+            text: automatedText['automatic-emails-u043.link-chat'],
+            href: '{{ messages_url }}',
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-u043.block-10'],
+          },
+          {
+            type: ContentTypes.Link,
+            text: automatedText['automatic-emails-u043.link-password-reset'],
+            href: 'https://little-world.com/forgot-password/',
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-u043.block-11'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-u043.block-12'],
+          },
+        ],
+      },
     'automatic-emails-u053': {
       id: 'automatic-emails-u053',
       label: 'Onboarding No-Show Reminder',
