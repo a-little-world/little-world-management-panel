@@ -615,8 +615,41 @@ const automatedEmails = {
           type: ContentTypes.Paragraph,
           text: automatedText['automatic-emails-u081.block-12'],
         },
-      ],
-    },
+        ],
+      },
+      'automatic-emails-m051': {
+        id: 'automatic-emails-m051',
+        label: 'M051 - Off-Platform Chat Support',
+        category_id: EmailCategories.Automated,
+        preview: automatedText['automatic-emails-m051.preview'],
+        subject: automatedText['automatic-emails-m051.subject'],
+        content: [
+          {
+            type: ContentTypes.Title,
+            text: automatedText['automatic-emails-m051.block-1'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-m051.block-2'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-m051.block-3'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-m051.block-4'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-m051.block-5'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-m051.block-6'],
+          },
+        ],
+      },
     'match-resolved': {
       id: 'match-resolved',
       label: 'Match Resolved',

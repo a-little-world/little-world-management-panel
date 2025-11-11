@@ -177,5 +177,13 @@
   "automatic-emails-u081.block-9": "👉 Zu den Ressourcen",
   "automatic-emails-u081.block-10": "Danke, dass du dabei bist! 💛",
   "automatic-emails-u081.block-11": "Herzliche Grüße",
-  "automatic-emails-u081.block-12": "dein Little World Team"
+  "automatic-emails-u081.block-12": "dein Little World Team",
+  "automatic-emails-m051.preview": "Wir freuen uns, dass ihr weiterhin im Austausch seid.",
+  "automatic-emails-m051.subject": "Schön, dass du mit {{ partner_first_name }} in Kontakt bleibst",
+  "automatic-emails-m051.block-1": "Schön, dass ihr weiterhin im Austausch seid!",
+  "automatic-emails-m051.block-2": "Hallo {{ first_name }},",
+  "automatic-emails-m051.block-3": "wir haben gesehen, dass du dich mit {{ partner_first_name }} auf einer anderen Plattform austauschst – wie schön zu hören, dass ihr weiterhin in Kontakt seid!",
+  "automatic-emails-m051.block-4": "Es freut uns sehr, dass ihr euren Austausch auf individuelle Weise fortsetzt. Ihr seid natürlich jederzeit herzlich eingeladen, bei unseren Gruppengesprächen vorbeizuschauen und euch dort mit der Community zu verbinden.",
+  "automatic-emails-m051.block-5": "Wenn du in Zukunft Unterstützung brauchst oder Fragen hast, melde dich gern jederzeit bei uns. Wir sind für euch da.",
+  "automatic-emails-m051.block-6": "Dein Little World Team"
 }
