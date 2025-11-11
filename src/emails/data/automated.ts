@@ -432,43 +432,39 @@ const automatedEmails = {
         },
       ],
     },
-      'automatic-emails-m051': {
-        id: 'automatic-emails-m051',
-        label: 'M051 - Off-Platform Contact',
-        category_id: EmailCategories.Automated,
-        preview: automatedText['automatic-emails-m051.preview'],
-        subject: automatedText['automatic-emails-m051.subject'],
-        content: [
-          {
-            type: ContentTypes.Title,
-            text: automatedText['automatic-emails-m051.block-1'],
-          },
-          {
-            type: ContentTypes.Paragraph,
-            text: automatedText['automatic-emails-m051.block-2'],
-          },
-          {
-            type: ContentTypes.Paragraph,
-            text: automatedText['automatic-emails-m051.block-3'],
-          },
-          {
-            type: ContentTypes.Paragraph,
-            text: automatedText['automatic-emails-m051.block-4'],
-          },
-          {
-            type: ContentTypes.Paragraph,
-            text: automatedText['automatic-emails-m051.block-5'],
-          },
-          {
-            type: ContentTypes.Paragraph,
-            text: automatedText['automatic-emails-m051.block-6'],
-          },
-          {
-            type: ContentTypes.Paragraph,
-            text: automatedText['automatic-emails-m051.block-7'],
-          },
-        ],
-      },
+        'automatic-emails-m051': {
+          id: 'automatic-emails-m051',
+          label: 'M051 - Off-Platform Contact',
+          category_id: EmailCategories.Automated,
+          preview: automatedText['automatic-emails-m051.preview'],
+          subject: automatedText['automatic-emails-m051.subject'],
+          content: [
+            {
+              type: ContentTypes.Paragraph,
+              text: automatedText['automatic-emails-m051.block-1'],
+            },
+            {
+              type: ContentTypes.Paragraph,
+              text: automatedText['automatic-emails-m051.block-2'],
+            },
+            {
+              type: ContentTypes.Paragraph,
+              text: automatedText['automatic-emails-m051.block-3'],
+            },
+            {
+              type: ContentTypes.Paragraph,
+              text: automatedText['automatic-emails-m051.block-4'],
+            },
+            {
+              type: ContentTypes.Paragraph,
+              text: automatedText['automatic-emails-m051.block-5'],
+            },
+            {
+              type: ContentTypes.Paragraph,
+              text: automatedText['automatic-emails-m051.block-6'],
+            },
+          ],
+        },
     'automatic-emails-m053': {
       id: 'automatic-emails-m053',
       label: 'M053 - 5-week Survey',
