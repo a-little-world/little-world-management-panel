@@ -432,6 +432,48 @@ const automatedEmails = {
         },
       ],
     },
+        'automatic-emails-m044': {
+          id: 'automatic-emails-m044',
+          label: 'M044 - Share Story Invite',
+          category_id: EmailCategories.Automated,
+          preview: automatedText['automatic-emails-m044.preview'],
+          subject: automatedText['automatic-emails-m044.subject'],
+          content: [
+            {
+              type: ContentTypes.Title,
+              text: automatedText['automatic-emails-m044.block-1'],
+            },
+            {
+              type: ContentTypes.Paragraph,
+              text: automatedText['automatic-emails-m044.block-2'],
+            },
+            {
+              type: ContentTypes.Paragraph,
+              text: automatedText['automatic-emails-m044.block-3'],
+            },
+            {
+              type: ContentTypes.Paragraph,
+              text: automatedText['automatic-emails-m044.block-4'],
+            },
+            {
+              type: ContentTypes.Paragraph,
+              text: automatedText['automatic-emails-m044.block-5'],
+            },
+            {
+              type: ContentTypes.Button,
+              text: automatedText['automatic-emails-m044.block-6'],
+              href: '{{ share_story_url }}',
+            },
+            {
+              type: ContentTypes.Paragraph,
+              text: automatedText['automatic-emails-m044.block-7'],
+            },
+            {
+              type: ContentTypes.Paragraph,
+              text: automatedText['automatic-emails-m044.block-8'],
+            },
+          ],
+        },
       'automatic-emails-m045': {
         id: 'automatic-emails-m045',
         label: 'M045 - 10 Videocalls Completed',
