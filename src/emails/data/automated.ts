@@ -469,6 +469,57 @@ const automatedEmails = {
           },
         ],
       },
+      'automatic-emails-m055': {
+        id: 'automatic-emails-m055',
+        label: 'M055 - 10-week Match Celebration',
+        category_id: EmailCategories.Automated,
+        preview: automatedText['automatic-emails-m055.preview'],
+        subject: automatedText['automatic-emails-m055.subject'],
+        content: [
+          {
+            type: ContentTypes.Title,
+            text: automatedText['automatic-emails-m055.block-1'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-m055.block-2'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-m055.block-3'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-m055.block-4'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-m055.block-5'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-m055.block-6'],
+          },
+          {
+            type: ContentTypes.Button,
+            text: automatedText['automatic-emails-m055.block-7'],
+            href: '{{ completed_match_poll_url }}',
+          },
+          {
+            type: ContentTypes.Button,
+            text: automatedText['automatic-emails-m055.block-8'],
+            href: BackendVars.stillInContactNoUrl,
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-m055.block-9'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-m055.block-10'],
+          },
+        ],
+      },
     'automatic-emails-u023': {
       id: 'automatic-emails-u023',
       label: 'Onboarding Reminder',
