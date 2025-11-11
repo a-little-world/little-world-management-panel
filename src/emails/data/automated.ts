@@ -469,6 +469,45 @@ const automatedEmails = {
           },
         ],
       },
+    'automatic-emails-m053': {
+      id: 'automatic-emails-m053',
+      label: 'M053 - 5-week Survey',
+      category_id: EmailCategories.Automated,
+      preview: automatedText['automatic-emails-m053.preview'],
+      subject: automatedText['automatic-emails-m053.subject'],
+      content: [
+        {
+          type: ContentTypes.Title,
+          text: automatedText['automatic-emails-m053.block-1'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-m053.block-2'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-m053.block-3'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-m053.block-4'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-m053.block-5'],
+        },
+        {
+          type: ContentTypes.Button,
+          text: automatedText['automatic-emails-m053.block-6'],
+          href: '{{ five_week_survey_url }}',
+        },
+        {
+          type: ContentTypes.Button,
+          text: automatedText['automatic-emails-m053.block-7'],
+          href: BackendVars.stillInContactNoUrl,
+        },
+      ],
+    },
         'automatic-emails-m054': {
           id: 'automatic-emails-m054',
           label: 'M054 - Share Story Invite',
