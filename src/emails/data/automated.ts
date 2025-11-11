@@ -469,6 +469,53 @@ const automatedEmails = {
           },
         ],
       },
+        'automatic-emails-m054': {
+          id: 'automatic-emails-m054',
+          label: 'M054 - Share Story Invite',
+          category_id: EmailCategories.Automated,
+          preview: automatedText['automatic-emails-m054.preview'],
+          subject: automatedText['automatic-emails-m054.subject'],
+          content: [
+            {
+              type: ContentTypes.Title,
+              text: automatedText['automatic-emails-m054.block-1'],
+            },
+            {
+              type: ContentTypes.Paragraph,
+              text: automatedText['automatic-emails-m054.block-2'],
+            },
+            {
+              type: ContentTypes.Paragraph,
+              text: automatedText['automatic-emails-m054.block-3'],
+            },
+            {
+              type: ContentTypes.Paragraph,
+              text: automatedText['automatic-emails-m054.block-4'],
+            },
+            {
+              type: ContentTypes.Button,
+              text: automatedText['automatic-emails-m054.block-5'],
+              href: '{{ share_story_url }}',
+            },
+            {
+              type: ContentTypes.Paragraph,
+              text: automatedText['automatic-emails-m054.block-6'],
+            },
+            {
+              type: ContentTypes.Button,
+              text: automatedText['automatic-emails-m054.block-7'],
+              href: '{{ still_in_contact_no_url }}',
+            },
+            {
+              type: ContentTypes.Paragraph,
+              text: automatedText['automatic-emails-m054.block-8'],
+            },
+            {
+              type: ContentTypes.Paragraph,
+              text: automatedText['automatic-emails-m054.block-9'],
+            },
+          ],
+        },
       'automatic-emails-m055': {
         id: 'automatic-emails-m055',
         label: 'M055 - 10-week Match Celebration',
