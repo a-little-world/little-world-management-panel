@@ -432,6 +432,48 @@ const automatedEmails = {
         },
       ],
     },
+      'automatic-emails-m043': {
+        id: 'automatic-emails-m043',
+        label: 'M043 - 5 Videocalls Survey',
+        category_id: EmailCategories.Automated,
+        preview: automatedText['automatic-emails-m043.preview'],
+        subject: automatedText['automatic-emails-m043.subject'],
+        content: [
+          {
+            type: ContentTypes.Title,
+            text: automatedText['automatic-emails-m043.block-1'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-m043.block-2'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-m043.block-3'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-m043.block-4'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-m043.block-5'],
+          },
+          {
+            type: ContentTypes.Button,
+            text: automatedText['automatic-emails-m043.block-6'],
+            href: '{{ post_videocall_survey_url }}',
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-m043.block-7'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-m043.block-8'],
+          },
+        ],
+      },
         'automatic-emails-m044': {
           id: 'automatic-emails-m044',
           label: 'M044 - Share Story Invite',
