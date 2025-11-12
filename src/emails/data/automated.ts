@@ -406,79 +406,117 @@ const automatedEmails = {
       },
     ],
   },
-  'new-messages': {
-    id: 'new-messages',
-    label: 'New Messages',
-    category_id: EmailCategories.Automated,
-    preview: automatedText['new-messages.preview'],
-    subject: automatedText['new-messages.subject'],
-    content: [
-      {
-        type: ContentTypes.Title,
-        text: automatedText['new-messages.block-1'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['new-messages.block-2'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['new-messages.block-3'],
-      },
-      {
-        type: ContentTypes.Button,
-        text: automatedText['new-messages.block-4'],
-        href: BackendVars.messagesUrl,
-      },
-    ],
-  },
-  'automatic-emails-m014': {
-    id: 'automatic-emails-m014',
-    label: 'M014 - Contact Reminder',
-    category_id: EmailCategories.Automated,
-    preview: automatedText['automatic-emails-m014.preview'],
-    subject: automatedText['automatic-emails-m014.subject'],
-    content: [
-      {
-        type: ContentTypes.Title,
-        text: automatedText['automatic-emails-m014.block-1'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m014.block-2'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m014.block-3'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m014.block-4'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m014.block-5'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m014.block-6'],
-      },
-      {
-        type: ContentTypes.Button,
-        text: automatedText['automatic-emails-m014.block-7'],
-        href: '{{ messages_url }}',
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m014.block-8'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m014.block-9'],
-      },
-    ],
-  },
-  'automatic-emails-m024': {
+    'new-messages': {
+      id: 'new-messages',
+      label: 'New Messages',
+      category_id: EmailCategories.Automated,
+      preview: automatedText['new-messages.preview'],
+      subject: automatedText['new-messages.subject'],
+      content: [
+        {
+          type: ContentTypes.Title,
+          text: automatedText['new-messages.block-1'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['new-messages.block-2'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['new-messages.block-3'],
+        },
+        {
+          type: ContentTypes.Button,
+          text: automatedText['new-messages.block-4'],
+          href: BackendVars.messagesUrl,
+        },
+      ],
+    },
+    'automatic-emails-m013': {
+      id: 'automatic-emails-m013',
+      label: 'M013 - Partner Waiting Reminder',
+      category_id: EmailCategories.Automated,
+      preview: automatedText['automatic-emails-m013.preview'],
+      subject: automatedText['automatic-emails-m013.subject'],
+      content: [
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-m013.block-1'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-m013.block-2'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-m013.block-3'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-m013.block-4'],
+        },
+        {
+          type: ContentTypes.Button,
+          text: automatedText['automatic-emails-m013.block-5'],
+          href: '{{ messages_url }}',
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-m013.block-6'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-m013.block-7'],
+        },
+      ],
+    },
+    'automatic-emails-m014': {
+      id: 'automatic-emails-m014',
+      label: 'M014 - Contact Reminder',
+      category_id: EmailCategories.Automated,
+      preview: automatedText['automatic-emails-m014.preview'],
+      subject: automatedText['automatic-emails-m014.subject'],
+      content: [
+        {
+          type: ContentTypes.Title,
+          text: automatedText['automatic-emails-m014.block-1'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-m014.block-2'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-m014.block-3'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-m014.block-4'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-m014.block-5'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-m014.block-6'],
+        },
+        {
+          type: ContentTypes.Button,
+          text: automatedText['automatic-emails-m014.block-7'],
+          href: '{{ messages_url }}',
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-m014.block-8'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-m014.block-9'],
+        },
+      ],
+    },
+    'automatic-emails-m024': {
     id: 'automatic-emails-m024',
     label: 'M024 - No Answer Reminder',
     category_id: EmailCategories.Automated,
