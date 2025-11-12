@@ -406,74 +406,107 @@ const automatedEmails = {
       },
     ],
   },
-  'new-messages': {
-    id: 'new-messages',
-    label: 'New Messages',
-    category_id: EmailCategories.Automated,
-    preview: automatedText['new-messages.preview'],
-    subject: automatedText['new-messages.subject'],
-    content: [
-      {
-        type: ContentTypes.Title,
-        text: automatedText['new-messages.block-1'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['new-messages.block-2'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['new-messages.block-3'],
-      },
-      {
-        type: ContentTypes.Button,
-        text: automatedText['new-messages.block-4'],
-        href: BackendVars.messagesUrl,
-      },
-    ],
-  },
-  'automatic-emails-m032': {
-    id: 'automatic-emails-m032',
-    label: 'M032 - Videocall Planning Reminder',
-    category_id: EmailCategories.Automated,
-    preview: automatedText['automatic-emails-m032.preview'],
-    subject: automatedText['automatic-emails-m032.subject'],
-    content: [
-      {
-        type: ContentTypes.Title,
-        text: automatedText['automatic-emails-m032.block-1'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m032.block-2'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m032.block-3'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m032.block-4'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m032.block-5'],
-      },
-      {
-        type: ContentTypes.Button,
-        text: automatedText['automatic-emails-m032.block-6'],
-        href: '{{ still_in_contact_yes_url }}',
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m032.block-7'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m032.block-8'],
-      },
-    ],
-  },
+    'new-messages': {
+      id: 'new-messages',
+      label: 'New Messages',
+      category_id: EmailCategories.Automated,
+      preview: automatedText['new-messages.preview'],
+      subject: automatedText['new-messages.subject'],
+      content: [
+        {
+          type: ContentTypes.Title,
+          text: automatedText['new-messages.block-1'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['new-messages.block-2'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['new-messages.block-3'],
+        },
+        {
+          type: ContentTypes.Button,
+          text: automatedText['new-messages.block-4'],
+          href: BackendVars.messagesUrl,
+        },
+      ],
+    },
+    'automatic-emails-m032': {
+      id: 'automatic-emails-m032',
+      label: 'M032 - Videocall Planning Reminder',
+      category_id: EmailCategories.Automated,
+      preview: automatedText['automatic-emails-m032.preview'],
+      subject: automatedText['automatic-emails-m032.subject'],
+      content: [
+        {
+          type: ContentTypes.Title,
+          text: automatedText['automatic-emails-m032.block-1'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-m032.block-2'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-m032.block-3'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-m032.block-4'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-m032.block-5'],
+        },
+        {
+          type: ContentTypes.Button,
+          text: automatedText['automatic-emails-m032.block-6'],
+          href: '{{ still_in_contact_yes_url }}',
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-m032.block-7'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-m032.block-8'],
+        },
+      ],
+    },
+    'automatic-emails-m031': {
+      id: 'automatic-emails-m031',
+      label: 'M031 - Videocall Support Offer',
+      category_id: EmailCategories.Automated,
+      preview: automatedText['automatic-emails-m031.preview'],
+      subject: automatedText['automatic-emails-m031.subject'],
+      content: [
+        {
+          type: ContentTypes.Title,
+          text: automatedText['automatic-emails-m031.block-1'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-m031.block-2'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-m031.block-3'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-m031.block-4'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-m031.block-5'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-m031.block-6'],
+        },
+      ],
+    },
     'automatic-emails-m042': {
         id: 'automatic-emails-m042',
         label: 'M042 - Contact Check',
