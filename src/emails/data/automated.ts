@@ -432,7 +432,54 @@ const automatedEmails = {
         },
       ],
     },
-      'automatic-emails-m043': {
+      'automatic-emails-m042': {
+        id: 'automatic-emails-m042',
+        label: 'M042 - Contact Check',
+        category_id: EmailCategories.Automated,
+        preview: automatedText['automatic-emails-m042.preview'],
+        subject: automatedText['automatic-emails-m042.subject'],
+        content: [
+          {
+            type: ContentTypes.Title,
+            text: automatedText['automatic-emails-m042.block-1'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-m042.block-2'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-m042.block-3'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-m042.block-4'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-m042.block-5'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-m042.block-6'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-m042.block-7'],
+          },
+          {
+            type: ContentTypes.Button,
+            text: automatedText['automatic-emails-m042.block-8'],
+            href: '{{ still_in_contact_yes_url }}',
+          },
+          {
+            type: ContentTypes.Link,
+            text: automatedText['automatic-emails-m042.block-9'],
+            href: '{{ messages_url }}',
+          },
+        ],
+      },
+        'automatic-emails-m043': {
         id: 'automatic-emails-m043',
         label: 'M043 - 5 Videocalls Survey',
         category_id: EmailCategories.Automated,
