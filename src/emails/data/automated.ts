@@ -432,6 +432,49 @@ const automatedEmails = {
       },
     ],
   },
+  'automatic-emails-m024': {
+    id: 'automatic-emails-m024',
+    label: 'M024 - No Answer Reminder',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['automatic-emails-m024.preview'],
+    subject: automatedText['automatic-emails-m024.subject'],
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: automatedText['automatic-emails-m024.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-m024.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-m024.block-3'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-m024.block-4'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['automatic-emails-m024.block-5'],
+        href: '{{ no_response_poll_url }}',
+      },
+      {
+        type: ContentTypes.Link,
+        text: automatedText['automatic-emails-m024.block-6'],
+        href: '{{ messages_url }}',
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-m024.block-7'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-m024.block-8'],
+      },
+    ],
+  },
   'automatic-emails-m025': {
     id: 'automatic-emails-m025',
     label: 'M025 - Partner Follow-up',
