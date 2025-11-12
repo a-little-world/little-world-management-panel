@@ -432,6 +432,39 @@ const automatedEmails = {
         },
       ],
     },
+      'automatic-emails-fm022': {
+        id: 'automatic-emails-fm022',
+        label: 'Failed Matching – User Ghosted',
+        category_id: EmailCategories.Automated,
+        preview: automatedText['automatic-emails-fm022.preview'],
+        subject: automatedText['automatic-emails-fm022.subject'],
+        content: [
+          {
+            type: ContentTypes.Title,
+            text: automatedText['automatic-emails-fm022.block-1'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-fm022.block-2'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-fm022.block-3'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-fm022.block-4'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-fm022.block-5'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-fm022.block-6'],
+          },
+        ],
+      },
     'automatic-emails-m013': {
       id: 'automatic-emails-m013',
       label: 'M013 - Partner Waiting Reminder',
