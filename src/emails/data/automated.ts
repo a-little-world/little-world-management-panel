@@ -563,6 +563,62 @@ const automatedEmails = {
             },
           ],
         },
+        'automatic-emails-m033': {
+          id: 'automatic-emails-m033',
+          label: 'M033 - No Video-Call Update',
+          category_id: EmailCategories.Automated,
+          preview: automatedText['automatic-emails-m033.preview'],
+          subject: automatedText['automatic-emails-m033.subject'],
+          content: [
+            {
+              type: ContentTypes.Title,
+              text: automatedText['automatic-emails-m033.block-1'],
+            },
+            {
+              type: ContentTypes.Paragraph,
+              text: automatedText['automatic-emails-m033.block-2'],
+            },
+            {
+              type: ContentTypes.Paragraph,
+              text: automatedText['automatic-emails-m033.block-3'],
+            },
+            {
+              type: ContentTypes.Paragraph,
+              text: automatedText['automatic-emails-m033.block-4'],
+            },
+            {
+              type: ContentTypes.Button,
+              text: automatedText['automatic-emails-m033.block-5'],
+              href: '{{ still_in_contact_yes_url }}',
+            },
+            {
+              type: ContentTypes.Button,
+              text: automatedText['automatic-emails-m033.block-6'],
+              href: '{{ still_in_contact_no_url }}',
+            },
+            {
+              type: ContentTypes.Paragraph,
+              text: automatedText['automatic-emails-m033.block-7'],
+            },
+            {
+              type: ContentTypes.Link,
+              text: automatedText['automatic-emails-m033.link-support-chat'],
+              href: '{{ messages_url }}',
+            },
+            {
+              type: ContentTypes.Paragraph,
+              text: automatedText['automatic-emails-m033.block-8'],
+            },
+            {
+              type: ContentTypes.Paragraph,
+              text: automatedText['automatic-emails-m033.block-9'],
+            },
+            {
+              type: ContentTypes.Paragraph,
+              text: automatedText['automatic-emails-m033.block-10'],
+            },
+          ],
+        },
       'automatic-emails-m045': {
         id: 'automatic-emails-m045',
         label: 'M045 - 10 Videocalls Completed',
