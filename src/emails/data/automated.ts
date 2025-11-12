@@ -470,6 +470,53 @@ const automatedEmails = {
         },
       ],
     },
+      'automatic-emails-m012': {
+        id: 'automatic-emails-m012',
+        label: 'M012 - First Conversation Reminder',
+        category_id: EmailCategories.Automated,
+        preview: automatedText['automatic-emails-m012.preview'],
+        subject: automatedText['automatic-emails-m012.subject'],
+        content: [
+          {
+            type: ContentTypes.Title,
+            text: automatedText['automatic-emails-m012.block-1'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-m012.block-2'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-m012.block-3'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-m012.block-4'],
+          },
+          {
+            type: ContentTypes.Link,
+            text: automatedText['automatic-emails-m012.block-5'],
+            href: '{{ link_url }}',
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-m012.block-6'],
+          },
+          {
+            type: ContentTypes.Button,
+            text: automatedText['automatic-emails-m012.block-7'],
+            href: '{{ messages_url }}',
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-m012.block-8'],
+          },
+          {
+            type: ContentTypes.Paragraph,
+            text: automatedText['automatic-emails-m012.block-9'],
+          },
+        ],
+      },
     'automatic-emails-m014': {
       id: 'automatic-emails-m014',
       label: 'M014 - Contact Reminder',
