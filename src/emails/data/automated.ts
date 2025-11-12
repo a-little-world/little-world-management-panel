@@ -714,6 +714,36 @@ const automatedEmails = {
             },
           ],
         },
+    'automatic-emails-m023': {
+      id: 'automatic-emails-m023',
+      label: 'M023 - Partner Waiting Reminder',
+      category_id: EmailCategories.Automated,
+      preview: automatedText['automatic-emails-m023.preview'],
+      subject: automatedText['automatic-emails-m023.subject'],
+      content: [
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-m023.block-1'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-m023.block-2'],
+        },
+        {
+          type: ContentTypes.Button,
+          text: automatedText['automatic-emails-m023.block-3'],
+          href: BackendVars.messagesUrl,
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-m023.block-4'],
+        },
+        {
+          type: ContentTypes.Paragraph,
+          text: automatedText['automatic-emails-m023.block-5'],
+        },
+      ],
+    },
         'automatic-emails-m033': {
           id: 'automatic-emails-m033',
           label: 'M033 - No Video-Call Update',
