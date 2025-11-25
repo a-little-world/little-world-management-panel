@@ -16,10 +16,11 @@ import {
   EMAILS_ROUTE,
   MATCHES_LIST_ROUTE,
   PREMATCH_APPOINTMENTS_ROUTE,
+  RANDOM_CALL_MANAGEMENT_ROUTE,
   SCORES_ROUTE,
   STATS_ROUTE,
   USERS_ROUTE,
-  VIDEO_CALLS_ROUTE,
+  VIDEO_CALLS_ROUTE
 } from '../../routes';
 import SearchBar from './SearchBar';
 
@@ -82,6 +83,12 @@ const Menu = () => {
             active={location.pathname === VIDEO_CALLS_ROUTE}
           >
             VideoCalls
+          </NavigationMenuContentItem>
+          <NavigationMenuContentItem
+            to={RANDOM_CALL_MANAGEMENT_ROUTE}
+            active={location.pathname === RANDOM_CALL_MANAGEMENT_ROUTE}
+          >
+            Random Call Management
           </NavigationMenuContentItem>
           <NavigationMenuContentItem
             to={PREMATCH_APPOINTMENTS_ROUTE}

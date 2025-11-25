@@ -20,6 +20,7 @@ import MatchPanel from './components/views/MatchPanel';
 import Matches from './components/views/Matches';
 import Matching from './components/views/Matching';
 import PrematchingAppointments from './components/views/PrematchingAppointments';
+import RandomCallManagement from './components/views/RandomCallManagement';
 import Scores from './components/views/Scores';
 import Stats from './components/views/Stats';
 import Users from './components/views/Users';
@@ -44,6 +45,7 @@ import {
   MATCHING_ROUTE,
   MATCH_ROUTE,
   PREMATCH_APPOINTMENTS_ROUTE,
+  RANDOM_CALL_MANAGEMENT_ROUTE,
   SCORES_ROUTE,
   SEND_DYNAMIC_EMAIL_ROUTE,
   STATS_ROUTE,
@@ -148,6 +150,10 @@ const router = createBrowserRouter(
         {
           path: DOCUMENTATION_ROUTE,
           element: <Documentation />,
+        },
+        {
+          path: RANDOM_CALL_MANAGEMENT_ROUTE,
+          element: <RandomCallManagement />,
         },
       ],
     },
