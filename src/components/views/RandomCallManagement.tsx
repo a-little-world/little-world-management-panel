@@ -1,4 +1,11 @@
 import {
+    Button,
+    ButtonAppearance,
+    ButtonSizes,
+    Card,
+    CardHeader,
+    CardSizes,
+    Modal,
     Tag,
     TagAppearance,
     TagSizes,
@@ -7,7 +14,7 @@ import {
 import { isEmpty } from 'lodash';
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import useSWR from 'swr';
+import useSWR, { mutate } from 'swr';
 
 import { dataFetcher } from '../../store';
 import {
@@ -23,6 +30,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../atoms/Tabs';
 const Container = styled.div`
   padding: 1.5rem;
   width: 100%;
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  box-sizing: border-box;
 `;
 
 const StatsGrid = styled.div`
@@ -61,6 +71,46 @@ const SectionTitle = styled.h2`
   font-weight: 600;
   margin-bottom: 1rem;
   color: ${({ theme }) => theme.color.text.primary};
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  user-select: none;
+
+  &:hover {
+    opacity: 0.8;
+  }
+`;
+
+const CollapsibleContent = styled.div<{ $isOpen: boolean }>`
+  max-height: ${({ $isOpen }) => ($isOpen ? '10000px' : '0')};
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+`;
+
+const TaskDetailRow = styled.div`
+  padding: 1rem;
+  background: ${({ theme }) => theme.color.surface.secondary};
+  border-top: 1px solid ${({ theme }) => theme.color.border.subtle};
+  font-family: monospace;
+  font-size: 0.875rem;
+  white-space: pre-wrap;
+  word-break: break-all;
+`;
+
+const TaskDetailSection = styled.div`
+  margin-bottom: 1rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+`;
+
+const TaskDetailLabel = styled.div`
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: ${({ theme }) => theme.color.text.primary};
+  font-family: sans-serif;
 `;
 
 const RefreshIndicator = styled.div<{ isRefreshing: boolean }>`
@@ -85,6 +135,19 @@ const Title = styled.h1`
   align-items: center;
 `;
 
+interface MatchProposal {
+    uuid: string;
+    u1_hash: string;
+    u1_name: string;
+    u2_hash: string;
+    u2_name: string;
+    u1_accepted: boolean;
+    u2_accepted: boolean;
+    accepted: boolean;
+    rejected: boolean;
+    in_session: boolean;
+}
+
 interface LobbyData {
     lobby: {
         name: string;
@@ -104,10 +167,10 @@ interface LobbyData {
         has_pending_match: boolean;
     }>;
     match_proposals: {
-        pending: any[];
-        accepted: any[];
-        rejected: any[];
-        expired: any[];
+        pending: MatchProposal[];
+        accepted: MatchProposal[];
+        rejected: MatchProposal[];
+        expired: MatchProposal[];
     };
     statistics: {
         total_matches: number;
@@ -115,6 +178,35 @@ interface LobbyData {
         accepted_count: number;
         rejected_count: number;
         expired_count: number;
+    };
+}
+
+interface TaskData {
+    task_id: string;
+    task_name: string;
+    status: string;
+    date_created: string | null;
+    date_done: string | null;
+    result: string | null;
+    traceback: string | null;
+    worker: string | null;
+}
+
+interface TasksData {
+    tasks: TaskData[];
+    statistics: {
+        total: number;
+        success: number;
+        failure: number;
+        pending: number;
+    };
+    task_statistics: {
+        [taskName: string]: {
+            total: number;
+            success: number;
+            failure: number;
+            pending: number;
+        };
     };
 }
 
@@ -185,7 +277,142 @@ function ActiveUsersTable({ users }: { users: LobbyData['active_users'] }) {
     );
 }
 
-function MatchProposalsTable({ matches }: { matches: any[] }) {
+function TasksTable({ tasks }: { tasks: TaskData[] }) {
+    const [expandedTasks, setExpandedTasks] = useState<Set<string>>(new Set());
+
+    if (isEmpty(tasks)) {
+        return (
+            <Text className="p-4 w-full" center>
+                No tasks found.
+            </Text>
+        );
+    }
+
+    const getStatusTag = (status: string) => {
+        let appearance = TagAppearance.error;
+        if (status === 'SUCCESS') appearance = TagAppearance.success;
+        // For PENDING and other statuses, use error appearance
+
+        return (
+            <Tag appearance={appearance} size={TagSizes.small}>
+                {status}
+            </Tag>
+        );
+    };
+
+    const formatTaskName = (taskName: string) => {
+        // Extract just the function name from the full task path
+        const parts = taskName.split('.');
+        return parts[parts.length - 1] || taskName;
+    };
+
+    const toggleTask = (taskId: string) => {
+        setExpandedTasks(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(taskId)) {
+                newSet.delete(taskId);
+            } else {
+                newSet.add(taskId);
+            }
+            return newSet;
+        });
+    };
+
+    const formatJsonResult = (result: string | null) => {
+        if (!result) return 'No result';
+        try {
+            const parsed = JSON.parse(result);
+            return JSON.stringify(parsed, null, 2);
+        } catch {
+            return result;
+        }
+    };
+
+    return (
+        <Table>
+            <TableHeader>
+                <TableRow>
+                    <TableHead style={{ width: '30px' }}></TableHead>
+                    <TableHead>Task Name</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Created</TableHead>
+                    <TableHead>Completed</TableHead>
+                    <TableHead>Worker</TableHead>
+                    <TableHead>Task ID</TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {tasks.map(task => {
+                    const isExpanded = expandedTasks.has(task.task_id);
+                    return (
+                        <React.Fragment key={task.task_id}>
+                            <TableRow
+                                style={{ cursor: 'pointer' }}
+                                onClick={() => toggleTask(task.task_id)}
+                            >
+                                <TableCell>
+                                    {isExpanded ? '▼' : '▶'}
+                                </TableCell>
+                                <TableCell>{formatTaskName(task.task_name)}</TableCell>
+                                <TableCell>{getStatusTag(task.status)}</TableCell>
+                                <TableCell>{formatTimeAgo(task.date_created)}</TableCell>
+                                <TableCell>
+                                    {task.date_done ? formatTimeAgo(task.date_done) : '-'}
+                                </TableCell>
+                                <TableCell>{task.worker || '-'}</TableCell>
+                                <TableCell style={{ fontFamily: 'monospace', fontSize: '0.75rem' }}>
+                                    {task.task_id.substring(0, 8)}...
+                                </TableCell>
+                            </TableRow>
+                            {isExpanded && (
+                                <TableRow>
+                                    <TableCell colSpan={7} style={{ padding: 0 }}>
+                                        <TaskDetailRow>
+                                            <TaskDetailSection>
+                                                <TaskDetailLabel>Full Task ID:</TaskDetailLabel>
+                                                <div>{task.task_id}</div>
+                                            </TaskDetailSection>
+                                            <TaskDetailSection>
+                                                <TaskDetailLabel>Full Task Name:</TaskDetailLabel>
+                                                <div>{task.task_name}</div>
+                                            </TaskDetailSection>
+                                            {task.result && (
+                                                <TaskDetailSection>
+                                                    <TaskDetailLabel>Result:</TaskDetailLabel>
+                                                    <div>{formatJsonResult(task.result)}</div>
+                                                </TaskDetailSection>
+                                            )}
+                                            {task.traceback && (
+                                                <TaskDetailSection>
+                                                    <TaskDetailLabel>Traceback:</TaskDetailLabel>
+                                                    <div style={{ color: 'red' }}>{task.traceback}</div>
+                                                </TaskDetailSection>
+                                            )}
+                                            {task.date_created && (
+                                                <TaskDetailSection>
+                                                    <TaskDetailLabel>Created At:</TaskDetailLabel>
+                                                    <div>{new Date(task.date_created).toLocaleString()}</div>
+                                                </TaskDetailSection>
+                                            )}
+                                            {task.date_done && (
+                                                <TaskDetailSection>
+                                                    <TaskDetailLabel>Completed At:</TaskDetailLabel>
+                                                    <div>{new Date(task.date_done).toLocaleString()}</div>
+                                                </TaskDetailSection>
+                                            )}
+                                        </TaskDetailRow>
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </React.Fragment>
+                    );
+                })}
+            </TableBody>
+        </Table>
+    );
+}
+
+function MatchProposalsTable({ matches }: { matches: MatchProposal[] }) {
     if (isEmpty(matches)) {
         return (
             <Text className="p-4 w-full" center>
@@ -211,10 +438,10 @@ function MatchProposalsTable({ matches }: { matches: any[] }) {
                     <TableRow key={match.uuid}>
                         <TableCell>{match.uuid}</TableCell>
                         <TableCell>
-                            {match.u1.name} ({match.u1.hash})
+                            {match.u1_name} ({match.u1_hash})
                         </TableCell>
                         <TableCell>
-                            {match.u2.name} ({match.u2.hash})
+                            {match.u2_name} ({match.u2_hash})
                         </TableCell>
                         <TableCell>
                             <Tag
@@ -263,6 +490,9 @@ function MatchProposalsTable({ matches }: { matches: any[] }) {
 function RandomCallManagement() {
     const [lobbyName] = useState('default');
     const [autoRefresh, setAutoRefresh] = useState(true);
+    const [showResetConfirm, setShowResetConfirm] = useState(false);
+    const [isResetting, setIsResetting] = useState(false);
+    const [tasksSectionOpen, setTasksSectionOpen] = useState(true);
 
     const {
         data,
@@ -277,6 +507,51 @@ function RandomCallManagement() {
             revalidateOnMount: true,
         },
     );
+
+    const {
+        data: tasksData,
+        error: tasksError,
+        isValidating: tasksValidating,
+    } = useSWR<TasksData>(
+        `/api/random_calls/lobby/${lobbyName}/management/tasks`,
+        dataFetcher,
+        {
+            refreshInterval: autoRefresh ? 5000 : 0, // Refresh every 5 seconds if enabled
+            revalidateOnFocus: true,
+            revalidateOnMount: true,
+        },
+    );
+
+    const handleResetLobby = async () => {
+        setIsResetting(true);
+        try {
+            const response = await fetch(
+                `/api/random_calls/lobby/${lobbyName}/management/reset`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken':
+                            document.cookie.split('csrftoken=')[1]?.split(';')[0] || '',
+                    },
+                    credentials: 'same-origin',
+                },
+            );
+
+            if (!response.ok) {
+                throw new Error('Failed to reset lobby');
+            }
+
+            // Refresh the data
+            mutate(`/api/random_calls/lobby/${lobbyName}/management/overview`);
+            setShowResetConfirm(false);
+        } catch (error) {
+            console.error('Error resetting lobby:', error);
+            alert('Failed to reset lobby. Please try again.');
+        } finally {
+            setIsResetting(false);
+        }
+    };
 
     if (error) {
         return (
@@ -305,7 +580,7 @@ function RandomCallManagement() {
                         {isValidating ? '🔄' : '⏸'}
                     </RefreshIndicator>
                 </Title>
-                <div>
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                     <label>
                         <input
                             type="checkbox"
@@ -314,8 +589,58 @@ function RandomCallManagement() {
                         />{' '}
                         Auto-refresh (3s)
                     </label>
+                    <Button
+                        appearance={ButtonAppearance.Secondary}
+                        size={ButtonSizes.Small}
+                        onClick={() => setShowResetConfirm(true)}
+                    >
+                        Reset Lobby
+                    </Button>
                 </div>
             </Header>
+
+            {/* Reset Confirmation Modal */}
+            <Modal open={showResetConfirm} onClose={() => setShowResetConfirm(false)}>
+                <Card width={CardSizes.Medium}>
+                    <CardHeader>Reset Random Call Lobby</CardHeader>
+                    <div style={{ padding: '1.5rem' }}>
+                        <Text>
+                            Are you sure you want to reset the "{lobbyName}" lobby? This will:
+                        </Text>
+                        <ul style={{ marginTop: '1rem', marginBottom: '1rem', paddingLeft: '1.5rem' }}>
+                            <li>Delete all lobby users</li>
+                            <li>Delete all match proposals</li>
+                            <li>Recreate the lobby with current time</li>
+                        </ul>
+                        <Text bold>This action cannot be undone.</Text>
+                        <div
+                            style={{
+                                display: 'flex',
+                                gap: '1rem',
+                                marginTop: '1.5rem',
+                                justifyContent: 'flex-end',
+                            }}
+                        >
+                            <Button
+                                appearance={ButtonAppearance.Secondary}
+                                size={ButtonSizes.Medium}
+                                onClick={() => setShowResetConfirm(false)}
+                                disabled={isResetting}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                appearance={ButtonAppearance.Primary}
+                                size={ButtonSizes.Medium}
+                                onClick={handleResetLobby}
+                                disabled={isResetting}
+                            >
+                                {isResetting ? 'Resetting...' : 'Reset Lobby'}
+                            </Button>
+                        </div>
+                    </div>
+                </Card>
+            </Modal>
 
             {/* Lobby Status */}
             <Section>
@@ -409,6 +734,57 @@ function RandomCallManagement() {
                         <MatchProposalsTable matches={match_proposals.expired} />
                     </TabsContent>
                 </Tabs>
+            </Section>
+
+            {/* Celery Tasks */}
+            <Section>
+                <SectionTitle onClick={() => setTasksSectionOpen(!tasksSectionOpen)}>
+                    {tasksSectionOpen ? '▼' : '▶'} Celery Tasks
+                    {tasksValidating && <RefreshIndicator isRefreshing={true}>🔄</RefreshIndicator>}
+                </SectionTitle>
+                <CollapsibleContent $isOpen={tasksSectionOpen}>
+                    {tasksError ? (
+                        <Text>Error loading tasks: {tasksError.message}</Text>
+                    ) : tasksData ? (
+                        <>
+                            <StatsGrid>
+                                <StatCard>
+                                    <StatLabel>Total Tasks</StatLabel>
+                                    <StatValue>{tasksData.statistics.total}</StatValue>
+                                </StatCard>
+                                <StatCard>
+                                    <StatLabel>Successful</StatLabel>
+                                    <StatValue>
+                                        <Tag appearance={TagAppearance.success} size={TagSizes.small}>
+                                            {tasksData.statistics.success}
+                                        </Tag>
+                                    </StatValue>
+                                </StatCard>
+                                <StatCard>
+                                    <StatLabel>Failed</StatLabel>
+                                    <StatValue>
+                                        <Tag appearance={TagAppearance.error} size={TagSizes.small}>
+                                            {tasksData.statistics.failure}
+                                        </Tag>
+                                    </StatValue>
+                                </StatCard>
+                                <StatCard>
+                                    <StatLabel>Pending</StatLabel>
+                                    <StatValue>
+                                        <Tag appearance={TagAppearance.error} size={TagSizes.small}>
+                                            {tasksData.statistics.pending}
+                                        </Tag>
+                                    </StatValue>
+                                </StatCard>
+                            </StatsGrid>
+                            <div style={{ marginTop: '1.5rem' }}>
+                                <TasksTable tasks={tasksData.tasks} />
+                            </div>
+                        </>
+                    ) : (
+                        <Text>Loading tasks...</Text>
+                    )}
+                </CollapsibleContent>
             </Section>
         </Container>
     );
