@@ -580,8 +580,7 @@ export const updateDynamicTemplate = async ({
 }) => {
   try {
     const result = await apiFetch(
-      `/api/matching/emails/dynamic_templates/${
-        existingTemplate ? `${templateName}/` : ''
+      `/api/matching/emails/dynamic_templates/${existingTemplate ? `${templateName}/` : ''
       }`,
       {
         method: existingTemplate ? 'PATCH' : 'POST',
@@ -678,6 +677,31 @@ export const completePrematchingCall = async ({
           appointment_date: appointmentDate,
           selected_users: selectedUsers,
           send_mail: sendMail,
+        },
+      },
+    );
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
+  }
+};
+
+export const createPrematchingAppointmentForUser = async ({
+  userId,
+  startTime,
+  endTime,
+  onSuccess,
+  onError,
+}) => {
+  try {
+    const result = await apiFetch(
+      '/api/matching/prematchingappointments/create_appointment_for_user/',
+      {
+        method: 'POST',
+        body: {
+          user_id: userId,
+          start_time: startTime,
+          ...(endTime ? { end_time: endTime } : {}),
         },
       },
     );
