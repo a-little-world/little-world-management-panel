@@ -2,10 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 
 import { MatchingPannel } from './App';
-import { LOCAL_DEV } from './ENVIRONMENT.js';
 import { EmailHtmlRenderer } from './components/views/emails/EmailHtml';
 import './index.css';
-import { simulatedAutoLogin } from './loginSimulator.js';
 
 function renderApp({ apiOptions, apiTranslations }) {
   const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -30,17 +28,4 @@ function renderEmail({ template, params }) {
 }
 
 window.renderEmail = renderEmail;
-
-if (LOCAL_DEV) {
-  simulatedAutoLogin().then(data => {
-    const apiOptions = data?.data?.apiOptions;
-    const apiTranslations = data?.api_translations;
-
-    renderApp({
-      apiOptions,
-      apiTranslations,
-    });
-  });
-} else {
-  window.renderApp = renderApp;
-}
+window.renderApp = renderApp;

@@ -1,14 +1,4 @@
 /*
- * TODO: these should be set by external environment variables
- */
-export const baseUrl = 'http://localhost:3333';
-export const baseLogin = {
-  username: 'admin@little-world.com',
-  passoword: 'Admin123',
-};
-
-/*
-  @tbscode TODO: disussion
   There are two kinds of filters:
   - user filters: They filter the list of users that are shown on the admin page
       > e.g.: all learners, all people looking for a match
