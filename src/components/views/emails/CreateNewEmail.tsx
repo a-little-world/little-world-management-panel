@@ -12,7 +12,7 @@ import {
   Text,
   TextInput,
   TextTypes,
-  ToolTip,
+  Tooltip,
 } from '@a-little-world/little-world-design-system';
 import { render as renderEmail } from '@react-email/render';
 import { capitalize, filter, isEmpty, isNumber, map, pullAt } from 'lodash';
@@ -585,7 +585,7 @@ const CreateNewEmail = () => {
             cannotOpen={!templateSaved}
           />
 
-          <ToolTip
+          <Tooltip
             trigger={
               <Button
                 variation={ButtonVariations.Circle}
@@ -606,7 +606,7 @@ const CreateNewEmail = () => {
           <Text type={TextTypes.Body3} bold>
             Building Blocks
           </Text>
-          <Blocks onSubmit={() => {}}>
+          <Blocks onSubmit={() => { }}>
             {map(ContentTypes, key => (
               <BlockOption
                 key={key}
