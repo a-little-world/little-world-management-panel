@@ -1,32 +1,22 @@
 import {
   Card,
   CardFooter,
-  ChevronRightIcon,
   Text,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
-import { isNumber } from 'lodash';
 import React from 'react';
 import styled from 'styled-components';
 import useSWR from 'swr';
 
 import { modifyDataToPercentages } from '../../../helpers/stats';
-import LoadingSpinner from '../../atoms/LoadingSpinner';
 import Matrix, { MatrixData } from '../../atoms/Stats/Matrix';
 import {
   BarChartTimeRangedV2,
   MatchingFunnelEvolution,
-  SignupFunnelEvolution,
 } from './BarChartTimeRanged';
 import { MatchQuality } from './MatchQualityStatistic';
-import { userJourneyBuckets } from './buckets';
 
 const fetcher = (...args) => fetch(...args).then(res => res.json());
-
-const SectionTitle = styled(Text)`
-  font-weight: bold;
-  margin-bottom: ${({ theme }) => theme.spacing.small};
-`;
 
 const Container = styled.div`
   padding: ${({ theme }) => theme.spacing.small};
@@ -39,79 +29,9 @@ const Sections = styled.div`
   flex-direction: column;
 `;
 
-const Section = styled.div<{ $fullWidth?: boolean }>`
-  margin-bottom: ${({ theme }) => theme.spacing.small};
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-
-  ${({ $fullWidth }) =>
-    $fullWidth &&
-    `
-    flex: 1 0 100%;
-    width: 100%`}
-`;
-
-const SectionR = styled.div<{ $fullWidth?: boolean }>`
-  margin-bottom: ${({ theme }) => theme.spacing.small};
-  display: flex;
-  flex-direction: row;
-  flex: 1;
-
-  ${({ $fullWidth }) =>
-    $fullWidth &&
-    `
-    flex: 1 0 100%;
-    width: 100%`}
-`;
-
-const SectionCard = styled(Card)`
-  flex: 1;
-`;
-
 const Description = styled(Text)`
   margin-bottom: ${({ theme }) => theme.spacing.large};
 `;
-
-const BucketsContainer = styled.ul`
-  display: flex;
-  gap: ${({ theme }) => theme.spacing.large};
-  margin-top: ${({ theme }) => theme.spacing.small};
-`;
-
-const Bucket = styled.li`
-  gap: ${({ theme }) => theme.spacing.xxsmall};
-  display: flex;
-  flex-direction: column;
-`;
-
-const SubBucket = styled.li`
-  gap: ${({ theme }) => theme.spacing.xxsmall};
-  display: flex;
-  align-items: center;
-`;
-
-const StatsGrouping = styled.ul`
-  display: flex;
-  gap: ${({ theme }) => theme.spacing.small};
-  align-items: flex-start;
-`;
-
-const StyledChevron = styled(ChevronRightIcon)`
-  color: ${({ theme }) => theme.color.text.accent};
-`;
-
-const Count = ({ count, label }) => (
-  <>
-    {isNumber(count) ? (
-      <Text tag="span" bold={!!label}>
-        {label ? `${label}: ${count}` : `(${count})`}
-      </Text>
-    ) : (
-      <LoadingSpinner inline="true" />
-    )}
-  </>
-);
 
 const KPIsContainer = styled.div`
   display: grid;
@@ -346,93 +266,7 @@ const KPIs: React.FC = () => {
   );
 };
 
-const SIGN_UP_CONFIG = [
-  { id: 'Finished', color: '#7acb6f' },
-  { id: 'Ongoing', color: '#6a99cb' },
-  { id: 'Failed', color: '#db776d' },
-];
-
-const MATCH_EVOLUTION_CONFIG = [
-  { id: 'Onboarded Users', color: '#7acb6f' },
-  { id: 'User Filled Form', color: '#6a99cb' },
-  { id: 'Total Registered Users', color: '#84c7ec' },
-];
-
 function KPIsDashboard() {
-  const allBuckets = userJourneyBuckets.flatMap(bucket => bucket.sub_buckets);
-  const allBucketIds = allBuckets.map(bucket => bucket.id);
-  const extraBucketIds = [
-    'needs_matching',
-    'needs_matching_volunteers',
-    'all',
-    'journey_v2__active_matching',
-  ];
-
-  // const random = React.useRef(Date.now() + Math.random());
-
-  // const { data: userListCounts } = useSWR(
-  //   '/api/matching/users/statistics/user_journey_buckets/' +
-  //     '?random=' +
-  //     random.current,
-  //   cratePostFetcher({
-  //     selected_filters: allBucketIds.concat(extraBucketIds),
-  //   }),
-  //   {},
-  // );
-
-  // const allMatchBuckets = matchJourneyBuckets.flatMap(
-  //   bucket => bucket.sub_buckets,
-  // );
-  // const allMatchBucketIds = allMatchBuckets.map(bucket => bucket.id);
-  // const extraMatchBucketIds = [
-  //   'match_journey_v2__match_ongoing',
-  //   'match_journey_v2__match_free_play',
-  //   'match_journey_v2__completed_match',
-  // ];
-
-  // const { data: matchJourneyListCounts } = useSWR(
-  //   '/api/matching/users/statistics/match_journey_buckets/',
-  //   cratePostFetcher({
-  //     selected_filters: allMatchBucketIds.concat(extraMatchBucketIds),
-  //   }),
-  //   {},
-  // );
-
-  // let extraCounts = {};
-  // if (userListCounts) {
-  //   for (let i = 0; i < userListCounts?.buckets.length; i++) {
-  //     if (extraBucketIds.includes(userListCounts?.buckets[i].name))
-  //       extraCounts[userListCounts?.buckets[i].name] =
-  //         userListCounts?.buckets[i];
-  //   }
-  // }
-
-  // let extraMatchCounts = {};
-  // if (matchJourneyListCounts) {
-  //   for (let i = 0; i < matchJourneyListCounts?.buckets.length; i++) {
-  //     if (extraMatchBucketIds.includes(matchJourneyListCounts?.buckets[i].name))
-  //       extraMatchCounts[matchJourneyListCounts?.buckets[i].name] =
-  //         matchJourneyListCounts?.buckets[i];
-  //   }
-  // }
-
-  // const today = new Date();
-  // const startDate = new Date(Date.now() - 12 * 7 * 24 * 60 * 60 * 1000); // 12 weeks ago
-  // const {
-  //   mutate,
-  //   error,
-  //   data: userSignupsData,
-  //   isLoading,
-  // } = useSWR(
-  //   `/api/matching/users/statistics/signups/?random=${random.current}`,
-  //   cratePostFetcher({
-  //     start_date: startDate.toISOString().split('T')[0],
-  //     end_date: today.toISOString().split('T')[0],
-  //     bucket_size: 7,
-  //   }),
-  //   {},
-  // );
-
   return (
     <Container>
       <Text type={TextTypes.Body3} center bold tag="h1">
@@ -461,22 +295,17 @@ function KPIsDashboard() {
           }}
         />
 
-        <SignupFunnelEvolution
+        {/* <SignupFunnelEvolution
           dataModFunc={modifyDataToPercentages}
           dataset="simplified-user-signup-funnel"
-        />
+        /> */}
         <MatchingFunnelEvolution
           dataModFunc={modifyDataToPercentages}
           dataset="match-journey"
         />
         <MatchSection>
-          {/* <StackedChart title="Match Evolution" elementsConfig={MATCH_EVOLUTION_CONFIG} /> */}
           <MatchQuality />
         </MatchSection>
-
-        {}
-        {/* <UserJourneyBucketsOverview />
-        <MatchJourneyOverview /> */}
       </Sections>
     </Container>
   );
