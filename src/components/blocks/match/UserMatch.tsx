@@ -141,7 +141,7 @@ const UserMatch = ({ match, userName }: { match: any; userName: string }) => {
         {!isProposed && !inactive && (
           <Button
             appearance={ButtonAppearance.Secondary}
-            color={'red'}
+            color={'#faf4f4'}
             backgroundColor={'red'}
             onClick={() => {
               setDialogOpen(true);

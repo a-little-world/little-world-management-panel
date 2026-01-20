@@ -145,11 +145,15 @@ export const StyledSheetButton = styled(Button)`
   bottom: ${({ theme }) => theme.spacing.xlarge};
   right: 50%;
   transform: translateX(50%);
+  z-index: 1;
 `;
 
-const SheetTrigger = ({ children }: { children: string }) => (
+const SheetTrigger = ({
+  children,
+  ...props
+}: { children: string } & React.ComponentPropsWithoutRef<typeof Button>) => (
   <SheetPrimitive.Trigger asChild>
-    <StyledSheetButton>{children}</StyledSheetButton>
+    <StyledSheetButton {...props}>{children}</StyledSheetButton>
   </SheetPrimitive.Trigger>
 );
 
@@ -183,8 +187,9 @@ const StyledCloseButton = styled(SheetPrimitive.Close)`
   }
 `;
 
-interface SheetContentProps
-  extends React.ComponentPropsWithoutRef<typeof SheetPrimitive.Content> {
+interface SheetContentProps extends React.ComponentPropsWithoutRef<
+  typeof SheetPrimitive.Content
+> {
   side?: 'top' | 'bottom' | 'left' | 'right';
 }
 

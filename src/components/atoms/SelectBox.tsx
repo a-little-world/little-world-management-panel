@@ -19,6 +19,12 @@ const checkmarkAnimation = keyframes`
   }
 `;
 
+// Properly encoded SVG checkmark for checkbox
+const checkmarkSvg = encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="white"><path d="M12.207 4.793a1 1 0 0 1 0 1.414l-5 5a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L6.5 9.086l4.293-4.293a1 1 0 0 1 1.414 0z"/></svg>',
+);
+const checkmarkDataUrl = `data:image/svg+xml,${checkmarkSvg}`;
+
 const StyledSelectBox = styled.input<SelectBoxProps>`
   flex-shrink: 0;
   height: 1.5rem;
@@ -48,7 +54,7 @@ const StyledSelectBox = styled.input<SelectBoxProps>`
     background-color: ${({ theme }) => theme.color.surface.contrast};
     background-repeat: no-repeat;
     animation: ${checkmarkAnimation} 0.2s ease-in-out;
-    background-image: url(data:image/svg+xml,%3csvg viewBox=%270 0 16 16%27 fill=%27white%27 xmlns=%27http://www.w3.org/2000/svg%27%3e%3cpath d=%27M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z%27/%3e%3c/svg%3e);
+    background-image: url('${checkmarkDataUrl}');
     border-color: transparent;
     background-size: 100% 100%;
     background-position: center;
@@ -63,6 +69,7 @@ const SelectBox: React.FC<SelectBoxProps> = ({
 }) => {
   return (
     <StyledSelectBox
+      name="select-box"
       type="checkbox"
       checked={checked}
       onChange={onChange}

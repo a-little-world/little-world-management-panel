@@ -9,7 +9,7 @@ import {
   TextTypes,
 } from '@a-little-world/little-world-design-system';
 import { render as renderEmail } from '@react-email/render';
-import { map } from 'lodash';
+import { map, sortBy } from 'lodash';
 import React from 'react';
 import styled from 'styled-components';
 import useSWR from 'swr';
@@ -219,7 +219,7 @@ const Emails = () => {
         {isLoading ? (
           <LoadingSpinner />
         ) : (
-          dynamicEmails?.results.map(template => (
+          sortBy(dynamicEmails?.results, 'template_name')?.map(template => (
             <Template
               key={template.template_name}
               to={SEND_DYNAMIC_EMAIL_ROUTE.replace(

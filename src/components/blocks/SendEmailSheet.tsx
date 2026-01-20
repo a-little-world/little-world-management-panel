@@ -90,10 +90,8 @@ export function SendEmailSheet({
 
   return (
     <Sheet>
-      <SheetTrigger asChild>
-        <Button disabled={cannotOpen || !Boolean(emailTemplateName)}>
-          Send Email
-        </Button>
+      <SheetTrigger disabled={cannotOpen || !Boolean(emailTemplateName)}>
+        Send Email
       </SheetTrigger>
 
       <SheetContent>
