@@ -26,6 +26,21 @@ export const graphEndpoints = [
     description: 'The amount of users that signed up in a given time period.',
   },
   {
+    endpoint: '/api/matching/email_send_statistics/',
+    title: 'Emails Sent',
+    description: 'The amount of emails sent in a given time period.',
+  },
+  {
+    endpoint: '/api/matching/email_send_statistics/?dynamic_only=true',
+    title: 'Dynamic Emails Sent',
+    description: 'The amount of dynamic emails sent in a given time period.',
+  },
+  {
+    endpoint: '/api/matching/users/statistics/sessions/',
+    title: 'User Sessions',
+    description: 'The amount of user sessions created in a given time period.',
+  },
+  {
     endpoint: '/api/matching/users/statistics/signups/?cumulative=true',
     title: 'cummulative user signups',
     description:
@@ -93,7 +108,7 @@ export function RangedDataGraph() {
         onValueChange={val => {
           setEndpoint(
             graphEndpoints.find(({ endpoint }) => endpoint === val) ||
-              graphEndpoints[0],
+            graphEndpoints[0],
           );
         }}
         placeholder="Select a user list..."
