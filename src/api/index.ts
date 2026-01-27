@@ -580,8 +580,7 @@ export const updateDynamicTemplate = async ({
 }) => {
   try {
     const result = await apiFetch(
-      `/api/matching/emails/dynamic_templates/${
-        existingTemplate ? `${templateName}/` : ''
+      `/api/matching/emails/dynamic_templates/${existingTemplate ? `${templateName}/` : ''
       }`,
       {
         method: existingTemplate ? 'PATCH' : 'POST',
@@ -684,5 +683,70 @@ export const completePrematchingCall = async ({
     onSuccess(result);
   } catch (error) {
     onError(error);
+  }
+};
+
+interface JourneyEntry {
+  start_date: string;
+  end_date: string | null;
+  buckets: string[];
+}
+
+export const getUserJourneyPath = async ({
+  userHash,
+  onSuccess,
+  onError,
+}: {
+  userHash: string;
+  onSuccess: (data: { user_journey: JourneyEntry[] }) => void;
+  onError: (error: any) => void;
+}) => {
+  try {
+    const result = await apiFetch(
+      `/api/user_journey/${userHash}/user_journey_path/`,
+      {
+        method: 'GET',
+      },
+    );
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
+  }
+};
+
+export const updateUserJourneyPath = async ({
+  userHash,
+  onSuccess,
+  onError,
+}: {
+  userHash: string;
+  onSuccess: (data: { user_path: Array<[string, string]> }) => void;
+  onError: (error: any) => void;
+}) => {
+  try {
+    const result = await apiFetch(
+      `/api/user_journey/${userHash}/update_user_journey_path/`,
+      {
+        method: 'POST',
+      },
+    );
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
+  }
+};
+
+export const isAdvancedUserJourneyEnabled = async (): Promise<boolean> => {
+  try {
+    const result = await apiFetch<{ enabled: boolean }>(
+      `/api/user_journey/is_advanced_user_journey_enabled/`,
+      {
+        method: 'GET',
+      },
+    );
+    return result.enabled;
+  } catch (error) {
+    console.error('Failed to check user journey enabled status:', error);
+    return false;
   }
 };

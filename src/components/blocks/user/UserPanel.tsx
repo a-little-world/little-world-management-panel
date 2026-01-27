@@ -4,11 +4,12 @@ import {
   ButtonVariations,
   PlusIcon,
 } from '@a-little-world/little-world-design-system';
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTheme } from 'styled-components';
 import useSWR from 'swr';
 
+import { isAdvancedUserJourneyEnabled } from '../../../api/index';
 import { MATCHING_ROUTE } from '../../../routes';
 import { dataFetcher, useGlobalState } from '../../../store';
 import {
@@ -24,10 +25,18 @@ import UserActions from './UserActions';
 import UserDetailsCard from './UserCard';
 import UserChat from './UserChat';
 import UserEmails from './UserEmails';
+import UserJourney from './UserJourney';
 import UserMatches from './UserMatches';
 import UserNotes from './UserNotes';
 
-const USER_TABS = [
+interface TabConfig {
+  key: string;
+  label: string;
+  title?: string;
+  description?: string;
+}
+
+const BASE_TABS: TabConfig[] = [
   { key: 'profile', label: 'Profile' },
   { key: 'chat', label: 'Chat', title: 'User Support Chat' },
   { key: 'emails', label: 'Emails' },
@@ -35,6 +44,8 @@ const USER_TABS = [
   { key: 'notes', label: 'Notes' },
   { key: 'actions', label: 'Actions' },
 ];
+
+const JOURNEY_TAB: TabConfig = { key: 'user-journey', label: 'Journey', title: 'User Journey' };
 
 const UserPanelContent = ({
   tab,
@@ -65,6 +76,9 @@ const UserPanelContent = ({
     );
 
   if (tab === 'actions') return <UserActions user={user} onUpdate={onUpdate} />;
+
+  if (tab === 'user-journey') return <UserJourney user={user} />;
+
   return null;
 };
 
@@ -73,6 +87,7 @@ const UserPanel = () => {
   const { addUserToMatching, setUpdateCurrentUser } = useGlobalState();
   const theme = useTheme();
   let [searchParams, setSearchParams] = useSearchParams();
+  const [journeyEnabled, setJourneyEnabled] = useState(false);
 
   const navigate = useNavigate();
 
@@ -91,6 +106,15 @@ const UserPanel = () => {
     user ? `/api/matching/users/${user.hash}/prematching_appointment/` : null,
     dataFetcher,
   );
+
+  // Check if user journey feature is enabled
+  useEffect(() => {
+    isAdvancedUserJourneyEnabled().then(setJourneyEnabled);
+  }, []);
+
+  const USER_TABS = useMemo(() => {
+    return journeyEnabled ? [...BASE_TABS, JOURNEY_TAB] : BASE_TABS;
+  }, [journeyEnabled]);
 
   const onAddToMatching = () => {
     addUserToMatching(user);
@@ -112,8 +136,11 @@ const UserPanel = () => {
 
   return (
     <Tabs defaultValue={searchParams.get('tab') ?? USER_TABS[0].key}>
-      <TabsList className="grid w-full grid-cols-6">
-        {USER_TABS.map(tab => (
+      <TabsList
+        className="grid w-full"
+        style={{ gridTemplateColumns: `repeat(${USER_TABS.length}, minmax(0, 1fr))` }}
+      >
+        {USER_TABS.map((tab: TabConfig) => (
           <TabsTrigger
             key={'header' + tab.key}
             value={tab.key}
@@ -125,14 +152,13 @@ const UserPanel = () => {
           </TabsTrigger>
         ))}
       </TabsList>
-      {USER_TABS.map(tab => (
+      {USER_TABS.map((tab: TabConfig) => (
         <TabsContent key={'content' + tab.key} value={tab.key}>
           <Section fullHeight={tab.key === 'chat'}>
             <SectionHeader>
               <div>
-                <SectionTitle>{`${
-                  user.profile.first_name + ' ' + user.profile.second_name
-                } - ${tab.title ?? tab.label}`}</SectionTitle>
+                <SectionTitle>{`${user.profile.first_name + ' ' + user.profile.second_name
+                  } - ${tab.title ?? tab.label}`}</SectionTitle>
                 {tab.description && (
                   <SectionDescription>{tab.description}</SectionDescription>
                 )}
