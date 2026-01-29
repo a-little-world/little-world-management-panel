@@ -319,11 +319,6 @@ export const userJourneyBuckets = [
         description: "Didn't show up to onboarding call",
       },
       {
-        id: 'journey_v2__user_ghosted',
-        title: 'User Ghosted',
-        description: "User has matching in [3.G] 'ghosted' his match",
-      },
-      {
         id: 'journey_v2__no_confirm',
         title: 'No Confirm',
         description: "Learner that has matching in 'Never Confirmed'",
