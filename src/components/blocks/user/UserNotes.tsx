@@ -96,8 +96,8 @@ const Notes = ({ model, notes, modelId }: NotesProps) => {
       </ButtonsContainer>
       {displayStatusMessage && (
         <StatusMessage
-          $visible={displayStatusMessage}
-          $type={saved ? StatusTypes.Success : StatusTypes.Error}
+          visible={displayStatusMessage}
+          type={saved ? StatusTypes.Success : StatusTypes.Error}
         >
           {saved
             ? 'Notes saved successfully'

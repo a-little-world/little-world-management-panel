@@ -9,14 +9,13 @@ import styled from 'styled-components';
 import useSWR from 'swr';
 
 import { modifyDataToPercentages } from '../../../helpers/stats';
+import { dataFetcher } from '../../../store';
 import Matrix, { MatrixData } from '../../atoms/Stats/Matrix';
 import {
   BarChartTimeRangedV2,
   MatchingFunnelEvolution,
 } from './BarChartTimeRanged';
 import { MatchQuality } from './MatchQualityStatistic';
-
-const fetcher = (...args) => fetch(...args).then(res => res.json());
 
 const Container = styled.div`
   padding: ${({ theme }) => theme.spacing.small};
@@ -156,17 +155,17 @@ const KPIs: React.FC = () => {
   // Load the current data
   const { data: kpisDataUserSignup } = useSWR(
     '/api/matching/users/statistics/kpi_singup/',
-    fetcher,
+    dataFetcher,
   );
 
   const { data: kpiDataMatches } = useSWR(
     '/api/matching/users/statistics/kpi_matching/',
-    fetcher,
+    dataFetcher,
   );
 
   const { data: kpiDataSearching } = useSWR(
     '/api/matching/users/statistics/kpi_searching/',
-    fetcher,
+    dataFetcher,
   );
   console.log('kpisData', kpisDataUserSignup);
   console.log('kpisDataMatches', kpiDataMatches);

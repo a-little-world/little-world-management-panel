@@ -1,5 +1,6 @@
 import { filter, unset } from 'lodash';
 import React, { createContext, useCallback, useState } from 'react';
+import { MultipleFieldErrors } from 'react-hook-form';
 import useSWR from 'swr';
 
 import { getCookiesAsObject } from './lib/utils';
@@ -21,10 +22,25 @@ export const registerInput = ({
   };
 };
 
-const ROOT_SERVER_ERROR = 'Server Error';
-const TRY_AGAIN_ERROR = 'Error with request. Please try again';
+export const ROOT_SERVER_ERROR = 'root.serverError';
+const TRY_AGAIN_ERROR = 'validation.generic_try_again';
+const FILE_TOO_LARGE_ERROR = 'validation.file_too_large';
 
-export const onFormError = ({ e, formFields, setError }) => {
+interface FormErrorParams {
+  e: {
+    cause: string;
+    message?: string;
+    status?: number;
+  };
+  formFields: Record<string, any>;
+  setError: (
+    name: string,
+    error: { type: string; message?: string; types?: MultipleFieldErrors },
+    options?: { shouldFocus: boolean },
+  ) => void;
+}
+
+export const onFormError = ({ e, formFields, setError }: FormErrorParams) => {
   const cause = Object.keys(formFields).includes(e.cause)
     ? e.cause
     : ROOT_SERVER_ERROR;
@@ -38,7 +54,7 @@ export const onFormError = ({ e, formFields, setError }) => {
   } else {
     setError(cause, {
       type: 'custom',
-      message: e.message || TRY_AGAIN_ERROR,
+      message: e?.status === 413 ? FILE_TOO_LARGE_ERROR : TRY_AGAIN_ERROR,
     });
   }
 };

@@ -4,12 +4,13 @@ import { cn } from '../../lib/utils';
 
 const Card = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
+  React.HTMLAttributes<HTMLDivElement> & { center?: boolean }
+>(({ className, center = true, ...props }, ref) => (
   <div
     ref={ref}
     className={cn(
-      'rounded-lg border bg-card text-card-foreground shadow-sm max-w-screen-lg mx-auto',
+      'rounded-lg border bg-card text-card-foreground shadow-sm max-w-screen-lg',
+      center && 'mx-auto',
       className,
     )}
     {...props}
