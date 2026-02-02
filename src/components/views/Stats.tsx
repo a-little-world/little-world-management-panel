@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 
 import { modifyDataToPercentages } from '../../helpers/stats';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../atoms/Tabs';
+import AvailabilityOverview from '../blocks/stats/AvailabilityOverview';
 import {
   BarChartTimeRanged,
   SignupFunnelEvolution,
@@ -40,14 +41,15 @@ function Stats() {
           <TabsTrigger value="signup-funnel-evolution">
             User Sign-up Funnel Evolution
           </TabsTrigger>
+          <TabsTrigger value="availability">Availability</TabsTrigger>
         </TabsList>
         {tab === 'kpis' && (
-          <TabsContent value="kpis" className="">
+          <TabsContent value="kpis">
             <KPIsDashboard />
           </TabsContent>
         )}
         {tab === 'overview' && (
-          <TabsContent value="overview" className="">
+          <TabsContent value="overview">
             <MatchUserJourneyOverview />
           </TabsContent>
         )}
@@ -82,7 +84,7 @@ function Stats() {
           </TabsContent>
         )}
         {tab === 'simple-journey' && (
-          <TabsContent value="simple-journey" className="">
+          <TabsContent value="simple-journey">
             <Container>
               <Sections>
                 <SectionR $fullWidth>
@@ -93,6 +95,11 @@ function Stats() {
                 </SectionR>
               </Sections>
             </Container>
+          </TabsContent>
+        )}
+        {tab === 'availability' && (
+          <TabsContent value="availability">
+            <AvailabilityOverview />
           </TabsContent>
         )}
       </Tabs>

@@ -327,29 +327,24 @@ export const sendBulkEmail = async ({
   userList,
   onError,
   onSuccess,
+}: {
+  emailTemplate: string;
+  userList: string;
+  onError: (error: any) => void;
+  onSuccess: (result: any) => void;
 }) => {
   try {
-    const response = await fetch(
+    const result = await apiFetch(
       `/api/matching/emails/dynamic_templates/${emailTemplate}/send/`,
       {
         method: 'POST',
-        headers: {
-          'X-CSRFToken': getCookiesAsObject().csrftoken,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+        body: {
           user_list: userList,
-        }),
+        },
       },
     );
 
-    if (response.ok) {
-      const result = await response.json();
-      onSuccess(result);
-    } else {
-      const errorText = await response.text();
-      throw new Error(errorText);
-    }
+    onSuccess(result);
   } catch (error) {
     onError(error);
   }
@@ -360,30 +355,23 @@ export const setHadPrematchingCall = async ({
   completed,
   onError,
   onSuccess,
+}: {
+  userId: string;
+  completed: boolean;
+  onError: (error: any) => void;
+  onSuccess: (result: any) => void;
 }) => {
   try {
-    const response = await fetch(
+    const result = await apiFetch(
       `/api/matching/users/${userId}/mark_prematching_call_completed/`,
       {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': getCookiesAsObject().csrftoken,
-        },
-        body: JSON.stringify({
+        body: {
           had_prematching_call: completed,
-        }),
+        },
       },
     );
-
-    if (response.ok) {
-      const responseBody = await response?.json();
-      onSuccess(responseBody);
-    } else {
-      const responseBody = await response?.json();
-      const error = formatApiError(responseBody, response);
-      throw error;
-    }
+    onSuccess(result);
   } catch (error) {
     onError(error);
   }
@@ -429,26 +417,39 @@ export const deleteUser = async ({ id, onError, onSuccess }) => {
   // }
 };
 
-export const burstUpdateMatchingScores = async ({ parallel_tasks }) => {
-  const res = await fetch(`/api/matching/burst_update_scores/`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': getCookiesAsObject().csrftoken,
-    },
-    body: JSON.stringify({
-      parallel_tasks,
-    }),
-  });
-
-  if (!res.ok) {
-    throw new Error(await res.text());
+export const burstUpdateMatchingScores = async ({
+  parallel_tasks,
+  onSuccess,
+  onError,
+}: {
+  parallel_tasks: number;
+  onSuccess: (result: any) => void;
+  onError: (error: any) => void;
+}) => {
+  try {
+    const result = await apiFetch(`/api/matching/burst_update_scores/`, {
+      method: 'POST',
+      body: {
+        parallel_tasks,
+      },
+    });
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
   }
-  const result = await res.json();
-  return result;
 };
 
-export const removeMatch = async ({ id, reason, onError, onSuccess }) => {
+export const removeMatch = async ({
+  id,
+  reason,
+  onError,
+  onSuccess,
+}: {
+  id: string;
+  reason: string;
+  onError: (error: any) => void;
+  onSuccess: (result: any) => void;
+}) => {
   try {
     const result = await apiFetch(`/api/matching/matches/${id}/resolve/`, {
       method: 'POST',

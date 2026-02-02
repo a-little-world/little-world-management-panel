@@ -16,7 +16,7 @@ interface ApiError extends Error {
   data?: any;
 }
 
-export const formatApiError = (responseBody: any, response: any) => {
+export const formatApiError = (responseBody: any, response: Response) => {
   const apiError: ApiError = new Error('API request failed');
   apiError.status = response.status;
   apiError.statusText = response.statusText;

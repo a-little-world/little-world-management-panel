@@ -1,5 +1,5 @@
 {
-  "name": "little-world-admin-panel",
+  "name": "little-world-management-panel",
   "version": "0.1.0",
   "private": true,
   "prettier": "@a-little-world/little-world-prettier-config",

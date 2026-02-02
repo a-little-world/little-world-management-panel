@@ -181,10 +181,8 @@ const Email = () => {
                   ))}
                   {displayServerMessage && (
                     <StatusMessage
-                      $visible={emailSent || !!errors?.root?.serverError}
-                      $type={
-                        emailSent ? StatusTypes.Success : StatusTypes.Error
-                      }
+                      visible={emailSent || !!errors?.root?.serverError}
+                      type={emailSent ? StatusTypes.Success : StatusTypes.Error}
                     >
                       {emailSent
                         ? 'Email sent successfully'

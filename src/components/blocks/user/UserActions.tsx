@@ -368,8 +368,8 @@ const UserActions = ({
         />
 
         <StatusMessage
-          $visible={changesSaved || !!errors?.root?.serverError}
-          $type={changesSaved ? StatusTypes.Success : StatusTypes.Error}
+          visible={changesSaved || !!errors?.root?.serverError}
+          type={changesSaved ? StatusTypes.Success : StatusTypes.Error}
         >
           {changesSaved
             ? 'Changes updated successfully'
@@ -401,7 +401,7 @@ const UserActions = ({
         <Card width={CardSizes.Medium}>
           <CardHeader>Are you sure you want to delete this user?</CardHeader>
           <CardContent>
-            <StatusMessage $type={StatusTypes.Error} $visible={true}>
+            <StatusMessage type={StatusTypes.Error} visible={true}>
               Cannot delete the user via this view. Please request admin user to
               delete the user.
             </StatusMessage>

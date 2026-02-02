@@ -31,7 +31,7 @@ export function SendEmailSheet({
   emailTemplateName,
   subject,
 }: {
-  emailTemplateName?: string;
+  emailTemplateName: string;
   subject: string;
   cannotOpen?: boolean;
 }) {
@@ -145,16 +145,16 @@ export function SendEmailSheet({
               {userListLoading ? <Loading inline /> : recipients}
             </Recipients>
             <StatusMessage
-              $visible={emailSent || !!errors?.root?.serverError}
-              $type={emailSent ? StatusTypes.Success : StatusTypes.Error}
+              visible={emailSent || !!errors?.root?.serverError}
+              type={emailSent ? StatusTypes.Success : StatusTypes.Error}
             >
               {emailSent
                 ? 'Email successfully sent'
-                : errors?.root?.serverError?.message}
+                : (errors?.root?.serverError?.message ?? 'Error sending email')}
             </StatusMessage>
             {emailSent && (
               <>
-                Email Was send to {resultData.sendToCount} users
+                Email was sent to {resultData.sendToCount} users
                 <br />
                 {resultData.unsubscribedCount} users have unsubscribed
               </>

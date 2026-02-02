@@ -122,7 +122,7 @@ const ConfirmUnmatchModal = ({
             error={errors.reason?.message}
           />
           {error && (
-            <StatusMessage $type={StatusTypes.Error} $visible>
+            <StatusMessage type={StatusTypes.Error} visible>
               {error}
             </StatusMessage>
           )}
