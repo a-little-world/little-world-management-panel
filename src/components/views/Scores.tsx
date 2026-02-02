@@ -12,13 +12,14 @@ import {
   StatusTypes,
   Text,
 } from '@a-little-world/little-world-design-system';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createSearchParams, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import useSWR from 'swr';
 
 import { burstUpdateMatchingScores } from '../../api/index';
-import { formatTime } from '../../helpers/date';
+import { LANGUAGES } from '../../constants';
+import { formatDate, formatTime } from '../../helpers/date';
 import {
   dataFetcher,
   useGlobalState,
@@ -101,8 +102,8 @@ function getBurstProgressPercent(
 }
 
 function useBurstCalculation() {
-  const { data, isLoading } = useSWR<BurstMatchingState>(
-    `/api/matching/get_active_burst_calculation/`,
+  const { data, isLoading, mutate } = useSWR<BurstMatchingState>(
+    '/api/matching/get_active_burst_calculation/',
     dataFetcher,
     {
       refreshInterval: (data: BurstMatchingState | undefined) =>
@@ -114,6 +115,7 @@ function useBurstCalculation() {
     burstLoading: isLoading,
     isUpdating: data?.active ?? false,
     progressPercent: getBurstProgressPercent(data?.tasks),
+    revalidateBurst: mutate,
   };
 }
 
@@ -153,11 +155,12 @@ function BurstUpdateDialog({
   open,
   onClose,
   setTaskIds,
+  onBurstStarted,
 }: {
   open: boolean;
   onClose: () => void;
-  taskIds: string[];
   setTaskIds: (ids: string[]) => void;
+  onBurstStarted?: () => void;
 }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -192,6 +195,7 @@ function BurstUpdateDialog({
                   ? results
                   : (results?.task_ids ?? []);
                 setTaskIds(ids.map(String));
+                onBurstStarted?.();
                 onClose();
                 setIsSubmitting(false);
               },
@@ -223,6 +227,7 @@ export function Scores() {
     burstLoading,
     isUpdating: scoresUpdating,
     progressPercent: scoreCalculationProgress,
+    revalidateBurst,
   } = useBurstCalculation();
 
   const [selectedMatch, setSelectedMatch] = useState(null);
@@ -259,6 +264,14 @@ export function Scores() {
     clearMatching();
   }, []);
 
+  const wasUpdatingRef = useRef(scoresUpdating);
+  useEffect(() => {
+    if (wasUpdatingRef.current && !scoresUpdating) {
+      mutate();
+    }
+    wasUpdatingRef.current = scoresUpdating;
+  }, [scoresUpdating, mutate]);
+
   const currentDropdownValue =
     searchParams.get('current_match_suggestion') === 'true'
       ? 'current_suggestion'
@@ -281,6 +294,7 @@ export function Scores() {
         open={burstUpdateDialogOpen}
         onClose={() => setBurstUpdateDialogOpen(false)}
         setTaskIds={setBurstTaskIds}
+        onBurstStarted={revalidateBurst}
       />
       <div className="flex w-full gap-2 p-4 align-center z-100 justify-center items-center">
         {filtersLoading ? (
@@ -338,7 +352,11 @@ export function Scores() {
               )}
             </Popover>
             {scoresUpdatedAt ? (
-              <Text>Scores updated at {formatTime(scoresUpdatedAt)}</Text>
+              <Text>
+                Scores updated at{' '}
+                {formatDate(scoresUpdatedAt, 'LLLL do', LANGUAGES.en)} at{' '}
+                {formatTime(scoresUpdatedAt)}
+              </Text>
             ) : null}
             <Pagination list={scoresList} />
           </div>
