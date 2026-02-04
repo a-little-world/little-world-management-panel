@@ -4,6 +4,7 @@ import {
   Dropdown,
   Modal,
   MultiCheckbox,
+  Switch,
   Text,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
@@ -29,9 +30,10 @@ interface FiltersProps {
 
 enum FilterKeys {
   Company = 'state__company',
-  JobSearch = 'profile__job_search',
   EmailAuthenticated = 'state__email_authenticated',
+  JobSearch = 'profile__job_search',
   HadPreMatchingCall = 'state__had_prematching_call',
+  HasPriority = 'state__has_priority',
   TargetGroups = 'profile__target_groups',
   UserType = 'profile__user_type',
   UserList = 'list',
@@ -175,6 +177,17 @@ const Filters: React.FC<FiltersProps> = ({
                     }),
                   )
             }
+          />
+
+          <Switch
+            key={filters[FilterKeys.HasPriority]}
+            name={FilterKeys.HasPriority}
+            label={'Is Priority User'}
+            inputRef={null}
+            onCheckedChange={val =>
+              onUpdateFilters(FilterKeys.HasPriority, val)
+            }
+            value={filters[FilterKeys.HasPriority]}
           />
 
           <MultiCheckbox

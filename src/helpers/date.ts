@@ -1,4 +1,4 @@
-import { format, formatDistance, startOfDay } from 'date-fns';
+import { format, formatDistance, parseISO, startOfDay } from 'date-fns';
 import { de, enGB } from 'date-fns/locale';
 
 import { LANGUAGES } from '../constants';
@@ -88,3 +88,13 @@ export function getEndTime(
 export function formatDateForCalendarUrl(date: Date) {
   return date.toISOString().replace(/-|:|\.\d+/g, '');
 }
+
+/** Returns today's date as YYYY-MM-DD string. */
+export const getTodayDateString = (): string =>
+  format(new Date(), 'yyyy-MM-dd');
+
+/** Parses YYYY-MM-DD string to Date. */
+export const stringToDate = (dateString: string): Date => parseISO(dateString);
+
+/** Formats Date to YYYY-MM-DD string. */
+export const dateToString = (date: Date): string => format(date, 'yyyy-MM-dd');

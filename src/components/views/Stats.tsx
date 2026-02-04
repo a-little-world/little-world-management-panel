@@ -19,10 +19,11 @@ import {
 } from '../blocks/stats/MatchUserJourneyOverview';
 import { RangedDataGraph } from '../blocks/stats/RangedDataGraph';
 import { UserJourneyBucketsOverview } from '../blocks/stats/UserJourneyBuckets';
+import ReportsDashboard from '../blocks/stats/reports/ReportsDashboard';
 
 function Stats() {
   let [searchParams, setSearchParams] = useSearchParams();
-  const tab = searchParams.get('tab') || 'overview';
+  const tab = searchParams.get('tab') || 'kpis';
 
   const onTabChange = (value: string) => {
     searchParams.set('tab', value);
@@ -41,6 +42,7 @@ function Stats() {
           <TabsTrigger value="signup-funnel-evolution">
             User Sign-up Funnel Evolution
           </TabsTrigger>
+          <TabsTrigger value="reports">Reports</TabsTrigger>
           <TabsTrigger value="availability">Availability</TabsTrigger>
         </TabsList>
         {tab === 'kpis' && (
@@ -95,6 +97,11 @@ function Stats() {
                 </SectionR>
               </Sections>
             </Container>
+          </TabsContent>
+        )}
+        {tab === 'reports' && (
+          <TabsContent value="reports">
+            <ReportsDashboard />
           </TabsContent>
         )}
         {tab === 'availability' && (
