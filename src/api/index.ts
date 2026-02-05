@@ -419,15 +419,18 @@ export const deleteUser = async ({ id, onError, onSuccess }) => {
 
 export const burstUpdateMatchingScores = async ({
   parallel_tasks,
+  scoring_list = 'default',
   onSuccess,
   onError,
 }: {
   parallel_tasks: number;
+  scoring_list?: string;
   onSuccess: (result: any) => void;
   onError: (error: any) => void;
 }) => {
   try {
-    const result = await apiFetch(`/api/matching/burst_update_scores/`, {
+    const url = `/api/matching/burst_update_scores/?scoring_list=${encodeURIComponent(scoring_list)}`;
+    const result = await apiFetch(url, {
       method: 'POST',
       body: {
         parallel_tasks,
@@ -581,8 +584,7 @@ export const updateDynamicTemplate = async ({
 }) => {
   try {
     const result = await apiFetch(
-      `/api/matching/emails/dynamic_templates/${
-        existingTemplate ? `${templateName}/` : ''
+      `/api/matching/emails/dynamic_templates/${existingTemplate ? `${templateName}/` : ''
       }`,
       {
         method: existingTemplate ? 'PATCH' : 'POST',
