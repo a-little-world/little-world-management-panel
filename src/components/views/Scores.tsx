@@ -22,6 +22,7 @@ import { LANGUAGES } from '../../constants';
 import { formatDate, formatTime } from '../../helpers/date';
 import {
   dataFetcher,
+  useFilterOptions,
   useGlobalState,
   useScoresFilterOptions,
   useScoresListData,
@@ -156,11 +157,13 @@ function BurstUpdateDialog({
   onClose,
   setTaskIds,
   onBurstStarted,
+  scoringList,
 }: {
   open: boolean;
   onClose: () => void;
   setTaskIds: (ids: string[]) => void;
   onBurstStarted?: () => void;
+  scoringList: string;
 }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -190,6 +193,7 @@ function BurstUpdateDialog({
             setIsSubmitting(true);
             burstUpdateMatchingScores({
               parallel_tasks: 20,
+              scoring_list: scoringList,
               onSuccess: results => {
                 const ids = Array.isArray(results)
                   ? results
@@ -203,7 +207,7 @@ function BurstUpdateDialog({
                 setIsSubmitting(false);
                 setError(
                   err?.message ??
-                    'Failed to start score calculation. Please try again.',
+                  'Failed to start score calculation. Please try again.',
                 );
               },
             });
@@ -231,8 +235,10 @@ export function Scores() {
   } = useBurstCalculation();
 
   const [selectedMatch, setSelectedMatch] = useState(null);
+  const [scoringList, setScoringList] = useState<string>('default');
 
   const { isLoading: filtersLoading } = useScoresFilterOptions();
+  const { filterOptions: userFilterOptions } = useFilterOptions();
 
   const {
     scoresList,
@@ -295,6 +301,7 @@ export function Scores() {
         onClose={() => setBurstUpdateDialogOpen(false)}
         setTaskIds={setBurstTaskIds}
         onBurstStarted={revalidateBurst}
+        scoringList={scoringList}
       />
       <div className="flex w-full gap-2 p-4 align-center z-100 justify-center items-center">
         {filtersLoading ? (
@@ -316,6 +323,19 @@ export function Scores() {
               ]}
               onValueChange={changeList}
               placeholder="Select a score list..."
+              cannotError
+            />
+            <StyledDropdown
+              value={scoringList}
+              options={[
+                { label: 'Default', value: 'default' },
+                ...(userFilterOptions?.lists?.map(({ name, description }: any) => ({
+                  value: name,
+                  label: description,
+                })) ?? []),
+              ]}
+              onValueChange={setScoringList}
+              placeholder="Select a scoring list..."
               cannotError
             />
             <Popover
