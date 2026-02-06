@@ -26,7 +26,6 @@ const StyledSectionTitle = styled(Text)<{ $inactive?: boolean }>`
   font-size: 1.5rem;
   font-weight: 600;
   line-height: 1;
-  letter-spacing: -0.025em;
   ${({ $inactive, theme }) =>
     $inactive &&
     css`
@@ -115,9 +114,9 @@ SectionFooter.displayName = 'SectionFooter';
 
 export {
   Section,
-  SectionHeader,
-  SectionFooter,
-  SectionTitle,
-  SectionDescription,
   SectionContent,
+  SectionDescription,
+  SectionFooter,
+  SectionHeader,
+  SectionTitle,
 };

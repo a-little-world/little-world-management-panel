@@ -152,7 +152,6 @@ const KPI: React.FC<KPIProps> = ({
 };
 
 const KPIs: React.FC = () => {
-  // Load the current data
   const { data: kpisDataUserSignup } = useSWR(
     '/api/matching/users/statistics/kpi_singup/',
     dataFetcher,
@@ -167,9 +166,7 @@ const KPIs: React.FC = () => {
     '/api/matching/users/statistics/kpi_searching/',
     dataFetcher,
   );
-  console.log('kpisData', kpisDataUserSignup);
-  console.log('kpisDataMatches', kpiDataMatches);
-  console.log('kpisDataSearching', kpiDataSearching);
+
   return (
     <KPIsContainer>
       <KPI
