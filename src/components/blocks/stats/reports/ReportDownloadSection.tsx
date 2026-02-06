@@ -97,7 +97,7 @@ interface ReportDownloadSectionProps {
         endDate?: string,
         selectedOption?: string,
       ) => string);
-  downloadMimeType?: 'application/json' | 'text/plain';
+  downloadMimeType?: 'application/json' | 'text/csv' | 'text/plain';
   showDateRange?: boolean;
   defaultStartDate?: string;
   defaultEndDate?: string;
@@ -204,6 +204,7 @@ const ReportDownloadSection: React.FC<ReportDownloadSectionProps> = ({
     startDateString,
     endDateString,
     selectedDropdownValue,
+    fetcherParams.format,
   ]);
 
   return (

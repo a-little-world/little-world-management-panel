@@ -79,12 +79,12 @@ function CompanyReportDownloadBlock() {
       apiEndpointBuilder={company =>
         `/api/matching/users/statistics/company_users_report/${company}/`
       }
-      apiParams={{ format: 'text' }}
+      apiParams={{ format: 'csv' }}
       downloadFilename={(startDate, endDate, selectedCompany) =>
-        `company_report_${selectedCompany || 'all'}_${startDate || ''}_to_${endDate || ''}.txt`
+        `company_report_${selectedCompany || 'all'}_${startDate || ''}_to_${endDate || ''}.csv`
       }
-      downloadMimeType="text/plain"
-      transformData={data => data?.report ?? ''}
+      downloadMimeType="text/csv"
+      transformData={data => data?.csv ?? ''}
       showDateRange
       defaultStartDate="2025-01-01"
       dropdownOptions={dropdownOptions}
