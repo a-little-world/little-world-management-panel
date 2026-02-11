@@ -67,13 +67,14 @@ export function ScoresTable({
                     const user = isObject(score[key])
                       ? score[key]
                       : key === 'user1'
-                      ? score['from_usr']
-                      : score['to_usr'];
+                        ? score['from_usr']
+                        : score['to_usr'];
 
                     return (
                       <TableCell key={score.id + key}>
                         <Link to={`/user/${user.id}`}>
                           <UserImage
+                            hasPriority={user.state.has_match_priority}
                             alt={
                               user.profile.first_name +
                               ' ' +

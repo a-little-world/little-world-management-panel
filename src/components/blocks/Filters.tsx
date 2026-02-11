@@ -33,7 +33,7 @@ enum FilterKeys {
   EmailAuthenticated = 'state__email_authenticated',
   JobSearch = 'profile__job_search',
   HadPreMatchingCall = 'state__had_prematching_call',
-  HasPriority = 'state__has_priority',
+  HasPriority = 'state__has_match_priority',
   TargetGroups = 'profile__target_groups',
   UserType = 'profile__user_type',
   UserList = 'list',
@@ -183,11 +183,12 @@ const Filters: React.FC<FiltersProps> = ({
             key={filters[FilterKeys.HasPriority]}
             name={FilterKeys.HasPriority}
             label={'Is Priority User'}
+            value={filters[FilterKeys.HasPriority]}
             inputRef={null}
             onCheckedChange={val =>
               onUpdateFilters(FilterKeys.HasPriority, val)
             }
-            value={filters[FilterKeys.HasPriority]}
+            checked={filters[FilterKeys.HasPriority]}
           />
 
           <MultiCheckbox

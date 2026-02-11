@@ -76,6 +76,7 @@ const UserMatch = ({ match, userName }: { match: any; userName: string }) => {
       <CardContent $align="center" className="relative" $marginBottom="0">
         <Link to={'/user/' + match.partner?.id} textDecoration={false}>
           <UserImage
+            hasPriority={match.partner.has_match_priority}
             alt="match profile pic"
             user={match.partner}
             dimensions={{
