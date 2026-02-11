@@ -207,7 +207,7 @@ function BurstUpdateDialog({
                 setIsSubmitting(false);
                 setError(
                   err?.message ??
-                  'Failed to start score calculation. Please try again.',
+                    'Failed to start score calculation. Please try again.',
                 );
               },
             });
@@ -308,36 +308,44 @@ export function Scores() {
           'Loading filters...'
         ) : (
           <div className="w-full flex items-center gap-4 justify-between flex-wrap">
-            <StyledDropdown
-              value={currentDropdownValue}
-              options={[
-                { label: 'All Scores', value: 'all_scores' },
-                {
-                  label: 'Optimised Matches',
-                  value: 'current_suggestion',
-                },
-                {
-                  label: 'Matchable Scores',
-                  value: 'matchable_scores',
-                },
-              ]}
-              onValueChange={changeList}
-              placeholder="Select a score list..."
-              cannotError
-            />
-            <StyledDropdown
-              value={scoringList}
-              options={[
-                { label: 'Default', value: 'default' },
-                ...(userFilterOptions?.lists?.map(({ name, description }: any) => ({
-                  value: name,
-                  label: description,
-                })) ?? []),
-              ]}
-              onValueChange={setScoringList}
-              placeholder="Select a scoring list..."
-              cannotError
-            />
+            <div className="flex items-center gap-4">
+              <StyledDropdown
+                label="User list"
+                value={scoringList}
+                options={[
+                  { label: 'Default', value: 'default' },
+                  ...(userFilterOptions?.lists?.map(
+                    ({ name, description }: any) => ({
+                      value: name,
+                      label: description,
+                    }),
+                  ) ?? []),
+                ]}
+                onValueChange={setScoringList}
+                placeholder="Select a scoring list..."
+                cannotError
+              />
+              <StyledDropdown
+                label="Score type"
+                value={currentDropdownValue}
+                maxWidth="200px"
+                options={[
+                  { label: 'All Scores', value: 'all_scores' },
+                  {
+                    label: 'Optimised Matches',
+                    value: 'current_suggestion',
+                  },
+                  {
+                    label: 'Matchable Scores',
+                    value: 'matchable_scores',
+                  },
+                ]}
+                onValueChange={changeList}
+                placeholder="Select a score list..."
+                cannotError
+              />
+            </div>
+
             <Popover
               trigger={
                 <Button
