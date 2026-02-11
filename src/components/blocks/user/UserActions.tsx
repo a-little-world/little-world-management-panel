@@ -27,6 +27,7 @@ import {
   sendPushNotification,
   sendSms,
   setHadPrematchingCall,
+  setHasMatchPriority,
   setNewsletterSubscribed,
   setUserSearching,
   setUserUnresponsive,
@@ -112,7 +113,6 @@ function SendPushNotification({ userId }: { userId: string }) {
   };
 
   const onSendPushNotification = data => {
-    console.log(data);
     setIsSubmitting(true);
     sendPushNotification({
       userId: userId,
@@ -201,6 +201,8 @@ const UserActions = ({
           func = setNewsletterSubscribed;
         } else if (key === 'searching') {
           func = setUserSearching;
+        } else if (key === 'priority') {
+          func = setHasMatchPriority;
         } else {
           console.error(`No function mapped for key: ${key}`);
           return Promise.reject(
@@ -362,6 +364,28 @@ const UserActions = ({
               defaultChecked={value}
               error={error?.message}
               label={'Is user searching for another match?'}
+              required={false}
+            />
+          )}
+        />
+        <Controller
+          defaultValue={user.state.has_match_priority}
+          name="priority"
+          control={control}
+          render={({
+            field: { onChange, onBlur, value, name, ref },
+            fieldState: { error },
+          }) => (
+            <Checkbox
+              id="priority"
+              name={name}
+              inputRef={ref}
+              onCheckedChange={val => onChange({ target: { value: val } })}
+              onBlur={onBlur}
+              value={value}
+              defaultChecked={value}
+              error={error?.message}
+              label={'Should the user be given match priority?'}
               required={false}
             />
           )}

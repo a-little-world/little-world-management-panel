@@ -55,6 +55,12 @@ const userColumns = [
     cell: ({ row }) => (
       <Link to={`/user/${row?.original.id}`}>
         <UserImage
+          tooltipText={
+            row?.original.state.has_match_priority
+              ? 'Match priority'
+              : undefined
+          }
+          hasPriority={row?.original.state.has_match_priority}
           alt={'user profile image'}
           user={row?.original.profile}
           dimensions={{

@@ -76,6 +76,7 @@ export function MatchesTable({ matchList, list }) {
                       <TableCell key={match.uuid + key}>
                         <Link to={`/user/${user.id}`}>
                           <UserImage
+                            hasPriority={user.has_match_priority}
                             alt={
                               user.profile.first_name +
                               ' ' +

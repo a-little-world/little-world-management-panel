@@ -81,6 +81,7 @@ const UserInfo = ({ user, match }: { match: any; user: any }) => (
   <UserInfoContainer>
     <Link to={`/user/${user.id}`} key={match.id} className="tooltip">
       <UserImage
+        hasPriority={user.has_match_priority}
         alt="match user pic"
         user={user.profile}
         dimensions={{
@@ -159,7 +160,7 @@ const MatchCard = ({
           <UnmatchButton
             appearance={ButtonAppearance.Secondary}
             size={ButtonSizes.Large}
-            color={'red'}
+            color={'#faf4f4'}
             backgroundColor={'red'}
             onClick={() => {
               setDialogOpen(true);

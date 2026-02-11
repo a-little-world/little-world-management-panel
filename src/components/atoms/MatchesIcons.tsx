@@ -31,6 +31,7 @@ const MatchesIcons = ({
               data-tip={`${match.partner.first_name}`}
             >
               <UserImage
+                hasPriority={match.partner.has_match_priority}
                 alt="match profile pic"
                 user={match.partner}
                 dimensions={{

@@ -67,14 +67,14 @@ const Title = styled.div`
   align-items: center;
 `;
 
-const ScoreBreakdown = ({ data }) => {
+const ScoreBreakdown = ({ results, scoreId }) => {
   return (
     <CardDS>
       <div className="flex gap-4 items-center justify-between">
-        <Text type={TextTypes.Body4}>Score Breakdown</Text>
+        <Text type={TextTypes.Body4}>Score Breakdown (#{scoreId})</Text>
         <Link to={ALGORITHM_ROUTE}>More Info</Link>
       </div>
-      {data.slice(2).map(result => (
+      {results.slice(2).map(result => (
         <ScoreCategory $matchable={result.res.matchable}>
           <Title>
             <Text type={TextTypes.Body5} bold>
@@ -256,7 +256,7 @@ const Matching = ({
                   Score:{' '}
                   {loadingScore
                     ? 'Loading Score...'
-                    : scoreData.score ?? 'to be calculated'}
+                    : (scoreData.score ?? 'to be calculated')}
                 </Text>
                 {!isEmpty(scoreData) && (
                   <>
@@ -295,7 +295,10 @@ const Matching = ({
             </>
           )}
           {!isEmpty(scoreData?.scoring_results) && (
-            <ScoreBreakdown data={scoreData.scoring_results} />
+            <ScoreBreakdown
+              scoreId={scoreData.id}
+              results={scoreData.scoring_results}
+            />
           )}
           {(scoresList || loadingPotentialMatches) && (
             <div>

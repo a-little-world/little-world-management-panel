@@ -665,6 +665,33 @@ export const setUserSearching = async ({
   }
 };
 
+export const setHasMatchPriority = async ({
+  userId,
+  onError,
+  onSuccess,
+  priority,
+}: {
+  userId: string;
+  onError: (error: any) => void;
+  onSuccess: (result: any) => void;
+  priority: boolean;
+}) => {
+  try {
+    const result = await apiFetch(
+      `/api/matching/users/${userId}/set_has_match_priority/`,
+      {
+        method: 'POST',
+        body: {
+          has_match_priority: priority,
+        },
+      },
+    );
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
+  }
+};
+
 export const completePrematchingCall = async ({
   appointmentDate,
   selectedUsers,

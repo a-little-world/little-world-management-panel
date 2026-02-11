@@ -320,6 +320,10 @@ export const UserCard: React.FC<UserCardProps> = ({
 
       <ImageContainer>
         <UserImage
+          hasPriority={user.state.has_match_priority}
+          tooltipText={
+            user.state.has_match_priority ? 'Match priority' : undefined
+          }
           alt="user profile pic"
           user={user.profile}
           dimensions={{
