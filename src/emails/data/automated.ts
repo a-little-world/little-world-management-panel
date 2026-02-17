@@ -464,10 +464,6 @@ const automatedEmails = {
         type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-fm001.block-6'],
       },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-fm001.block-7'],
-      },
     ],
   },
   'automatic-emails-fm022': {
@@ -496,10 +492,6 @@ const automatedEmails = {
       {
         type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-fm022.block-5'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-fm022.block-6'],
       },
     ],
   },
@@ -539,10 +531,6 @@ const automatedEmails = {
         type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-fm011.block-7'],
       },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-fm011.block-8'],
-      },
     ],
   },
   'automatic-emails-fm021': {
@@ -580,10 +568,6 @@ const automatedEmails = {
       {
         type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-fm021.block-7'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-fm021.block-8'],
       },
     ],
   },
@@ -810,10 +794,6 @@ const automatedEmails = {
         type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-m032.block-7'],
       },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m032.block-8'],
-      },
     ],
   },
   'automatic-emails-m031': {
@@ -842,10 +822,6 @@ const automatedEmails = {
       {
         type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-m031.block-5'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m031.block-6'],
       },
     ],
   },
@@ -879,10 +855,6 @@ const automatedEmails = {
       {
         type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-m042.block-6'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m042.block-7'],
       },
       {
         type: ContentTypes.Button,
@@ -932,10 +904,6 @@ const automatedEmails = {
         type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-m043.block-7'],
       },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m043.block-8'],
-      },
     ],
   },
   'automatic-emails-m044': {
@@ -973,10 +941,6 @@ const automatedEmails = {
       {
         type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-m044.block-7'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m044.block-8'],
       },
     ],
   },
@@ -1056,10 +1020,6 @@ const automatedEmails = {
         type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-m033.block-9'],
       },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m033.block-10'],
-      },
     ],
   },
   'automatic-emails-m045': {
@@ -1106,10 +1066,6 @@ const automatedEmails = {
         type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-m045.block-9'],
       },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m045.block-10'],
-      },
     ],
   },
   'automatic-emails-m051': {
@@ -1142,10 +1098,6 @@ const automatedEmails = {
       {
         type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-m051.block-6'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m051.block-7'],
       },
     ],
   },
@@ -1229,10 +1181,6 @@ const automatedEmails = {
         type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-m054.block-8'],
       },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m054.block-9'],
-      },
     ],
   },
   'automatic-emails-m055': {
@@ -1279,10 +1227,6 @@ const automatedEmails = {
       {
         type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-m055.block-9'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m055.block-10'],
       },
     ],
   },
@@ -1463,14 +1407,6 @@ const automatedEmails = {
         text: automatedText['automatic-emails-u043.link-password-reset'],
         href: 'https://little-world.com/forgot-password/',
       },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u043.block-11'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u043.block-12'],
-      },
     ],
   },
   'automatic-emails-u053': {
@@ -1518,10 +1454,6 @@ const automatedEmails = {
         type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-u053.block-7'],
       },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u053.block-8'],
-      },
     ],
   },
   'automatic-emails-u044': {
@@ -1555,10 +1487,6 @@ const automatedEmails = {
       {
         type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-u044.block-6'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u044.block-7'],
       },
       {
         type: ContentTypes.Paragraph,
@@ -1606,10 +1534,6 @@ const automatedEmails = {
       {
         type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-u072.block-7'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u072.block-8'],
       },
     ],
   },
@@ -1695,10 +1619,6 @@ const automatedEmails = {
         type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-u083.block-8'],
       },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u083.block-9'],
-      },
     ],
   },
   'automatic-emails-u073': {
@@ -1741,10 +1661,6 @@ const automatedEmails = {
         type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-u073.block-8'],
       },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u073.block-9'],
-      },
     ],
   },
   'automatic-emails-u084': {
@@ -1786,10 +1702,6 @@ const automatedEmails = {
       {
         type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-u084.block-8'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u084.block-9'],
       },
     ],
   },
@@ -1836,10 +1748,6 @@ const automatedEmails = {
       {
         type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-u074.block-9'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u074.block-10'],
       },
     ],
   },
@@ -1891,14 +1799,6 @@ const automatedEmails = {
       {
         type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-u081.block-10'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u081.block-11'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u081.block-12'],
       },
     ],
   },
