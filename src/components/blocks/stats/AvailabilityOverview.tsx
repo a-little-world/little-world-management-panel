@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from 'recharts';
 import styled from 'styled-components';
 import useSWR from 'swr';
@@ -8,6 +8,11 @@ import {
   LoadingSizes,
   Switch,
 } from '@a-little-world/little-world-design-system';
+import {
+  dateToString,
+  getTodayDateString,
+  stringToDate,
+} from '../../../helpers/date';
 import { dataFetcher } from '../../../store';
 import {
   Card,
@@ -21,6 +26,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '../../atoms/Chart';
+import { DatePicker } from '../../atoms/DatePicker';
 
 const DAY_LABELS: Record<string, string> = {
   mo: 'Mon',
@@ -247,6 +253,25 @@ const ChartHeaderRow = styled.div`
   gap: 0.5rem;
 `;
 
+const DateRangeSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xxsmall};
+`;
+
+const DateRangeLabel = styled.label`
+  font-size: 1rem;
+  font-weight: bold;
+`;
+
+const DatePickerContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.small};
+  flex-wrap: wrap;
+`;
+
 const LoadingContainer = styled.div`
   display: flex;
   align-items: center;
@@ -317,16 +342,40 @@ function getTopSlotsLearner(
     }));
 }
 
+const DEFAULT_START_DATE = '2024-01-01';
+
 const AvailabilityOverview = () => {
   const topSlotsSwitchRef = useRef<HTMLButtonElement>(null);
   const overviewSwitchRef = useRef<HTMLButtonElement>(null);
   const [splitByUserTypeTopSlots, setSplitByUserTypeTopSlots] = useState(false);
   const [splitByUserTypeOverview, setSplitByUserTypeOverview] = useState(false);
+  const [startDateString, setStartDateString] = useState(DEFAULT_START_DATE);
+  const [endDateString, setEndDateString] = useState(getTodayDateString());
 
-  const { data, isLoading } = useSWR(
-    '/api/matching/users/statistics/time_slot_counts/',
-    dataFetcher,
+  const startDate = useMemo(
+    () => stringToDate(startDateString),
+    [startDateString],
   );
+  const endDate = useMemo(() => stringToDate(endDateString), [endDateString]);
+
+  const apiUrl = useMemo(() => {
+    const base = '/api/matching/users/statistics/time_slot_counts/';
+    const params = new URLSearchParams();
+    params.set('start_date', startDateString);
+    params.set('end_date', endDateString);
+    return `${base}?${params.toString()}`;
+  }, [startDateString, endDateString]);
+
+  const { data, isLoading } = useSWR(apiUrl, dataFetcher);
+
+  const handleStartDateChange = useCallback((date: Date | string | null) => {
+    if (date == null) return;
+    setStartDateString(typeof date === 'string' ? date : dateToString(date));
+  }, []);
+  const handleEndDateChange = useCallback((date: Date | string | null) => {
+    if (date == null) return;
+    setEndDateString(typeof date === 'string' ? date : dateToString(date));
+  }, []);
 
   const chartData = useMemo(
     () => transformCountsToChartData(data?.counts),
@@ -365,6 +414,13 @@ const AvailabilityOverview = () => {
 
   return (
     <Wrapper>
+      <DateRangeSection>
+        <DateRangeLabel>Select a date range</DateRangeLabel>
+        <DatePickerContainer>
+          <DatePicker date={startDate} setDate={handleStartDateChange} />
+          <DatePicker date={endDate} setDate={handleEndDateChange} />
+        </DatePickerContainer>
+      </DateRangeSection>
       <Card center={false}>
         <CardHeader>
           <ChartHeaderRow>

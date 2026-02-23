@@ -44,7 +44,7 @@ import {
   MATCHING_ROUTE,
   MATCH_ROUTE,
   PREMATCH_APPOINTMENTS_ROUTE,
-  RANDOM_CALL_MANAGEMENT_ROUTE,
+  RANDOM_CALLS_ROUTE,
   SCORES_ROUTE,
   SEND_DYNAMIC_EMAIL_ROUTE,
   STATS_ROUTE,
@@ -53,7 +53,7 @@ import {
   VIDEO_CALLS_ROUTE,
 } from './routes';
 import { GlobalStateProvider } from './store';
-import RandomCallManagement from './components/views/RandomCallManagement';
+import RandomCalls from './components/views/randomCalls/RandomCalls';
 
 export const Root = ({
   children,
@@ -152,8 +152,8 @@ const router = createBrowserRouter(
           element: <Documentation />,
         },
         {
-          path: RANDOM_CALL_MANAGEMENT_ROUTE,
-          element: <RandomCallManagement />,
+          path: RANDOM_CALLS_ROUTE,
+          element: <RandomCalls />,
         },
       ],
     },

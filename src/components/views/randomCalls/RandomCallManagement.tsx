@@ -3,8 +3,12 @@ import {
   ButtonAppearance,
   ButtonSizes,
   Card,
+  CardContent,
+  CardFooter,
   CardHeader,
   CardSizes,
+  Loading,
+  LoadingSizes,
   Modal,
   Tag,
   TagAppearance,
@@ -13,10 +17,16 @@ import {
 } from '@a-little-world/little-world-design-system';
 import { isEmpty } from 'lodash';
 import React, { useState } from 'react';
-import styled from 'styled-components';
 import useSWR, { mutate } from 'swr';
 
-import { dataFetcher } from '../../store';
+import {
+  endLobby,
+  getLobbyOverviewEndpoint,
+  getUpcomingLobbiesEndpoint,
+  resetLobby,
+} from '../../../api/randomCalls';
+import { formatDate, formatEventTime } from '../../../helpers/date';
+import { dataFetcher } from '../../../store';
 import {
   Table,
   TableBody,
@@ -24,116 +34,29 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '../atoms/Table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../atoms/Tabs';
-
-const Container = styled.div`
-  padding: 1.5rem;
-  width: 100%;
-  max-height: calc(100vh - 2rem);
-  overflow-y: auto;
-  box-sizing: border-box;
-`;
-
-const StatsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-  margin-bottom: 2rem;
-`;
-
-const StatCard = styled.div`
-  background: ${({ theme }) => theme.color.surface.primary};
-  border: 1px solid ${({ theme }) => theme.color.border.subtle};
-  border-radius: 8px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-`;
-
-const StatLabel = styled.div`
-  font-size: 0.875rem;
-  color: ${({ theme }) => theme.color.text.secondary};
-  margin-bottom: 0.5rem;
-`;
-
-const StatValue = styled.div`
-  font-size: 2rem;
-  font-weight: bold;
-  color: ${({ theme }) => theme.color.text.primary};
-`;
-
-const Section = styled.div`
-  margin-bottom: 2rem;
-`;
-
-const SectionTitle = styled.h2`
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  color: ${({ theme }) => theme.color.text.primary};
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  user-select: none;
-
-  &:hover {
-    opacity: 0.8;
-  }
-`;
-
-const CollapsibleContent = styled.div<{ $isOpen: boolean }>`
-  max-height: ${({ $isOpen }) => ($isOpen ? '10000px' : '0')};
-  overflow: hidden;
-  transition: max-height 0.3s ease-out;
-`;
-
-const TaskDetailRow = styled.div`
-  padding: 1rem;
-  background: ${({ theme }) => theme.color.surface.secondary};
-  border-top: 1px solid ${({ theme }) => theme.color.border.subtle};
-  font-family: monospace;
-  font-size: 0.875rem;
-  white-space: pre-wrap;
-  word-break: break-all;
-`;
-
-const TaskDetailSection = styled.div`
-  margin-bottom: 1rem;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-`;
-
-const TaskDetailLabel = styled.div`
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-  color: ${({ theme }) => theme.color.text.primary};
-  font-family: sans-serif;
-`;
-
-const RefreshIndicator = styled.div<{ isRefreshing: boolean }>`
-  display: inline-block;
-  margin-left: 0.5rem;
-  opacity: ${({ isRefreshing }) => (isRefreshing ? 1 : 0.3)};
-  transition: opacity 0.3s;
-`;
-
-const Header = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1.5rem;
-`;
-
-const Title = styled.h1`
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: ${({ theme }) => theme.color.text.primary};
-  display: flex;
-  align-items: center;
-`;
+} from '../../atoms/Table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../atoms/Tabs';
+import {
+  CollapsibleContent,
+  Container,
+  Header,
+  ScheduleDate,
+  ScheduleItem,
+  ScheduleItemInfo,
+  ScheduleStatus,
+  ScheduleTime,
+  Section,
+  SectionTitle,
+  SectionTitleClickable,
+  StatCard,
+  StatLabel,
+  StatsGrid,
+  StatValue,
+  TaskDetailLabel,
+  TaskDetailRow,
+  TaskDetailSection,
+  TitleWithFlex as Title,
+} from './RandomCalls.styles';
 
 interface MatchProposal {
   uuid: string;
@@ -179,6 +102,14 @@ interface LobbyData {
     rejected_count: number;
     expired_count: number;
   };
+  schedule: Array<{
+    uuid: string;
+    name: string;
+    start_time: string;
+    end_time: string;
+    status: boolean;
+    active_users_count: number;
+  }>;
 }
 
 interface TaskData {
@@ -493,18 +424,35 @@ function MatchProposalsTable({ matches }: { matches: MatchProposal[] }) {
   );
 }
 
+const isDevelopmentOrStaging = () => {
+  if (typeof window === 'undefined') return false;
+  const hostname = window.location.hostname;
+  // Check if localhost, staging, or development environment
+  return (
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    hostname.includes('staging') ||
+    hostname.includes('dev') ||
+    hostname.includes('local')
+  );
+};
+
 function RandomCallManagement() {
-  const [lobbyName] = useState('default');
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const [tasksSectionOpen, setTasksSectionOpen] = useState(true);
+  const [isEndingLobby, setIsEndingLobby] = useState(false);
+  const [showEndConfirm, setShowEndConfirm] = useState(false);
+  const showResetButton = isDevelopmentOrStaging();
+
+  const shouldPoll = autoRefresh;
 
   const { data, error, isValidating } = useSWR<LobbyData>(
-    `/api/random_calls/lobby/${lobbyName}/management/overview`,
+    getLobbyOverviewEndpoint(),
     dataFetcher,
     {
-      refreshInterval: autoRefresh ? 3000 : 0, // Refresh every 3 seconds if enabled
+      refreshInterval: shouldPoll ? 3000 : 0,
       revalidateOnFocus: true,
       revalidateOnMount: true,
     },
@@ -515,44 +463,73 @@ function RandomCallManagement() {
     error: tasksError,
     isValidating: tasksValidating,
   } = useSWR<TasksData>(
-    `/api/random_calls/lobby/${lobbyName}/management/tasks`,
+    `/api/random_calls/lobby/default/management/tasks`,
     dataFetcher,
     {
-      refreshInterval: autoRefresh ? 5000 : 0, // Refresh every 5 seconds if enabled
+      refreshInterval: shouldPoll ? 5000 : 0,
       revalidateOnFocus: true,
       revalidateOnMount: true,
     },
   );
 
+  // When current lobby is not active, fetch next upcoming lobby for display
+  const { data: upcomingLobbies } = useSWR<
+    Array<{
+      uuid: string;
+      name: string;
+      start_time: string;
+      end_time: string;
+      status: boolean;
+      active_users_count: number;
+    }>
+  >(
+    data && !data.lobby.is_active ? getUpcomingLobbiesEndpoint() : null,
+    dataFetcher,
+    { revalidateOnFocus: true, revalidateOnMount: true },
+  );
+  const nextUpcomingLobby = upcomingLobbies?.[0] ?? null;
+
   const handleResetLobby = async () => {
     setIsResetting(true);
-    try {
-      const response = await fetch(
-        `/api/random_calls/lobby/${lobbyName}/management/reset`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken':
-              document.cookie.split('csrftoken=')[1]?.split(';')[0] || '',
-          },
-          credentials: 'same-origin',
-        },
-      );
+    resetLobby({
+      onSuccess: () => {
+        // Refresh the data
+        mutate(getLobbyOverviewEndpoint());
+        setShowResetConfirm(false);
+        setIsResetting(false);
+      },
+      onError: (error: any) => {
+        console.error('Error resetting lobby:', error);
+        const errorMessage =
+          error?.message ||
+          error?.data?.message ||
+          'Failed to reset lobby. Please try again.';
+        alert(errorMessage);
+        setIsResetting(false);
+      },
+    });
+  };
 
-      if (!response.ok) {
-        throw new Error('Failed to reset lobby');
-      }
-
-      // Refresh the data
-      mutate(`/api/random_calls/lobby/${lobbyName}/management/overview`);
-      setShowResetConfirm(false);
-    } catch (error) {
-      console.error('Error resetting lobby:', error);
-      alert('Failed to reset lobby. Please try again.');
-    } finally {
-      setIsResetting(false);
-    }
+  const handleEndLobby = async () => {
+    setIsEndingLobby(true);
+    endLobby({
+      onSuccess: () => {
+        mutate(getLobbyOverviewEndpoint());
+        mutate(getUpcomingLobbiesEndpoint());
+        setShowEndConfirm(false);
+        alert('Lobby ended successfully!');
+        setIsEndingLobby(false);
+      },
+      onError: (error: any) => {
+        console.error('Error ending lobby:', error);
+        const errorMessage =
+          error?.message ||
+          error?.data?.message ||
+          'Failed to end lobby. Please try again.';
+        alert(errorMessage);
+        setIsEndingLobby(false);
+      },
+    });
   };
 
   if (error) {
@@ -573,14 +550,23 @@ function RandomCallManagement() {
 
   const { lobby, active_users, match_proposals, statistics } = data;
 
+  const lobbyPeriodLabel =
+    lobby.start_time && lobby.end_time
+      ? `${formatDate(new Date(lobby.start_time), 'EEEE, d MMMM yyyy', 'de')} · ${formatEventTime(new Date(lobby.start_time), new Date(lobby.end_time))}`
+      : null;
+
   return (
     <Container>
       <Header>
         <Title>
-          Random Call Management - {lobby.name}
-          <RefreshIndicator isRefreshing={isValidating}>
-            {isValidating ? '🔄' : '⏸'}
-          </RefreshIndicator>
+          Current Lobby
+          <Tag
+            appearance={
+              lobby.is_active ? TagAppearance.success : TagAppearance.error
+            }
+          >
+            {lobby.is_active ? 'Active' : 'Expired'}
+          </Tag>
         </Title>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
           <label>
@@ -591,13 +577,27 @@ function RandomCallManagement() {
             />{' '}
             Auto-refresh (3s)
           </label>
+
           <Button
             appearance={ButtonAppearance.Secondary}
+            color="red"
             size={ButtonSizes.Small}
-            onClick={() => setShowResetConfirm(true)}
+            onClick={() => setShowEndConfirm(true)}
+            disabled={!lobby.is_active || !isEndingLobby}
           >
-            Reset Lobby
+            End Lobby
           </Button>
+          {showResetButton && (
+            <Button
+              appearance={ButtonAppearance.Primary}
+              backgroundColor="red"
+              size={ButtonSizes.Small}
+              onClick={() => setShowResetConfirm(true)}
+              disabled={!lobby.is_active}
+            >
+              Reset Lobby
+            </Button>
+          )}
         </div>
       </Header>
 
@@ -605,9 +605,9 @@ function RandomCallManagement() {
       <Modal open={showResetConfirm} onClose={() => setShowResetConfirm(false)}>
         <Card width={CardSizes.Medium}>
           <CardHeader>Reset Random Call Lobby</CardHeader>
-          <div style={{ padding: '1.5rem' }}>
+          <CardContent>
             <Text>
-              Are you sure you want to reset the "{lobbyName}" lobby? This will:
+              Are you sure you want to reset the "default" lobby? This will:
             </Text>
             <ul
               style={{
@@ -621,14 +621,7 @@ function RandomCallManagement() {
               <li>Recreate the lobby with current time</li>
             </ul>
             <Text bold>This action cannot be undone.</Text>
-            <div
-              style={{
-                display: 'flex',
-                gap: '1rem',
-                marginTop: '1.5rem',
-                justifyContent: 'flex-end',
-              }}
-            >
+            <CardFooter align="space-between">
               <Button
                 appearance={ButtonAppearance.Secondary}
                 size={ButtonSizes.Medium}
@@ -638,6 +631,7 @@ function RandomCallManagement() {
                 Cancel
               </Button>
               <Button
+                backgroundColor="red"
                 appearance={ButtonAppearance.Primary}
                 size={ButtonSizes.Medium}
                 onClick={handleResetLobby}
@@ -645,28 +639,96 @@ function RandomCallManagement() {
               >
                 {isResetting ? 'Resetting...' : 'Reset Lobby'}
               </Button>
-            </div>
-          </div>
+            </CardFooter>
+          </CardContent>
         </Card>
       </Modal>
 
-      {/* Lobby Status */}
-      <Section>
-        <SectionTitle>Lobby Status</SectionTitle>
-        <StatsGrid>
-          <StatCard>
-            <StatLabel>Lobby Status</StatLabel>
-            <StatValue>
+      {/* End Lobby Confirmation Modal */}
+      <Modal open={showEndConfirm} onClose={() => setShowEndConfirm(false)}>
+        <Card width={CardSizes.Medium}>
+          <CardHeader>End Random Call Lobby</CardHeader>
+          <CardContent>
+            <Text>
+              Are you sure you want to end the "default" lobby? This will:
+            </Text>
+            <ul
+              style={{
+                marginTop: '1rem',
+                marginBottom: '1rem',
+                paddingLeft: '1.5rem',
+              }}
+            >
+              <li>Set the lobby end time to the current time</li>
+              <li>Mark the lobby as inactive</li>
+              <li>Prevent new users from joining the lobby</li>
+              <li>Allow existing users to continue their current sessions</li>
+            </ul>
+            <Text bold>This action cannot be undone.</Text>
+            <CardFooter align="space-between">
+              <Button
+                appearance={ButtonAppearance.Secondary}
+                size={ButtonSizes.Medium}
+                onClick={() => setShowEndConfirm(false)}
+                disabled={isEndingLobby}
+              >
+                Cancel
+              </Button>
+              <Button
+                backgroundColor="red"
+                appearance={ButtonAppearance.Primary}
+                size={ButtonSizes.Medium}
+                onClick={handleEndLobby}
+                disabled={isEndingLobby}
+              >
+                {isEndingLobby ? 'Ending...' : 'End Lobby'}
+              </Button>
+            </CardFooter>
+          </CardContent>
+        </Card>
+      </Modal>
+
+      {/* Next upcoming lobby (only when current lobby is not active) */}
+      {!lobby.is_active && nextUpcomingLobby && (
+        <Section>
+          <SectionTitle>Next upcoming lobby</SectionTitle>
+          <ScheduleItem>
+            <ScheduleItemInfo>
+              <ScheduleDate>
+                {formatDate(
+                  new Date(nextUpcomingLobby.start_time),
+                  'EEEE, d MMMM yyyy',
+                  'de',
+                )}
+              </ScheduleDate>
+              <ScheduleTime>
+                {formatEventTime(
+                  new Date(nextUpcomingLobby.start_time),
+                  new Date(nextUpcomingLobby.end_time),
+                )}
+              </ScheduleTime>
+            </ScheduleItemInfo>
+            <ScheduleStatus>
               <Tag
                 appearance={
-                  lobby.is_active ? TagAppearance.success : TagAppearance.error
+                  nextUpcomingLobby.status
+                    ? TagAppearance.success
+                    : TagAppearance.outline
                 }
                 size={TagSizes.small}
               >
-                {lobby.is_active ? 'Active' : 'Inactive'}
+                {nextUpcomingLobby.status ? 'Active' : 'Upcoming'}
               </Tag>
-            </StatValue>
-          </StatCard>
+              <Text>{nextUpcomingLobby.active_users_count} users</Text>
+            </ScheduleStatus>
+          </ScheduleItem>
+        </Section>
+      )}
+
+      {/* Lobby Status */}
+      <Section>
+        <SectionTitle>{lobbyPeriodLabel}</SectionTitle>
+        <StatsGrid>
           <StatCard>
             <StatLabel>Active Users</StatLabel>
             <StatValue>{lobby.active_users_count}</StatValue>
@@ -746,12 +808,12 @@ function RandomCallManagement() {
 
       {/* Celery Tasks */}
       <Section>
-        <SectionTitle onClick={() => setTasksSectionOpen(!tasksSectionOpen)}>
+        <SectionTitleClickable
+          onClick={() => setTasksSectionOpen(!tasksSectionOpen)}
+        >
           {tasksSectionOpen ? '▼' : '▶'} Celery Tasks
-          {tasksValidating && (
-            <RefreshIndicator isRefreshing={true}>🔄</RefreshIndicator>
-          )}
-        </SectionTitle>
+          {tasksValidating && <Loading size={LoadingSizes.Small} inline />}
+        </SectionTitleClickable>
         <CollapsibleContent $isOpen={tasksSectionOpen}>
           {tasksError ? (
             <Text>Error loading tasks: {tasksError.message}</Text>
