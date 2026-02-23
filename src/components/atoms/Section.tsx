@@ -2,7 +2,7 @@ import { Text } from '@a-little-world/little-world-design-system';
 import * as React from 'react';
 import styled, { css } from 'styled-components';
 
-const StyledSection = styled.div<{ fullHeight?: boolean }>`
+const StyledSection = styled.div<{ $fullHeight?: boolean }>`
   background-color: var(--bg-card);
   color: var(--text-card-foreground);
   max-width: 1024px;
@@ -10,7 +10,7 @@ const StyledSection = styled.div<{ fullHeight?: boolean }>`
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  ${({ fullHeight }) => fullHeight && 'height: 100%;'}
+  ${({ $fullHeight }) => $fullHeight && 'height: 100%;'}
 `;
 
 const StyledSectionHeader = styled.div`
@@ -61,7 +61,7 @@ const Section = React.forwardRef<
   <StyledSection
     ref={ref}
     className={className}
-    fullHeight={fullHeight}
+    $fullHeight={fullHeight}
     {...props}
   />
 ));
