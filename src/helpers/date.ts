@@ -1,4 +1,4 @@
-import { format, formatDistance, parseISO, startOfDay } from 'date-fns';
+import { format, formatDistance, intervalToDuration, parseISO, startOfDay } from 'date-fns';
 import { de, enGB } from 'date-fns/locale';
 
 import { LANGUAGES } from '../constants';
@@ -98,3 +98,22 @@ export const stringToDate = (dateString: string): Date => parseISO(dateString);
 
 /** Formats Date to YYYY-MM-DD string. */
 export const dateToString = (date: Date): string => format(date, 'yyyy-MM-dd');
+
+/**
+ * Formats a decimal number of hours as a human-readable duration (e.g. "2 hours 21 minutes", "45 minutes").
+ */
+export function formatVideoTimeHours(hours: number): string {
+  const totalSeconds = Math.round(hours * 3600);
+  const duration = intervalToDuration({ start: 0, end: totalSeconds * 1000 });
+  const parts: string[] = [];
+  if (duration.hours) {
+    parts.push(duration.hours === 1 ? '1 hour' : `${duration.hours} hours`);
+  }
+  if (duration.minutes) {
+    parts.push(duration.minutes === 1 ? '1 minute' : `${duration.minutes} minutes`);
+  }
+  if (parts.length === 0) {
+    return '0 minutes';
+  }
+  return parts.join(' ');
+}

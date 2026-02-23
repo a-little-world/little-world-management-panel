@@ -26,12 +26,14 @@ import UserChat from './UserChat';
 import UserEmails from './UserEmails';
 import UserMatches from './UserMatches';
 import UserNotes from './UserNotes';
+import UserStats from './UserStats';
 
 const USER_TABS = [
   { key: 'profile', label: 'Profile' },
   { key: 'chat', label: 'Chat', title: 'User Support Chat' },
   { key: 'emails', label: 'Emails' },
   { key: 'matches', label: 'Matches' },
+  { key: 'stats', label: 'Stats' },
   { key: 'notes', label: 'Notes' },
   { key: 'actions', label: 'Actions' },
 ];
@@ -58,6 +60,8 @@ const UserPanelContent = ({
 
   if (tab === 'matches')
     return <UserMatches user={user} appointment={appointment} />;
+
+  if (tab === 'stats') return <UserStats user={user} />;
 
   if (tab === 'notes')
     return (
@@ -112,7 +116,7 @@ const UserPanel = () => {
 
   return (
     <Tabs defaultValue={searchParams.get('tab') ?? USER_TABS[0].key}>
-      <TabsList className="grid w-full grid-cols-6">
+      <TabsList className="grid w-full grid-cols-7">
         {USER_TABS.map(tab => (
           <TabsTrigger
             key={'header' + tab.key}
