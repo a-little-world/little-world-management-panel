@@ -2,8 +2,20 @@ import React from 'react';
 import styled from 'styled-components';
 import useSWR from 'swr';
 
+import {
+  ButtonAppearance,
+  ButtonSizes,
+  Link,
+} from '@a-little-world/little-world-design-system';
 import { formatVideoTimeHours } from '../../../helpers/date';
+import { VIDEO_CALLS_ROUTE } from '../../../routes';
 import { dataFetcher } from '../../../store';
+
+const Wrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.large};
+`;
 
 const StatsContainer = styled.div`
   display: flex;
@@ -53,16 +65,25 @@ const UserStats = ({ user }: { user: { id: number } }) => {
   const { total_video_calls, total_video_time_hours } = data;
 
   return (
-    <StatsContainer>
-      <StatCard>
-        <StatLabel>Total video calls</StatLabel>
-        <StatValue>{total_video_calls}</StatValue>
-      </StatCard>
-      <StatCard>
-        <StatLabel>Total time in video calls</StatLabel>
-        <StatValue>{formatVideoTimeHours(total_video_time_hours)}</StatValue>
-      </StatCard>
-    </StatsContainer>
+    <Wrapper>
+      <StatsContainer>
+        <StatCard>
+          <StatLabel>Total video calls</StatLabel>
+          <StatValue>{total_video_calls}</StatValue>
+        </StatCard>
+        <StatCard>
+          <StatLabel>Total time in video calls</StatLabel>
+          <StatValue>{formatVideoTimeHours(total_video_time_hours)}</StatValue>
+        </StatCard>
+      </StatsContainer>
+      <Link
+        buttonAppearance={ButtonAppearance.Primary}
+        buttonSize={ButtonSizes.Medium}
+        to={VIDEO_CALLS_ROUTE + '?user_id=' + user.id}
+      >
+        View list of video calls
+      </Link>
+    </Wrapper>
   );
 };
 
