@@ -29,6 +29,7 @@ import {
   sendSms,
   setHadPrematchingCall,
   setHasMatchPriority,
+  setRandomCallBetaAccess,
   setNewsletterSubscribed,
   setUserSearching,
   setUserUnresponsive,
@@ -204,6 +205,8 @@ const UserActions = ({
           func = setUserSearching;
         } else if (key === 'priority') {
           func = setHasMatchPriority;
+        } else if (key === 'randomCallsBetaAccess') {
+          func = setRandomCallBetaAccess;
         } else {
           console.error(`No function mapped for key: ${key}`);
           return Promise.reject(
@@ -248,6 +251,10 @@ const UserActions = ({
       },
     });
   };
+
+  const hasRandomCallBetaAccess =
+    user.state.random_call_beta_access ??
+    (user.state.extra_user_permissions || []).includes('use-beta-random-call');
 
   return (
     <div className="w-full">
@@ -399,6 +406,28 @@ const UserActions = ({
                         defaultChecked={value}
                         error={error?.message}
                         label={'Should the user be given match priority?'}
+                        required={false}
+                      />
+                    )}
+                  />
+                  <Controller
+                    defaultValue={hasRandomCallBetaAccess}
+                    name="randomCallsBetaAccess"
+                    control={control}
+                    render={({
+                      field: { onChange, onBlur, value, name, ref },
+                      fieldState: { error },
+                    }) => (
+                      <Checkbox
+                        id="randomCallsBetaAccess"
+                        name={name}
+                        inputRef={ref}
+                        onCheckedChange={val => onChange({ target: { value: val } })}
+                        onBlur={onBlur}
+                        value={value}
+                        defaultChecked={value}
+                        error={error?.message}
+                        label={'Random Calls Beta Access'}
                         required={false}
                       />
                     )}

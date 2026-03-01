@@ -709,6 +709,33 @@ export const setHasMatchPriority = async ({
   }
 };
 
+export const setRandomCallBetaAccess = async ({
+  userId,
+  onError,
+  onSuccess,
+  randomCallsBetaAccess,
+}: {
+  userId: string;
+  onError: (error: any) => void;
+  onSuccess: (result: any) => void;
+  randomCallsBetaAccess: boolean;
+}) => {
+  try {
+    const result = await apiFetch(
+      `/api/matching/users/${userId}/set_random_call_beta_access/`,
+      {
+        method: 'POST',
+        body: {
+          random_call_beta_access: randomCallsBetaAccess,
+        },
+      },
+    );
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
+  }
+};
+
 export const completePrematchingCall = async ({
   appointmentDate,
   selectedUsers,
