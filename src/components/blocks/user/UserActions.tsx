@@ -1,4 +1,5 @@
 import {
+  Accordion,
   Button,
   ButtonSizes,
   Card,
@@ -250,174 +251,210 @@ const UserActions = ({
 
   return (
     <div className="w-full">
-      <SendSms userId={user.id} />
-      <SendPushNotification userId={user.id} />
-      <Separator />
-      <form
-        className="mb-4"
-        onSubmit={handleSubmit(saveChanges)}
-        onChange={() => setChangesSaved(false)}
-      >
-        <Controller
-          defaultValue={user.state.user_support}
-          name="support_user"
-          control={control}
-          render={({
-            field: { onChange, onBlur, value, name, ref },
-            fieldState: { error },
-          }) => (
-            <Dropdown
-              id="support_user"
-              name={name}
-              inputRef={ref}
-              onCheckedChange={val => onChange({ target: { value: val } })}
-              onBlur={onBlur}
-              value={value}
-              defaultChecked={value}
-              error={error?.message}
-              label="Change support user"
-              options={SUPPORT_USERS}
-            />
-          )}
-        />
-        <Controller
-          defaultValue={user.profile.newsletter_subscribed}
-          name="newsletter"
-          control={control}
-          render={({
-            field: { onChange, onBlur, value, name, ref },
-            fieldState: { error },
-          }) => (
-            <Checkbox
-              id="newsletter"
-              name={name}
-              inputRef={ref}
-              onCheckedChange={val => onChange({ target: { value: val } })}
-              onBlur={onBlur}
-              value={value}
-              defaultChecked={value}
-              error={error?.message}
-              label="Subscribed to newsletter"
-              required={false}
-            />
-          )}
-        />
-        <Controller
-          defaultValue={user.state.had_prematching_call}
-          name="completed"
-          control={control}
-          render={({
-            field: { onChange, onBlur, value, name, ref },
-            fieldState: { error },
-          }) => (
-            <Checkbox
-              id="completed"
-              name={name}
-              inputRef={ref}
-              onCheckedChange={val => onChange({ target: { value: val } })}
-              onBlur={onBlur}
-              value={value}
-              defaultChecked={value}
-              error={error?.message}
-              label={'User has completed Pre-matching call'}
-              required={false}
-            />
-          )}
-        />
-        <Controller
-          defaultValue={user.state.unresponsive}
-          name="unresponsive"
-          control={control}
-          render={({
-            field: { onChange, onBlur, value, name, ref },
-            fieldState: { error },
-          }) => (
-            <Checkbox
-              id="unresponsive"
-              name={name}
-              inputRef={ref}
-              onCheckedChange={val => onChange({ target: { value: val } })}
-              onBlur={onBlur}
-              value={value}
-              defaultChecked={value}
-              error={error?.message}
-              label="This user is no longer responsive?"
-              required={false}
-            />
-          )}
-        />
-        <Controller
-          defaultValue={user.state.searching_state === 'idle' ? false : true}
-          name="searching"
-          control={control}
-          render={({
-            field: { onChange, onBlur, value, name, ref },
-            fieldState: { error },
-          }) => (
-            <Checkbox
-              id="searching"
-              name={name}
-              inputRef={ref}
-              onCheckedChange={val => onChange({ target: { value: val } })}
-              onBlur={onBlur}
-              value={value}
-              defaultChecked={value}
-              error={error?.message}
-              label={'Is user searching for another match?'}
-              required={false}
-            />
-          )}
-        />
-        <Controller
-          defaultValue={user.state.has_match_priority}
-          name="priority"
-          control={control}
-          render={({
-            field: { onChange, onBlur, value, name, ref },
-            fieldState: { error },
-          }) => (
-            <Checkbox
-              id="priority"
-              name={name}
-              inputRef={ref}
-              onCheckedChange={val => onChange({ target: { value: val } })}
-              onBlur={onBlur}
-              value={value}
-              defaultChecked={value}
-              error={error?.message}
-              label={'Should the user be given match priority?'}
-              required={false}
-            />
-          )}
-        />
+      <Accordion
+        items={[
+          {
+            header: 'SMS / Push',
+            content: (
+              <div className="pt-2">
+                <SendSms userId={user.id} />
+                <SendPushNotification userId={user.id} />
+              </div>
+            ),
+          },
+          {
+            header: 'Support User Actions',
+            content: (
+              <div className="pt-2">
+                <form
+                  className="mb-4"
+                  onSubmit={handleSubmit(saveChanges)}
+                  onChange={() => setChangesSaved(false)}
+                >
+                  <Controller
+                    defaultValue={user.state.user_support}
+                    name="support_user"
+                    control={control}
+                    render={({
+                      field: { onChange, onBlur, value, name, ref },
+                      fieldState: { error },
+                    }) => (
+                      <Dropdown
+                        id="support_user"
+                        name={name}
+                        inputRef={ref}
+                        onCheckedChange={val => onChange({ target: { value: val } })}
+                        onBlur={onBlur}
+                        value={value}
+                        defaultChecked={value}
+                        error={error?.message}
+                        label="Change support user"
+                        options={SUPPORT_USERS}
+                      />
+                    )}
+                  />
+                  <Controller
+                    defaultValue={user.profile.newsletter_subscribed}
+                    name="newsletter"
+                    control={control}
+                    render={({
+                      field: { onChange, onBlur, value, name, ref },
+                      fieldState: { error },
+                    }) => (
+                      <Checkbox
+                        id="newsletter"
+                        name={name}
+                        inputRef={ref}
+                        onCheckedChange={val => onChange({ target: { value: val } })}
+                        onBlur={onBlur}
+                        value={value}
+                        defaultChecked={value}
+                        error={error?.message}
+                        label="Subscribed to newsletter"
+                        required={false}
+                      />
+                    )}
+                  />
+                  <Controller
+                    defaultValue={user.state.had_prematching_call}
+                    name="completed"
+                    control={control}
+                    render={({
+                      field: { onChange, onBlur, value, name, ref },
+                      fieldState: { error },
+                    }) => (
+                      <Checkbox
+                        id="completed"
+                        name={name}
+                        inputRef={ref}
+                        onCheckedChange={val => onChange({ target: { value: val } })}
+                        onBlur={onBlur}
+                        value={value}
+                        defaultChecked={value}
+                        error={error?.message}
+                        label={'User has completed Pre-matching call'}
+                        required={false}
+                      />
+                    )}
+                  />
+                  <Controller
+                    defaultValue={user.state.unresponsive}
+                    name="unresponsive"
+                    control={control}
+                    render={({
+                      field: { onChange, onBlur, value, name, ref },
+                      fieldState: { error },
+                    }) => (
+                      <Checkbox
+                        id="unresponsive"
+                        name={name}
+                        inputRef={ref}
+                        onCheckedChange={val => onChange({ target: { value: val } })}
+                        onBlur={onBlur}
+                        value={value}
+                        defaultChecked={value}
+                        error={error?.message}
+                        label="This user is no longer responsive?"
+                        required={false}
+                      />
+                    )}
+                  />
+                  <Controller
+                    defaultValue={user.state.searching_state === 'idle' ? false : true}
+                    name="searching"
+                    control={control}
+                    render={({
+                      field: { onChange, onBlur, value, name, ref },
+                      fieldState: { error },
+                    }) => (
+                      <Checkbox
+                        id="searching"
+                        name={name}
+                        inputRef={ref}
+                        onCheckedChange={val => onChange({ target: { value: val } })}
+                        onBlur={onBlur}
+                        value={value}
+                        defaultChecked={value}
+                        error={error?.message}
+                        label={'Is user searching for another match?'}
+                        required={false}
+                      />
+                    )}
+                  />
+                  <Controller
+                    defaultValue={user.state.has_match_priority}
+                    name="priority"
+                    control={control}
+                    render={({
+                      field: { onChange, onBlur, value, name, ref },
+                      fieldState: { error },
+                    }) => (
+                      <Checkbox
+                        id="priority"
+                        name={name}
+                        inputRef={ref}
+                        onCheckedChange={val => onChange({ target: { value: val } })}
+                        onBlur={onBlur}
+                        value={value}
+                        defaultChecked={value}
+                        error={error?.message}
+                        label={'Should the user be given match priority?'}
+                        required={false}
+                      />
+                    )}
+                  />
 
-        <StatusMessage
-          visible={changesSaved || !!errors?.root?.serverError}
-          type={changesSaved ? StatusTypes.Success : StatusTypes.Error}
-        >
-          {changesSaved
-            ? 'Changes updated successfully'
-            : errors?.root?.serverError?.message}
-        </StatusMessage>
-        <Button type="submit" disabled={isSubmitting || isEmpty(dirtyFields)}>
-          Save Changes
-        </Button>
-      </form>
-      <Separator />
-      <div className="p-2 flex flex-col gap-2">
-        <Text tag="h3" type={TextTypes.Heading5}>
-          Danger Zone
-        </Text>
-        <Text className="mb-2">Delete the user and censor their profile</Text>
-        <div>
-          <Button
-            onClick={() => setDeleteUserModalOpen(true)}
-            backgroundColor={theme.color.status.error}
-          >
-            Delete User
-          </Button>
-        </div>
-      </div>
+                  <StatusMessage
+                    visible={changesSaved || !!errors?.root?.serverError}
+                    type={changesSaved ? StatusTypes.Success : StatusTypes.Error}
+                  >
+                    {changesSaved
+                      ? 'Changes updated successfully'
+                      : errors?.root?.serverError?.message}
+                  </StatusMessage>
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting || isEmpty(dirtyFields)}
+                  >
+                    Save Changes
+                  </Button>
+                </form>
+              </div>
+            ),
+          },
+          {
+            header: 'Developer Actions',
+            content: (
+              <div className="pt-2">
+                <Text>No developer actions yet.</Text>
+              </div>
+            ),
+          },
+          {
+            header: 'Danger Zone',
+            content: (
+              <div className="pt-2">
+                <div className="p-2 flex flex-col gap-2">
+                  <Text tag="h3" type={TextTypes.Heading5}>
+                    Danger Zone
+                  </Text>
+                  <Text className="mb-2">
+                    Delete the user and censor their profile
+                  </Text>
+                  <div>
+                    <Button
+                      onClick={() => setDeleteUserModalOpen(true)}
+                      backgroundColor={theme.color.status.error}
+                    >
+                      Delete User
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ),
+          },
+        ]}
+      />
       <Modal
         open={deleteUserModalOpen}
         onClose={() => setDeleteUserModalOpen(false)}

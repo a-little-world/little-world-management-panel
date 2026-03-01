@@ -2094,8 +2094,9 @@ const automatedEmails = {
         text: automatedText['automatic-emails-native-app-beta-ios.block-6'],
       },
       {
-        type: ContentTypes.Paragraph,
+        type: ContentTypes.Button,
         text: automatedText['automatic-emails-native-app-beta-ios.block-7'],
+        href: '{{ ios_beta_app_url }}',
       },
       {
         type: ContentTypes.Paragraph,
@@ -2104,6 +2105,25 @@ const automatedEmails = {
       {
         type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-native-app-beta-ios.block-9'],
+      },
+      {
+        type: ContentTypes.Link,
+        text: automatedText['automatic-emails-native-app-beta-ios.block-10'],
+        href: '{{ native_app_repo_url }}',
+      },
+      {
+        type: ContentTypes.Link,
+        text: automatedText['automatic-emails-native-app-beta-ios.block-11'],
+        href: '{{ native_app_bug_report_url }}',
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-ios.block-12'],
+      },
+      {
+        type: ContentTypes.Link,
+        text: 'Zum Support-Chat',
+        href: '{{ messages_url }}',
       },
     ],
   },
@@ -2139,8 +2159,9 @@ const automatedEmails = {
         text: automatedText['automatic-emails-native-app-beta-android.block-6'],
       },
       {
-        type: ContentTypes.Paragraph,
+        type: ContentTypes.Button,
         text: automatedText['automatic-emails-native-app-beta-android.block-7'],
+        href: '{{ android_beta_app_url }}',
       },
       {
         type: ContentTypes.Paragraph,
@@ -2149,6 +2170,25 @@ const automatedEmails = {
       {
         type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-native-app-beta-android.block-9'],
+      },
+      {
+        type: ContentTypes.Link,
+        text: automatedText['automatic-emails-native-app-beta-android.block-10'],
+        href: '{{ native_app_repo_url }}',
+      },
+      {
+        type: ContentTypes.Link,
+        text: automatedText['automatic-emails-native-app-beta-android.block-11'],
+        href: '{{ native_app_bug_report_url }}',
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-android.block-12'],
+      },
+      {
+        type: ContentTypes.Link,
+        text: 'Zum Support-Chat',
+        href: '{{ messages_url }}',
       },
     ],
   },
