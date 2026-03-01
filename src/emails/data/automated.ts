@@ -2062,6 +2062,96 @@ const automatedEmails = {
       },
     ],
   },
+  'automatic-emails-native-app-beta-ios': {
+    id: 'automatic-emails-native-app-beta-ios',
+    label: 'Native App Beta Invite (iOS)',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['automatic-emails-native-app-beta-ios.preview'],
+    subject: automatedText['automatic-emails-native-app-beta-ios.subject'],
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: automatedText['automatic-emails-native-app-beta-ios.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-ios.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-ios.block-3'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-ios.block-4'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-ios.block-5'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-ios.block-6'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-ios.block-7'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-ios.block-8'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-ios.block-9'],
+      },
+    ],
+  },
+  'automatic-emails-native-app-beta-android': {
+    id: 'automatic-emails-native-app-beta-android',
+    label: 'Native App Beta Invite (Android)',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['automatic-emails-native-app-beta-android.preview'],
+    subject: automatedText['automatic-emails-native-app-beta-android.subject'],
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: automatedText['automatic-emails-native-app-beta-android.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-android.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-android.block-3'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-android.block-4'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-android.block-5'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-android.block-6'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-android.block-7'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-android.block-8'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-android.block-9'],
+      },
+    ],
+  },
 };
 
 export function getAutomatedPatentmatchEmails() {
