@@ -229,7 +229,7 @@ function BurstUpdateDialog({
             setError(null);
             setIsSubmitting(true);
             burstUpdateMatchingScores({
-              parallel_tasks: 20,
+              parallel_tasks: 40,
               scoring_list: scoringList,
               onSuccess: results => {
                 const ids = Array.isArray(results)
@@ -244,7 +244,7 @@ function BurstUpdateDialog({
                 setIsSubmitting(false);
                 setError(
                   err?.message ??
-                    'Failed to start score calculation. Please try again.',
+                  'Failed to start score calculation. Please try again.',
                 );
               },
             });

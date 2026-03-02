@@ -2062,6 +2062,136 @@ const automatedEmails = {
       },
     ],
   },
+  'automatic-emails-native-app-beta-ios': {
+    id: 'automatic-emails-native-app-beta-ios',
+    label: 'Native App Beta Invite (iOS)',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['automatic-emails-native-app-beta-ios.preview'],
+    subject: automatedText['automatic-emails-native-app-beta-ios.subject'],
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: automatedText['automatic-emails-native-app-beta-ios.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-ios.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-ios.block-3'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-ios.block-4'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-ios.block-5'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-ios.block-6'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['automatic-emails-native-app-beta-ios.block-7'],
+        href: '{{ ios_beta_app_url }}',
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-ios.block-8'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-ios.block-9'],
+      },
+      {
+        type: ContentTypes.Link,
+        text: automatedText['automatic-emails-native-app-beta-ios.block-10'],
+        href: '{{ native_app_repo_url }}',
+      },
+      {
+        type: ContentTypes.Link,
+        text: automatedText['automatic-emails-native-app-beta-ios.block-11'],
+        href: '{{ native_app_bug_report_url }}',
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-ios.block-12'],
+      },
+      {
+        type: ContentTypes.Link,
+        text: 'Zum Support-Chat',
+        href: '{{ messages_url }}',
+      },
+    ],
+  },
+  'automatic-emails-native-app-beta-android': {
+    id: 'automatic-emails-native-app-beta-android',
+    label: 'Native App Beta Invite (Android)',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['automatic-emails-native-app-beta-android.preview'],
+    subject: automatedText['automatic-emails-native-app-beta-android.subject'],
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: automatedText['automatic-emails-native-app-beta-android.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-android.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-android.block-3'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-android.block-4'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-android.block-5'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-android.block-6'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['automatic-emails-native-app-beta-android.block-7'],
+        href: '{{ android_beta_app_url }}',
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-android.block-8'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-android.block-9'],
+      },
+      {
+        type: ContentTypes.Link,
+        text: automatedText['automatic-emails-native-app-beta-android.block-10'],
+        href: '{{ native_app_repo_url }}',
+      },
+      {
+        type: ContentTypes.Link,
+        text: automatedText['automatic-emails-native-app-beta-android.block-11'],
+        href: '{{ native_app_bug_report_url }}',
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-android.block-12'],
+      },
+      {
+        type: ContentTypes.Link,
+        text: 'Zum Support-Chat',
+        href: '{{ messages_url }}',
+      },
+    ],
+  },
 };
 
 export function getAutomatedPatentmatchEmails() {
