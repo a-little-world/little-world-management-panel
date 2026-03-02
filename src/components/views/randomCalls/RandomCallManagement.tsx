@@ -554,7 +554,7 @@ function RandomCallManagement() {
     lobby.start_time && lobby.end_time
       ? `${formatDate(new Date(lobby.start_time), 'EEEE, d MMMM yyyy', 'de')} · ${formatEventTime(new Date(lobby.start_time), new Date(lobby.end_time))}`
       : null;
-
+  console.log({ lobby });
   return (
     <Container>
       <Header>
@@ -583,7 +583,7 @@ function RandomCallManagement() {
             color="red"
             size={ButtonSizes.Small}
             onClick={() => setShowEndConfirm(true)}
-            disabled={!lobby.is_active || !isEndingLobby}
+            disabled={!lobby.is_active || isEndingLobby}
           >
             End Lobby
           </Button>

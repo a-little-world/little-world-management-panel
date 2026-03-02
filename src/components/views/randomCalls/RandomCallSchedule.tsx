@@ -59,12 +59,10 @@ function RandomCallSchedule() {
   );
   const [newLobbyStartTime, setNewLobbyStartTime] = useState(() => {
     const now = new Date();
-    return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-  });
-  const [newLobbyEndDate, setNewLobbyEndDate] = useState<Date | null>(() => {
-    const date = new Date();
-    date.setHours(date.getHours() + 2);
-    return date;
+    now.setMinutes(now.getMinutes() + 1);
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
   });
   const [newLobbyEndTime, setNewLobbyEndTime] = useState(() => {
     const now = new Date();
@@ -108,8 +106,8 @@ function RandomCallSchedule() {
   );
 
   const handleCreateLobby = async () => {
-    if (!newLobbyStartDate || !newLobbyEndDate) {
-      alert('Please select both start and end dates');
+    if (!newLobbyStartDate) {
+      alert('Please select a start date');
       return;
     }
 
@@ -117,7 +115,7 @@ function RandomCallSchedule() {
       newLobbyStartDate,
       newLobbyStartTime,
     );
-    const endDateTime = combineDateAndTime(newLobbyEndDate, newLobbyEndTime);
+    const endDateTime = combineDateAndTime(newLobbyStartDate, newLobbyEndTime);
 
     if (endDateTime <= startDateTime) {
       alert('End time must be after start time');
@@ -130,20 +128,20 @@ function RandomCallSchedule() {
       endTime: endDateTime.toISOString(),
       onSuccess: () => {
         const now = new Date();
+        now.setMinutes(now.getMinutes() + 1);
         setNewLobbyStartDate(now);
         setNewLobbyStartTime(
           `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`,
         );
-        const newEndDate = new Date();
-        newEndDate.setHours(newEndDate.getHours() + 2);
-        setNewLobbyEndDate(newEndDate);
+        const endTime = new Date(now);
+        endTime.setHours(endTime.getHours() + 2);
         setNewLobbyEndTime(
-          `${String(newEndDate.getHours()).padStart(2, '0')}:${String(newEndDate.getMinutes()).padStart(2, '0')}`,
+          `${String(endTime.getHours()).padStart(2, '0')}:${String(endTime.getMinutes()).padStart(2, '0')}`,
         );
         setShowCreateLobby(false);
+        setIsCreatingLobby(false);
         mutate(getUpcomingLobbiesEndpoint());
         alert('Lobby created successfully!');
-        setIsCreatingLobby(false);
       },
       onError: (error: any) => {
         console.error('Error creating lobby:', error);
@@ -191,6 +189,7 @@ function RandomCallSchedule() {
                 <DatePicker
                   date={newLobbyStartDate}
                   setDate={setNewLobbyStartDate}
+                  disablePastDays
                 />
                 <FormLabel style={{ marginTop: '0.5rem' }}>
                   Start Time
@@ -205,8 +204,9 @@ function RandomCallSchedule() {
               <FormField>
                 <FormLabel>End Date</FormLabel>
                 <DatePicker
-                  date={newLobbyEndDate}
-                  setDate={setNewLobbyEndDate}
+                  date={newLobbyStartDate}
+                  setDate={() => {}}
+                  disabled
                 />
                 <FormLabel style={{ marginTop: '0.5rem' }}>End Time</FormLabel>
                 <TimeInput

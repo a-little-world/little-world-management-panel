@@ -11,19 +11,32 @@ function Calendar({
   className,
   classNames,
   showOutsideDays = true,
+  disablePastDays,
+  disableFutureDays,
   ...props
-}: CalendarProps) {
+}: CalendarProps & {
+  disablePastDays?: boolean;
+  disableFutureDays?: boolean;
+}) {
+  const today = new Date();
+  const disabledDays =
+    disablePastDays || disableFutureDays
+      ? {
+          ...(disablePastDays && { before: today }),
+          ...(disableFutureDays && { after: today }),
+        }
+      : undefined;
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
       navLayout="around"
+      disabled={disabledDays}
       className={cn('p-3', className)}
       classNames={{
         months: 'flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0',
         month:
           'flex flex-row flex-wrap gap-y-4 [&>.month_grid]:w-full [&>.weeks]:w-full',
-        month_caption:
-          'flex flex-1 min-w-0 justify-center items-center pt-1',
+        month_caption: 'flex flex-1 min-w-0 justify-center items-center pt-1',
         caption_label: 'text-sm font-medium',
         nav: 'flex items-center gap-1',
         button_previous: cn(
@@ -45,10 +58,11 @@ function Calendar({
           'h-9 w-9 p-0 font-normal aria-selected:opacity-100',
         ),
         range_end: 'day-range-end',
-        selected:
-          'bg-neutral-900 text-neutral-50 hover:bg-neutral-900 hover:text-neutral-50 focus:bg-neutral-900 focus:text-neutral-50 dark:bg-neutral-50 dark:text-neutral-900 dark:hover:bg-neutral-50 dark:hover:text-neutral-900 dark:focus:bg-neutral-50 dark:focus:text-neutral-900',
         today:
-          'bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-50',
+          'bg-neutral-100 text-neutral-200 dark:bg-neutral-800 dark:text-neutral-50',
+        selected:
+          'bg-neutral-900 text-neutral-50 hover:bg-neutral-800 hover:text-white focus:bg-neutral-800 focus:text-white dark:bg-neutral-50 dark:text-white dark:hover:bg-neutral-80 dark:hover:text-white dark:focus:bg-neutral-50 dark:focus:text-white',
+
         outside:
           'day-outside text-neutral-500 opacity-50 aria-selected:bg-neutral-100/50 aria-selected:text-neutral-500 aria-selected:opacity-30 dark:text-neutral-400 dark:aria-selected:bg-neutral-800/50 dark:aria-selected:text-neutral-400',
         disabled: 'text-neutral-500 opacity-50 dark:text-neutral-400',
