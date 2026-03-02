@@ -131,14 +131,14 @@ const UserStatus: React.FC<{ user: User; appointment?: any }> = ({
           isCompleted: user.state.had_prematching_call,
         },
         ...(user.matches.unconfirmed.results.length > 0 &&
-        user.matches.confirmed.results.length === 0
+          user.matches.confirmed.results.length === 0
           ? [
-              {
-                id: 'pending-match-1',
-                label: 'Has pending match',
-                isCompleted: false,
-              },
-            ]
+            {
+              id: 'pending-match-1',
+              label: 'Has pending match',
+              isCompleted: false,
+            },
+          ]
           : []),
         {
           id: 'first-match',
@@ -146,14 +146,14 @@ const UserStatus: React.FC<{ user: User; appointment?: any }> = ({
           isCompleted: user.matches.confirmed.results.length > 0,
         },
         ...(user.matches.unconfirmed.results.length > 0 &&
-        user.matches.confirmed.results.length > 0
+          user.matches.confirmed.results.length > 0
           ? [
-              {
-                id: 'pending-match-2',
-                label: 'Has pending match',
-                isCompleted: false,
-              },
-            ]
+            {
+              id: 'pending-match-2',
+              label: 'Has pending match',
+              isCompleted: false,
+            },
+          ]
           : []),
       ]}
       orientation="vertical"
@@ -189,7 +189,7 @@ const UserDetails: React.FC<{
           <Tag
             appearance={
               TagAppearance[
-                user.state.searching_state === 'searching' ? 'success' : 'error'
+              user.state.searching_state === 'searching' ? 'success' : 'error'
               ]
             }
             size={TagSizes.small}

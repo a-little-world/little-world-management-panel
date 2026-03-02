@@ -10,13 +10,12 @@ import {
   Checkbox,
   Dropdown,
   Modal,
-  Separator,
   StatusMessage,
   StatusTypes,
   Text,
   TextArea,
   TextInput,
-  TextTypes,
+  TextTypes
 } from '@a-little-world/little-world-design-system';
 import { isEmpty, map } from 'lodash';
 import React, { useState } from 'react';
@@ -25,13 +24,13 @@ import { useTheme } from 'styled-components';
 
 import {
   deleteUser,
+  inviteNativeAppTester,
   sendPushNotification,
   sendSms,
   setHadPrematchingCall,
   setHasMatchPriority,
-  inviteNativeAppTester,
-  setRandomCallBetaAccess,
   setNewsletterSubscribed,
+  setRandomCallBetaAccess,
   setUserSearching,
   setUserUnresponsive,
 } from '../../../api/index';
