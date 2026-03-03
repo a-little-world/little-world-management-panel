@@ -212,7 +212,6 @@ export const sendPushNotification = ({
 }: {
   userId: string;
   message: {
-    pushNotificationHeadline: string;
     pushNotificationTitle: string;
     pushNotificationDescription: string;
   };
@@ -227,7 +226,6 @@ export const sendPushNotification = ({
     },
     body: JSON.stringify({
       user: userId,
-      headline: message.pushNotificationHeadline,
       title: message.pushNotificationTitle,
       description: message.pushNotificationDescription,
     }),

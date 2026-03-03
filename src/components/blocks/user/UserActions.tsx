@@ -137,17 +137,6 @@ function SendPushNotification({ userId }: { userId: string }) {
       <TextInput
         {...registerInput({
           register,
-          name: 'pushNotificationHeadline',
-          options: {},
-        })}
-        onChange={() => setSentSuccessfully(false)}
-        label={'Send the user a push notification'}
-        placeholder="Headline"
-        error={errors?.pushNotificationHeadline?.message}
-      />
-      <TextInput
-        {...registerInput({
-          register,
           name: 'pushNotificationTitle',
           options: {},
         })}
@@ -167,7 +156,7 @@ function SendPushNotification({ userId }: { userId: string }) {
       />
 
       {sentSuccessfully && <div>Push notification sent successfully</div>}
-      <Button type="submit" disabled={isSubmitting || sentSuccessfully}>
+      <Button type="submit" disabled={isSubmitting}>
         Send push notification
       </Button>
     </form>
