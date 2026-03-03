@@ -17,7 +17,10 @@ import { createSearchParams, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import useSWR from 'swr';
 
-import { burstUpdateMatchingScores } from '../../api/index';
+import {
+  burstUpdateMatchingScores,
+  clearActiveBurstCalculation,
+} from '../../api/index';
 import { LANGUAGES } from '../../constants';
 import { formatDate, formatTime } from '../../helpers/date';
 import {
@@ -126,6 +129,40 @@ const StyledDropdown = styled(Dropdown)`
   }
 `;
 
+const ScoresToolbarWrapper = styled.div`
+  display: flex;
+  width: 100%;
+  gap: 0.5rem;
+  padding: ${({ theme }) => theme.spacing.small};
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+`;
+
+const ScoresToolbarInner = styled.div`
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  gap: ${({ theme }) => theme.spacing.small};
+  justify-content: space-between;
+  flex-wrap: wrap;
+`;
+
+const ScoresFiltersRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.small};
+`;
+
+const ProgressTaskItem = styled.div``;
+
+const ScoresToolbarActions = styled.div`
+  display: flex;
+  align-items: flex-end;
+  gap: ${({ theme }) => theme.spacing.medium};
+  flex-wrap: wrap;
+`;
+
 function MatchingDialog({
   open,
   onClose,
@@ -192,7 +229,7 @@ function BurstUpdateDialog({
             setError(null);
             setIsSubmitting(true);
             burstUpdateMatchingScores({
-              parallel_tasks: 20,
+              parallel_tasks: 40,
               scoring_list: scoringList,
               onSuccess: results => {
                 const ids = Array.isArray(results)
@@ -207,7 +244,7 @@ function BurstUpdateDialog({
                 setIsSubmitting(false);
                 setError(
                   err?.message ??
-                    'Failed to start score calculation. Please try again.',
+                  'Failed to start score calculation. Please try again.',
                 );
               },
             });
@@ -285,6 +322,8 @@ export function Scores() {
         ? 'matchable_scores'
         : 'all_scores';
 
+  console.log({ burstMatchingState });
+
   return (
     <>
       <MatchingDialog
@@ -303,12 +342,12 @@ export function Scores() {
         onBurstStarted={revalidateBurst}
         scoringList={scoringList}
       />
-      <div className="flex w-full gap-2 p-4 align-center z-100 justify-center items-center">
+      <ScoresToolbarWrapper>
         {filtersLoading ? (
           'Loading filters...'
         ) : (
-          <div className="w-full flex items-center gap-4 justify-between flex-wrap">
-            <div className="flex items-center gap-4">
+          <ScoresToolbarInner>
+            <ScoresFiltersRow>
               <StyledDropdown
                 label="User list"
                 value={scoringList}
@@ -344,52 +383,68 @@ export function Scores() {
                 placeholder="Select a score list..."
                 cannotError
               />
-            </div>
+            </ScoresFiltersRow>
 
-            <Popover
-              trigger={
-                <Button
-                  disabled={burstLoading || scoresLoading}
-                  onClick={() => {
-                    if (!scoresUpdating) {
-                      setBurstUpdateDialogOpen(true);
-                    }
-                  }}
-                >
-                  {scoresUpdating
-                    ? `Scores updating... ${scoreCalculationProgress.toFixed(1)}%`
-                    : 'Update Scores'}
-                </Button>
-              }
-            >
-              {burstMatchingState?.tasks?.length ? (
-                burstMatchingState.tasks.map((task, i) => {
-                  const p = getTaskProgress(task);
-                  return (
-                    <div key={`${task.state}-${i}`}>
-                      {p ? (
-                        <ProgressBar max={p.total} value={p.processed} />
-                      ) : (
-                        <div>{task.state}</div>
-                      )}
-                    </div>
-                  );
-                })
-              ) : (
-                <Text>No active tasks</Text>
-              )}
-            </Popover>
-            {scoresUpdatedAt ? (
-              <Text>
-                Scores updated at{' '}
-                {formatDate(scoresUpdatedAt, 'LLLL do', LANGUAGES.en)} at{' '}
-                {formatTime(scoresUpdatedAt)}
-              </Text>
-            ) : null}
-            <Pagination list={scoresList} />
-          </div>
+            <ScoresToolbarActions>
+              {scoresUpdatedAt ? (
+                <Text>
+                  Scores updated at{' '}
+                  {formatDate(scoresUpdatedAt, 'LLLL do', LANGUAGES.en)} at{' '}
+                  {formatTime(scoresUpdatedAt)}
+                </Text>
+              ) : null}
+              <Popover
+                trigger={
+                  <Button
+                    disabled={burstLoading || scoresLoading}
+                    onClick={() => {
+                      if (!scoresUpdating) {
+                        setBurstUpdateDialogOpen(true);
+                      }
+                    }}
+                  >
+                    {scoresUpdating
+                      ? `Scores updating... ${scoreCalculationProgress.toFixed(1)}%`
+                      : 'Update Scores'}
+                  </Button>
+                }
+              >
+                {burstMatchingState?.tasks?.length ? (
+                  burstMatchingState.tasks.map((task, i) => {
+                    const p = getTaskProgress(task);
+                    return (
+                      <ProgressTaskItem key={`${task.state}-${i}`}>
+                        {p ? (
+                          <ProgressBar max={p.total} value={p.processed} />
+                        ) : (
+                          <div>{task.state}</div>
+                        )}
+                      </ProgressTaskItem>
+                    );
+                  })
+                ) : (
+                  <Text>No active tasks</Text>
+                )}
+              </Popover>
+
+              <Button
+                appearance={ButtonAppearance.Secondary}
+                disabled={!scoresUpdating || burstLoading}
+                onClick={() => {
+                  clearActiveBurstCalculation({
+                    onSuccess: revalidateBurst,
+                    onError: err =>
+                      console.error('Clear burst calculation failed:', err),
+                  });
+                }}
+              >
+                Reset
+              </Button>
+              <Pagination list={scoresList} />
+            </ScoresToolbarActions>
+          </ScoresToolbarInner>
         )}
-      </div>
+      </ScoresToolbarWrapper>
 
       <ScoresTable
         loading={scoresLoading}

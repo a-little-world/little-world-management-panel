@@ -442,6 +442,23 @@ export const burstUpdateMatchingScores = async ({
   }
 };
 
+export const clearActiveBurstCalculation = async ({
+  onSuccess,
+  onError,
+}: {
+  onSuccess?: () => void;
+  onError?: (error: any) => void;
+}) => {
+  try {
+    await apiFetch('/api/matching/clear_active_burst_calculation/', {
+      method: 'POST',
+    });
+    onSuccess?.();
+  } catch (error) {
+    onError?.(error);
+  }
+};
+
 export const removeMatch = async ({
   id,
   reason,
@@ -683,6 +700,78 @@ export const setHasMatchPriority = async ({
         method: 'POST',
         body: {
           has_match_priority: priority,
+        },
+      },
+    );
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
+  }
+};
+
+export const setRandomCallBetaAccess = async ({
+  userId,
+  onError,
+  onSuccess,
+  randomCallsBetaAccess,
+}: {
+  userId: string;
+  onError: (error: any) => void;
+  onSuccess: (result: any) => void;
+  randomCallsBetaAccess: boolean;
+}) => {
+  try {
+    const result = await apiFetch(
+      `/api/matching/users/${userId}/set_random_call_beta_access/`,
+      {
+        method: 'POST',
+        body: {
+          random_call_beta_access: randomCallsBetaAccess,
+        },
+      },
+    );
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
+  }
+};
+
+export const inviteNativeAppTester = async ({
+  userId,
+  platform,
+  betaTesterEmail,
+  appInviteUrl,
+  nativeAppRepoUrl,
+  nativeAppBugReportUrl,
+  littleWorldAccountEmail,
+  sendToEmail,
+  onError,
+  onSuccess,
+}: {
+  userId: string;
+  platform: 'ios' | 'android';
+  betaTesterEmail: string;
+  appInviteUrl: string;
+  nativeAppRepoUrl: string;
+  nativeAppBugReportUrl: string;
+  littleWorldAccountEmail?: string;
+  sendToEmail?: string;
+  onError: (error: any) => void;
+  onSuccess: (result: any) => void;
+}) => {
+  try {
+    const result = await apiFetch(
+      `/api/matching/users/${userId}/invite_native_app_tester/`,
+      {
+        method: 'POST',
+        body: {
+          platform,
+          beta_tester_email: betaTesterEmail,
+          app_invite_url: appInviteUrl,
+          native_app_repo_url: nativeAppRepoUrl,
+          native_app_bug_report_url: nativeAppBugReportUrl,
+          little_world_account_email: littleWorldAccountEmail || '',
+          send_to_email: sendToEmail || betaTesterEmail,
         },
       },
     );
