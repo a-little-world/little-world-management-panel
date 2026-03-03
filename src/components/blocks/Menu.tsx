@@ -16,7 +16,7 @@ import {
   EMAILS_ROUTE,
   MATCHES_LIST_ROUTE,
   PREMATCH_APPOINTMENTS_ROUTE,
-  RANDOM_CALL_MANAGEMENT_ROUTE,
+  RANDOM_CALLS_ROUTE,
   SCORES_ROUTE,
   STATS_ROUTE,
   USERS_ROUTE,
@@ -97,10 +97,10 @@ const Menu = () => {
             Documentation
           </NavigationMenuContentItem>
           <NavigationMenuContentItem
-            to={RANDOM_CALL_MANAGEMENT_ROUTE}
-            active={location.pathname === RANDOM_CALL_MANAGEMENT_ROUTE}
+            to={RANDOM_CALLS_ROUTE}
+            active={location.pathname === RANDOM_CALLS_ROUTE}
           >
-            Random Call Management
+            Random Calls
           </NavigationMenuContentItem>
         </NavigationMenuContent>
       </NavigationMenuItem>
