@@ -137,17 +137,6 @@ function SendPushNotification({ userId }: { userId: string }) {
       <TextInput
         {...registerInput({
           register,
-          name: 'pushNotificationHeadline',
-          options: {},
-        })}
-        onChange={() => setSentSuccessfully(false)}
-        label={'Send the user a push notification'}
-        placeholder="Headline"
-        error={errors?.pushNotificationHeadline?.message}
-      />
-      <TextInput
-        {...registerInput({
-          register,
           name: 'pushNotificationTitle',
           options: {},
         })}
