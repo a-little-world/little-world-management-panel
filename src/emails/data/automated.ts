@@ -2112,13 +2112,17 @@ const automatedEmails = {
         href: '{{ native_app_repo_url }}',
       },
       {
-        type: ContentTypes.Link,
+        type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-native-app-beta-ios.block-11'],
+      },
+      {
+        type: ContentTypes.Link,
+        text: automatedText['automatic-emails-native-app-beta-ios.block-12'],
         href: '{{ native_app_bug_report_url }}',
       },
       {
         type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-native-app-beta-ios.block-12'],
+        text: automatedText['automatic-emails-native-app-beta-ios.block-13'],
       },
       {
         type: ContentTypes.Link,
@@ -2177,13 +2181,17 @@ const automatedEmails = {
         href: '{{ native_app_repo_url }}',
       },
       {
-        type: ContentTypes.Link,
+        type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-native-app-beta-android.block-11'],
+      },
+      {
+        type: ContentTypes.Link,
+        text: automatedText['automatic-emails-native-app-beta-android.block-12'],
         href: '{{ native_app_bug_report_url }}',
       },
       {
         type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-native-app-beta-android.block-12'],
+        text: automatedText['automatic-emails-native-app-beta-android.block-13'],
       },
       {
         type: ContentTypes.Link,
