@@ -23,6 +23,7 @@ import { BucketTag } from './user/UserCard.styles';
 
 const MATCHES_FIELDS = [
   { key: 'status', label: 'Status' },
+  { key: 'match_type', label: 'Type' },
   { key: 'uuid', label: 'Match ID (click to view)' },
   { key: 'user1', label: 'User 1' },
   { key: 'user2', label: 'User 2' },
@@ -97,6 +98,23 @@ export function MatchesTable({ matchList, list }) {
                     return (
                       <TableCell key={match.uuid + key}>
                         <Link to={`/match/${match.uuid}`}>{match.uuid}</Link>
+                      </TableCell>
+                    );
+                  }
+
+                  if (key === 'match_type') {
+                    return (
+                      <TableCell key={match.uuid + key}>
+                        <Tag
+                          color={
+                            match.match_type === 'standard'
+                              ? '#9631c5'
+                              : '#ec2525'
+                          }
+                          size={TagSizes.small}
+                        >
+                          {match.match_type}
+                        </Tag>
                       </TableCell>
                     );
                   }

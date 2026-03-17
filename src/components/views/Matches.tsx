@@ -1,6 +1,6 @@
 import { Dropdown, Text } from '@a-little-world/little-world-design-system';
 import React from 'react';
-import { createSearchParams, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { useMatchListData, useMatchesFilterOptions } from '../../store';
@@ -26,22 +26,38 @@ const orderingOptions = [
   },
 ];
 
+const matchTypeOptions = [
+  { value: 'all', label: 'All' },
+  { value: 'standard', label: 'Standard' },
+  { value: 'random_call', label: 'Random Call' },
+];
+
 export function Matches() {
   let [searchParams, setSearchParams] = useSearchParams();
-  const orderBy = searchParams.get('order_by') || '-date_joined';
+  const orderBy = searchParams.get('order_by') || '-created_at';
+  const matchType = searchParams.get('match_type') ?? '';
   const list = searchParams.get('list') || 'all';
   const { filterOptions, isLoading: filtersLoading } =
     useMatchesFilterOptions();
 
   const { matchList, isLoading: usersLoading } = useMatchListData(
-    createSearchParams(searchParams),
+    searchParams.toString(),
   );
 
   const changeList = (list: string) => {
     searchParams.set('list', list);
     setSearchParams(searchParams);
   };
-  console.log({ filterOptions });
+
+  const changeMatchType = (val: string) => {
+    if (val === 'all') {
+      searchParams.delete('match_type');
+    } else {
+      searchParams.set('match_type', val);
+    }
+    setSearchParams(searchParams);
+  };
+
   return (
     <>
       <FiltersToolbar
@@ -58,6 +74,14 @@ export function Matches() {
           onValueChange={changeList}
           placeholder="Select a match list..."
           cannotError
+        />
+        <StyledDropdown
+          value={matchType}
+          options={matchTypeOptions}
+          onValueChange={changeMatchType}
+          placeholder="Match type..."
+          cannotError
+          maxWidth="160px"
         />
         <StyledDropdown
           value={orderBy}
