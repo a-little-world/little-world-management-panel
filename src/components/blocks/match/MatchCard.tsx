@@ -126,6 +126,7 @@ const MatchCard = ({
             <StyledMatchReport {...getMatchReportProps(match, isProposed)} />
           )}
           <DataField title="Status" value={match.status} />
+          <DataField title="Type" value={match.match_type} />
           <DataField
             title="Matched"
             value={formatTimeDistance(

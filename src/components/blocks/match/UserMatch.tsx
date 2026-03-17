@@ -100,6 +100,7 @@ const UserMatch = ({ match, userName }: { match: any; userName: string }) => {
           <Text bold>
             {match.partner.first_name} {match.partner.second_name}
           </Text>
+          <Text bold>Type: {match.match_type}</Text>
           {match.bucket && (
             <Bucket bold color={'#000000'} size={TagSizes.small}>
               {match?.bucket}
