@@ -257,6 +257,41 @@ function BurstUpdateDialog({
   );
 }
 
+function ForceResetWarningDialog({
+  open,
+  onClose,
+  onForceReset,
+  isSubmitting,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onForceReset: () => void;
+  isSubmitting: boolean;
+}) {
+  return (
+    <Modal open={open} onClose={onClose}>
+      <Card width={CardSizes.Medium}>
+        <CardHeader>Not all tasks could be cleared</CardHeader>
+        <Text>
+          There might still be running and pending tasks. Press the button below
+          to forcefully try stopping them.
+        </Text>
+        <Text>
+          This can affect ongoing and pending tasks, so only use this if really
+          required.
+        </Text>
+        <Button
+          appearance={ButtonAppearance.Primary}
+          disabled={isSubmitting}
+          onClick={onForceReset}
+        >
+          Force Stop Remaining Tasks
+        </Button>
+      </Card>
+    </Modal>
+  );
+}
+
 export function Scores() {
   let [searchParams, setSearchParams] = useSearchParams();
   const { clearMatching } = useGlobalState();
@@ -273,6 +308,8 @@ export function Scores() {
 
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [scoringList, setScoringList] = useState<string>('default');
+  const [forceResetWarningOpen, setForceResetWarningOpen] = useState(false);
+  const [isForceClearing, setIsForceClearing] = useState(false);
 
   const { isLoading: filtersLoading } = useScoresFilterOptions();
   const { filterOptions: userFilterOptions } = useFilterOptions();
@@ -341,6 +378,26 @@ export function Scores() {
         setTaskIds={setBurstTaskIds}
         onBurstStarted={revalidateBurst}
         scoringList={scoringList}
+      />
+      <ForceResetWarningDialog
+        open={forceResetWarningOpen}
+        onClose={() => setForceResetWarningOpen(false)}
+        isSubmitting={isForceClearing}
+        onForceReset={() => {
+          setIsForceClearing(true);
+          clearActiveBurstCalculation({
+            force: true,
+            onSuccess: () => {
+              setIsForceClearing(false);
+              setForceResetWarningOpen(false);
+              revalidateBurst();
+            },
+            onError: err => {
+              setIsForceClearing(false);
+              console.error('Force clear burst calculation failed:', err);
+            },
+          });
+        }}
       />
       <ScoresToolbarWrapper>
         {filtersLoading ? (
@@ -433,8 +490,13 @@ export function Scores() {
                 onClick={() => {
                   clearActiveBurstCalculation({
                     onSuccess: revalidateBurst,
-                    onError: err =>
-                      console.error('Clear burst calculation failed:', err),
+                    onError: err => {
+                      if (err?.status === 400) {
+                        setForceResetWarningOpen(true);
+                        return;
+                      }
+                      console.error('Clear burst calculation failed:', err);
+                    },
                   });
                 }}
               >
