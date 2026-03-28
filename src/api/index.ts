@@ -441,14 +441,17 @@ export const burstUpdateMatchingScores = async ({
 };
 
 export const clearActiveBurstCalculation = async ({
+  force = false,
   onSuccess,
   onError,
 }: {
+  force?: boolean;
   onSuccess?: () => void;
   onError?: (error: any) => void;
 }) => {
   try {
-    await apiFetch('/api/matching/clear_active_burst_calculation/', {
+    const forceParam = force ? '?force=true' : '';
+    await apiFetch(`/api/matching/clear_active_burst_calculation/${forceParam}`, {
       method: 'POST',
     });
     onSuccess?.();
