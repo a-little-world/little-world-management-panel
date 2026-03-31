@@ -521,7 +521,7 @@ const automatedEmails = {
       {
         type: ContentTypes.Button,
         text: automatedText['automatic-emails-fm011.block-5'],
-        href: '{{ match_removed_survey_url }}',
+        href: '{{ match_removed_fm011_no_contact_url }}',
       },
       {
         type: ContentTypes.Paragraph,
@@ -559,7 +559,7 @@ const automatedEmails = {
       {
         type: ContentTypes.Button,
         text: automatedText['automatic-emails-fm021.block-5'],
-        href: '{{ match_removed_survey_url }}',
+        href: '{{ match_removed_fm021_ghosted_url }}',
       },
       {
         type: ContentTypes.Paragraph,
