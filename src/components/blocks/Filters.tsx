@@ -32,7 +32,7 @@ enum FilterKeys {
   Company = 'state__company',
   EmailAuthenticated = 'state__email_authenticated',
   JobSearch = 'profile__job_search',
-  HadPreMatchingCall = 'state__had_prematching_call',
+  HadPreMatchingCall = 'state__is_onboarded',
   HasPriority = 'state__has_match_priority',
   TargetGroups = 'profile__target_groups',
   UserType = 'profile__user_type',

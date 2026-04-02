@@ -54,7 +54,7 @@ export function PrematchingAppointments() {
         (acc, appointment) => {
           acc[appointment.user.hash] = {
             ...appointment.user,
-            had_prematching_call: appointment.had_prematching_call,
+            is_onboarded: appointment.is_onboarded,
           };
           return acc;
         },

@@ -62,7 +62,7 @@ interface UserState {
   searching_state: 'searching' | 'matched';
   email_authenticated: boolean;
   user_form_state: 'filled' | 'unfilled';
-  had_prematching_call: boolean;
+  is_onboarded: boolean;
   unresponsive: boolean;
 }
 
@@ -128,7 +128,7 @@ const UserStatus: React.FC<{ user: User; appointment?: any }> = ({
         {
           id: 'prematching-call-completed',
           label: 'Call Attended',
-          isCompleted: user.state.had_prematching_call,
+          isCompleted: user.state.is_onboarded,
         },
         ...(user.matches.unconfirmed.results.length > 0 &&
           user.matches.confirmed.results.length === 0
@@ -181,7 +181,7 @@ const UserDetails: React.FC<{
 }> = ({ user, appointment, isVolunteer }) => (
   <DetailsContainer>
     <DetailsList>
-      {user.state.had_prematching_call && (
+      {user.state.is_onboarded && (
         <InfoRow>
           <Text tag="h4" bold>
             Matching State:

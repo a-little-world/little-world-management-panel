@@ -48,7 +48,7 @@ interface User {
 }
 
 interface PrematchingAppointmentUser extends User {
-  had_prematching_call: boolean;
+  is_onboarded: boolean;
 }
 
 interface SelectedUsersPrematchingCallAttendedProps {

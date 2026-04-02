@@ -481,7 +481,7 @@ const UserActions = ({
                     )}
                   />
                   <Controller
-                    defaultValue={user.state.had_prematching_call}
+                    defaultValue={user.state.is_onboarded}
                     name="completed"
                     control={control}
                     render={({

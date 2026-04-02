@@ -365,7 +365,7 @@ export const setHadPrematchingCall = async ({
       {
         method: 'POST',
         body: {
-          had_prematching_call: completed,
+          is_onboarded: completed,
         },
       },
     );

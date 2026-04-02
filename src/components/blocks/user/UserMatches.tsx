@@ -46,7 +46,7 @@ const UserMatches = ({ user, appointment }: UserMatchesProps) => {
               {formatTime(new Date(appointment?.end_time))}
             </Text>
             <Text color={theme.color.text.secondary}>
-              {user.state.had_prematching_call
+              {user.state.is_onboarded
                 ? '(Attended)'
                 : '(Not Attended)'}
             </Text>
