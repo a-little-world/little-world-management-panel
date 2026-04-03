@@ -80,8 +80,10 @@ const FilledBar = styled.div<{ $color?: string; $percentage: number }>`
   padding-right: ${({ theme }) => theme.spacing.small};
   color: white;
   font-weight: bold;
+  box-sizing: border-box;
 `;
 
+/** Same shell as FilledBar: pill shape, flex row, right-aligned label area — segment colors live in SegmentTrack */
 const SegmentedFilledBar = styled.div<{ $percentage: number }>`
   position: absolute;
   top: 0;
@@ -90,6 +92,19 @@ const SegmentedFilledBar = styled.div<{ $percentage: number }>`
   width: ${({ $percentage }) => $percentage}%;
   border-radius: 15px;
   overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding-right: ${({ theme }) => theme.spacing.small};
+  color: white;
+  font-weight: bold;
+  box-sizing: border-box;
+`;
+
+const SegmentTrack = styled.div`
+  flex: 1 1 auto;
+  min-width: 0;
+  align-self: stretch;
   display: flex;
   flex-direction: row;
   align-items: stretch;
@@ -104,17 +119,10 @@ const BarSegment = styled.div<{
   background-color: ${({ $color }) => $color};
 `;
 
-const BarPercentageText = styled.span`
-  position: absolute;
-  right: ${({ theme }) => theme.spacing.small};
-  top: 50%;
-  transform: translateY(-50%);
-  color: white;
-  font-weight: bold;
-  font-size: 13px;
-  z-index: 2;
-  text-shadow: 0 0 2px rgba(0, 0, 0, 0.45);
-  pointer-events: none;
+const BarPercentageLabel = styled.span`
+  flex-shrink: 0;
+  margin-left: ${({ theme }) => theme.spacing.xsmall};
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.35);
 `;
 
 const CountColumn = styled(Text)`
@@ -138,7 +146,28 @@ interface HorizontalBarChartProps {
   title?: string;
 }
 
-const SEGMENT_COLORS = ['#1c64f2', '#3b82f6', '#60a5fa', '#93c5fd'];
+const SEGMENT_COLORS = [
+  '#172554',
+  '#1e3a8a',
+  '#1e40af',
+  '#1d4ed8',
+  '#2563eb',
+  '#3b82f6',
+  '#60a5fa',
+  '#0ea5e9',
+  '#38bdf8',
+  '#7dd3fc',
+  '#06b6d4',
+  '#22d3ee',
+];
+
+function getSegmentColor(segmentIndex: number, segmentCount: number) {
+  if (segmentCount <= 0) return SEGMENT_COLORS[0];
+  const maxIdx = SEGMENT_COLORS.length - 1;
+  if (segmentCount === 1) return SEGMENT_COLORS[Math.floor(maxIdx / 2)];
+  const t = segmentIndex / (segmentCount - 1);
+  return SEGMENT_COLORS[Math.round(t * maxIdx)];
+}
 
 function renderBarFill(item: BarData, index: number, totalRows: number) {
   const pct = item.percentage;
@@ -149,15 +178,17 @@ function renderBarFill(item: BarData, index: number, totalRows: number) {
   if (visible.length >= 2) {
     return (
       <SegmentedFilledBar $percentage={pct}>
-        {visible.map((seg, si) => (
-          <BarSegment
-            key={`${seg.label}-${si}`}
-            $flex={seg.fraction}
-            $color={SEGMENT_COLORS[si % SEGMENT_COLORS.length]}
-            title={`${seg.label}: ${seg.count}`}
-          />
-        ))}
-        <BarPercentageText>{pct}%</BarPercentageText>
+        <SegmentTrack>
+          {visible.map((seg, si) => (
+            <BarSegment
+              key={`${seg.label}-${si}`}
+              $flex={seg.fraction}
+              $color={getSegmentColor(si, visible.length)}
+              title={`${seg.label}: ${seg.count}`}
+            />
+          ))}
+        </SegmentTrack>
+        <BarPercentageLabel>{pct}%</BarPercentageLabel>
       </SegmentedFilledBar>
     );
   }
@@ -192,7 +223,9 @@ const HorizontalBarChart: React.FC<HorizontalBarChartProps> = ({
               ) : null}
             </NameColumn>
             <CountColumn>{item.count}</CountColumn>
-            <BarContainer>{renderBarFill(item, index, data.length)}</BarContainer>
+            <BarContainer>
+              {renderBarFill(item, index, data.length)}
+            </BarContainer>
             <LabelColumn tag="label" type={TextTypes.Body6}>
               {item.label ?? `${item.percentage}%`}
             </LabelColumn>

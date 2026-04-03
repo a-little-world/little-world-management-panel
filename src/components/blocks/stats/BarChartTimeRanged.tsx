@@ -803,7 +803,6 @@ export function BarChartTimeRangedV2({
   const modifiedData = modifyData(data?.buckets ?? [], listDescriptionMap, {
     mergeGroups: category?.funnelMergeGroups ?? [],
   });
-  const chartConfig = createChartConfig(modifiedData);
 
   return (
     <Card className="">

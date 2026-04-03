@@ -285,10 +285,8 @@ function KPIsDashboard() {
             journey_v2__too_low_german_level: 'Users with B1+ German level',
             journey_v2__user_form_completed_volunteer:
               'Users filled form (volunteers)',
-            journey_v2__booked_onboarding_call:
-              'Onboarding started (booked call)',
-            journey_v2__self_onboarding_started:
-              'Onboarding started (self-onboarding)',
+            journey_v2__booked_onboarding_call: 'Booked call)',
+            journey_v2__self_onboarding_started: 'Self-onboarding started',
             journey_v2__no_show: 'Onboarded users',
           }}
         />

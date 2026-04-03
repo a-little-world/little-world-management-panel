@@ -105,8 +105,7 @@ export function modifyData(
 
     if (isMergedFunnelRow(item)) {
       const parts = item.__mergeMeta.segmentCounts.map(s => {
-        const lbl =
-          bucketDescriptionMap[s.bucketKey] ?? s.bucketKey;
+        const lbl = bucketDescriptionMap[s.bucketKey] ?? s.bucketKey;
         return `${lbl} (${s.count})`;
       });
       longDescription = `${index !== 0 ? '-' : ''} ${parts.join(' · ')} = ${currentCount} (${percentage}%)`;
@@ -130,7 +129,7 @@ export function modifyData(
         fraction: totalSeg > 0 ? s.count / totalSeg : 0,
       }));
       row.description = row.segments
-        .map(s => `${s.label}: ${s.count}`)
+        .map(s => `${s.label}: ${s.count} (${s.fraction.toFixed(2)}%)`)
         .join(' · ');
     }
 
