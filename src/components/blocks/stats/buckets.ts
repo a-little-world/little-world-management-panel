@@ -23,8 +23,15 @@ export const userJourneyBucketsV4 = [
       },
       {
         id: 'journey_v2__booked_onboarding_call',
-        title: 'Booked Onboarding Call',
-        description: 'User has filled form and booked onboarding call',
+        title: 'Onboarding started (booked call)',
+        description:
+          'User has filled form and has a future prematching / onboarding call booked',
+      },
+      {
+        id: 'journey_v2__self_onboarding_started',
+        title: 'Onboarding started (self-onboarding)',
+        description:
+          'Self-onboarding started but not completed; no future booked call',
       },
       {
         id: 'journey_v2__too_low_german_level',
@@ -36,7 +43,7 @@ export const userJourneyBucketsV4 = [
         id: 'journey_v2__no_show',
         title: 'No Show',
         description: "Didn't show up to onboarding call",
-      }
+      },
     ],
   },
   {
@@ -81,7 +88,7 @@ export const userJourneyBucketsV4 = [
         title: 'Match Completed Free Play',
         description: 'User Has complted a match but is still in contact',
       },
-    ]
+    ],
   },
   {
     id: 'failed-users',
@@ -90,7 +97,7 @@ export const userJourneyBucketsV4 = [
       {
         id: 'journey_v2__failed_matching',
         title: 'Failed Matching',
-        description: "User with only failed matchings",
+        description: 'User with only failed matchings',
       },
       {
         id: 'journey_v2__gave_up_searching',
@@ -108,7 +115,7 @@ export const userJourneyBucketsV4 = [
         description: 'User was marked as unresponsive',
       },
     ],
-  }
+  },
 ];
 
 export const matchJourneyBucketsV4 = [
@@ -221,13 +228,11 @@ export const matchJourneyBucketsV4 = [
       {
         id: 'match_journey_v2__reported_or_removed',
         title: 'Reported or unmatched',
-        description:
-          'Matches that have been removed/reported or unmatched',
-      }
+        description: 'Matches that have been removed/reported or unmatched',
+      },
     ],
   },
 ];
-
 
 export const userJourneyBuckets = [
   {
@@ -254,8 +259,15 @@ export const userJourneyBuckets = [
       },
       {
         id: 'journey_v2__booked_onboarding_call',
-        title: 'Booked Onboarding Call',
-        description: 'User has filled form and booked onboarding call',
+        title: 'Onboarding started (booked call)',
+        description:
+          'User has filled form and has a future prematching / onboarding call booked',
+      },
+      {
+        id: 'journey_v2__self_onboarding_started',
+        title: 'Onboarding started (self-onboarding)',
+        description:
+          'Self-service onboarding started but not completed; no future booked call',
       },
       {
         id: 'journey_v2__first_search',
@@ -363,8 +375,7 @@ export const matchJourneyBuckets = [
       {
         id: 'match_journey_v2__proposed_matches',
         title: 'Proposed Matches',
-        description:
-          'Users with an option matching proposal',
+        description: 'Users with an option matching proposal',
       },
       {
         id: 'match_journey_v2__unviewed',
@@ -461,7 +472,7 @@ export const matchJourneyBuckets = [
         title: 'Expired Proposals',
         description:
           'Matches that are proposed but not confirmed within a specified number of days.',
-      }
+      },
     ],
   },
 ];

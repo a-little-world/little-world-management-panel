@@ -35,6 +35,7 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.small};
+  overflow: scroll;
 `;
 
 const TopBar = styled.div`
@@ -175,8 +176,7 @@ const Emails = () => {
           appearance={ButtonAppearance.Secondary}
           onClick={onSyncBackendEmails}
         >
-          {' '}
-          [DEVELOPMENT] Sync Emails{' '}
+          [DEVELOPMENT] Sync Emails
         </Button>
       </TopBar>
       <Text type={TextTypes.Body4}>
@@ -188,7 +188,10 @@ const Emails = () => {
         items={map(GROUPED_TEMPLATES, (item, header) => {
           return {
             header,
-            content: item.map(template => (
+            content: sortBy(
+              item as { id: string; label: string }[],
+              'label',
+            ).map(template => (
               <Template
                 key={template.id}
                 to={template.id}

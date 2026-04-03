@@ -68,6 +68,7 @@ export function UserSignUpLossStatisticBase({
     'journey_v2__email_verified',
     'journey_v2__user_form_completed',
     'journey_v2__booked_onboarding_call',
+    'journey_v2__self_onboarding_started',
     'journey_v2__first_search',
     'journey_v2__user_deleted',
     'journey_v2__no_show',
@@ -79,6 +80,7 @@ export function UserSignUpLossStatisticBase({
     'journey_v2__email_verified',
     'journey_v2__user_form_completed',
     'journey_v2__booked_onboarding_call',
+    'journey_v2__self_onboarding_started',
     'journey_v2__first_search',
     'journey_v2__user_deleted',
     'journey_v2__no_show',
@@ -164,9 +166,15 @@ export function UserSignUpLossStatisticBase({
 
   const percentageUsersBecomeActive =
     (becameActiveUsers / totalUserCount) * 100;
-  const percentageUsersCompleFormButDontBookOnboarding =
-    ((allUserCount['journey_v2__user_form_completed'] -
-      allUserCount['journey_v2__booked_onboarding_call']) /
+  const onboardingStartedBooked =
+    allUserCount['journey_v2__booked_onboarding_call'] ?? 0;
+  const onboardingStartedSelf =
+    allUserCount['journey_v2__self_onboarding_started'] ?? 0;
+  const onboardingStartedTotal =
+    onboardingStartedBooked + onboardingStartedSelf;
+
+  const percentageUsersCompleFormButDontStartOnboarding =
+    ((allUserCount['journey_v2__user_form_completed'] - onboardingStartedTotal) /
       totalUserCount) *
     100;
 
@@ -174,9 +182,8 @@ export function UserSignUpLossStatisticBase({
     2,
   )}% of all users.`;
   const text2 = `Out of ${totalUserCount} users, ${
-    allUserCount['journey_v2__user_form_completed'] -
-    allUserCount['journey_v2__booked_onboarding_call']
-  } users completed the form but did not book an onboarding call. This is ${percentageUsersCompleFormButDontBookOnboarding.toFixed(
+    allUserCount['journey_v2__user_form_completed'] - onboardingStartedTotal
+  } users completed the form but did not start onboarding (no booked call and no in-progress self-service). This is ${percentageUsersCompleFormButDontStartOnboarding.toFixed(
     2,
   )}% of all users.`;
 

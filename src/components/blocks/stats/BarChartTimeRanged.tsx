@@ -8,7 +8,7 @@ import { Bar, BarChart, CartesianGrid, Text, XAxis, YAxis } from 'recharts';
 import styled from 'styled-components';
 import useSWR from 'swr';
 
-import { modifyData } from '../../../helpers/stats';
+import { modifyData, type FunnelMergeGroup } from '../../../helpers/stats';
 import { cratePostFetcher } from '../../../store';
 import {
   Card,
@@ -76,7 +76,13 @@ const matchJourneyChartCategories = [
   },
 ];
 
-const chartCategories = [
+const chartCategories: Array<{
+  id: string;
+  title: string;
+  chartBackend?: string;
+  filters: string[];
+  funnelMergeGroups?: FunnelMergeGroup[];
+}> = [
   {
     id: 'user-signup-funnel',
     title: 'User Signup Funnel',
@@ -90,7 +96,17 @@ const chartCategories = [
       'journey_v2__user_form_completed',
       'journey_v2__too_low_german_level',
       'journey_v2__booked_onboarding_call',
+      'journey_v2__self_onboarding_started',
       'journey_v2__no_show',
+    ],
+    funnelMergeGroups: [
+      {
+        buckets: [
+          'journey_v2__booked_onboarding_call',
+          'journey_v2__self_onboarding_started',
+        ],
+        label: 'Onboarding started',
+      },
     ],
   },
   {
@@ -114,7 +130,17 @@ const chartCategories = [
       'journey_v2__email_verified',
       'journey_v2__user_form_completed',
       'journey_v2__booked_onboarding_call',
+      'journey_v2__self_onboarding_started',
       'journey_v2__no_show',
+    ],
+    funnelMergeGroups: [
+      {
+        buckets: [
+          'journey_v2__booked_onboarding_call',
+          'journey_v2__self_onboarding_started',
+        ],
+        label: 'Onboarding started',
+      },
     ],
   },
   {
@@ -774,7 +800,9 @@ export function BarChartTimeRangedV2({
     return <div>Error: {errorMessage}</div>;
   }
 
-  const modifiedData = modifyData(data?.buckets, listDescriptionMap);
+  const modifiedData = modifyData(data?.buckets ?? [], listDescriptionMap, {
+    mergeGroups: category?.funnelMergeGroups ?? [],
+  });
   const chartConfig = createChartConfig(modifiedData);
 
   return (

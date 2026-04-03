@@ -2,13 +2,18 @@ import { Text, TextTypes } from '@a-little-world/little-world-design-system';
 import React from 'react';
 import styled from 'styled-components';
 
-interface BarData {
+import type { FunnelBarSegment } from '../../../helpers/stats';
+
+export interface BarData {
   name: string;
   color?: string;
-  description: string;
-  count: string;
+  description?: string;
+  count: string | number;
   percentage: number;
-  label: string;
+  label?: string;
+  longDescription?: string;
+  /** When set (e.g. merged funnel step), the filled bar is split by share of each part */
+  segments?: FunnelBarSegment[];
 }
 
 const getDefaultColor = (total: number, index: number) => {
@@ -77,6 +82,41 @@ const FilledBar = styled.div<{ $color?: string; $percentage: number }>`
   font-weight: bold;
 `;
 
+const SegmentedFilledBar = styled.div<{ $percentage: number }>`
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: ${({ $percentage }) => $percentage}%;
+  border-radius: 15px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+`;
+
+const BarSegment = styled.div<{
+  $flex: number;
+  $color: string;
+}>`
+  flex: ${({ $flex }) => $flex} 1 0;
+  min-width: 0;
+  background-color: ${({ $color }) => $color};
+`;
+
+const BarPercentageText = styled.span`
+  position: absolute;
+  right: ${({ theme }) => theme.spacing.small};
+  top: 50%;
+  transform: translateY(-50%);
+  color: white;
+  font-weight: bold;
+  font-size: 13px;
+  z-index: 2;
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+`;
+
 const CountColumn = styled(Text)`
   display: flex;
   align-items: center;
@@ -98,6 +138,37 @@ interface HorizontalBarChartProps {
   title?: string;
 }
 
+const SEGMENT_COLORS = ['#1c64f2', '#3b82f6', '#60a5fa', '#93c5fd'];
+
+function renderBarFill(item: BarData, index: number, totalRows: number) {
+  const pct = item.percentage;
+  const baseColor = item.color || getDefaultColor(totalRows, index);
+  const visible =
+    item.segments?.filter(s => s.count > 0 && s.fraction > 0) ?? [];
+
+  if (visible.length >= 2) {
+    return (
+      <SegmentedFilledBar $percentage={pct}>
+        {visible.map((seg, si) => (
+          <BarSegment
+            key={`${seg.label}-${si}`}
+            $flex={seg.fraction}
+            $color={SEGMENT_COLORS[si % SEGMENT_COLORS.length]}
+            title={`${seg.label}: ${seg.count}`}
+          />
+        ))}
+        <BarPercentageText>{pct}%</BarPercentageText>
+      </SegmentedFilledBar>
+    );
+  }
+
+  return (
+    <FilledBar $percentage={pct} $color={baseColor}>
+      {pct}%
+    </FilledBar>
+  );
+}
+
 const HorizontalBarChart: React.FC<HorizontalBarChartProps> = ({
   data,
   title,
@@ -114,21 +185,16 @@ const HorizontalBarChart: React.FC<HorizontalBarChartProps> = ({
           <ChartContainer key={index}>
             <NameColumn>
               <Name tag="h4">{item.name}</Name>
-              <Description type={TextTypes.Body6}>
-                {item.description}
-              </Description>
+              {item.description ? (
+                <Description type={TextTypes.Body6}>
+                  {item.description}
+                </Description>
+              ) : null}
             </NameColumn>
             <CountColumn>{item.count}</CountColumn>
-            <BarContainer>
-              <FilledBar
-                $percentage={item.percentage}
-                $color={item.color || getDefaultColor(data.length, index)}
-              >
-                {item.percentage}%
-              </FilledBar>
-            </BarContainer>
+            <BarContainer>{renderBarFill(item, index, data.length)}</BarContainer>
             <LabelColumn tag="label" type={TextTypes.Body6}>
-              {item.label}
+              {item.label ?? `${item.percentage}%`}
             </LabelColumn>
           </ChartContainer>
         ))}

@@ -125,94 +125,10 @@ const patenmatchEmails = {
       },
     ],
   },
-}
+};
 
 const automatedEmails = {
   ...patenmatchEmails,
-  'prematching-call-no-show': {
-    id: 'prematching-call-no-show',
-    label: 'Prematching call no show',
-    category_id: EmailCategories.Automated,
-    preview: automatedText['prematching-call-no-show.preview'],
-    subject: automatedText['prematching-call-no-show.subject'],
-    content: [
-      {
-        type: ContentTypes.Title,
-        text: automatedText['prematching-call-no-show.block-1'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['prematching-call-no-show.block-2'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['prematching-call-no-show.block-3'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['prematching-call-no-show.block-4'],
-      },
-      {
-        type: ContentTypes.Link,
-        text: 'Buche einen neuen Termin',
-        href: automatedText['prematching-call-no-show.booking-link'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: "",
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['prematching-call-no-show.block-5'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['prematching-call-no-show.block-6'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['prematching-call-no-show.block-7'],
-      },
-    ],
-  },
-  'prematching-call-post-thanks': {
-    id: 'prematching-call-post-thanks',
-    label: 'Prematching call thanks for coming',
-    category_id: EmailCategories.Automated,
-    preview: automatedText['prematching-call-post-thanks.preview'],
-    subject: automatedText['prematching-call-post-thanks.subject'],
-    content: [
-      {
-        type: ContentTypes.Title,
-        text: automatedText['prematching-call-post-thanks.block-1'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['prematching-call-post-thanks.block-2'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['prematching-call-post-thanks.block-3'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['prematching-call-post-thanks.block-4'],
-      },
-      {
-        type: ContentTypes.Link,
-        text: 'Little World Gruppengespräche',
-        href: 'https://home.little-world.com/#gruppentermine',
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: "",
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['prematching-call-post-thanks.block-5'],
-      },
-    ],
-  },
   'account-deleted': {
     id: 'account-deleted',
     label: 'Account Deleted',
@@ -244,191 +160,6 @@ const automatedEmails = {
       {
         type: ContentTypes.Paragraph,
         text: automatedText['account-deleted.block-6'],
-      },
-    ],
-  },
-  welcome: {
-    id: 'welcome',
-    label: 'Welcome',
-    category_id: EmailCategories.Automated,
-    preview: automatedText['welcome.preview'],
-    subject: automatedText['welcome.subject'],
-    content: [
-      { type: ContentTypes.Title, text: automatedText['welcome.block-1'] },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['welcome.block-2'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['welcome.block-3'],
-      },
-      {
-        type: ContentTypes.Code,
-        text: BackendVars.verificationCode,
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['welcome.block-4'],
-      },
-      {
-        type: ContentTypes.Button,
-        text: automatedText['welcome.block-5'],
-        href: BackendVars.confirmationUrl,
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['welcome.block-6'],
-      },
-    ],
-  },
-  'confirm-match-1': {
-    id: 'confirm-match-1',
-    label: 'Confirm Match 1',
-    category_id: EmailCategories.Automated,
-    preview: automatedText['confirm-match-1.preview'],
-    subject: automatedText['confirm-match-1.subject'],
-    content: [
-      {
-        type: ContentTypes.Title,
-        text: automatedText['confirm-match-1.block-1'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['confirm-match-1.block-2'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['confirm-match-1.block-3'],
-      },
-      {
-        type: ContentTypes.Button,
-        text: automatedText['confirm-match-1.block-4'],
-        href: BackendVars.acceptMatchUrl,
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['confirm-match-1.block-5'],
-      },
-    ],
-  },
-  'confirm-match-2': {
-    id: 'confirm-match-2',
-    label: 'Confirm Match 2',
-    category_id: EmailCategories.Automated,
-    preview: automatedText['confirm-match-2.preview'],
-    subject: automatedText['confirm-match-2.subject'],
-    content: [
-      {
-        type: ContentTypes.Title,
-        text: automatedText['confirm-match-2.block-1'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['confirm-match-2.block-2'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['confirm-match-2.block-3'],
-      },
-      {
-        type: ContentTypes.Button,
-        text: automatedText['confirm-match-2.block-4'],
-        href: BackendVars.acceptMatchUrl,
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['confirm-match-2.block-5'],
-      },
-    ],
-  },
-  'expired-match': {
-    id: 'expired-match',
-    label: 'Match Expired',
-    category_id: EmailCategories.Automated,
-    preview: automatedText['expired-match.preview'],
-    subject: automatedText['expired-match.subject'],
-    content: [
-      {
-        type: ContentTypes.Title,
-        text: automatedText['expired-match.block-1'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['expired-match.block-2'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['expired-match.block-3'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['expired-match.block-4'],
-      },
-      {
-        type: ContentTypes.Button,
-        text: automatedText['expired-match.block-5'],
-        href: BackendVars.acceptMatchUrl,
-      },
-    ],
-  },
-  'new-match': {
-    id: 'new-match',
-    label: 'New Match',
-    category_id: EmailCategories.Automated,
-    preview: automatedText['new-match.block-5'],
-    subject: automatedText['new-match.subject'],
-    content: [
-      {
-        type: ContentTypes.Title,
-        text: automatedText['new-match.block-1'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['new-match.block-2'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['new-match.block-3'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['new-match.block-4'],
-      },
-      {
-        type: ContentTypes.Button,
-        text: automatedText['new-match.block-5'],
-        href: BackendVars.partnerProfileUrl,
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['new-match.block-6'],
-      },
-    ],
-  },
-  'new-messages': {
-    id: 'new-messages',
-    label: 'New Messages',
-    category_id: EmailCategories.Automated,
-    preview: automatedText['new-messages.preview'],
-    subject: automatedText['new-messages.subject'],
-    content: [
-      {
-        type: ContentTypes.Title,
-        text: automatedText['new-messages.block-1'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['new-messages.block-2'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['new-messages.block-3'],
-      },
-      {
-        type: ContentTypes.Button,
-        text: automatedText['new-messages.block-4'],
-        href: BackendVars.messagesUrl,
       },
     ],
   },
@@ -466,35 +197,6 @@ const automatedEmails = {
       },
     ],
   },
-  'automatic-emails-fm022': {
-    id: 'automatic-emails-fm022',
-    label: 'Failed Matching – User Ghosted',
-    category_id: EmailCategories.Automated,
-    preview: automatedText['automatic-emails-fm022.preview'],
-    subject: automatedText['automatic-emails-fm022.subject'],
-    content: [
-      {
-        type: ContentTypes.Title,
-        text: automatedText['automatic-emails-fm022.block-1'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-fm022.block-2'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-fm022.block-3'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-fm022.block-4'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-fm022.block-5'],
-      },
-    ],
-  },
   'automatic-emails-fm011': {
     id: 'automatic-emails-fm011',
     label: 'FM011 - Match Removed No Contact',
@@ -521,7 +223,7 @@ const automatedEmails = {
       {
         type: ContentTypes.Button,
         text: automatedText['automatic-emails-fm011.block-5'],
-        href: '{{ match_removed_survey_url }}',
+        href: '{{ match_removed_fm011_no_contact_url }}',
       },
       {
         type: ContentTypes.Paragraph,
@@ -559,7 +261,7 @@ const automatedEmails = {
       {
         type: ContentTypes.Button,
         text: automatedText['automatic-emails-fm021.block-5'],
-        href: '{{ match_removed_survey_url }}',
+        href: '{{ match_removed_fm011_no_contact_url }}',
       },
       {
         type: ContentTypes.Paragraph,
@@ -571,38 +273,33 @@ const automatedEmails = {
       },
     ],
   },
-  'automatic-emails-m013': {
-    id: 'automatic-emails-m013',
-    label: 'M013 - Partner Waiting Reminder',
+  'automatic-emails-fm022': {
+    id: 'automatic-emails-fm022',
+    label: 'Failed Matching – User Ghosted',
     category_id: EmailCategories.Automated,
-    preview: automatedText['automatic-emails-m013.preview'],
-    subject: automatedText['automatic-emails-m013.subject'],
+    preview: automatedText['automatic-emails-fm022.preview'],
+    subject: automatedText['automatic-emails-fm022.subject'],
     content: [
       {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m013.block-1'],
+        type: ContentTypes.Title,
+        text: automatedText['automatic-emails-fm022.block-1'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m013.block-2'],
+        text: automatedText['automatic-emails-fm022.block-2'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m013.block-3'],
+        text: automatedText['automatic-emails-fm022.block-3'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m013.block-4'],
-      },
-      {
-        type: ContentTypes.Button,
-        text: automatedText['automatic-emails-m013.block-5'],
-        href: '{{ messages_url }}',
+        text: automatedText['automatic-emails-fm022.block-4'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m013.block-6'],
-      }
+        text: automatedText['automatic-emails-fm022.block-5'],
+      },
     ],
   },
   'automatic-emails-m012': {
@@ -645,7 +342,41 @@ const automatedEmails = {
       {
         type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-m012.block-8'],
-      }
+      },
+    ],
+  },
+  'automatic-emails-m013': {
+    id: 'automatic-emails-m013',
+    label: 'M013 - Partner Waiting Reminder',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['automatic-emails-m013.preview'],
+    subject: automatedText['automatic-emails-m013.subject'],
+    content: [
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-m013.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-m013.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-m013.block-3'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-m013.block-4'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['automatic-emails-m013.block-5'],
+        href: '{{ messages_url }}',
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-m013.block-6'],
+      },
     ],
   },
   'automatic-emails-m014': {
@@ -687,7 +418,33 @@ const automatedEmails = {
       {
         type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-m014.block-8'],
-      }
+      },
+    ],
+  },
+  'automatic-emails-m023': {
+    id: 'automatic-emails-m023',
+    label: 'M023 - Partner Waiting Reminder',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['automatic-emails-m023.preview'],
+    subject: automatedText['automatic-emails-m023.subject'],
+    content: [
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-m023.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-m023.block-2'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['automatic-emails-m023.block-3'],
+        href: BackendVars.messagesUrl,
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-m023.block-4'],
+      },
     ],
   },
   'automatic-emails-m024': {
@@ -726,7 +483,7 @@ const automatedEmails = {
       {
         type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-m024.block-7'],
-      }
+      },
     ],
   },
   'automatic-emails-m025': {
@@ -755,7 +512,36 @@ const automatedEmails = {
       {
         type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-m025.block-5'],
-      }
+      },
+    ],
+  },
+  'automatic-emails-m031': {
+    id: 'automatic-emails-m031',
+    label: 'M031 - Videocall Support Offer',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['automatic-emails-m031.preview'],
+    subject: automatedText['automatic-emails-m031.subject'],
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: automatedText['automatic-emails-m031.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-m031.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-m031.block-3'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-m031.block-4'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-m031.block-5'],
+      },
     ],
   },
   'automatic-emails-m032': {
@@ -796,32 +582,55 @@ const automatedEmails = {
       },
     ],
   },
-  'automatic-emails-m031': {
-    id: 'automatic-emails-m031',
-    label: 'M031 - Videocall Support Offer',
+  'automatic-emails-m033': {
+    id: 'automatic-emails-m033',
+    label: 'M033 - No Video-Call Update',
     category_id: EmailCategories.Automated,
-    preview: automatedText['automatic-emails-m031.preview'],
-    subject: automatedText['automatic-emails-m031.subject'],
+    preview: automatedText['automatic-emails-m033.preview'],
+    subject: automatedText['automatic-emails-m033.subject'],
     content: [
       {
         type: ContentTypes.Title,
-        text: automatedText['automatic-emails-m031.block-1'],
+        text: automatedText['automatic-emails-m033.block-1'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m031.block-2'],
+        text: automatedText['automatic-emails-m033.block-2'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m031.block-3'],
+        text: automatedText['automatic-emails-m033.block-3'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m031.block-4'],
+        text: automatedText['automatic-emails-m033.block-4'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['automatic-emails-m033.block-5'],
+        href: '{{ still_in_contact_yes_url }}',
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['automatic-emails-m033.block-6'],
+        href: '{{ still_in_contact_no_url }}',
       },
       {
         type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m031.block-5'],
+        text: automatedText['automatic-emails-m033.block-7'],
+      },
+      {
+        type: ContentTypes.Link,
+        text: automatedText['automatic-emails-m033.link-support-chat'],
+        href: '{{ messages_url }}',
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-m033.block-8'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-m033.block-9'],
       },
     ],
   },
@@ -941,84 +750,6 @@ const automatedEmails = {
       {
         type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-m044.block-7'],
-      },
-    ],
-  },
-  'automatic-emails-m023': {
-    id: 'automatic-emails-m023',
-    label: 'M023 - Partner Waiting Reminder',
-    category_id: EmailCategories.Automated,
-    preview: automatedText['automatic-emails-m023.preview'],
-    subject: automatedText['automatic-emails-m023.subject'],
-    content: [
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m023.block-1'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m023.block-2'],
-      },
-      {
-        type: ContentTypes.Button,
-        text: automatedText['automatic-emails-m023.block-3'],
-        href: BackendVars.messagesUrl,
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m023.block-4'],
-      }
-    ],
-  },
-  'automatic-emails-m033': {
-    id: 'automatic-emails-m033',
-    label: 'M033 - No Video-Call Update',
-    category_id: EmailCategories.Automated,
-    preview: automatedText['automatic-emails-m033.preview'],
-    subject: automatedText['automatic-emails-m033.subject'],
-    content: [
-      {
-        type: ContentTypes.Title,
-        text: automatedText['automatic-emails-m033.block-1'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m033.block-2'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m033.block-3'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m033.block-4'],
-      },
-      {
-        type: ContentTypes.Button,
-        text: automatedText['automatic-emails-m033.block-5'],
-        href: '{{ still_in_contact_yes_url }}',
-      },
-      {
-        type: ContentTypes.Button,
-        text: automatedText['automatic-emails-m033.block-6'],
-        href: '{{ still_in_contact_no_url }}',
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m033.block-7'],
-      },
-      {
-        type: ContentTypes.Link,
-        text: automatedText['automatic-emails-m033.link-support-chat'],
-        href: '{{ messages_url }}',
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m033.block-8'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m033.block-9'],
       },
     ],
   },
@@ -1230,81 +961,477 @@ const automatedEmails = {
       },
     ],
   },
-  'automatic-emails-u023': {
-    id: 'automatic-emails-u023',
-    label: 'Onboarding Reminder',
+  'automatic-emails-native-app-beta-android': {
+    id: 'automatic-emails-native-app-beta-android',
+    label: 'Native App Beta Invite (Android)',
     category_id: EmailCategories.Automated,
-    preview: automatedText['automatic-emails-u023.preview'],
-    subject: automatedText['automatic-emails-u023.subject'],
+    preview: automatedText['automatic-emails-native-app-beta-android.preview'],
+    subject: automatedText['automatic-emails-native-app-beta-android.subject'],
     content: [
       {
         type: ContentTypes.Title,
-        text: automatedText['automatic-emails-u023.block-1'],
+        text: automatedText['automatic-emails-native-app-beta-android.block-1'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u023.block-2'],
+        text: automatedText['automatic-emails-native-app-beta-android.block-2'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u023.block-3'],
+        text: automatedText['automatic-emails-native-app-beta-android.block-3'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u023.block-4'],
+        text: automatedText['automatic-emails-native-app-beta-android.block-4'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-android.block-5'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-android.block-6'],
       },
       {
         type: ContentTypes.Button,
-        text: automatedText['automatic-emails-u023.block-6'],
-        href: '{{ prematching_call_booking_link }}',
+        text: automatedText['automatic-emails-native-app-beta-android.block-7'],
+        href: '{{ android_beta_app_url }}',
       },
       {
         type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u023.block-5'],
+        text: automatedText['automatic-emails-native-app-beta-android.block-8'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-android.block-9'],
+      },
+      {
+        type: ContentTypes.Link,
+        text: automatedText[
+          'automatic-emails-native-app-beta-android.block-10'
+        ],
+        href: '{{ native_app_repo_url }}',
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText[
+          'automatic-emails-native-app-beta-android.block-11'
+        ],
+      },
+      {
+        type: ContentTypes.Link,
+        text: automatedText[
+          'automatic-emails-native-app-beta-android.block-12'
+        ],
+        href: '{{ native_app_bug_report_url }}',
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText[
+          'automatic-emails-native-app-beta-android.block-13'
+        ],
+      },
+      {
+        type: ContentTypes.Link,
+        text: 'Zum Support-Chat',
+        href: '{{ messages_url }}',
       },
     ],
   },
-  'automatic-emails-u024': {
-    id: 'automatic-emails-u024',
-    label: 'Hast du dein Onboarding schon gebucht?',
+  'automatic-emails-native-app-beta-ios': {
+    id: 'automatic-emails-native-app-beta-ios',
+    label: 'Native App Beta Invite (iOS)',
     category_id: EmailCategories.Automated,
-    preview: automatedText['automatic-emails-u024.preview'],
-    subject: automatedText['automatic-emails-u024.subject'],
+    preview: automatedText['automatic-emails-native-app-beta-ios.preview'],
+    subject: automatedText['automatic-emails-native-app-beta-ios.subject'],
     content: [
       {
         type: ContentTypes.Title,
-        text: automatedText['automatic-emails-u024.block-1'],
+        text: automatedText['automatic-emails-native-app-beta-ios.block-1'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u024.block-2'],
+        text: automatedText['automatic-emails-native-app-beta-ios.block-2'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u024.block-3'],
+        text: automatedText['automatic-emails-native-app-beta-ios.block-3'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u024.block-4'],
+        text: automatedText['automatic-emails-native-app-beta-ios.block-4'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u024.block-5'],
+        text: automatedText['automatic-emails-native-app-beta-ios.block-5'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-ios.block-6'],
       },
       {
         type: ContentTypes.Button,
-        text: automatedText['automatic-emails-u024.block-6'],
+        text: automatedText['automatic-emails-native-app-beta-ios.block-7'],
+        href: '{{ ios_beta_app_url }}',
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-ios.block-8'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-ios.block-9'],
+      },
+      {
+        type: ContentTypes.Link,
+        text: automatedText['automatic-emails-native-app-beta-ios.block-10'],
+        href: '{{ native_app_repo_url }}',
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-ios.block-11'],
+      },
+      {
+        type: ContentTypes.Link,
+        text: automatedText['automatic-emails-native-app-beta-ios.block-12'],
+        href: '{{ native_app_bug_report_url }}',
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-native-app-beta-ios.block-13'],
+      },
+      {
+        type: ContentTypes.Link,
+        text: 'Zum Support-Chat',
+        href: '{{ messages_url }}',
+      },
+    ],
+  },
+  'automatic-emails-u001': {
+    id: 'automatic-emails-u001',
+    label: 'u001 - Verify email',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['automatic-emails-u001.preview'],
+    subject: automatedText['automatic-emails-u001.subject'],
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: automatedText['automatic-emails-u001.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u001.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u001.block-3'],
+      },
+      {
+        type: ContentTypes.Sentence,
+        text: automatedText['automatic-emails-u001.block-4'],
+      },
+      {
+        type: ContentTypes.Sentence,
+        text: automatedText['automatic-emails-u001.block-5'],
+      },
+      {
+        type: ContentTypes.Sentence,
+        text: automatedText['automatic-emails-u001.block-6'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u001.block-7'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u001.block-8'],
+      },
+      {
+        type: ContentTypes.Code,
+        text: BackendVars.verificationCode,
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['automatic-emails-u001.block-9'],
+        href: BackendVars.confirmationUrl,
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u001.block-10'],
+      },
+    ],
+  },
+  'automatic-emails-u012': {
+    id: 'automatic-emails-u012',
+    label: 'u012 - User Form Reminder 1',
+    category_id: EmailCategories.Automated,
+    subject: automatedText['automatic-emails-u012.subject'],
+    preview: automatedText['automatic-emails-u012.preview'],
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: automatedText['automatic-emails-u012.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u012.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u012.block-3'],
+      },
+      {
+        type: ContentTypes.Sentence,
+        text: automatedText['automatic-emails-u012.block-4'],
+      },
+      {
+        type: ContentTypes.Sentence,
+        text: automatedText['automatic-emails-u012.block-5'],
+      },
+      {
+        type: ContentTypes.Sentence,
+        text: automatedText['automatic-emails-u012.block-6'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u012.block-7'],
+      },
+      {
+        type: ContentTypes.Sentence,
+        text: automatedText['automatic-emails-u012.block-8'],
+      },
+      {
+        type: ContentTypes.Sentence,
+        text: automatedText['automatic-emails-u012.block-9'],
+      },
+      {
+        type: ContentTypes.Sentence,
+        text: automatedText['automatic-emails-u012.block-10'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u012.block-11'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['automatic-emails-u012.block-12'],
+        href: BackendVars.userFormUrl,
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u012.block-13'],
+      },
+    ],
+  },
+  'automatic-emails-u023l': {
+    id: 'automatic-emails-u023l',
+    label: 'u023l - Onboarding Reminder',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['automatic-emails-u023l.preview'],
+    subject: automatedText['automatic-emails-u023l.subject'],
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: automatedText['automatic-emails-u023l.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u023l.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u023l.block-3'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u023l.block-4'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['automatic-emails-u023l.block-6'],
         href: '{{ prematching_call_booking_link }}',
       },
       {
         type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u024.block-7'],
-      }
+        text: automatedText['automatic-emails-u023l.block-5'],
+      },
+    ],
+  },
+  'automatic-emails-u023v': {
+    id: 'automatic-emails-u023v',
+    label: 'u023v - Onboarding Reminder',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['automatic-emails-u023v.preview'],
+    subject: automatedText['automatic-emails-u023v.subject'],
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: automatedText['automatic-emails-u023v.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u023v.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u023v.block-3'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u023v.block-4'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u023v.block-5'],
+      },
+      {
+        type: ContentTypes.Sentence,
+        text: automatedText['automatic-emails-u023v.block-6'],
+      },
+      {
+        type: ContentTypes.Sentence,
+        text: automatedText['automatic-emails-u023v.block-7'],
+      },
+      {
+        type: ContentTypes.Sentence,
+        text: automatedText['automatic-emails-u023v.block-8'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u023v.block-9'],
+      },
+      {
+        type: ContentTypes.Sentence,
+        text: automatedText['automatic-emails-u023v.block-10'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u023v.block-11'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['automatic-emails-u023v.block-12'],
+        href: '{{ prematching_call_booking_link }}',
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u023v.block-13'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['automatic-emails-u023v.block-14'],
+        href: '{{ self_onboarding_url }}',
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u023v.block-15'],
+      },
+    ],
+  },
+  'automatic-emails-u024l': {
+    id: 'automatic-emails-u024l',
+    label: 'u024l - Onboarding Reminder',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['automatic-emails-u024l.preview'],
+    subject: automatedText['automatic-emails-u024l.subject'],
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: automatedText['automatic-emails-u024l.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u024l.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u024l.block-3'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u024l.block-4'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u024l.block-5'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['automatic-emails-u024l.block-6'],
+        href: '{{ prematching_call_booking_link }}',
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u024l.block-7'],
+      },
+    ],
+  },
+  'automatic-emails-u024v': {
+    id: 'automatic-emails-u024v',
+    label: 'u024v - Onboarding Reminder',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['automatic-emails-u024v.preview'],
+    subject: automatedText['automatic-emails-u024v.subject'],
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: automatedText['automatic-emails-u024v.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u024v.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u024v.block-3'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u024v.block-4'],
+      },
+      {
+        type: ContentTypes.Sentence,
+        text: automatedText['automatic-emails-u024v.block-5'],
+      },
+      {
+        type: ContentTypes.Sentence,
+        text: automatedText['automatic-emails-u024v.block-6'],
+      },
+      {
+        type: ContentTypes.Sentence,
+        text: automatedText['automatic-emails-u024v.block-7'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u024v.block-8'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u024v.block-9'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['automatic-emails-u024v.block-10'],
+        href: '{{ self_onboarding_url }}',
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u024v.block-11'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['automatic-emails-u024v.block-12'],
+        href: '{{ prematching_call_booking_link }}',
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u024v.block-13'],
+      },
     ],
   },
   'automatic-emails-u025': {
     id: 'automatic-emails-u025',
-    label: 'Viele Lernende warten – bist du dabei?',
+    label: 'u025 - Onboarding Reminder',
     category_id: EmailCategories.Automated,
     preview: automatedText['automatic-emails-u025.preview'],
     subject: automatedText['automatic-emails-u025.subject'],
@@ -1330,18 +1457,43 @@ const automatedEmails = {
         text: automatedText['automatic-emails-u025.block-5'],
       },
       {
-        type: ContentTypes.Paragraph,
+        type: ContentTypes.Sentence,
         text: automatedText['automatic-emails-u025.block-6'],
       },
       {
-        type: ContentTypes.Button,
+        type: ContentTypes.Sentence,
         text: automatedText['automatic-emails-u025.block-7'],
+      },
+      {
+        type: ContentTypes.Sentence,
+        text: automatedText['automatic-emails-u025.block-8'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u025.block-9'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u025.block-10'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['automatic-emails-u025.block-11'],
+        href: '{{ self_onboarding_url }}',
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u025.block-12'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['automatic-emails-u025.block-13'],
         href: '{{ prematching_call_booking_link }}',
       },
       {
         type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u025.block-8'],
-      }
+        text: automatedText['automatic-emails-u025.block-14'],
+      },
     ],
   },
   'automatic-emails-u043': {
@@ -1409,53 +1561,6 @@ const automatedEmails = {
       },
     ],
   },
-  'automatic-emails-u053': {
-    id: 'automatic-emails-u053',
-    label: 'Onboarding No-Show Reminder',
-    category_id: EmailCategories.Automated,
-    preview: automatedText['automatic-emails-u053.preview'],
-    subject: automatedText['automatic-emails-u053.subject'],
-    content: [
-      {
-        type: ContentTypes.Title,
-        text: automatedText['automatic-emails-u053.block-1'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u053.block-2'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u053.block-3'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u053.block-4'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u053.block-5'],
-      },
-      {
-        type: ContentTypes.Button,
-        text: automatedText['automatic-emails-u053.block-9'],
-        href: '{{ prematching_call_booking_link }}',
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u053.block-6'],
-      },
-      {
-        type: ContentTypes.Button,
-        text: automatedText['automatic-emails-u053.block-10'],
-        href: '{{ messages_url }}',
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u053.block-7'],
-      },
-    ],
-  },
   'automatic-emails-u044': {
     id: 'automatic-emails-u044',
     label: 'Onboarding Call Reminder (1h)',
@@ -1499,6 +1604,210 @@ const automatedEmails = {
       },
     ],
   },
+  'automatic-emails-u053l': {
+    id: 'automatic-emails-u053l',
+    label: 'u053l - Onboarding No-Show Reminder',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['automatic-emails-u053l.preview'],
+    subject: automatedText['automatic-emails-u053l.subject'],
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: automatedText['automatic-emails-u053l.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u053l.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u053l.block-3'],
+      },
+      {
+        type: ContentTypes.Sentence,
+        text: automatedText['automatic-emails-u053l.block-4'],
+      },
+      {
+        type: ContentTypes.Sentence,
+        text: automatedText['automatic-emails-u053l.block-5'],
+      },
+      {
+        type: ContentTypes.Sentence,
+        text: automatedText['automatic-emails-u053l.block-6'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u053l.block-7'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u053l.block-8'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['automatic-emails-u053l.block-9'],
+        href: '{{ prematching_call_booking_link }}',
+      },
+      {
+        type: ContentTypes.Sentence,
+        text: automatedText['automatic-emails-u053l.block-10'],
+      },
+      {
+        type: ContentTypes.Sentence,
+        text: automatedText['automatic-emails-u053l.block-11'],
+      },
+      {
+        type: ContentTypes.Sentence,
+        text: automatedText['automatic-emails-u053l.block-12'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u053l.block-13'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u053l.block-14'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u053l.block-15'],
+      },
+    ],
+  },
+  'automatic-emails-u053v': {
+    id: 'automatic-emails-u053v',
+    label: 'u053v - Onboarding No-Show Reminder',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['automatic-emails-u053v.preview'],
+    subject: automatedText['automatic-emails-u053v.subject'],
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: automatedText['automatic-emails-u053v.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u053v.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u053v.block-3'],
+      },
+      {
+        type: ContentTypes.Sentence,
+        text: automatedText['automatic-emails-u053v.block-4'],
+      },
+      {
+        type: ContentTypes.Sentence,
+        text: automatedText['automatic-emails-u053v.block-5'],
+      },
+      {
+        type: ContentTypes.Sentence,
+        text: automatedText['automatic-emails-u053v.block-6'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u053v.block-7'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u053v.block-8'],
+      },
+      {
+        type: ContentTypes.Sentence,
+        text: automatedText['automatic-emails-u053v.block-9'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u053v.block-10'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['automatic-emails-u053v.block-11'],
+        href: '{{ prematching_call_booking_link }}',
+      },
+      {
+        type: ContentTypes.Sentence,
+        text: automatedText['automatic-emails-u053v.block-12'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u053v.block-13'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['automatic-emails-u053v.block-14'],
+        href: '{{ self_onboarding_url }}',
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u053v.block-15'],
+      },
+      {
+        type: ContentTypes.Sentence,
+        text: automatedText['automatic-emails-u053v.block-16'],
+      },
+    ],
+  },
+  'automatic-emails-u071': {
+    id: 'automatic-emails-u071',
+    label: 'u071 - Onboarding completed',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['automatic-emails-u071.preview'],
+    subject: automatedText['automatic-emails-u071.subject'],
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: automatedText['automatic-emails-u071.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u071.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u071.block-3'],
+      },
+      {
+        type: ContentTypes.Sentence,
+        text: automatedText['automatic-emails-u071.block-4'],
+      },
+      {
+        type: ContentTypes.Sentence,
+        text: automatedText['automatic-emails-u071.block-5'],
+      },
+      {
+        type: ContentTypes.Sentence,
+        text: automatedText['automatic-emails-u071.block-6'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u071.block-7'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u071.block-8'],
+      },
+      {
+        type: ContentTypes.Link,
+        text: automatedText['automatic-emails-u071.block-9'],
+        href: '{{ group_calls_url }}',
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u071.block-10'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u071.block-11'],
+      },
+      {
+        type: ContentTypes.Link,
+        text: automatedText['automatic-emails-u071.block-12'],
+        href: '{{ newsletter_subscribe_url }}',
+      },
+    ],
+  },
   'automatic-emails-u072': {
     id: 'automatic-emails-u072',
     label: 'Group Calls Follow-up',
@@ -1534,90 +1843,6 @@ const automatedEmails = {
       {
         type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-u072.block-7'],
-      },
-    ],
-  },
-  'automatic-emails-u082': {
-    id: 'automatic-emails-u082',
-    label: 'Group Calls Invitation',
-    category_id: EmailCategories.Automated,
-    preview: automatedText['automatic-emails-u082.preview'],
-    subject: automatedText['automatic-emails-u082.subject'],
-    content: [
-      {
-        type: ContentTypes.Title,
-        text: automatedText['automatic-emails-u082.block-1'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u082.block-2'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u082.block-3'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u082.block-4'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u082.block-5'],
-      },
-      {
-        type: ContentTypes.Button,
-        text: automatedText['automatic-emails-u082.block-6'],
-        href: 'https://home.little-world.com/#gruppentermine',
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u082.block-7'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u082.block-8'],
-      },
-    ],
-  },
-  'automatic-emails-u083': {
-    id: 'automatic-emails-u083',
-    label: 'U083 - Availability Reminder 2',
-    category_id: EmailCategories.Automated,
-    preview: automatedText['automatic-emails-u083.preview'],
-    subject: automatedText['automatic-emails-u083.subject'],
-    content: [
-      {
-        type: ContentTypes.Title,
-        text: automatedText['automatic-emails-u083.block-1'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u083.block-2'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u083.block-3'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u083.block-4'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u083.block-5'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u083.block-6'],
-      },
-      {
-        type: ContentTypes.Button,
-        text: automatedText['automatic-emails-u083.block-7'],
-        href: '{{ availability_url }}',
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u083.block-8'],
       },
     ],
   },
@@ -1660,48 +1885,6 @@ const automatedEmails = {
       {
         type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-u073.block-8'],
-      },
-    ],
-  },
-  'automatic-emails-u084': {
-    id: 'automatic-emails-u084',
-    label: 'Delayed Match Update',
-    category_id: EmailCategories.Automated,
-    preview: automatedText['automatic-emails-u084.preview'],
-    subject: automatedText['automatic-emails-u084.subject'],
-    content: [
-      {
-        type: ContentTypes.Title,
-        text: automatedText['automatic-emails-u084.block-1'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u084.block-2'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u084.block-3'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u084.block-4'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u084.block-5'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u084.block-6'],
-      },
-      {
-        type: ContentTypes.Button,
-        text: automatedText['automatic-emails-u084.block-7'],
-        href: 'https://home.little-world.com/#gruppentermine',
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-u084.block-8'],
       },
     ],
   },
@@ -1802,6 +1985,222 @@ const automatedEmails = {
       },
     ],
   },
+  'automatic-emails-u082': {
+    id: 'automatic-emails-u082',
+    label: 'Group Calls Invitation',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['automatic-emails-u082.preview'],
+    subject: automatedText['automatic-emails-u082.subject'],
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: automatedText['automatic-emails-u082.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u082.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u082.block-3'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u082.block-4'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u082.block-5'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['automatic-emails-u082.block-6'],
+        href: 'https://home.little-world.com/#gruppentermine',
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u082.block-7'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u082.block-8'],
+      },
+    ],
+  },
+  'automatic-emails-u083': {
+    id: 'automatic-emails-u083',
+    label: 'U083 - Availability Reminder 2',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['automatic-emails-u083.preview'],
+    subject: automatedText['automatic-emails-u083.subject'],
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: automatedText['automatic-emails-u083.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u083.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u083.block-3'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u083.block-4'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u083.block-5'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u083.block-6'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['automatic-emails-u083.block-7'],
+        href: '{{ availability_url }}',
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u083.block-8'],
+      },
+    ],
+  },
+  'automatic-emails-u084': {
+    id: 'automatic-emails-u084',
+    label: 'Delayed Match Update',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['automatic-emails-u084.preview'],
+    subject: automatedText['automatic-emails-u084.subject'],
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: automatedText['automatic-emails-u084.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u084.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u084.block-3'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u084.block-4'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u084.block-5'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u084.block-6'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['automatic-emails-u084.block-7'],
+        href: 'https://home.little-world.com/#gruppentermine',
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u084.block-8'],
+      },
+    ],
+  },
+  'confirm-match-1': {
+    id: 'confirm-match-1',
+    label: 'Confirm Match 1',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['confirm-match-1.preview'],
+    subject: automatedText['confirm-match-1.subject'],
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: automatedText['confirm-match-1.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['confirm-match-1.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['confirm-match-1.block-3'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['confirm-match-1.block-4'],
+        href: BackendVars.acceptMatchUrl,
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['confirm-match-1.block-5'],
+      },
+    ],
+  },
+  'confirm-match-2': {
+    id: 'confirm-match-2',
+    label: 'Confirm Match 2',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['confirm-match-2.preview'],
+    subject: automatedText['confirm-match-2.subject'],
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: automatedText['confirm-match-2.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['confirm-match-2.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['confirm-match-2.block-3'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['confirm-match-2.block-4'],
+        href: BackendVars.acceptMatchUrl,
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['confirm-match-2.block-5'],
+      },
+    ],
+  },
+  'expired-match': {
+    id: 'expired-match',
+    label: 'Match Expired',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['expired-match.preview'],
+    subject: automatedText['expired-match.subject'],
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: automatedText['expired-match.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['expired-match.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['expired-match.block-3'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['expired-match.block-4'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['expired-match.block-5'],
+        href: BackendVars.acceptMatchUrl,
+      },
+    ],
+  },
   'match-resolved': {
     id: 'match-resolved',
     label: 'Match Resolved',
@@ -1829,6 +2228,150 @@ const automatedEmails = {
         type: ContentTypes.Button,
         text: automatedText['match-resolved.block-5'],
         href: BackendVars.restartSearchUrl,
+      },
+    ],
+  },
+  'new-match': {
+    id: 'new-match',
+    label: 'New Match',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['new-match.preview'],
+    subject: automatedText['new-match.subject'],
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: automatedText['new-match.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['new-match.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['new-match.block-3'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['new-match.block-4'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['new-match.block-5'],
+        href: BackendVars.partnerProfileUrl,
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['new-match.block-6'],
+      },
+    ],
+  },
+  'new-match-engage': {
+    id: 'new-match-engage',
+    label: 'new-match-engage',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['engage-new-match.preview'],
+    subject: automatedText['engage-new-match.subject'],
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: automatedText['engage-new-match.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['engage-new-match.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['engage-new-match.block-3'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['engage-new-match.block-4'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['engage-new-match.block-5'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['engage-new-match.block-6'],
+        href: BackendVars.loginUrl,
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['engage-new-match.block-7'],
+      },
+    ],
+  },
+  'new-messages': {
+    id: 'new-messages',
+    label: 'New Messages',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['new-messages.preview'],
+    subject: automatedText['new-messages.subject'],
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: automatedText['new-messages.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['new-messages.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['new-messages.block-3'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['new-messages.block-4'],
+        href: BackendVars.messagesUrl,
+      },
+    ],
+  },
+  'prematching-call-no-show': {
+    id: 'prematching-call-no-show',
+    label: 'Prematching call no show',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['prematching-call-no-show.preview'],
+    subject: automatedText['prematching-call-no-show.subject'],
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: automatedText['prematching-call-no-show.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['prematching-call-no-show.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['prematching-call-no-show.block-3'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['prematching-call-no-show.block-4'],
+      },
+      {
+        type: ContentTypes.Link,
+        text: 'Buche einen neuen Termin',
+        href: automatedText['prematching-call-no-show.booking-link'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: '',
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['prematching-call-no-show.block-5'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['prematching-call-no-show.block-6'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['prematching-call-no-show.block-7'],
       },
     ],
   },
@@ -1934,32 +2477,6 @@ const automatedEmails = {
       },
     ],
   },
-  unfinished_user_form_1: {
-    id: 'unfinished_user_form_1',
-    label: 'User Form Reminder 1',
-    category_id: EmailCategories.Automated,
-    subject: automatedText['unfinished_user_form_1.subject'],
-    preview: automatedText['unfinished_user_form_1.preview'],
-    content: [
-      {
-        type: ContentTypes.Title,
-        text: automatedText['unfinished_user_form_1.block-1'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['unfinished_user_form_1.block-2'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['unfinished_user_form_1.block-3'],
-      },
-      {
-        type: ContentTypes.Button,
-        text: automatedText['unfinished_user_form_1.block-4'],
-        href: BackendVars.userFormUrl,
-      },
-    ],
-  },
   unfinished_user_form_2: {
     id: 'unfinished_user_form_2',
     label: 'User Form Reminder 2',
@@ -2021,182 +2538,6 @@ const automatedEmails = {
       {
         type: ContentTypes.Code,
         text: BackendVars.verificationCode,
-      }
-    ],
-  },
-  'new-match-engage': {
-    id: 'new-match-engage',
-    label: 'new-match-engage',
-    category_id: EmailCategories.Automated,
-    preview: automatedText['new-match-engage.preview'],
-    subject: automatedText['engage-new-match.subject'],
-    content: [
-      {
-        type: ContentTypes.Title,
-        text: automatedText['engage-new-match.block-1']
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['engage-new-match.block-2'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['engage-new-match.block-3'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['engage-new-match.block-4'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['engage-new-match.block-5'],
-      },
-      {
-        type: ContentTypes.Button,
-        text: automatedText['engage-new-match.block-6'],
-        href: BackendVars.loginUrl,
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['engage-new-match.block-7'],
-      },
-    ],
-  },
-  'automatic-emails-native-app-beta-ios': {
-    id: 'automatic-emails-native-app-beta-ios',
-    label: 'Native App Beta Invite (iOS)',
-    category_id: EmailCategories.Automated,
-    preview: automatedText['automatic-emails-native-app-beta-ios.preview'],
-    subject: automatedText['automatic-emails-native-app-beta-ios.subject'],
-    content: [
-      {
-        type: ContentTypes.Title,
-        text: automatedText['automatic-emails-native-app-beta-ios.block-1'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-native-app-beta-ios.block-2'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-native-app-beta-ios.block-3'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-native-app-beta-ios.block-4'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-native-app-beta-ios.block-5'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-native-app-beta-ios.block-6'],
-      },
-      {
-        type: ContentTypes.Button,
-        text: automatedText['automatic-emails-native-app-beta-ios.block-7'],
-        href: '{{ ios_beta_app_url }}',
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-native-app-beta-ios.block-8'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-native-app-beta-ios.block-9'],
-      },
-      {
-        type: ContentTypes.Link,
-        text: automatedText['automatic-emails-native-app-beta-ios.block-10'],
-        href: '{{ native_app_repo_url }}',
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-native-app-beta-ios.block-11'],
-      },
-      {
-        type: ContentTypes.Link,
-        text: automatedText['automatic-emails-native-app-beta-ios.block-12'],
-        href: '{{ native_app_bug_report_url }}',
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-native-app-beta-ios.block-13'],
-      },
-      {
-        type: ContentTypes.Link,
-        text: 'Zum Support-Chat',
-        href: '{{ messages_url }}',
-      },
-    ],
-  },
-  'automatic-emails-native-app-beta-android': {
-    id: 'automatic-emails-native-app-beta-android',
-    label: 'Native App Beta Invite (Android)',
-    category_id: EmailCategories.Automated,
-    preview: automatedText['automatic-emails-native-app-beta-android.preview'],
-    subject: automatedText['automatic-emails-native-app-beta-android.subject'],
-    content: [
-      {
-        type: ContentTypes.Title,
-        text: automatedText['automatic-emails-native-app-beta-android.block-1'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-native-app-beta-android.block-2'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-native-app-beta-android.block-3'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-native-app-beta-android.block-4'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-native-app-beta-android.block-5'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-native-app-beta-android.block-6'],
-      },
-      {
-        type: ContentTypes.Button,
-        text: automatedText['automatic-emails-native-app-beta-android.block-7'],
-        href: '{{ android_beta_app_url }}',
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-native-app-beta-android.block-8'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-native-app-beta-android.block-9'],
-      },
-      {
-        type: ContentTypes.Link,
-        text: automatedText['automatic-emails-native-app-beta-android.block-10'],
-        href: '{{ native_app_repo_url }}',
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-native-app-beta-android.block-11'],
-      },
-      {
-        type: ContentTypes.Link,
-        text: automatedText['automatic-emails-native-app-beta-android.block-12'],
-        href: '{{ native_app_bug_report_url }}',
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-native-app-beta-android.block-13'],
-      },
-      {
-        type: ContentTypes.Link,
-        text: 'Zum Support-Chat',
-        href: '{{ messages_url }}',
       },
     ],
   },

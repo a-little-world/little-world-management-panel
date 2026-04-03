@@ -16,12 +16,12 @@ import EmailLayout from './shared/Layout';
 import TwoButtons from './shared/TwoButtons';
 import { THEMES } from './shared/constants';
 import {
+  blockLink,
   button,
   centredParagraph,
   centredSentence,
   codeBlock,
   illustration,
-  link,
   paragraph,
   sentence,
   title,
@@ -199,7 +199,7 @@ const EmailBlock = ({
         defaultText={text}
         updateText={updateText}
         Component={Link}
-        componentProps={{ style: link, target: '_blank', href }}
+        componentProps={{ style: blockLink, target: '_blank', href }}
       />
     );
 

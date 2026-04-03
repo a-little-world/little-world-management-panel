@@ -286,7 +286,9 @@ function KPIsDashboard() {
             journey_v2__user_form_completed_volunteer:
               'Users filled form (volunteers)',
             journey_v2__booked_onboarding_call:
-              'Users booked onboarding call in the past',
+              'Onboarding started (booked call)',
+            journey_v2__self_onboarding_started:
+              'Onboarding started (self-onboarding)',
             journey_v2__no_show: 'Onboarded users',
           }}
         />

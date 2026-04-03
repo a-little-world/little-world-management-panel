@@ -32,7 +32,7 @@ enum FilterKeys {
   Company = 'state__company',
   EmailAuthenticated = 'state__email_authenticated',
   JobSearch = 'profile__job_search',
-  HadPreMatchingCall = 'state__had_prematching_call',
+  IsOnboarded = 'state__is_onboarded',
   HasPriority = 'state__has_match_priority',
   TargetGroups = 'profile__target_groups',
   UserType = 'profile__user_type',
@@ -82,10 +82,10 @@ const formatDefaultValues = (defaultValues: any) => {
   if (defaultValues[FilterKeys.EmailAuthenticated]) {
     formattedValues.user_journey = [FilterKeys.EmailAuthenticated];
   }
-  if (defaultValues[FilterKeys.HadPreMatchingCall]) {
+  if (defaultValues[FilterKeys.IsOnboarded]) {
     formattedValues.user_journey = [
       ...formattedValues.user_journey,
-      FilterKeys.HadPreMatchingCall,
+      FilterKeys.IsOnboarded,
     ];
   }
   if (defaultValues[FilterKeys.JobSearch]) {
@@ -199,7 +199,7 @@ const Filters: React.FC<FiltersProps> = ({
                 val,
                 [
                   { key: FilterKeys.EmailAuthenticated, value: 'true' },
-                  { key: FilterKeys.HadPreMatchingCall, value: 'true' },
+                  { key: FilterKeys.IsOnboarded, value: 'true' },
                   { key: FilterKeys.JobSearch, value: 'true' },
                 ],
                 onUpdateFilters,
@@ -212,8 +212,8 @@ const Filters: React.FC<FiltersProps> = ({
                 value: FilterKeys.EmailAuthenticated,
               },
               {
-                label: 'Had pre-matching call',
-                value: FilterKeys.HadPreMatchingCall,
+                label: 'Is onboarded',
+                value: FilterKeys.IsOnboarded,
               },
               {
                 label: 'Searching for a job',
