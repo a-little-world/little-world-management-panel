@@ -785,19 +785,19 @@ export const inviteNativeAppTester = async ({
 export const completePrematchingCall = async ({
   appointmentDate,
   selectedUsers,
-  sendMail,
+  sendEmailsNow,
   onSuccess,
   onError,
 }) => {
   try {
     const result = await apiFetch(
-      '/api/matching/users/complete_prematching_call/',
+      '/api/matching/prematchingappointments/complete_prematching_call/',
       {
         method: 'POST',
         body: {
           appointment_date: appointmentDate,
           selected_users: selectedUsers,
-          send_mail: sendMail,
+          send_emails_now: sendEmailsNow,
         },
       },
     );

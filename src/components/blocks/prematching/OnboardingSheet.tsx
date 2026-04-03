@@ -144,18 +144,14 @@ export function SelectedUsersPrematchingCallAttended({
     setShowSuccessMessage(false);
     setError(null);
 
-    const sendMail = Object.entries(safeAllPrematchingUsers).reduce(
-      (acc, [hash, user]) => {
-        acc[user.id] = usersToEmail[hash] || false;
-        return acc;
-      },
-      {} as Record<number, boolean>,
+    const sendEmailsNow = Object.entries(safeAllPrematchingUsers).some(
+      ([hash]) => usersToEmail[hash] || false,
     );
 
     completePrematchingCall({
       appointmentDate: list,
       selectedUsers: selectedUserIds,
-      sendMail,
+      sendEmailsNow,
       onSuccess: (res: any) => {
         setShowSuccessMessage(true);
         mutateBaseList();
