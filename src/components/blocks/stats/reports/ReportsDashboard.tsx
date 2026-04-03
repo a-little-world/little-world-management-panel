@@ -1,5 +1,4 @@
-import { Text } from '@a-little-world/little-world-design-system';
-import { TextTypes } from '@a-little-world/little-world-design-system-core';
+import { Text, TextTypes } from '@a-little-world/little-world-design-system';
 import { find } from 'lodash';
 import React, { useMemo } from 'react';
 import { useFilterOptions } from '../../../../store';

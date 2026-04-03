@@ -49,6 +49,12 @@ export const link = {
   textDecoration: 'underline',
 };
 
+export const blockLink = {
+  ...link,
+  margin: '0 auto 24px',
+  display: 'block',
+};
+
 export const button = {
   display: 'inline-block',
   fontFamily: 'Open Sans,Helvetica,Arial,sans serif',

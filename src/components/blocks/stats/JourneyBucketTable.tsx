@@ -26,11 +26,12 @@ const tableCategories = [
     id: 'in-reg',
     title: 'Users still in Registration Process',
     filters: [
-      'ujv2_user_created',
-      'ujv2_email_verified',
-      'ujv2_user_form_completed',
-      'ujv2_booked_onboarding_call',
-      'ujv2_no_show',
+      'journey_v2__user_created',
+      'journey_v2__email_verified',
+      'journey_v2__user_form_completed',
+      'journey_v2__booked_onboarding_call',
+      'journey_v2__self_onboarding_started',
+      'journey_v2__no_show',
     ],
   },
 ];

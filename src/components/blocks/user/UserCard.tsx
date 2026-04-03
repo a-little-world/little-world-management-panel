@@ -5,6 +5,9 @@ import {
   ButtonVariations,
   Link,
   Loading,
+  Stepper,
+  StepperOrientations,
+  StepperSizes,
   Tag,
   TagAppearance,
   TagSizes,
@@ -21,7 +24,6 @@ import { formatDate, formatTimeDistance } from '../../../helpers/date';
 import { MATCHING_ROUTE } from '../../../routes';
 import { dataFetcher, useGlobalState } from '../../../store';
 import MatchesIcons from '../../atoms/MatchesIcons';
-import Stepper from '../../atoms/Stepper';
 import UserImage from '../../atoms/UserImage';
 import {
   AboutField,
@@ -63,7 +65,10 @@ interface UserState {
   email_authenticated: boolean;
   user_form_state: 'filled' | 'unfilled';
   had_prematching_call: boolean;
+  is_onboarded: boolean;
+  self_onboarding_step_id?: string | null;
   unresponsive: boolean;
+  has_match_priority?: boolean;
 }
 
 interface UserMatches {
@@ -95,72 +100,97 @@ interface UserCardProps {
 const UserStatus: React.FC<{ user: User; appointment?: any }> = ({
   user,
   appointment,
-}) => (
-  <StatusContainer>
-    <Text type={TextTypes.Body4} center bold>
-      Current Status
-    </Text>
-    <Stepper
-      steps={[
-        {
-          id: 'register',
-          label: `Register ${new Date(user.date_joined).toDateString()}`,
-          isCompleted: true,
-        },
-        {
-          id: 'email-auth',
-          label: 'Email Authenticated',
-          isCompleted: user.state.email_authenticated,
-        },
-        {
-          id: 'user-form',
-          label: 'User Form',
-          isCompleted: user.state.user_form_state === 'filled',
-        },
-        {
-          id: 'prematching-call-booked',
-          label: 'Prematching Call',
-          description: appointment
-            ? `Booked: ${new Date(appointment.start_time).toLocaleDateString()}`
-            : 'Not booked',
-          isCompleted: !!appointment,
-        },
-        {
-          id: 'prematching-call-completed',
-          label: 'Call Attended',
-          isCompleted: user.state.had_prematching_call,
-        },
-        ...(user.matches.unconfirmed.results.length > 0 &&
-          user.matches.confirmed.results.length === 0
-          ? [
-            {
-              id: 'pending-match-1',
-              label: 'Has pending match',
-              isCompleted: false,
-            },
-          ]
-          : []),
-        {
-          id: 'first-match',
-          label: 'First Match',
-          isCompleted: user.matches.confirmed.results.length > 0,
-        },
-        ...(user.matches.unconfirmed.results.length > 0 &&
-          user.matches.confirmed.results.length > 0
-          ? [
-            {
-              id: 'pending-match-2',
-              label: 'Has pending match',
-              isCompleted: false,
-            },
-          ]
-          : []),
-      ]}
-      orientation="vertical"
-      size="medium"
-    />
-  </StatusContainer>
-);
+}) => {
+  const hasOnboardingPath =
+    !!appointment || Boolean(user.state.self_onboarding_step_id);
+
+  const stepsWithCompletion = [
+    {
+      id: 'register',
+      label: `Register ${new Date(user.date_joined).toDateString()}`,
+      isCompleted: true,
+    },
+    {
+      id: 'email-auth',
+      label: 'Email Authenticated',
+      isCompleted: user.state.email_authenticated,
+    },
+    {
+      id: 'user-form',
+      label: 'User Form',
+      isCompleted: user.state.user_form_state === 'filled',
+    },
+    {
+      id: 'onboarding-selected',
+      label: 'Onboarding selected',
+      description: appointment
+        ? `Booked: ${new Date(appointment.start_time).toLocaleDateString()}`
+        : user.state.self_onboarding_step_id
+          ? 'Self onboarding'
+          : 'Not selected',
+      isCompleted: hasOnboardingPath,
+    },
+    {
+      id: 'onboarded',
+      label: 'Onboarded',
+      isCompleted: user.state.is_onboarded,
+    },
+    ...(user.matches.unconfirmed.results.length > 0 &&
+    user.matches.confirmed.results.length === 0
+      ? [
+          {
+            id: 'pending-match-1',
+            label: 'Has pending match',
+            isCompleted: false,
+          },
+        ]
+      : []),
+    {
+      id: 'first-match',
+      label: 'First Match',
+      isCompleted: user.matches.confirmed.results.length > 0,
+    },
+    ...(user.matches.unconfirmed.results.length > 0 &&
+    user.matches.confirmed.results.length > 0
+      ? [
+          {
+            id: 'pending-match-2',
+            label: 'Has pending match',
+            isCompleted: false,
+          },
+        ]
+      : []),
+  ];
+
+  // Furthest completed step.
+  let lastCompletedIndex = -1;
+  for (let i = 0; i < stepsWithCompletion.length; i++) {
+    if (stepsWithCompletion[i].isCompleted) {
+      lastCompletedIndex = i;
+    }
+  }
+  const activeStepIndex = lastCompletedIndex + 1;
+
+  const steps = stepsWithCompletion.map(({ id, label, description }) => ({
+    id,
+    label,
+    ...(description !== undefined ? { description } : {}),
+  }));
+
+  return (
+    <StatusContainer>
+      <Text type={TextTypes.Body4} center bold>
+        Current Status
+      </Text>
+      <Stepper
+        steps={steps}
+        activeStepIndex={activeStepIndex}
+        orientation={StepperOrientations.Vertical}
+        size={StepperSizes.Medium}
+      />
+    </StatusContainer>
+  );
+};
 
 const DetailRow: React.FC<{ label: string; value: string }> = ({
   label,
@@ -181,7 +211,7 @@ const UserDetails: React.FC<{
 }> = ({ user, appointment, isVolunteer }) => (
   <DetailsContainer>
     <DetailsList>
-      {user.state.had_prematching_call && (
+      {user.state.is_onboarded && (
         <InfoRow>
           <Text tag="h4" bold>
             Matching State:
@@ -189,7 +219,7 @@ const UserDetails: React.FC<{
           <Tag
             appearance={
               TagAppearance[
-              user.state.searching_state === 'searching' ? 'success' : 'error'
+                user.state.searching_state === 'searching' ? 'success' : 'error'
               ]
             }
             size={TagSizes.small}
