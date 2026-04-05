@@ -192,9 +192,14 @@ const KPIs: React.FC = () => {
               label: 'Signups der letzten 30 Tagen',
               value: kpisDataUserSignup?.signups_last_30_days,
             },
+            {
+              label:
+                'Onboarded volunteers†: self vs prematch (form completed after 6 Apr 2026; by earliest completion)',
+              value: `Self ${kpisDataUserSignup?.volunteers_onboarded_after_2026_04_06_self_onboarding_pct ?? 0}% · Call ${kpisDataUserSignup?.volunteers_onboarded_after_2026_04_06_prematching_call_pct ?? 0}% · Other ${kpisDataUserSignup?.volunteers_onboarded_after_2026_04_06_unclassified_pct ?? 0}% (n=${kpisDataUserSignup?.volunteers_onboarded_after_2026_04_06_count ?? 0})`,
+            },
           ],
         ]}
-        footnote="Without too low german level"
+        footnote="Without too low german level. †Volunteers, is_onboarded, user_form_completed_at after 6 Apr 2026. Each user counted once: if both paths apply, bucket is whichever of self_onboarding_completed_at (start of day) vs onboarding_call_completed_at is earlier; “Other” = no path or both flags without timestamps."
         color="#48BB78"
       />
       <KPI
