@@ -194,7 +194,7 @@ const KPIs: React.FC = () => {
             },
             {
               label: 'Onboarded volunteers† (form completed from 6 Apr 2026)',
-              value: `${kpisDataUserSignup?.volunteers_onboarded_after_2026_04_06_count ?? 0})`,
+              value: `${kpisDataUserSignup?.volunteers_onboarded_after_2026_04_06_count ?? 0}`,
             },
             {
               label: '% onboarded via self-onboarding',
@@ -202,11 +202,11 @@ const KPIs: React.FC = () => {
             },
             {
               label: '% onboarded via call',
-              value: `Call ${kpisDataUserSignup?.volunteers_onboarded_after_2026_04_06_prematching_call_pct ?? 0}%`,
+              value: `${kpisDataUserSignup?.volunteers_onboarded_after_2026_04_06_prematching_call_pct ?? 0}%`,
             },
             {
               label: '% with no path or both flags without timestamps.',
-              value: `Other ${kpisDataUserSignup?.volunteers_onboarded_after_2026_04_06_unclassified_pct ?? 0}%`,
+              value: `${kpisDataUserSignup?.volunteers_onboarded_after_2026_04_06_unclassified_pct ?? 0}%`,
             },
           ],
         ]}
@@ -301,8 +301,8 @@ function KPIsDashboard() {
             journey_v2__too_low_german_level: 'Users with B1+ German level',
             journey_v2__user_form_completed_volunteer:
               'Users filled form (volunteers)',
-            journey_v2__booked_onboarding_call: 'Booked call)',
-            journey_v2__self_onboarding_started: 'Self-onboarding started',
+            journey_v2__booked_onboarding_call: 'Booked call',
+            journey_v2__self_onboarding_started: 'Self-onboarding',
             journey_v2__no_show: 'Onboarded users',
           }}
         />

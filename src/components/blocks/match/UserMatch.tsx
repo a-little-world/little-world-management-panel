@@ -24,6 +24,7 @@ const UserMatchCard = styled(Card)<{ $inactive: boolean }>`
   display: inline-flex;
   margin-bottom: ${({ theme }) => theme.spacing.xsmall};
   vertical-align: top;
+  position: relative;
 
   &:not(:last-child) {
     margin-right: ${({ theme }) => theme.spacing.xsmall};
@@ -35,6 +36,12 @@ const UserMatchCard = styled(Card)<{ $inactive: boolean }>`
       background: ${theme.color.surface.error};
       border: 1px solid ${theme.color.border.error};
     `}
+`;
+
+const UserTypeTag = styled(Tag)`
+  position: absolute;
+  top: ${({ theme }) => theme.spacing.small};
+  left: ${({ theme }) => theme.spacing.small};
 `;
 
 const Overview = styled.div`
@@ -86,16 +93,15 @@ const UserMatch = ({ match, userName }: { match: any; userName: string }) => {
           />
         </Link>
 
-        <Tag
+        <UserTypeTag
           bold
-          className="absolute top-0 left-0"
           color={
             match.partner.user_type === 'volunteer' ? '#9631c5' : '#ec2525'
           }
           size={TagSizes.small}
         >
           {match.partner.user_type}
-        </Tag>
+        </UserTypeTag>
         <Overview>
           <Text bold>
             {match.partner.first_name} {match.partner.second_name}
