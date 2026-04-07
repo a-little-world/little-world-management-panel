@@ -12,7 +12,7 @@ import { modifyDataToPercentages } from '../../../helpers/stats';
 import { dataFetcher } from '../../../store';
 import Matrix, { MatrixData } from '../../atoms/Stats/Matrix';
 import {
-  BarChartTimeRangedV2,
+  BarChartTimeRanged,
   MatchingFunnelEvolution,
 } from './BarChartTimeRanged';
 import { MatchQuality } from './MatchQualityStatistic';
@@ -289,7 +289,7 @@ function KPIsDashboard() {
       </Description>
       <Sections>
         <KPIs />
-        <BarChartTimeRangedV2
+        <BarChartTimeRanged
           displayTimeSelection={true}
           displayVolunteersOnlyCheckbox={true}
           listDescriptionMap={{
@@ -302,7 +302,7 @@ function KPIsDashboard() {
             journey_v2__user_form_completed_volunteer:
               'Users filled form (volunteers)',
             journey_v2__booked_onboarding_call: 'Booked call',
-            journey_v2__self_onboarding_started: 'Self-onboarding',
+            journey_v2__self_onboarding_started: 'Self-onboarding in progress',
             journey_v2__no_show: 'Onboarded users',
           }}
         />

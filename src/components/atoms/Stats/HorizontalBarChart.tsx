@@ -169,13 +169,18 @@ function getSegmentColor(segmentIndex: number, segmentCount: number) {
   return SEGMENT_COLORS[Math.round(t * maxIdx)];
 }
 
-function renderBarFill(item: BarData, index: number, totalRows: number) {
+function renderBarFill(
+  item: BarData,
+  index: number,
+  totalRows: number,
+  splitBarsEnabled: boolean,
+) {
   const pct = item.percentage;
   const baseColor = item.color || getDefaultColor(totalRows, index);
   const visible =
     item.segments?.filter(s => s.count > 0 && s.fraction > 0) ?? [];
 
-  if (visible.length >= 2) {
+  if (splitBarsEnabled && visible.length >= 2) {
     return (
       <SegmentedFilledBar $percentage={pct}>
         <SegmentTrack>

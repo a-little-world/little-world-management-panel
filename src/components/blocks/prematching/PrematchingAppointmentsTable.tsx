@@ -21,7 +21,7 @@ import {
 import UserImage from '../../atoms/UserImage';
 
 const PREMATCH_APPOINTMENT_FIELDS = [
-  { key: 'had_prematching_call', label: 'Attended Call' },
+  { key: 'is_onboarded', label: 'Is Onboarded' },
   { key: 'user', label: 'User' },
   { key: 'name', label: 'Name' },
   { key: 'email', label: 'Email' },
@@ -102,18 +102,18 @@ export function PrematchingAppointmentsTable({ appointments, list }) {
                     );
                   }
 
-                  if (key === 'had_prematching_call') {
+                  if (key === 'is_onboarded') {
                     return (
                       <TableCell key={appointment.uuid + key}>
                         <Tag
                           appearance={
-                            appointment.had_prematching_call
+                            appointment.user.state.is_onboarded
                               ? TagAppearance.success
                               : TagAppearance.error
                           }
                           size={TagSizes.small}
                         >
-                          {appointment.had_prematching_call ? 'Yes' : 'No'}
+                          {appointment.user.state.is_onboarded ? 'Yes' : 'No'}
                         </Tag>
                       </TableCell>
                     );

@@ -129,7 +129,7 @@ export function modifyData(
         fraction: totalSeg > 0 ? s.count / totalSeg : 0,
       }));
       row.description = row.segments
-        .map(s => `${s.label}: ${s.count} (${s.fraction.toFixed(2)}%)`)
+        .map(s => `${s.label}: ${s.count} (${Math.round(s.fraction * 100)}%)`)
         .join(' · ');
     }
 
