@@ -210,6 +210,20 @@ export const useUserListData = (searchParams: string) => {
   };
 };
 
+export const useManagementTasksListData = (searchParams: string) => {
+  const { data, error, mutate, isLoading } = useSWR(
+    `/api/matching/management_tasks/?${searchParams}`,
+    dataFetcher,
+  );
+
+  return {
+    managementTasksList: data,
+    error,
+    mutate,
+    isLoading,
+  };
+};
+
 export const useVideoCallsListData = (searchParams: string) => {
   const { data, error, mutate, isLoading } = useSWR(
     `/api/matching/video_calls/?${searchParams}`,

@@ -1,5 +1,6 @@
 import {
   ChartBarIcon,
+  ClipboardDocumentListIcon,
   UserGroupIcon,
   UserIcon,
 } from '@heroicons/react/20/solid';
@@ -13,6 +14,11 @@ const TABS = [
     name: 'Users',
     path: 'users',
     icon: <UserGroupIcon className="h-16 w-16 text-white mb-2" />,
+  },
+  {
+    name: 'Management Tasks',
+    path: 'management-tasks',
+    icon: <ClipboardDocumentListIcon className="h-16 w-16 text-white mb-2" />,
   },
   {
     name: 'Matches',

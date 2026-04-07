@@ -15,6 +15,7 @@ import {
   DYNAMIC_USER_LISTS_ROUTE,
   EMAILS_ROUTE,
   MATCHES_LIST_ROUTE,
+  MANAGEMENT_TASKS_ROUTE,
   PREMATCH_APPOINTMENTS_ROUTE,
   RANDOM_CALLS_ROUTE,
   SCORES_ROUTE,
@@ -51,6 +52,12 @@ const Menu = () => {
             active={location.pathname === USERS_ROUTE}
           >
             Users
+          </NavigationMenuContentItem>
+          <NavigationMenuContentItem
+            to={MANAGEMENT_TASKS_ROUTE}
+            active={location.pathname === MANAGEMENT_TASKS_ROUTE}
+          >
+            Management Tasks
           </NavigationMenuContentItem>
           <NavigationMenuContentItem
             to={EMAILS_ROUTE}

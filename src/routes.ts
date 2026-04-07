@@ -12,6 +12,7 @@ export const MATCH_ROUTE = '/match/:matchId';
 export const MATCHES_LIST_ROUTE = '/matches/';
 export const MATCHING_ROUTE = '/match-info/';
 export const PREMATCH_APPOINTMENTS_ROUTE = '/prematch-appointments/';
+export const MANAGEMENT_TASKS_ROUTE = '/management-tasks/';
 export const SCORES_ROUTE = '/scores/';
 export const SEND_DYNAMIC_EMAIL_ROUTE =
   '/send-dynamic-email/:emailTemplateName/';

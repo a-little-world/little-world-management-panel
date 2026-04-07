@@ -17,6 +17,7 @@ import Documentation from './components/views/Documentation';
 import { DynamicUserListView } from './components/views/DynamicUserListView';
 import Home from './components/views/Home';
 import MatchPanel from './components/views/MatchPanel';
+import ManagementTasks from './components/views/ManagementTasks';
 import Matches from './components/views/Matches';
 import Matching from './components/views/Matching';
 import PrematchingAppointments from './components/views/PrematchingAppointments';
@@ -43,6 +44,7 @@ import {
   MATCHES_LIST_ROUTE,
   MATCHING_ROUTE,
   MATCH_ROUTE,
+  MANAGEMENT_TASKS_ROUTE,
   PREMATCH_APPOINTMENTS_ROUTE,
   RANDOM_CALLS_ROUTE,
   SCORES_ROUTE,
@@ -86,6 +88,10 @@ const router = createBrowserRouter(
         {
           path: USERS_ROUTE,
           element: <Users />,
+        },
+        {
+          path: MANAGEMENT_TASKS_ROUTE,
+          element: <ManagementTasks />,
         },
         {
           path: USER_DETAILS_ROUTE,
