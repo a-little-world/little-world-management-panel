@@ -115,11 +115,13 @@ export const resetLobby = async ({
 export const createLobby = async ({
   startTime,
   endTime,
+  matchProposalTimeout = 60,
   onError,
   onSuccess,
 }: {
   startTime: string;
   endTime: string;
+  matchProposalTimeout?: number;
   onError: (error: any) => void;
   onSuccess: (result: CreateLobbyResponse) => void;
 }) => {
@@ -131,6 +133,7 @@ export const createLobby = async ({
         body: {
           start_time: startTime,
           end_time: endTime,
+          match_proposal_timeout: matchProposalTimeout,
         },
       },
     );

@@ -171,7 +171,6 @@ export const DatePickerContainer = styled.div`
   display: flex;
   flex-direction: row;
   gap: ${({ theme }) => theme.spacing.small};
-  margin-bottom: ${({ theme }) => theme.spacing.small};
   width: 100%;
 `;
 
