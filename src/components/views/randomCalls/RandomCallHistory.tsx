@@ -15,6 +15,7 @@ import {
   getAllLobbies,
   LobbyListItem,
   LobbyOverviewData,
+  MatchProposal,
   TasksData,
 } from '../../../api/randomCalls';
 import { formatDate, formatEventTime } from '../../../helpers/date';
@@ -40,19 +41,6 @@ import {
   StatValueSmall as StatValue,
   Title,
 } from './RandomCalls.styles';
-
-interface MatchProposal {
-  uuid: string;
-  u1_hash: string;
-  u1_name: string;
-  u2_hash: string;
-  u2_name: string;
-  u1_accepted: boolean;
-  u2_accepted: boolean;
-  accepted: boolean;
-  rejected: boolean;
-  in_session: boolean;
-}
 
 const MatchProposalsTable = ({ matches }: { matches: MatchProposal[] }) => {
   if (isEmpty(matches)) {

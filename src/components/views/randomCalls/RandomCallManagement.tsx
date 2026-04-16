@@ -23,6 +23,7 @@ import {
   endLobby,
   getLobbyOverviewEndpoint,
   getUpcomingLobbiesEndpoint,
+  MatchProposal,
   resetLobby,
 } from '../../../api/randomCalls';
 import { formatDate, formatEventTime } from '../../../helpers/date';
@@ -57,19 +58,6 @@ import {
   TaskDetailSection,
   TitleWithFlex as Title,
 } from './RandomCalls.styles';
-
-interface MatchProposal {
-  uuid: string;
-  u1_hash: string;
-  u1_name: string;
-  u2_hash: string;
-  u2_name: string;
-  u1_accepted: boolean;
-  u2_accepted: boolean;
-  accepted: boolean;
-  rejected: boolean;
-  in_session: boolean;
-}
 
 interface LobbyData {
   lobby: {
@@ -371,10 +359,10 @@ function MatchProposalsTable({ matches }: { matches: MatchProposal[] }) {
           <TableRow key={match.uuid}>
             <TableCell>{match.uuid}</TableCell>
             <TableCell>
-              {match.u1_name} ({match.u1_hash})
+              {match.u1_name} - {match.u1_user_type} ({match.u1_hash})
             </TableCell>
             <TableCell>
-              {match.u2_name} ({match.u2_hash})
+              {match.u2_name} - {match.u2_user_type} ({match.u2_hash})
             </TableCell>
             <TableCell>
               <Tag

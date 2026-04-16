@@ -15,12 +15,14 @@ interface LobbyResponse {
   lobby: Lobby;
 }
 
-interface MatchProposal {
+export interface MatchProposal {
   uuid: string;
   u1_hash: string;
   u1_name: string;
+  u1_user_type: string;
   u2_hash: string;
   u2_name: string;
+  u2_user_type: string;
   u1_accepted: boolean;
   u2_accepted: boolean;
   accepted: boolean;
