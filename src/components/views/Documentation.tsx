@@ -3,7 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { ALGORITHM_ROUTE } from '../../routes';
+import { ALGORITHM_ROUTE } from '../../router/routes';
 
 // Types
 interface DocumentationLink {

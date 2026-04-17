@@ -34,7 +34,10 @@ import {
 } from '../../../emails/shared/constants';
 import { EmailThemeContext } from '../../../emails/shared/theme';
 import useAutosave from '../../../hooks/useAutoSave';
-import { CREATE_NEW_EMAIL_ROUTE, getEditEmailRoute } from '../../../routes';
+import {
+  CREATE_NEW_EMAIL_ROUTE,
+  getEditEmailRoute,
+} from '../../../router/routes';
 import { dataFetcher, registerInput } from '../../../store';
 import LoadingSpinner from '../../atoms/LoadingSpinner';
 import SendEmailSheet from '../../blocks/SendEmailSheet';
@@ -606,7 +609,7 @@ const CreateNewEmail = () => {
           <Text type={TextTypes.Body3} bold>
             Building Blocks
           </Text>
-          <Blocks onSubmit={() => { }}>
+          <Blocks onSubmit={() => {}}>
             {map(ContentTypes, key => (
               <BlockOption
                 key={key}

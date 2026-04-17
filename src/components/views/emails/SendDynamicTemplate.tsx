@@ -9,7 +9,7 @@ import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import useSWR from 'swr';
 
-import { getEditEmailRoute } from '../../../routes';
+import { getEditEmailRoute } from '../../../router/routes';
 import { dataFetcher } from '../../../store';
 import SendEmailSheet from '../../blocks/SendEmailSheet';
 

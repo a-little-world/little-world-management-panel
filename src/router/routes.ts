@@ -20,6 +20,7 @@ export const USER_DETAILS_ROUTE = '/user/:userId';
 export const USERS_ROUTE = '/users/';
 export const VIDEO_CALLS_ROUTE = '/video-calls/';
 export const RANDOM_CALLS_ROUTE = '/random-calls/';
+export const EVENTS_ROUTE = '/events/';
 
 export const getEditEmailRoute = (templateId: number) =>
   `/email/${templateId}/edit`;

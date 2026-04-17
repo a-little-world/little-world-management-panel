@@ -21,7 +21,7 @@ import {
   calculateScoreBetweenUsers,
   matchUsers,
 } from '../../api/index';
-import { ALGORITHM_ROUTE } from '../../routes';
+import { ALGORITHM_ROUTE } from '../../router/routes';
 import { useGlobalState } from '../../store';
 import {
   Card,

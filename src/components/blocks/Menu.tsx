@@ -21,7 +21,7 @@ import {
   STATS_ROUTE,
   USERS_ROUTE,
   VIDEO_CALLS_ROUTE,
-} from '../../routes';
+} from '../../router/routes';
 import SearchBar from './SearchBar';
 
 const Menu = () => {

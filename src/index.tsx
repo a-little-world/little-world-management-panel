@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 
-import { MatchingPannel } from './App';
+import { App } from './App';
 import { EmailHtmlRenderer } from './components/views/emails/EmailHtml';
 import './index.css';
 
@@ -10,10 +10,7 @@ function renderApp({ apiOptions, apiTranslations }) {
   console.log('RENDERING APP');
   root.render(
     <React.StrictMode>
-      <MatchingPannel
-        apiOptions={apiOptions}
-        apiTranslations={apiTranslations}
-      />
+      <App apiOptions={apiOptions} apiTranslations={apiTranslations} />
     </React.StrictMode>,
   );
 }
