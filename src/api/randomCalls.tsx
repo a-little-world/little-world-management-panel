@@ -15,12 +15,14 @@ interface LobbyResponse {
   lobby: Lobby;
 }
 
-interface MatchProposal {
+export interface MatchProposal {
   uuid: string;
   u1_hash: string;
   u1_name: string;
+  u1_user_type: string;
   u2_hash: string;
   u2_name: string;
+  u2_user_type: string;
   u1_accepted: boolean;
   u2_accepted: boolean;
   accepted: boolean;
@@ -115,11 +117,13 @@ export const resetLobby = async ({
 export const createLobby = async ({
   startTime,
   endTime,
+  matchProposalTimeout = 60,
   onError,
   onSuccess,
 }: {
   startTime: string;
   endTime: string;
+  matchProposalTimeout?: number;
   onError: (error: any) => void;
   onSuccess: (result: CreateLobbyResponse) => void;
 }) => {
@@ -131,6 +135,7 @@ export const createLobby = async ({
         body: {
           start_time: startTime,
           end_time: endTime,
+          match_proposal_timeout: matchProposalTimeout,
         },
       },
     );

@@ -7,11 +7,13 @@ import {
   CardFooter,
   CardHeader,
   CardSizes,
+  InputWidth,
   Modal,
   Tag,
   TagAppearance,
   TagSizes,
   Text,
+  TextInput,
 } from '@a-little-world/little-world-design-system';
 import { isEmpty } from 'lodash';
 import React, { useCallback, useRef, useState } from 'react';
@@ -59,7 +61,7 @@ function RandomCallSchedule() {
   );
   const [newLobbyStartTime, setNewLobbyStartTime] = useState(() => {
     const now = new Date();
-    now.setMinutes(now.getMinutes() + 1);
+    now.setMinutes(now.getMinutes());
     const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
     return `${hours}:${minutes}`;
@@ -69,6 +71,7 @@ function RandomCallSchedule() {
     now.setHours(now.getHours() + 2);
     return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
   });
+  const [matchProposalTimeout, setMatchProposalTimeout] = useState(60);
 
   const startTimeInputRef = useRef<HTMLInputElement>(null);
   const endTimeInputRef = useRef<HTMLInputElement>(null);
@@ -95,6 +98,18 @@ function RandomCallSchedule() {
   const handleEndTimeChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setNewLobbyEndTime(e.target.value);
+    },
+    [],
+  );
+
+  const handleMatchProposalTimeoutChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = Number.parseInt(e.target.value, 10);
+      if (Number.isNaN(value)) {
+        setMatchProposalTimeout(60);
+        return;
+      }
+      setMatchProposalTimeout(Math.max(1, value));
     },
     [],
   );
@@ -126,6 +141,7 @@ function RandomCallSchedule() {
     createLobby({
       startTime: startDateTime.toISOString(),
       endTime: endDateTime.toISOString(),
+      matchProposalTimeout,
       onSuccess: () => {
         const now = new Date();
         now.setMinutes(now.getMinutes() + 1);
@@ -138,6 +154,7 @@ function RandomCallSchedule() {
         setNewLobbyEndTime(
           `${String(endTime.getHours()).padStart(2, '0')}:${String(endTime.getMinutes()).padStart(2, '0')}`,
         );
+        setMatchProposalTimeout(60);
         setShowCreateLobby(false);
         setIsCreatingLobby(false);
         mutate(getUpcomingLobbiesEndpoint());
@@ -182,7 +199,7 @@ function RandomCallSchedule() {
       <Modal open={showCreateLobby} onClose={handleCloseCreateLobby}>
         <Card width={CardSizes.Medium}>
           <CardHeader>Create New Lobby</CardHeader>
-          <CardContent>
+          <CardContent align="flex-start">
             <DatePickerContainer>
               <FormField>
                 <FormLabel>Start Date</FormLabel>
@@ -217,6 +234,19 @@ function RandomCallSchedule() {
                 />
               </FormField>
             </DatePickerContainer>
+            <FormField>
+              <TextInput
+                label="Match Proposal Timeout (seconds)"
+                id="matchProposalTimeout"
+                type="number"
+                min={30}
+                max={240}
+                width={InputWidth.Medium}
+                value={String(matchProposalTimeout)}
+                onChange={handleMatchProposalTimeoutChange}
+                disabled={isCreatingLobby}
+              />
+            </FormField>
           </CardContent>
           <CardFooter align="space-between">
             <Button
