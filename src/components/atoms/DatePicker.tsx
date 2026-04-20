@@ -28,7 +28,7 @@ export function DatePicker({
   return (
     <Popover
       width={PopoverSizes.Large}
-      modal={!inModal}
+      inModal={inModal}
       trigger={
         <Button variation={ButtonVariations.Icon} disabled={disabled}>
           <CalendarIcon className="mr-2 h-4 w-4" />
