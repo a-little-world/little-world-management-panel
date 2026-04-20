@@ -260,6 +260,14 @@ export const ADDITIONAL_USER_FIELDS = [
 
 export const USER_TAGS = [''];
 
+/** Must match `COMMUNITY_EVENT_FREQUENCIES` in `front/apps/main_frontend/src/constants/index.ts`. */
+export const COMMUNITY_EVENT_FREQUENCIES = {
+  weekly: 'weekly',
+  fortnightly: 'fortnightly',
+  monthly: 'monthly',
+  once: 'once',
+};
+
 export const LANGUAGES = {
   de: 'de',
   en: 'en',

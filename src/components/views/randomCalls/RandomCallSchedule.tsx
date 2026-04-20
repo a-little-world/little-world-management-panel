@@ -207,6 +207,7 @@ function RandomCallSchedule() {
                   date={newLobbyStartDate}
                   setDate={setNewLobbyStartDate}
                   disablePastDays
+                  inModal
                 />
                 <FormLabel style={{ marginTop: '0.5rem' }}>
                   Start Time
@@ -224,6 +225,7 @@ function RandomCallSchedule() {
                   date={newLobbyStartDate}
                   setDate={() => {}}
                   disabled
+                  inModal
                 />
                 <FormLabel style={{ marginTop: '0.5rem' }}>End Time</FormLabel>
                 <TimeInput

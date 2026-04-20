@@ -45,6 +45,7 @@ import {
   MATCH_ROUTE,
   PREMATCH_APPOINTMENTS_ROUTE,
   RANDOM_CALLS_ROUTE,
+  EVENTS_ROUTE,
   SCORES_ROUTE,
   SEND_DYNAMIC_EMAIL_ROUTE,
   STATS_ROUTE,
@@ -54,6 +55,7 @@ import {
 } from './routes';
 import { GlobalStateProvider } from './store';
 import RandomCalls from './components/views/randomCalls/RandomCalls';
+import Events from './components/views/comms/Events';
 
 export const Root = ({
   children,
@@ -154,6 +156,10 @@ const router = createBrowserRouter(
         {
           path: RANDOM_CALLS_ROUTE,
           element: <RandomCalls />,
+        },
+        {
+          path: EVENTS_ROUTE,
+          element: <Events />,
         },
       ],
     },

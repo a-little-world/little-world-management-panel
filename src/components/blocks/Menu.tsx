@@ -13,6 +13,7 @@ import useSelectUser from '../../hooks/useSelectUser';
 import {
   DOCUMENTATION_ROUTE,
   DYNAMIC_USER_LISTS_ROUTE,
+  EVENTS_ROUTE,
   EMAILS_ROUTE,
   MATCHES_LIST_ROUTE,
   PREMATCH_APPOINTMENTS_ROUTE,
@@ -101,6 +102,12 @@ const Menu = () => {
             active={location.pathname === RANDOM_CALLS_ROUTE}
           >
             Random Calls
+          </NavigationMenuContentItem>
+          <NavigationMenuContentItem
+            to={EVENTS_ROUTE}
+            active={location.pathname === EVENTS_ROUTE}
+          >
+            Events
           </NavigationMenuContentItem>
         </NavigationMenuContent>
       </NavigationMenuItem>
