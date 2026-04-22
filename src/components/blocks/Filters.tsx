@@ -126,7 +126,7 @@ const Filters: React.FC<FiltersProps> = ({
     filterOptions?.filters,
     element => element.name === FilterKeys.Company,
   )?.choices;
-  console.log({ filterOptions });
+
   const countryChoices = find(
     filterOptions?.filters,
     element => element.name === FilterKeys.CountryOfResidence,
