@@ -111,6 +111,25 @@ const userColumns = [
       </Tag>
     ),
   }),
+  columnHelper.accessor('waiting_time.number_of_days', {
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Waiting time (days)
+          <ArrowsUpDownIcon className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) =>
+      `${
+        isNumber(row.original.waiting_time?.number_of_days)
+          ? row.original.waiting_time?.number_of_days
+          : row.original.waiting_time?.waiting_time_string
+      }`,
+  }),
   columnHelper.accessor('state.company', {
     header: ({ column }) => {
       return (
@@ -124,6 +143,20 @@ const userColumns = [
       );
     },
     cell: ({ row }) => row.original.state.company,
+  }),
+  columnHelper.accessor('profile.country_of_residence', {
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Residence
+          <ArrowsUpDownIcon className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => row.original.profile.country_of_residence,
   }),
   columnHelper.accessor('profile.target_groups', {
     header: ({ column }) => {
@@ -176,25 +209,6 @@ const userColumns = [
         new Date(row.original.date_joined),
         new Date(),
       )})`,
-  }),
-  columnHelper.accessor('waiting_time.number_of_days', {
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          Waiting time (days)
-          <ArrowsUpDownIcon className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) =>
-      `${
-        isNumber(row.original.waiting_time?.number_of_days)
-          ? row.original.waiting_time?.number_of_days
-          : row.original.waiting_time?.waiting_time_string
-      }`,
   }),
 ];
 

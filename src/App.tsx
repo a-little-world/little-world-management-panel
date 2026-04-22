@@ -1,6 +1,8 @@
 import {
   CustomThemeProvider,
   GlobalStyles,
+  ToastProvider,
+  ToastViewport,
 } from '@a-little-world/little-world-design-system';
 import React, { PropsWithChildren } from 'react';
 import {
@@ -63,15 +65,18 @@ export const Root = ({
   withLayout = false,
 }: PropsWithChildren<{ restoreScroll?: boolean; withLayout?: boolean }>) => (
   <CustomThemeProvider>
-    <EmailThemeProvider>
-      {restoreScroll && <ScrollRestoration />}
-      <GlobalStyles />
-      {withLayout ? (
-        <Layout>{children || <Outlet />}</Layout>
-      ) : (
-        children || <Outlet />
-      )}
-    </EmailThemeProvider>
+    <ToastProvider swipeDirection="right">
+      <EmailThemeProvider>
+        {restoreScroll && <ScrollRestoration />}
+        <GlobalStyles />
+        {withLayout ? (
+          <Layout>{children || <Outlet />}</Layout>
+        ) : (
+          children || <Outlet />
+        )}
+        <ToastViewport />
+      </EmailThemeProvider>
+    </ToastProvider>
   </CustomThemeProvider>
 );
 

@@ -1,12 +1,15 @@
 import {
   Button,
   ButtonVariations,
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardSizes,
   Dropdown,
   Modal,
   MultiCheckbox,
   Switch,
-  Text,
-  TextTypes,
 } from '@a-little-world/little-world-design-system';
 import { find, includes, isEmpty, isString, map, some } from 'lodash';
 import React, { useEffect, useState } from 'react';
@@ -14,10 +17,21 @@ import styled from 'styled-components';
 
 import { USER_GROUPS } from '../../constants';
 import { useFilterOptions } from '../../store';
-import { Card, CardContent, CardFooter, CardHeader } from '../atoms/Card';
 
 const FiltersModal = styled(Modal)`
   z-index: 1000;
+`;
+
+const DropdownRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${({ theme }) => theme.spacing.small};
+  width: 100%;
+`;
+
+const DropdownItem = styled.div`
+  flex: 1 1 16rem;
+  min-width: 0;
 `;
 
 interface FiltersProps {
@@ -30,6 +44,7 @@ interface FiltersProps {
 
 enum FilterKeys {
   Company = 'state__company',
+  CountryOfResidence = 'profile__country_of_residence',
   EmailAuthenticated = 'state__email_authenticated',
   JobSearch = 'profile__job_search',
   IsOnboarded = 'state__is_onboarded',
@@ -112,6 +127,11 @@ const Filters: React.FC<FiltersProps> = ({
     element => element.name === FilterKeys.Company,
   )?.choices;
 
+  const countryChoices = find(
+    filterOptions?.filters,
+    element => element.name === FilterKeys.CountryOfResidence,
+  )?.choices;
+
   const handleReset = () => {
     map(FilterKeys, filter => {
       onRemoveFilter(filter);
@@ -124,60 +144,92 @@ const Filters: React.FC<FiltersProps> = ({
 
   return (
     <FiltersModal open={open} onClose={onClose}>
-      <Card className="bg-white">
-        <CardHeader>
-          <Text type={TextTypes.Body2} tag="h2" center>
-            Filters
-          </Text>
-        </CardHeader>
-        <CardContent>
-          <Dropdown
-            key={FilterKeys.UserList + filters[FilterKeys.UserList]}
-            label={'User List'}
-            value={filters[FilterKeys.UserList]}
-            options={
-              filterOptions?.lists?.map(({ name, description }: any) => ({
-                value: name,
-                label: description,
-              })) ?? []
-            }
-            onValueChange={val => onUpdateFilters(FilterKeys.UserList, val)}
-            placeholder="Select a user list..."
-          />
-          <Dropdown
-            key={FilterKeys.UserType + filters[FilterKeys.UserType]}
-            onValueChange={val => {
-              onUpdateFilters(FilterKeys.UserType, val);
-            }}
-            value={filters[FilterKeys.UserType]}
-            label={'User type'}
-            placeholder="Select a user type"
-            options={[
-              { label: 'Learner', value: 'learner' },
-              { label: 'Volunteer', value: 'volunteer' },
-            ]}
-          />
+      <Card width={CardSizes.Large}>
+        <CardHeader>Filters</CardHeader>
+        <CardContent align="flex-start">
+          <DropdownRow>
+            <DropdownItem>
+              <Dropdown
+                key={FilterKeys.UserList + filters[FilterKeys.UserList]}
+                label={'User List'}
+                value={filters[FilterKeys.UserList]}
+                options={
+                  filterOptions?.lists?.map(({ name, description }: any) => ({
+                    value: name,
+                    label: description,
+                  })) ?? []
+                }
+                onValueChange={val => onUpdateFilters(FilterKeys.UserList, val)}
+                placeholder="Select a user list..."
+              />
+            </DropdownItem>
+            <DropdownItem>
+              <Dropdown
+                key={FilterKeys.UserType + filters[FilterKeys.UserType]}
+                onValueChange={val => {
+                  onUpdateFilters(FilterKeys.UserType, val);
+                }}
+                value={filters[FilterKeys.UserType]}
+                label={'User type'}
+                placeholder="Select a user type"
+                options={[
+                  { label: 'Learner', value: 'learner' },
+                  { label: 'Volunteer', value: 'volunteer' },
+                ]}
+              />
+            </DropdownItem>
+          </DropdownRow>
 
-          <Dropdown
-            key={FilterKeys.Company + filters[FilterKeys.Company]}
-            onValueChange={val => {
-              onUpdateFilters(FilterKeys.Company, val);
-            }}
-            value={filters[FilterKeys.Company]}
-            label={'Company'}
-            placeholder="Select a company"
-            disabled={filtersLoading}
-            options={
-              isEmpty(companyChoices)
-                ? []
-                : companyChoices.map(
-                    ({ tag, value }: { tag: string; value: string }) => ({
-                      label: tag,
-                      value: value,
-                    }),
-                  )
-            }
-          />
+          <DropdownRow>
+            <DropdownItem>
+              <Dropdown
+                key={FilterKeys.Company + filters[FilterKeys.Company]}
+                onValueChange={val => {
+                  onUpdateFilters(FilterKeys.Company, val);
+                }}
+                value={filters[FilterKeys.Company]}
+                label={'Company'}
+                placeholder="Select a company"
+                disabled={filtersLoading}
+                options={
+                  isEmpty(companyChoices)
+                    ? []
+                    : companyChoices.map(
+                        ({ tag, value }: { tag: string; value: string }) => ({
+                          label: tag,
+                          value: value,
+                        }),
+                      )
+                }
+              />
+            </DropdownItem>
+
+            <DropdownItem>
+              <Dropdown
+                key={
+                  FilterKeys.CountryOfResidence +
+                  filters[FilterKeys.CountryOfResidence]
+                }
+                onValueChange={val => {
+                  onUpdateFilters(FilterKeys.CountryOfResidence, val);
+                }}
+                value={filters[FilterKeys.CountryOfResidence]}
+                label={'Residence'}
+                placeholder="Select a country"
+                disabled={filtersLoading}
+                options={
+                  isEmpty(countryChoices)
+                    ? []
+                    : countryChoices.map(
+                        ({ tag, value }: { tag: string; value: string }) => ({
+                          label: tag,
+                          value: value,
+                        }),
+                      )
+                }
+              />
+            </DropdownItem>
+          </DropdownRow>
 
           <Switch
             key={filters[FilterKeys.HasPriority]}
@@ -257,7 +309,7 @@ const Filters: React.FC<FiltersProps> = ({
             heading={'Groups'}
           />
         </CardContent>
-        <CardFooter className="justify-between">
+        <CardFooter align="space-between">
           <Button variation={ButtonVariations.Inline} onClick={handleReset}>
             Clear All
           </Button>

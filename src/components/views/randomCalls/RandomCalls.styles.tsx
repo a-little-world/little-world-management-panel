@@ -56,6 +56,19 @@ export const SectionTitle = styled.h2`
   margin-bottom: ${({ theme }) => theme.spacing.small};
 `;
 
+export const SectionHeaderRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.small};
+  margin-bottom: ${({ theme }) => theme.spacing.small};
+  flex-wrap: wrap;
+`;
+
+export const SectionTitleFlush = styled(SectionTitle)`
+  margin-bottom: 0;
+`;
+
 export const SectionTitleClickable = styled(SectionTitle)`
   cursor: pointer;
   display: flex;
