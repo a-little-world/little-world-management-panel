@@ -19,15 +19,17 @@ export interface MatchProposal {
   uuid: string;
   u1_hash: string;
   u1_name: string;
-  u1_user_type: string;
+  u1_user_type?: string;
   u2_hash: string;
   u2_name: string;
-  u2_user_type: string;
+  u2_user_type?: string;
   u1_accepted: boolean;
   u2_accepted: boolean;
   accepted: boolean;
   rejected: boolean;
+  expired?: boolean;
   in_session: boolean;
+  created_at?: string | null;
 }
 
 export interface LobbyOverviewData {
@@ -53,6 +55,7 @@ export interface LobbyOverviewData {
     accepted: MatchProposal[];
     rejected: MatchProposal[];
     expired: MatchProposal[];
+    dangling: MatchProposal[];
   };
   statistics: {
     total_matches: number;
@@ -60,12 +63,25 @@ export interface LobbyOverviewData {
     accepted_count: number;
     rejected_count: number;
     expired_count: number;
+    dangling_count: number;
   };
 }
 
 type ResetLobbyResponse = LobbyResponse;
 type CreateLobbyResponse = LobbyResponse;
 type EndLobbyResponse = LobbyResponse;
+type ClearUserProposalsResponse = {
+  success: boolean;
+  message: string;
+  updated_count: number;
+  user_hash: string;
+};
+
+type ClearDanglingMatchesResponse = {
+  success: boolean;
+  message: string;
+  updated_count: number;
+};
 
 export const getLobbyOverviewEndpoint = () =>
   `/api/random_calls/lobby/${DEFAULT_LOBBY_NAME}/management/overview`;
@@ -155,6 +171,51 @@ export const endLobby = async ({
   try {
     const result = await apiFetch<EndLobbyResponse>(
       `/api/random_calls/lobby/${DEFAULT_LOBBY_NAME}/management/end`,
+      {
+        method: 'POST',
+      },
+    );
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
+  }
+};
+
+export const clearUserRandomCallProposals = async ({
+  userHash,
+  onError,
+  onSuccess,
+}: {
+  userHash: string;
+  onError: (error: any) => void;
+  onSuccess: (result: ClearUserProposalsResponse) => void;
+}) => {
+  try {
+    const result = await apiFetch<ClearUserProposalsResponse>(
+      `/api/random_calls/lobby/${DEFAULT_LOBBY_NAME}/management/clear-user-proposals`,
+      {
+        method: 'POST',
+        body: {
+          user_hash: userHash,
+        },
+      },
+    );
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
+  }
+};
+
+export const clearDanglingRandomCallMatches = async ({
+  onError,
+  onSuccess,
+}: {
+  onError: (error: any) => void;
+  onSuccess: (result: ClearDanglingMatchesResponse) => void;
+}) => {
+  try {
+    const result = await apiFetch<ClearDanglingMatchesResponse>(
+      `/api/random_calls/lobby/${DEFAULT_LOBBY_NAME}/management/clear-dangling-matches`,
       {
         method: 'POST',
       },

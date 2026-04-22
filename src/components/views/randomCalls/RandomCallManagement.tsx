@@ -14,12 +14,15 @@ import {
   TagAppearance,
   TagSizes,
   Text,
+  Toast,
 } from '@a-little-world/little-world-design-system';
 import { isEmpty } from 'lodash';
 import React, { useState } from 'react';
 import useSWR, { mutate } from 'swr';
 
 import {
+  clearDanglingRandomCallMatches,
+  clearUserRandomCallProposals,
   endLobby,
   getLobbyOverviewEndpoint,
   getUpcomingLobbiesEndpoint,
@@ -47,8 +50,10 @@ import {
   ScheduleStatus,
   ScheduleTime,
   Section,
+  SectionHeaderRow,
   SectionTitle,
   SectionTitleClickable,
+  SectionTitleFlush,
   StatCard,
   StatLabel,
   StatsGrid,
@@ -73,6 +78,7 @@ interface LobbyData {
     uuid: string;
     user_hash: string;
     user_name: string;
+    user_type: string;
     is_active: boolean;
     last_status_checked_at: string | null;
     has_pending_match: boolean;
@@ -82,6 +88,7 @@ interface LobbyData {
     accepted: MatchProposal[];
     rejected: MatchProposal[];
     expired: MatchProposal[];
+    dangling: MatchProposal[];
   };
   statistics: {
     total_matches: number;
@@ -89,6 +96,7 @@ interface LobbyData {
     accepted_count: number;
     rejected_count: number;
     expired_count: number;
+    dangling_count: number;
   };
   schedule: Array<{
     uuid: string;
@@ -142,7 +150,26 @@ function formatTimeAgo(dateString: string | null): string {
   return `${Math.floor(seconds / 86400)}d ago`;
 }
 
-function ActiveUsersTable({ users }: { users: LobbyData['active_users'] }) {
+function ActiveUsersTable({
+  users,
+  onClearProposals,
+}: {
+  users: LobbyData['active_users'];
+  onClearProposals: (userHash: string) => Promise<number>;
+}) {
+  const [loadingUserIds, setLoadingUserIds] = useState<Record<string, boolean>>(
+    {},
+  );
+
+  const handleClearProposals = async (userHash: string) => {
+    setLoadingUserIds(prev => ({ ...prev, [userHash]: true }));
+    try {
+      await onClearProposals(userHash);
+    } finally {
+      setLoadingUserIds(prev => ({ ...prev, [userHash]: false }));
+    }
+  };
+
   if (isEmpty(users)) {
     return (
       <Text className="p-4 w-full" center>
@@ -157,9 +184,11 @@ function ActiveUsersTable({ users }: { users: LobbyData['active_users'] }) {
         <TableRow>
           <TableHead>User Hash</TableHead>
           <TableHead>Name</TableHead>
+          <TableHead>Type</TableHead>
           <TableHead>Status</TableHead>
           <TableHead>Last Check-in</TableHead>
           <TableHead>Pending Match</TableHead>
+          <TableHead>Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -167,6 +196,7 @@ function ActiveUsersTable({ users }: { users: LobbyData['active_users'] }) {
           <TableRow key={user.uuid}>
             <TableCell>{user.user_hash}</TableCell>
             <TableCell>{user.user_name}</TableCell>
+            <TableCell>{user.user_type}</TableCell>
             <TableCell>
               <Tag
                 appearance={
@@ -188,6 +218,17 @@ function ActiveUsersTable({ users }: { users: LobbyData['active_users'] }) {
                   No
                 </Tag>
               )}
+            </TableCell>
+            <TableCell>
+              <Button
+                appearance={ButtonAppearance.Secondary}
+                size={ButtonSizes.Small}
+                onClick={() => handleClearProposals(user.user_hash)}
+                loading={loadingUserIds[user.user_hash]}
+                disabled={loadingUserIds[user.user_hash]}
+              >
+                Clear Proposals
+              </Button>
             </TableCell>
           </TableRow>
         ))}
@@ -412,6 +453,73 @@ function MatchProposalsTable({ matches }: { matches: MatchProposal[] }) {
   );
 }
 
+function DanglingMatchesTable({ matches }: { matches: MatchProposal[] }) {
+  if (isEmpty(matches)) {
+    return (
+      <Text className="p-4 w-full" center>
+        No dangling match proposals.
+      </Text>
+    );
+  }
+
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Match UUID</TableHead>
+          <TableHead>User 1</TableHead>
+          <TableHead>User 2</TableHead>
+          <TableHead>Created</TableHead>
+          <TableHead>U1 Accepted</TableHead>
+          <TableHead>U2 Accepted</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {matches.map(match => (
+          <TableRow key={match.uuid}>
+            <TableCell>{match.uuid}</TableCell>
+            <TableCell>
+              {match.u1_name} - {match.u1_user_type ?? '—'} ({match.u1_hash})
+            </TableCell>
+            <TableCell>
+              {match.u2_name} - {match.u2_user_type ?? '—'} ({match.u2_hash})
+            </TableCell>
+            <TableCell>
+              {match.created_at
+                ? new Date(match.created_at).toLocaleString()
+                : '—'}
+            </TableCell>
+            <TableCell>
+              <Tag
+                appearance={
+                  match.u1_accepted
+                    ? TagAppearance.success
+                    : TagAppearance.error
+                }
+                size={TagSizes.small}
+              >
+                {match.u1_accepted ? 'Yes' : 'No'}
+              </Tag>
+            </TableCell>
+            <TableCell>
+              <Tag
+                appearance={
+                  match.u2_accepted
+                    ? TagAppearance.success
+                    : TagAppearance.error
+                }
+                size={TagSizes.small}
+              >
+                {match.u2_accepted ? 'Yes' : 'No'}
+              </Tag>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
+}
+
 const isDevelopmentOrStaging = () => {
   if (typeof window === 'undefined') return false;
   const hostname = window.location.hostname;
@@ -432,6 +540,11 @@ function RandomCallManagement() {
   const [tasksSectionOpen, setTasksSectionOpen] = useState(true);
   const [isEndingLobby, setIsEndingLobby] = useState(false);
   const [showEndConfirm, setShowEndConfirm] = useState(false);
+  const [isClearingDangling, setIsClearingDangling] = useState(false);
+  const [clearMatchesToast, setClearMatchesToast] = useState<{
+    id: number;
+    title: string;
+  } | null>(null);
   const showResetButton = isDevelopmentOrStaging();
 
   const shouldPoll = autoRefresh;
@@ -520,6 +633,60 @@ function RandomCallManagement() {
     });
   };
 
+  const handleClearProposals = async (userHash: string) => {
+    return new Promise<number>((resolve, reject) => {
+      clearUserRandomCallProposals({
+        userHash,
+        onSuccess: result => {
+          mutate(getLobbyOverviewEndpoint());
+          setClearMatchesToast({
+            id: Date.now(),
+            title:
+              result.updated_count === 0
+                ? 'No pending random call matches were cleared.'
+                : `Cleared ${result.updated_count} pending random call match${result.updated_count === 1 ? '' : 'es'}.`,
+          });
+          resolve(result.updated_count);
+        },
+        onError: (error: any) => {
+          console.error('Error clearing proposals:', error);
+          const errorMessage =
+            error?.message ||
+            error?.data?.message ||
+            'Failed to clear proposals. Please try again.';
+          alert(errorMessage);
+          reject(error);
+        },
+      });
+    });
+  };
+
+  const handleClearAllDangling = () => {
+    setIsClearingDangling(true);
+    clearDanglingRandomCallMatches({
+      onSuccess: result => {
+        mutate(getLobbyOverviewEndpoint());
+        setClearMatchesToast({
+          id: Date.now(),
+          title:
+            result.updated_count === 0
+              ? 'No dangling match proposals to clear.'
+              : `Cleared ${result.updated_count} dangling match proposal${result.updated_count === 1 ? '' : 's'}.`,
+        });
+        setIsClearingDangling(false);
+      },
+      onError: (error: any) => {
+        console.error('Error clearing dangling matches:', error);
+        const errorMessage =
+          error?.message ||
+          error?.data?.message ||
+          'Failed to clear dangling matches. Please try again.';
+        alert(errorMessage);
+        setIsClearingDangling(false);
+      },
+    });
+  };
+
   if (error) {
     return (
       <Container>
@@ -537,6 +704,8 @@ function RandomCallManagement() {
   }
 
   const { lobby, active_users, match_proposals, statistics } = data;
+  const danglingMatches = match_proposals.dangling ?? [];
+  const danglingCount = statistics.dangling_count ?? 0;
 
   const lobbyPeriodLabel =
     lobby.start_time && lobby.end_time
@@ -544,312 +713,355 @@ function RandomCallManagement() {
       : null;
 
   return (
-    <Container>
-      <Header>
-        <Title>
-          Current Lobby
-          <Tag
-            appearance={
-              lobby.is_active ? TagAppearance.success : TagAppearance.error
-            }
-          >
-            {lobby.is_active ? 'Active' : 'Expired'}
-          </Tag>
-        </Title>
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-          <label>
-            <input
-              type="checkbox"
-              checked={autoRefresh}
-              onChange={e => setAutoRefresh(e.target.checked)}
-            />{' '}
-            Auto-refresh (3s)
-          </label>
+    <>
+      <Container>
+        <Header>
+          <Title>
+            Current Lobby
+            <Tag
+              appearance={
+                lobby.is_active ? TagAppearance.success : TagAppearance.error
+              }
+            >
+              {lobby.is_active ? 'Active' : 'Expired'}
+            </Tag>
+          </Title>
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            <label>
+              <input
+                type="checkbox"
+                checked={autoRefresh}
+                onChange={e => setAutoRefresh(e.target.checked)}
+              />{' '}
+              Auto-refresh (3s)
+            </label>
 
-          <Button
-            appearance={ButtonAppearance.Secondary}
-            color="red"
-            size={ButtonSizes.Small}
-            onClick={() => setShowEndConfirm(true)}
-            disabled={!lobby.is_active || isEndingLobby}
-          >
-            End Lobby
-          </Button>
-          {showResetButton && (
             <Button
-              appearance={ButtonAppearance.Primary}
-              backgroundColor="red"
+              appearance={ButtonAppearance.Secondary}
+              color="red"
               size={ButtonSizes.Small}
-              onClick={() => setShowResetConfirm(true)}
-              disabled={!lobby.is_active}
+              onClick={() => setShowEndConfirm(true)}
+              disabled={!lobby.is_active || isEndingLobby}
             >
-              Reset Lobby
+              End Lobby
             </Button>
-          )}
-        </div>
-      </Header>
-
-      {/* Reset Confirmation Modal */}
-      <Modal open={showResetConfirm} onClose={() => setShowResetConfirm(false)}>
-        <Card width={CardSizes.Medium}>
-          <CardHeader>Reset Random Call Lobby</CardHeader>
-          <CardContent>
-            <Text>
-              Are you sure you want to reset the "default" lobby? This will:
-            </Text>
-            <ul
-              style={{
-                marginTop: '1rem',
-                marginBottom: '1rem',
-                paddingLeft: '1.5rem',
-              }}
-            >
-              <li>Delete all lobby users</li>
-              <li>Delete all match proposals</li>
-              <li>Recreate the lobby with current time</li>
-            </ul>
-            <Text bold>This action cannot be undone.</Text>
-            <CardFooter align="space-between">
+            {showResetButton && (
               <Button
-                appearance={ButtonAppearance.Secondary}
-                size={ButtonSizes.Medium}
-                onClick={() => setShowResetConfirm(false)}
-                disabled={isResetting}
-              >
-                Cancel
-              </Button>
-              <Button
-                backgroundColor="red"
                 appearance={ButtonAppearance.Primary}
-                size={ButtonSizes.Medium}
-                onClick={handleResetLobby}
-                disabled={isResetting}
-              >
-                {isResetting ? 'Resetting...' : 'Reset Lobby'}
-              </Button>
-            </CardFooter>
-          </CardContent>
-        </Card>
-      </Modal>
-
-      {/* End Lobby Confirmation Modal */}
-      <Modal open={showEndConfirm} onClose={() => setShowEndConfirm(false)}>
-        <Card width={CardSizes.Medium}>
-          <CardHeader>End Random Call Lobby</CardHeader>
-          <CardContent>
-            <Text>
-              Are you sure you want to end the "default" lobby? This will:
-            </Text>
-            <ul
-              style={{
-                marginTop: '1rem',
-                marginBottom: '1rem',
-                paddingLeft: '1.5rem',
-              }}
-            >
-              <li>Set the lobby end time to the current time</li>
-              <li>Mark the lobby as inactive</li>
-              <li>Prevent new users from joining the lobby</li>
-              <li>Allow existing users to continue their current sessions</li>
-            </ul>
-            <Text bold>This action cannot be undone.</Text>
-            <CardFooter align="space-between">
-              <Button
-                appearance={ButtonAppearance.Secondary}
-                size={ButtonSizes.Medium}
-                onClick={() => setShowEndConfirm(false)}
-                disabled={isEndingLobby}
-              >
-                Cancel
-              </Button>
-              <Button
                 backgroundColor="red"
-                appearance={ButtonAppearance.Primary}
-                size={ButtonSizes.Medium}
-                onClick={handleEndLobby}
-                disabled={isEndingLobby}
+                size={ButtonSizes.Small}
+                onClick={() => setShowResetConfirm(true)}
+                disabled={!lobby.is_active}
               >
-                {isEndingLobby ? 'Ending...' : 'End Lobby'}
+                Reset Lobby
               </Button>
-            </CardFooter>
-          </CardContent>
-        </Card>
-      </Modal>
+            )}
+          </div>
+        </Header>
 
-      {/* Next upcoming lobby (only when current lobby is not active) */}
-      {!lobby.is_active && nextUpcomingLobby && (
-        <Section>
-          <SectionTitle>Next upcoming lobby</SectionTitle>
-          <ScheduleItem>
-            <ScheduleItemInfo>
-              <ScheduleDate>
-                {formatDate(
-                  new Date(nextUpcomingLobby.start_time),
-                  'EEEE, d MMMM yyyy',
-                  'de',
-                )}
-              </ScheduleDate>
-              <ScheduleTime>
-                {formatEventTime(
-                  new Date(nextUpcomingLobby.start_time),
-                  new Date(nextUpcomingLobby.end_time),
-                )}
-              </ScheduleTime>
-            </ScheduleItemInfo>
-            <ScheduleStatus>
-              <Tag
-                appearance={
-                  nextUpcomingLobby.status
-                    ? TagAppearance.success
-                    : TagAppearance.outline
-                }
-                size={TagSizes.small}
-              >
-                {nextUpcomingLobby.status ? 'Active' : 'Upcoming'}
-              </Tag>
-              <Text>{nextUpcomingLobby.active_users_count} users</Text>
-            </ScheduleStatus>
-          </ScheduleItem>
-        </Section>
-      )}
-
-      {/* Lobby Status */}
-      <Section>
-        <SectionTitle>{lobbyPeriodLabel}</SectionTitle>
-        <StatsGrid>
-          <StatCard>
-            <StatLabel>Active Users</StatLabel>
-            <StatValue>{lobby.active_users_count}</StatValue>
-          </StatCard>
-          <StatCard>
-            <StatLabel>Total Users</StatLabel>
-            <StatValue>{lobby.total_users_count}</StatValue>
-          </StatCard>
-          <StatCard>
-            <StatLabel>Total Matches</StatLabel>
-            <StatValue>{statistics.total_matches}</StatValue>
-          </StatCard>
-        </StatsGrid>
-      </Section>
-
-      {/* Match Statistics */}
-      <Section>
-        <SectionTitle>Match Statistics</SectionTitle>
-        <StatsGrid>
-          <StatCard>
-            <StatLabel>Pending Matches</StatLabel>
-            <StatValue>{statistics.pending_count}</StatValue>
-          </StatCard>
-          <StatCard>
-            <StatLabel>Accepted Matches</StatLabel>
-            <StatValue>{statistics.accepted_count}</StatValue>
-          </StatCard>
-          <StatCard>
-            <StatLabel>Rejected Matches</StatLabel>
-            <StatValue>{statistics.rejected_count}</StatValue>
-          </StatCard>
-          <StatCard>
-            <StatLabel>Expired Matches</StatLabel>
-            <StatValue>{statistics.expired_count}</StatValue>
-          </StatCard>
-        </StatsGrid>
-      </Section>
-
-      {/* Active Users */}
-      <Section>
-        <SectionTitle>Active Users</SectionTitle>
-        <ActiveUsersTable users={active_users} />
-      </Section>
-
-      {/* Match Proposals */}
-      <Section>
-        <SectionTitle>Match Proposals</SectionTitle>
-        <Tabs defaultValue="pending">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="pending">
-              Pending ({statistics.pending_count})
-            </TabsTrigger>
-            <TabsTrigger value="accepted">
-              Accepted ({statistics.accepted_count})
-            </TabsTrigger>
-            <TabsTrigger value="rejected">
-              Rejected ({statistics.rejected_count})
-            </TabsTrigger>
-            <TabsTrigger value="expired">
-              Expired ({statistics.expired_count})
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="pending">
-            <MatchProposalsTable matches={match_proposals.pending} />
-          </TabsContent>
-          <TabsContent value="accepted">
-            <MatchProposalsTable matches={match_proposals.accepted} />
-          </TabsContent>
-          <TabsContent value="rejected">
-            <MatchProposalsTable matches={match_proposals.rejected} />
-          </TabsContent>
-          <TabsContent value="expired">
-            <MatchProposalsTable matches={match_proposals.expired} />
-          </TabsContent>
-        </Tabs>
-      </Section>
-
-      {/* Celery Tasks */}
-      <Section>
-        <SectionTitleClickable
-          onClick={() => setTasksSectionOpen(!tasksSectionOpen)}
+        {/* Reset Confirmation Modal */}
+        <Modal
+          open={showResetConfirm}
+          onClose={() => setShowResetConfirm(false)}
         >
-          {tasksSectionOpen ? '▼' : '▶'} Celery Tasks
-          {tasksValidating && <Loading size={LoadingSizes.Small} inline />}
-        </SectionTitleClickable>
-        <CollapsibleContent $isOpen={tasksSectionOpen}>
-          {tasksError ? (
-            <Text>Error loading tasks: {tasksError.message}</Text>
-          ) : tasksData ? (
-            <>
-              <StatsGrid>
-                <StatCard>
-                  <StatLabel>Total Tasks</StatLabel>
-                  <StatValue>{tasksData.statistics.total}</StatValue>
-                </StatCard>
-                <StatCard>
-                  <StatLabel>Successful</StatLabel>
-                  <StatValue>
-                    <Tag
-                      appearance={TagAppearance.success}
-                      size={TagSizes.small}
-                    >
-                      {tasksData.statistics.success}
-                    </Tag>
-                  </StatValue>
-                </StatCard>
-                <StatCard>
-                  <StatLabel>Failed</StatLabel>
-                  <StatValue>
-                    <Tag appearance={TagAppearance.error} size={TagSizes.small}>
-                      {tasksData.statistics.failure}
-                    </Tag>
-                  </StatValue>
-                </StatCard>
-                <StatCard>
-                  <StatLabel>Pending</StatLabel>
-                  <StatValue>
-                    <Tag appearance={TagAppearance.error} size={TagSizes.small}>
-                      {tasksData.statistics.pending}
-                    </Tag>
-                  </StatValue>
-                </StatCard>
-              </StatsGrid>
-              <div style={{ marginTop: '1.5rem' }}>
-                <TasksTable tasks={tasksData.tasks} />
-              </div>
-            </>
-          ) : (
-            <Text>Loading tasks...</Text>
-          )}
-        </CollapsibleContent>
-      </Section>
-    </Container>
+          <Card width={CardSizes.Medium}>
+            <CardHeader>Reset Random Call Lobby</CardHeader>
+            <CardContent>
+              <Text>
+                Are you sure you want to reset the "default" lobby? This will:
+              </Text>
+              <ul
+                style={{
+                  marginTop: '1rem',
+                  marginBottom: '1rem',
+                  paddingLeft: '1.5rem',
+                }}
+              >
+                <li>Delete all lobby users</li>
+                <li>Delete all match proposals</li>
+                <li>Recreate the lobby with current time</li>
+              </ul>
+              <Text bold>This action cannot be undone.</Text>
+              <CardFooter align="space-between">
+                <Button
+                  appearance={ButtonAppearance.Secondary}
+                  size={ButtonSizes.Medium}
+                  onClick={() => setShowResetConfirm(false)}
+                  disabled={isResetting}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  backgroundColor="red"
+                  appearance={ButtonAppearance.Primary}
+                  size={ButtonSizes.Medium}
+                  onClick={handleResetLobby}
+                  disabled={isResetting}
+                >
+                  {isResetting ? 'Resetting...' : 'Reset Lobby'}
+                </Button>
+              </CardFooter>
+            </CardContent>
+          </Card>
+        </Modal>
+
+        {/* End Lobby Confirmation Modal */}
+        <Modal open={showEndConfirm} onClose={() => setShowEndConfirm(false)}>
+          <Card width={CardSizes.Medium}>
+            <CardHeader>End Random Call Lobby</CardHeader>
+            <CardContent>
+              <Text>
+                Are you sure you want to end the "default" lobby? This will:
+              </Text>
+              <ul
+                style={{
+                  marginTop: '1rem',
+                  marginBottom: '1rem',
+                  paddingLeft: '1.5rem',
+                }}
+              >
+                <li>Set the lobby end time to the current time</li>
+                <li>Mark the lobby as inactive</li>
+                <li>Prevent new users from joining the lobby</li>
+                <li>Allow existing users to continue their current sessions</li>
+              </ul>
+              <Text bold>This action cannot be undone.</Text>
+              <CardFooter align="space-between">
+                <Button
+                  appearance={ButtonAppearance.Secondary}
+                  size={ButtonSizes.Medium}
+                  onClick={() => setShowEndConfirm(false)}
+                  disabled={isEndingLobby}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  backgroundColor="red"
+                  appearance={ButtonAppearance.Primary}
+                  size={ButtonSizes.Medium}
+                  onClick={handleEndLobby}
+                  disabled={isEndingLobby}
+                >
+                  {isEndingLobby ? 'Ending...' : 'End Lobby'}
+                </Button>
+              </CardFooter>
+            </CardContent>
+          </Card>
+        </Modal>
+
+        {/* Next upcoming lobby (only when current lobby is not active) */}
+        {!lobby.is_active && nextUpcomingLobby && (
+          <Section>
+            <SectionTitle>Next upcoming lobby</SectionTitle>
+            <ScheduleItem>
+              <ScheduleItemInfo>
+                <ScheduleDate>
+                  {formatDate(
+                    new Date(nextUpcomingLobby.start_time),
+                    'EEEE, d MMMM yyyy',
+                    'de',
+                  )}
+                </ScheduleDate>
+                <ScheduleTime>
+                  {formatEventTime(
+                    new Date(nextUpcomingLobby.start_time),
+                    new Date(nextUpcomingLobby.end_time),
+                  )}
+                </ScheduleTime>
+              </ScheduleItemInfo>
+              <ScheduleStatus>
+                <Tag
+                  appearance={
+                    nextUpcomingLobby.status
+                      ? TagAppearance.success
+                      : TagAppearance.outline
+                  }
+                  size={TagSizes.small}
+                >
+                  {nextUpcomingLobby.status ? 'Active' : 'Upcoming'}
+                </Tag>
+                <Text>{nextUpcomingLobby.active_users_count} users</Text>
+              </ScheduleStatus>
+            </ScheduleItem>
+          </Section>
+        )}
+
+        {/* Lobby Status */}
+        <Section>
+          <SectionTitle>{lobbyPeriodLabel}</SectionTitle>
+          <StatsGrid>
+            <StatCard>
+              <StatLabel>Active Users</StatLabel>
+              <StatValue>{lobby.active_users_count}</StatValue>
+            </StatCard>
+            <StatCard>
+              <StatLabel>Total Users</StatLabel>
+              <StatValue>{lobby.total_users_count}</StatValue>
+            </StatCard>
+            <StatCard>
+              <StatLabel>Total Matches</StatLabel>
+              <StatValue>{statistics.total_matches}</StatValue>
+            </StatCard>
+          </StatsGrid>
+        </Section>
+
+        {/* Match Statistics */}
+        <Section>
+          <SectionTitle>Match Statistics</SectionTitle>
+          <StatsGrid>
+            <StatCard>
+              <StatLabel>Pending Matches</StatLabel>
+              <StatValue>{statistics.pending_count}</StatValue>
+            </StatCard>
+            <StatCard>
+              <StatLabel>Accepted Matches</StatLabel>
+              <StatValue>{statistics.accepted_count}</StatValue>
+            </StatCard>
+            <StatCard>
+              <StatLabel>Rejected Matches</StatLabel>
+              <StatValue>{statistics.rejected_count}</StatValue>
+            </StatCard>
+            <StatCard>
+              <StatLabel>Expired Matches</StatLabel>
+              <StatValue>{statistics.expired_count}</StatValue>
+            </StatCard>
+            <StatCard>
+              <StatLabel>Dangling proposals</StatLabel>
+              <StatValue>{danglingCount}</StatValue>
+            </StatCard>
+          </StatsGrid>
+        </Section>
+
+        {/* Active Users */}
+        <Section>
+          <SectionTitle>Active Users</SectionTitle>
+          <ActiveUsersTable
+            users={active_users}
+            onClearProposals={handleClearProposals}
+          />
+        </Section>
+
+        {/* Dangling match proposals */}
+        <Section>
+          <SectionHeaderRow>
+            <SectionTitleFlush>Dangling match proposals</SectionTitleFlush>
+            <Button
+              appearance={ButtonAppearance.Secondary}
+              color="red"
+              size={ButtonSizes.Small}
+              onClick={handleClearAllDangling}
+              disabled={danglingCount === 0 || isClearingDangling}
+            >
+              {isClearingDangling ? 'Clearing…' : 'Clear all dangling'}
+            </Button>
+          </SectionHeaderRow>
+          <DanglingMatchesTable matches={danglingMatches} />
+        </Section>
+
+        {/* Match Proposals */}
+        <Section>
+          <SectionTitle>Match Proposals</SectionTitle>
+          <Tabs defaultValue="pending">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="pending">
+                Pending ({statistics.pending_count})
+              </TabsTrigger>
+              <TabsTrigger value="accepted">
+                Accepted ({statistics.accepted_count})
+              </TabsTrigger>
+              <TabsTrigger value="rejected">
+                Rejected ({statistics.rejected_count})
+              </TabsTrigger>
+              <TabsTrigger value="expired">
+                Expired ({statistics.expired_count})
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="pending">
+              <MatchProposalsTable matches={match_proposals.pending} />
+            </TabsContent>
+            <TabsContent value="accepted">
+              <MatchProposalsTable matches={match_proposals.accepted} />
+            </TabsContent>
+            <TabsContent value="rejected">
+              <MatchProposalsTable matches={match_proposals.rejected} />
+            </TabsContent>
+            <TabsContent value="expired">
+              <MatchProposalsTable matches={match_proposals.expired} />
+            </TabsContent>
+          </Tabs>
+        </Section>
+
+        {/* Celery Tasks */}
+        <Section>
+          <SectionTitleClickable
+            onClick={() => setTasksSectionOpen(!tasksSectionOpen)}
+          >
+            {tasksSectionOpen ? '▼' : '▶'} Celery Tasks
+            {tasksValidating && <Loading size={LoadingSizes.Small} inline />}
+          </SectionTitleClickable>
+          <CollapsibleContent $isOpen={tasksSectionOpen}>
+            {tasksError ? (
+              <Text>Error loading tasks: {tasksError.message}</Text>
+            ) : tasksData ? (
+              <>
+                <StatsGrid>
+                  <StatCard>
+                    <StatLabel>Total Tasks</StatLabel>
+                    <StatValue>{tasksData.statistics.total}</StatValue>
+                  </StatCard>
+                  <StatCard>
+                    <StatLabel>Successful</StatLabel>
+                    <StatValue>
+                      <Tag
+                        appearance={TagAppearance.success}
+                        size={TagSizes.small}
+                      >
+                        {tasksData.statistics.success}
+                      </Tag>
+                    </StatValue>
+                  </StatCard>
+                  <StatCard>
+                    <StatLabel>Failed</StatLabel>
+                    <StatValue>
+                      <Tag
+                        appearance={TagAppearance.error}
+                        size={TagSizes.small}
+                      >
+                        {tasksData.statistics.failure}
+                      </Tag>
+                    </StatValue>
+                  </StatCard>
+                  <StatCard>
+                    <StatLabel>Pending</StatLabel>
+                    <StatValue>
+                      <Tag
+                        appearance={TagAppearance.error}
+                        size={TagSizes.small}
+                      >
+                        {tasksData.statistics.pending}
+                      </Tag>
+                    </StatValue>
+                  </StatCard>
+                </StatsGrid>
+                <div style={{ marginTop: '1.5rem' }}>
+                  <TasksTable tasks={tasksData.tasks} />
+                </div>
+              </>
+            ) : (
+              <Text>Loading tasks...</Text>
+            )}
+          </CollapsibleContent>
+        </Section>
+      </Container>
+      {clearMatchesToast && (
+        <Toast
+          key={clearMatchesToast.id}
+          headline="Success"
+          title={clearMatchesToast.title}
+          onClose={() => setClearMatchesToast(null)}
+        />
+      )}
+    </>
   );
 }
 
