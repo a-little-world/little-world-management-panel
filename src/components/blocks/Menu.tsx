@@ -11,6 +11,7 @@ import { useLocation } from 'react-router-dom';
 
 import useSelectUser from '../../hooks/useSelectUser';
 import {
+  BANNERS_ROUTE,
   DOCUMENTATION_ROUTE,
   DYNAMIC_USER_LISTS_ROUTE,
   EVENTS_ROUTE,
@@ -108,6 +109,12 @@ const Menu = () => {
             active={location.pathname === EVENTS_ROUTE}
           >
             Events
+          </NavigationMenuContentItem>
+          <NavigationMenuContentItem
+            to={BANNERS_ROUTE}
+            active={location.pathname.startsWith(BANNERS_ROUTE)}
+          >
+            Banners
           </NavigationMenuContentItem>
         </NavigationMenuContent>
       </NavigationMenuItem>

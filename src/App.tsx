@@ -26,14 +26,20 @@ import Scores from './components/views/Scores';
 import Stats from './components/views/Stats';
 import Users from './components/views/Users';
 import VideoCalls from './components/views/VideoCalls';
+import Events from './components/views/comms/events/Events';
+import BannerFormPage from './components/views/comms/banners/BannerFormPage';
+import Banners from './components/views/comms/banners/Banners';
 import CreateNewEmail from './components/views/emails/CreateNewEmail';
 import Email from './components/views/emails/Email';
 import EmailHtml from './components/views/emails/EmailHtml';
 import Emails from './components/views/emails/Emails';
 import { SendDynamicTemplateView } from './components/views/emails/SendDynamicTemplate';
+import RandomCalls from './components/views/randomCalls/RandomCalls';
 import { EmailThemeProvider } from './emails/shared/theme';
 import {
   ALGORITHM_ROUTE,
+  BANNERS_ROUTE,
+  BANNER_EDIT_ROUTE,
   BASE_ROUTE,
   CREATE_NEW_EMAIL_ROUTE,
   DOCUMENTATION_ROUTE,
@@ -42,12 +48,12 @@ import {
   EMAILS_ROUTE,
   EMAIL_HTML_ROUTE,
   EMAIL_ROUTE,
+  EVENTS_ROUTE,
   MATCHES_LIST_ROUTE,
   MATCHING_ROUTE,
   MATCH_ROUTE,
   PREMATCH_APPOINTMENTS_ROUTE,
   RANDOM_CALLS_ROUTE,
-  EVENTS_ROUTE,
   SCORES_ROUTE,
   SEND_DYNAMIC_EMAIL_ROUTE,
   STATS_ROUTE,
@@ -56,8 +62,6 @@ import {
   VIDEO_CALLS_ROUTE,
 } from './routes';
 import { GlobalStateProvider } from './store';
-import RandomCalls from './components/views/randomCalls/RandomCalls';
-import Events from './components/views/comms/Events';
 
 export const Root = ({
   children,
@@ -165,6 +169,14 @@ const router = createBrowserRouter(
         {
           path: EVENTS_ROUTE,
           element: <Events />,
+        },
+        {
+          path: BANNERS_ROUTE,
+          element: <Banners />,
+        },
+        {
+          path: BANNER_EDIT_ROUTE,
+          element: <BannerFormPage />,
         },
       ],
     },

@@ -24,10 +24,10 @@ import {
   CommunityEvent,
   CommunityEventPayload,
   resolveCommunityEventImageUrl,
-} from '../../../api/communityEvents';
-import { registerInput } from '../../../store';
-import { DatePicker } from '../../atoms/DatePicker';
-import { ImageUploadField } from '../../atoms/ImageUploadField';
+} from '../../../../api/communityEvents';
+import { registerInput } from '../../../../store';
+import { DatePicker } from '../../../atoms/DatePicker';
+import { ImageUploadField } from '../../../atoms/ImageUploadField';
 import {
   EventModalAside,
   EventModalCardHeaderRow,
