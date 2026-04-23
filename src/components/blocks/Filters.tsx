@@ -7,16 +7,24 @@ import {
   CardHeader,
   CardSizes,
   Dropdown,
+  Label,
   Modal,
   MultiCheckbox,
+  RadioGroup,
   Switch,
 } from '@a-little-world/little-world-design-system';
 import { find, includes, isEmpty, isString, map, some } from 'lodash';
 import React, { useEffect, useState } from 'react';
+import type { DateRange } from 'react-day-picker';
 import styled from 'styled-components';
 
 import { USER_GROUPS } from '../../constants';
 import { useFilterOptions } from '../../store';
+import {
+  DateRangePicker,
+  formatLocalDateYmd,
+  parseYmdToLocalDate,
+} from '../atoms/DateRangePicker';
 
 const FiltersModal = styled(Modal)`
   z-index: 1000;
@@ -34,9 +42,93 @@ const DropdownItem = styled.div`
   min-width: 0;
 `;
 
+const JourneySection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.medium};
+  width: 100%;
+  margin-bottom: ${({ theme }) => theme.spacing.small};
+`;
+
+const JourneyBooleanRowRoot = styled.div`
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: ${({ theme }) => theme.spacing.medium};
+  row-gap: ${({ theme }) => theme.spacing.xxsmall};
+  width: 100%;
+`;
+
+const JourneyRowLabel = styled(Label)`
+  flex: 0 0 auto;
+  min-width: 11rem;
+`;
+
+const JourneyRadiosWrap = styled.div`
+  flex: 1 1 auto;
+  min-width: 0;
+
+  [role='radiogroup'] {
+    flex-direction: row !important;
+    flex-wrap: wrap;
+    gap: ${({ theme }) => theme.spacing.small};
+    align-items: center;
+  }
+`;
+
+type OnUpdateFilters = (key: string, value: string) => void;
+type OnRemoveFilter = (key: string) => void;
+
+type JourneyTriValue = 'any' | 'true' | 'false';
+
+function journeyParamToTriValue(raw: unknown): JourneyTriValue {
+  const v = Array.isArray(raw) ? raw[0] : raw;
+  if (v === 'true' || v === true) return 'true';
+  if (v === 'false' || v === false) return 'false';
+  return 'any';
+}
+
+const JourneyBooleanRow: React.FC<{
+  label: string;
+  filterKey: string;
+  rawValue: unknown;
+  onUpdateFilters: OnUpdateFilters;
+  onRemoveFilter: OnRemoveFilter;
+}> = ({ label, filterKey, rawValue, onUpdateFilters, onRemoveFilter }) => {
+  const inputRef = React.useRef<HTMLInputElement>(
+    null,
+  ) as React.RefObject<HTMLInputElement>;
+  const value = journeyParamToTriValue(rawValue);
+  return (
+    <JourneyBooleanRowRoot>
+      <JourneyRowLabel bold inline>
+        {label}
+      </JourneyRowLabel>
+      <JourneyRadiosWrap>
+        <RadioGroup
+          name={filterKey}
+          inputRef={inputRef}
+          value={value}
+          onValueChange={(next: string) => {
+            if (next === 'any') onRemoveFilter(filterKey);
+            else onUpdateFilters(filterKey, next);
+          }}
+          items={[
+            { id: `${filterKey}-any`, label: 'Any', value: 'any' },
+            { id: `${filterKey}-yes`, label: 'Yes', value: 'true' },
+            { id: `${filterKey}-no`, label: 'No', value: 'false' },
+          ]}
+        />
+      </JourneyRadiosWrap>
+    </JourneyBooleanRowRoot>
+  );
+};
+
 interface FiltersProps {
   defaultValues?: any;
-  open: boolean;
+  /** When false, filters are rendered inline (e.g. users modal passes true). */
+  open?: boolean;
   onClose: () => void;
   onUpdateFilters: (key: string, val: string) => void;
   onRemoveFilter: (key: string) => void;
@@ -48,19 +140,19 @@ enum FilterKeys {
   EmailAuthenticated = 'state__email_authenticated',
   JobSearch = 'profile__job_search',
   IsOnboarded = 'state__is_onboarded',
+  UserFormCompleted = 'state__user_form_completed',
   HasPriority = 'state__has_match_priority',
   TargetGroups = 'profile__target_groups',
   UserType = 'profile__user_type',
   UserList = 'list',
+  JoinedBetweenAfter = 'joined_between_after',
+  JoinedBetweenBefore = 'joined_between_before',
 }
 
 type FilterOption = {
   key: string;
   value: string;
 };
-
-type OnUpdateFilters = (key: string, value: string) => void;
-type OnRemoveFilter = (key: string) => void;
 
 const handleFilterSelection = (
   selectedOptions: string[] | null,
@@ -92,35 +184,17 @@ export const containsFilterKey = (filters: Record<string, any>): boolean => {
   });
 };
 
-const formatDefaultValues = (defaultValues: any) => {
-  const formattedValues = { ...defaultValues, user_journey: [] };
-  if (defaultValues[FilterKeys.EmailAuthenticated]) {
-    formattedValues.user_journey = [FilterKeys.EmailAuthenticated];
-  }
-  if (defaultValues[FilterKeys.IsOnboarded]) {
-    formattedValues.user_journey = [
-      ...formattedValues.user_journey,
-      FilterKeys.IsOnboarded,
-    ];
-  }
-  if (defaultValues[FilterKeys.JobSearch]) {
-    formattedValues.user_journey = [
-      ...formattedValues.user_journey,
-      FilterKeys.JobSearch,
-    ];
-  }
-
-  return formattedValues;
-};
-
 const Filters: React.FC<FiltersProps> = ({
-  open,
+  open = true,
   onClose,
   onUpdateFilters,
   onRemoveFilter,
   defaultValues,
 }) => {
   const [filters, setFilters] = useState<Record<string, any>>({});
+  const [joinedBetweenRange, setJoinedBetweenRange] = useState<
+    DateRange | undefined
+  >();
   const { filterOptions, isLoading: filtersLoading } = useFilterOptions();
   const companyChoices = find(
     filterOptions?.filters,
@@ -139,14 +213,60 @@ const Filters: React.FC<FiltersProps> = ({
   };
 
   useEffect(() => {
-    setFilters(formatDefaultValues(defaultValues));
+    setFilters({ ...(defaultValues ?? {}) });
   }, [defaultValues]);
+
+  // Joined-between uses local range state while the user is mid-selection (from without to); the URL
+  // only updates once both bounds exist. Re-sync from defaultValues (URL) when the modal opens so we
+  // show applied filters, and when defaultValues change while open so the picker matches the query string.
+  useEffect(() => {
+    if (!open) return;
+    const after = defaultValues?.[FilterKeys.JoinedBetweenAfter];
+    const before = defaultValues?.[FilterKeys.JoinedBetweenBefore];
+    if (typeof after === 'string' && typeof before === 'string') {
+      setJoinedBetweenRange({
+        from: parseYmdToLocalDate(after),
+        to: parseYmdToLocalDate(before),
+      });
+    } else {
+      setJoinedBetweenRange(undefined);
+    }
+  }, [open, defaultValues]);
+
+  const handleJoinedBetweenChange = (next: DateRange | undefined) => {
+    setJoinedBetweenRange(next);
+    if (next?.from && next?.to) {
+      onUpdateFilters(
+        FilterKeys.JoinedBetweenAfter,
+        formatLocalDateYmd(next.from),
+      );
+      onUpdateFilters(
+        FilterKeys.JoinedBetweenBefore,
+        formatLocalDateYmd(next.to),
+      );
+    } else if (!next?.from && !next?.to) {
+      onRemoveFilter(FilterKeys.JoinedBetweenAfter);
+      onRemoveFilter(FilterKeys.JoinedBetweenBefore);
+    }
+  };
 
   return (
     <FiltersModal open={open} onClose={onClose}>
       <Card width={CardSizes.Large}>
         <CardHeader>Filters</CardHeader>
         <CardContent align="flex-start">
+          <DropdownRow>
+            <DropdownItem>
+              <Label bold>Joined between</Label>
+              <DateRangePicker
+                range={joinedBetweenRange}
+                setRange={handleJoinedBetweenChange}
+                inModal
+                numberOfMonths={1}
+              />
+            </DropdownItem>
+          </DropdownRow>
+
           <DropdownRow>
             <DropdownItem>
               <Dropdown
@@ -243,38 +363,37 @@ const Filters: React.FC<FiltersProps> = ({
             checked={filters[FilterKeys.HasPriority]}
           />
 
-          <MultiCheckbox
-            key={filters.user_journey}
-            name="user_journey"
-            onSelection={val =>
-              handleFilterSelection(
-                val,
-                [
-                  { key: FilterKeys.EmailAuthenticated, value: 'true' },
-                  { key: FilterKeys.IsOnboarded, value: 'true' },
-                  { key: FilterKeys.JobSearch, value: 'true' },
-                ],
-                onUpdateFilters,
-                onRemoveFilter,
-              )
-            }
-            options={[
-              {
-                label: 'Email authenticated',
-                value: FilterKeys.EmailAuthenticated,
-              },
-              {
-                label: 'Is onboarded',
-                value: FilterKeys.IsOnboarded,
-              },
-              {
-                label: 'Searching for a job',
-                value: FilterKeys.JobSearch,
-              },
-            ]}
-            preSelected={filters.user_journey}
-            heading={'User Journey Variables'}
-          />
+          <JourneySection>
+            <Label bold>User journey variables</Label>
+            <JourneyBooleanRow
+              label="Email authenticated"
+              filterKey={FilterKeys.EmailAuthenticated}
+              rawValue={filters[FilterKeys.EmailAuthenticated]}
+              onUpdateFilters={onUpdateFilters}
+              onRemoveFilter={onRemoveFilter}
+            />
+            <JourneyBooleanRow
+              label="User form completed"
+              filterKey={FilterKeys.UserFormCompleted}
+              rawValue={filters[FilterKeys.UserFormCompleted]}
+              onUpdateFilters={onUpdateFilters}
+              onRemoveFilter={onRemoveFilter}
+            />
+            <JourneyBooleanRow
+              label="Is onboarded"
+              filterKey={FilterKeys.IsOnboarded}
+              rawValue={filters[FilterKeys.IsOnboarded]}
+              onUpdateFilters={onUpdateFilters}
+              onRemoveFilter={onRemoveFilter}
+            />
+            <JourneyBooleanRow
+              label="Searching for a job"
+              filterKey={FilterKeys.JobSearch}
+              rawValue={filters[FilterKeys.JobSearch]}
+              onUpdateFilters={onUpdateFilters}
+              onRemoveFilter={onRemoveFilter}
+            />
+          </JourneySection>
 
           <MultiCheckbox
             key={filters[FilterKeys.TargetGroups]}
