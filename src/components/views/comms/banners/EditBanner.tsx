@@ -21,7 +21,7 @@ import {
   Toast,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
-import { endOfDay, formatISO, isValid, parseISO, startOfDay } from 'date-fns';
+import { isValid, parseISO } from 'date-fns';
 import React, { RefObject, useEffect, useMemo, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -72,9 +72,10 @@ type BannerFormValues = BannerPayload & {
 
 const BERLIN_TZ = 'Europe/Berlin';
 
-function getTimeZoneOffsetMs(timeZone: string, date: Date): number {
+/** Berlin wall-clock fields for an instant (DST-aware). */
+function berlinParts(utcMs: number) {
   const dtf = new Intl.DateTimeFormat('en-US', {
-    timeZone,
+    timeZone: BERLIN_TZ,
     hour12: false,
     year: 'numeric',
     month: '2-digit',
@@ -83,77 +84,49 @@ function getTimeZoneOffsetMs(timeZone: string, date: Date): number {
     minute: '2-digit',
     second: '2-digit',
   });
-  const parts = dtf.formatToParts(date);
-  const p = Object.fromEntries(parts.map(part => [part.type, part.value]));
-  const asUtc = Date.UTC(
-    Number(p.year),
-    Number(p.month) - 1,
-    Number(p.day),
-    Number(p.hour),
-    Number(p.minute),
-    Number(p.second),
-  );
-  return asUtc - date.getTime();
-}
-
-function berlinWallTimeToIso(
-  year: number,
-  monthIndex: number,
-  day: number,
-  hour: number,
-  minute: number,
-  second: number,
-  millisecond: number,
-): string {
-  const utcGuess = new Date(
-    Date.UTC(year, monthIndex, day, hour, minute, second, millisecond),
-  );
-  const offsetMs = getTimeZoneOffsetMs(BERLIN_TZ, utcGuess);
-  return new Date(utcGuess.getTime() - offsetMs).toISOString();
-}
-
-function berlinDateParts(date: Date): {
-  year: number;
-  monthIndex: number;
-  day: number;
-} {
-  const dtf = new Intl.DateTimeFormat('en-US', {
-    timeZone: BERLIN_TZ,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  });
-  const parts = dtf.formatToParts(date);
-  const p = Object.fromEntries(parts.map(part => [part.type, part.value]));
+  const p = Object.fromEntries(dtf.formatToParts(new Date(utcMs)).map(x => [x.type, x.value]));
   return {
-    year: Number(p.year),
-    monthIndex: Number(p.month) - 1,
-    day: Number(p.day),
+    y: Number(p.year),
+    mo: Number(p.month) - 1,
+    d: Number(p.day),
+    h: Number(p.hour),
+    mi: Number(p.minute),
+    s: Number(p.second),
   };
+}
+
+/** Treat (y, mo, d, h, mi, s, ms) as a clock time in Europe/Berlin; return that instant as ISO UTC. */
+function berlinWallToIso(
+  y: number,
+  mo: number,
+  d: number,
+  h: number,
+  mi: number,
+  s: number,
+  ms: number,
+): string {
+  const utcGuess = Date.UTC(y, mo, d, h, mi, s, ms);
+  const wall = berlinParts(utcGuess);
+  const wallAsUtc = Date.UTC(wall.y, wall.mo, wall.d, wall.h, wall.mi, wall.s);
+  return new Date(utcGuess - (wallAsUtc - utcGuess)).toISOString();
 }
 
 function parseIsoToDate(value: string | null | undefined): Date | null {
   if (value == null || value === '') return null;
   const d = parseISO(value);
   if (!isValid(d)) return null;
-  const { year, monthIndex, day } = berlinDateParts(d);
-  return new Date(year, monthIndex, day);
+  const { y, mo, d: day } = berlinParts(d.getTime());
+  return new Date(y, mo, day);
 }
 
 function toActivationIso(date: Date | null): string | null {
   if (!date) return null;
-  const year = date.getFullYear();
-  const monthIndex = date.getMonth();
-  const day = date.getDate();
-  return berlinWallTimeToIso(year, monthIndex, day, 0, 0, 0, 0);
+  return berlinWallToIso(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
 }
 
 function toExpirationIso(date: Date | null): string | null {
   if (!date) return null;
-  const year = date.getFullYear();
-  const monthIndex = date.getMonth();
-  const day = date.getDate();
-  return berlinWallTimeToIso(year, monthIndex, day, 23, 59, 59, 999);
+  return berlinWallToIso(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999);
 }
 
 function getSafePreviewBackground(value: string | null | undefined): string | undefined {
