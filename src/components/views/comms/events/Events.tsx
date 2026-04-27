@@ -22,10 +22,10 @@ import {
   createCommunityEvent,
   fetchCommunityEvents,
   updateCommunityEvent,
-} from '../../../api/communityEvents';
-import { COMMUNITY_EVENT_FREQUENCIES, LANGUAGES } from '../../../constants';
-import { formatDate, formatEventTime } from '../../../helpers/date';
-import { calculateNextOccurrence } from '../../../helpers/events';
+} from '../../../../api/communityEvents';
+import { COMMUNITY_EVENT_FREQUENCIES, LANGUAGES } from '../../../../constants';
+import { formatDate, formatEventTime } from '../../../../helpers/date';
+import { calculateNextOccurrence } from '../../../../helpers/events';
 import {
   Table,
   TableBody,
@@ -33,8 +33,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '../../atoms/Table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../atoms/Tabs';
+} from '../../../atoms/Table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../atoms/Tabs';
 import EventForm, { EventFormValues } from './EventForm';
 import {
   ColDate,

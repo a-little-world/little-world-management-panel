@@ -1,4 +1,9 @@
-import { Button, ButtonAppearance, ButtonSizes } from '@a-little-world/little-world-design-system';
+import {
+  Button,
+  ButtonAppearance,
+  ButtonSizes,
+  Label,
+} from '@a-little-world/little-world-design-system';
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
 
 import {
@@ -8,7 +13,6 @@ import {
   EmptySubtitle,
   EmptyTitle,
   FieldError,
-  FieldLabel,
   FieldRoot,
   PreviewCaption,
   PreviewClickArea,
@@ -143,10 +147,10 @@ export function ImageUploadField({
   };
 
   return (
-    <FieldRoot $compact={compact}>
-      <FieldLabel htmlFor={inputId} $disabled={disabled}>
+    <FieldRoot>
+      <Label bold htmlFor={inputId}>
         {label}
-      </FieldLabel>
+      </Label>
 
       <VisuallyHiddenInput
         ref={inputRef}
@@ -233,7 +237,9 @@ export function ImageUploadField({
         ) : (
           <EmptyState $compact={compact}>
             <EmptyIcon strokeWidth={1.5} aria-hidden $compact={compact} />
-            <EmptyTitle $compact={compact}>Drop an image here or choose a file</EmptyTitle>
+            <EmptyTitle $compact={compact}>
+              Drop an image here or choose a file
+            </EmptyTitle>
             <EmptySubtitle $compact={compact}>{helperText}</EmptySubtitle>
             {!disabled && (
               <Button

@@ -6,11 +6,12 @@ import logo from '../../assets/logo.svg';
 import Menu from './Menu';
 
 const HeaderTitle = styled(Text)`
-  font-size: 1.5rem;
   color: #074367;
+  display: none;
 
   @media (min-width: ${({ theme }) => theme.breakpoints.medium}) {
     font-size: 2rem;
+    display: block;
   }
 `;
 
@@ -24,7 +25,7 @@ const Header = () => {
           tag="h1"
           type={TextTypes.Heading4}
         >
-          User Management
+          Management Portal
         </HeaderTitle>
       </div>
       <div className="flex gap-4 items-center justify-center">

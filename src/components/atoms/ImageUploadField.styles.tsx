@@ -1,24 +1,9 @@
 import { ImagePlus, X as XIcon } from 'lucide-react';
 import styled, { css } from 'styled-components';
 
-export const FieldRoot = styled.div<{ $compact?: boolean }>`
+export const FieldRoot = styled.div`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme, $compact }) =>
-    $compact ? theme.spacing.xxsmall : theme.spacing.xsmall};
-`;
-
-export const FieldLabel = styled.label<{ $disabled?: boolean }>`
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: ${({ theme }) => theme.color.text.primary};
-
-  ${({ $disabled }) =>
-    $disabled &&
-    css`
-      cursor: not-allowed;
-      opacity: 0.6;
-    `}
 `;
 
 export const VisuallyHiddenInput = styled.input`
@@ -33,7 +18,10 @@ export const VisuallyHiddenInput = styled.input`
   border: 0;
 `;
 
-export const DropZone = styled.div<{ $disabled: boolean; $isDragging: boolean }>`
+export const DropZone = styled.div<{
+  $disabled: boolean;
+  $isDragging: boolean;
+}>`
   position: relative;
   width: 100%;
   overflow: hidden;
@@ -80,7 +68,10 @@ export const PreviewColumn = styled.div`
   align-items: stretch;
 `;
 
-export const PreviewClickArea = styled.div<{ $disabled: boolean; $compact?: boolean }>`
+export const PreviewClickArea = styled.div<{
+  $disabled: boolean;
+  $compact?: boolean;
+}>`
   position: relative;
   display: flex;
   max-height: ${({ $compact }) => ($compact ? '7rem' : '13rem')};
