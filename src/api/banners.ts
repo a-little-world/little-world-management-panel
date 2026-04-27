@@ -61,7 +61,11 @@ export function resolveBannerImageUrl(
       `${window.location.origin}/${url}`;
 }
 
-function buildBannerFormData(payload: BannerPayload, image?: File): FormData {
+function buildBannerFormData(
+  payload: BannerPayload,
+  image?: File,
+  backgroundImage?: File,
+): FormData {
   const fd = new FormData();
   fd.append('name', payload.name);
   fd.append('active', payload.active ? 'true' : 'false');
@@ -80,6 +84,7 @@ function buildBannerFormData(payload: BannerPayload, image?: File): FormData {
   fd.append('custom_filter', payload.custom_filter);
   fd.append('filter_priority', String(payload.filter_priority));
   if (image) fd.append('image', image);
+  if (backgroundImage) fd.append('background_image', backgroundImage);
   return fd;
 }
 
@@ -89,18 +94,29 @@ export const fetchAdminBanners = () =>
 export const fetchAdminBanner = (id: number) =>
   apiFetch<Banner>(`${ADMIN_BANNERS_ENDPOINT}${id}/`, { method: 'GET' });
 
-export const createBanner = (payload: BannerPayload, imageFile?: File) =>
+export const createBanner = (
+  payload: BannerPayload,
+  imageFile?: File,
+  backgroundImageFile?: File,
+) =>
   apiFetch<Banner>(ADMIN_BANNERS_ENDPOINT, {
     method: 'POST',
-    body: imageFile ? buildBannerFormData(payload, imageFile) : payload,
+    body:
+      imageFile || backgroundImageFile ?
+        buildBannerFormData(payload, imageFile, backgroundImageFile)
+      : payload,
   });
 
 export const updateBanner = (
   id: number,
   payload: BannerPayload,
   imageFile?: File,
+  backgroundImageFile?: File,
 ) =>
   apiFetch<Banner>(`${ADMIN_BANNERS_ENDPOINT}${id}/`, {
     method: 'PUT',
-    body: imageFile ? buildBannerFormData(payload, imageFile) : payload,
+    body:
+      imageFile || backgroundImageFile ?
+        buildBannerFormData(payload, imageFile, backgroundImageFile)
+      : payload,
   });

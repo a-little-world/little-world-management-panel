@@ -84,13 +84,13 @@ function Banners() {
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead>Title</TableHead>
-                  <TableHead className="w-40">Activation</TableHead>
-                  <TableHead className="w-40">Expiry</TableHead>
-                  <TableHead className="w-32">Filter</TableHead>
+                  <TableHead className="w-32 text-center">Activation</TableHead>
+                  <TableHead className="w-32 text-center">Expiry</TableHead>
+                  <TableHead className="w-32 text-center">Filter</TableHead>
                   <TableHead className="w-28 text-center">Status</TableHead>
                   <TableHead className="w-24 text-center">Type</TableHead>
                   <TableHead className="w-28 text-center">Priority</TableHead>
-                  <TableHead className="w-[5.5rem] text-right">Edit</TableHead>
+                  <TableHead className="w-[5.5rem] text-center">Edit</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -98,9 +98,15 @@ function Banners() {
                   <TableRow key={banner.id}>
                     <TableCell>{banner.name}</TableCell>
                     <TableCell>{banner.title || '—'}</TableCell>
-                    <TableCell>{formatDateTime(banner.activation_time)}</TableCell>
-                    <TableCell>{formatDateTime(banner.expiration_time)}</TableCell>
-                    <TableCell>{banner.custom_filter || 'none'}</TableCell>
+                    <TableCell className="text-center">
+                      {formatDateTime(banner.activation_time)}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {formatDateTime(banner.expiration_time)}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {banner.custom_filter || 'none'}
+                    </TableCell>
                     <TableCell className="text-center">
                       <Tag
                         appearance={
@@ -116,7 +122,7 @@ function Banners() {
                     <TableCell className="text-center">
                       {banner.filter_priority}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-center">
                       <Button
                         appearance={ButtonAppearance.Secondary}
                         size={ButtonSizes.Small}

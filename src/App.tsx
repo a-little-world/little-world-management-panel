@@ -26,9 +26,9 @@ import Scores from './components/views/Scores';
 import Stats from './components/views/Stats';
 import Users from './components/views/Users';
 import VideoCalls from './components/views/VideoCalls';
-import Events from './components/views/comms/events/Events';
-import BannerFormPage from './components/views/comms/banners/BannerFormPage';
 import Banners from './components/views/comms/banners/Banners';
+import EditBanner from './components/views/comms/banners/EditBanner';
+import Events from './components/views/comms/events/Events';
 import CreateNewEmail from './components/views/emails/CreateNewEmail';
 import Email from './components/views/emails/Email';
 import EmailHtml from './components/views/emails/EmailHtml';
@@ -176,7 +176,7 @@ const router = createBrowserRouter(
         },
         {
           path: BANNER_EDIT_ROUTE,
-          element: <BannerFormPage />,
+          element: <EditBanner />,
         },
       ],
     },
