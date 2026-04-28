@@ -62,6 +62,32 @@ export const getUserListExport = async ({
   }
 };
 
+export const getMatchListExport = async ({
+  searchParams,
+  onError,
+  onSuccess,
+}: {
+  searchParams: string;
+  onError: (error: any) => void;
+  onSuccess: (result: any) => void;
+}) => {
+  try {
+    const result = await apiFetch(
+      `/api/matching/matches_export/?${searchParams}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookiesAsObject().csrftoken,
+        },
+      },
+    );
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
+  }
+};
+
 export const sendFileAttachmentMessage = async ({
   file,
   text,
