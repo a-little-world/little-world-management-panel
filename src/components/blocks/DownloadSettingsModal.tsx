@@ -21,11 +21,14 @@ export const DEFAULT_HEADERS = [
 ];
 
 interface DownloadSettingsModalProps {
-  selectedHeaders: any;
-  setSelectedHeaders: (selectedHeaders: any) => void;
+  selectedHeaders: string[];
+  setSelectedHeaders: React.Dispatch<React.SetStateAction<string[]>>;
   open: boolean;
   onClose: () => void;
-  onSave: (selectedHeaders: any) => void;
+  onSave: (selectedHeaders: string[]) => void;
+  availableHeaders?: string[];
+  title?: string;
+  description?: string;
 }
 
 const ALL_AVAILABLE_HEADERS = [...DEFAULT_HEADERS, 'hash', 'id'];
@@ -36,6 +39,9 @@ export function DownloadSettingsModal({
   open,
   onClose,
   onSave,
+  availableHeaders = ALL_AVAILABLE_HEADERS,
+  title = 'Download Settings',
+  description = 'Select the fields you want to include in the download',
 }: DownloadSettingsModalProps) {
   const handleHeaderToggle = (header: string) => {
     setSelectedHeaders(prev =>
@@ -55,14 +61,14 @@ export function DownloadSettingsModal({
       <Card width={CardSizes.Medium}>
         <div className="space-y-4 p-4">
           <Text type={TextTypes.Body3} bold>
-            Download Settings
+            {title}
           </Text>
           <Text type={TextTypes.Body5}>
-            Select the fields you want to include in the download
+            {description}
           </Text>
 
           <div className="space-y-2 max-h-60 overflow-y-auto">
-            {ALL_AVAILABLE_HEADERS.map(header => (
+            {availableHeaders.map(header => (
               <div key={header} className="flex items-center gap-2">
                 <Checkbox
                   id={header}
