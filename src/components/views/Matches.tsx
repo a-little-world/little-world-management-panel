@@ -173,7 +173,7 @@ export function Matches() {
       >
         <StyledDropdown
           value={list}
-          options={filterOptions?.filters?.map(
+          options={filterOptions?.lists?.map(
             ({ name, description }: { name: string; description: string }) => ({
               value: name,
               label: description,
@@ -204,7 +204,7 @@ export function Matches() {
         />
       </FiltersToolbar>
       {usersLoading ? (
-        <Text center>Loading users list '{list}' ...</Text>
+        <Text center>Loading matches list '{list}' ...</Text>
       ) : (
         <MatchesTable matchList={matchList} list={list} />
       )}
