@@ -415,7 +415,7 @@ const UserActions = ({
 
   const hasRandomCallsAccess = (
     user.state.extra_user_permissions || []
-  ).includes('use-random-call');
+  ).includes('use-random-calls');
 
   return (
     <div className="w-full">
