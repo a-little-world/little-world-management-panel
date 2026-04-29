@@ -477,9 +477,12 @@ export const clearActiveBurstCalculation = async ({
 }) => {
   try {
     const forceParam = force ? '?force=true' : '';
-    await apiFetch(`/api/matching/clear_active_burst_calculation/${forceParam}`, {
-      method: 'POST',
-    });
+    await apiFetch(
+      `/api/matching/clear_active_burst_calculation/${forceParam}`,
+      {
+        method: 'POST',
+      },
+    );
     onSuccess?.();
   } catch (error) {
     onError?.(error);
@@ -628,7 +631,8 @@ export const updateDynamicTemplate = async ({
 }) => {
   try {
     const result = await apiFetch(
-      `/api/matching/emails/dynamic_templates/${existingTemplate ? `${templateName}/` : ''
+      `/api/matching/emails/dynamic_templates/${
+        existingTemplate ? `${templateName}/` : ''
       }`,
       {
         method: existingTemplate ? 'PATCH' : 'POST',
@@ -736,24 +740,24 @@ export const setHasMatchPriority = async ({
   }
 };
 
-export const setRandomCallBetaAccess = async ({
+export const setRandomCallsAccess = async ({
   userId,
   onError,
   onSuccess,
-  randomCallsBetaAccess,
+  randomCallsAccess,
 }: {
   userId: string;
   onError: (error: any) => void;
   onSuccess: (result: any) => void;
-  randomCallsBetaAccess: boolean;
+  randomCallsAccess: boolean;
 }) => {
   try {
     const result = await apiFetch(
-      `/api/matching/users/${userId}/set_random_call_beta_access/`,
+      `/api/matching/users/${userId}/set_random_call_access/`,
       {
         method: 'POST',
         body: {
-          random_call_beta_access: randomCallsBetaAccess,
+          random_call_access: randomCallsAccess,
         },
       },
     );

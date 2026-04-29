@@ -15,7 +15,7 @@ import {
   Text,
   TextArea,
   TextInput,
-  TextTypes
+  TextTypes,
 } from '@a-little-world/little-world-design-system';
 import { isEmpty, map } from 'lodash';
 import React, { useState } from 'react';
@@ -30,7 +30,7 @@ import {
   setHadPrematchingCall,
   setHasMatchPriority,
   setNewsletterSubscribed,
-  setRandomCallBetaAccess,
+  setRandomCallsAccess,
   setUserSearching,
   setUserUnresponsive,
 } from '../../../api/index';
@@ -185,7 +185,10 @@ function InviteNativeAppTester({ user }: { user: any }) {
 
   const normalizePlatformValue = (value: any): 'ios' | 'android' => {
     if (value === 'ios' || value === 'android') return value;
-    if (Array.isArray(value) && (value[0] === 'ios' || value[0] === 'android')) {
+    if (
+      Array.isArray(value) &&
+      (value[0] === 'ios' || value[0] === 'android')
+    ) {
       return value[0];
     }
     if (value?.target?.value === 'ios' || value?.target?.value === 'android') {
@@ -363,8 +366,8 @@ const UserActions = ({
           func = setUserSearching;
         } else if (key === 'priority') {
           func = setHasMatchPriority;
-        } else if (key === 'randomCallsBetaAccess') {
-          func = setRandomCallBetaAccess;
+        } else if (key === 'randomCallsAccess') {
+          func = setRandomCallsAccess;
         } else {
           console.error(`No function mapped for key: ${key}`);
           return Promise.reject(
@@ -410,9 +413,9 @@ const UserActions = ({
     });
   };
 
-  const hasRandomCallBetaAccess =
-    user.state.random_call_beta_access ??
-    (user.state.extra_user_permissions || []).includes('use-beta-random-call');
+  const hasRandomCallsAccess = (
+    user.state.extra_user_permissions || []
+  ).includes('use-random-call');
 
   return (
     <div className="w-full">
@@ -448,7 +451,9 @@ const UserActions = ({
                         id="support_user"
                         name={name}
                         inputRef={ref}
-                        onCheckedChange={val => onChange({ target: { value: val } })}
+                        onCheckedChange={val =>
+                          onChange({ target: { value: val } })
+                        }
                         onBlur={onBlur}
                         value={value}
                         defaultChecked={value}
@@ -470,7 +475,9 @@ const UserActions = ({
                         id="newsletter"
                         name={name}
                         inputRef={ref}
-                        onCheckedChange={val => onChange({ target: { value: val } })}
+                        onCheckedChange={val =>
+                          onChange({ target: { value: val } })
+                        }
                         onBlur={onBlur}
                         value={value}
                         defaultChecked={value}
@@ -492,7 +499,9 @@ const UserActions = ({
                         id="completed"
                         name={name}
                         inputRef={ref}
-                        onCheckedChange={val => onChange({ target: { value: val } })}
+                        onCheckedChange={val =>
+                          onChange({ target: { value: val } })
+                        }
                         onBlur={onBlur}
                         value={value}
                         defaultChecked={value}
@@ -514,7 +523,9 @@ const UserActions = ({
                         id="unresponsive"
                         name={name}
                         inputRef={ref}
-                        onCheckedChange={val => onChange({ target: { value: val } })}
+                        onCheckedChange={val =>
+                          onChange({ target: { value: val } })
+                        }
                         onBlur={onBlur}
                         value={value}
                         defaultChecked={value}
@@ -525,7 +536,9 @@ const UserActions = ({
                     )}
                   />
                   <Controller
-                    defaultValue={user.state.searching_state === 'idle' ? false : true}
+                    defaultValue={
+                      user.state.searching_state === 'idle' ? false : true
+                    }
                     name="searching"
                     control={control}
                     render={({
@@ -536,7 +549,9 @@ const UserActions = ({
                         id="searching"
                         name={name}
                         inputRef={ref}
-                        onCheckedChange={val => onChange({ target: { value: val } })}
+                        onCheckedChange={val =>
+                          onChange({ target: { value: val } })
+                        }
                         onBlur={onBlur}
                         value={value}
                         defaultChecked={value}
@@ -558,7 +573,9 @@ const UserActions = ({
                         id="priority"
                         name={name}
                         inputRef={ref}
-                        onCheckedChange={val => onChange({ target: { value: val } })}
+                        onCheckedChange={val =>
+                          onChange({ target: { value: val } })
+                        }
                         onBlur={onBlur}
                         value={value}
                         defaultChecked={value}
@@ -569,23 +586,25 @@ const UserActions = ({
                     )}
                   />
                   <Controller
-                    defaultValue={hasRandomCallBetaAccess}
-                    name="randomCallsBetaAccess"
+                    defaultValue={hasRandomCallsAccess}
+                    name="randomCallsAccess"
                     control={control}
                     render={({
                       field: { onChange, onBlur, value, name, ref },
                       fieldState: { error },
                     }) => (
                       <Checkbox
-                        id="randomCallsBetaAccess"
+                        id="randomCallsAccess"
                         name={name}
                         inputRef={ref}
-                        onCheckedChange={val => onChange({ target: { value: val } })}
+                        onCheckedChange={val =>
+                          onChange({ target: { value: val } })
+                        }
                         onBlur={onBlur}
                         value={value}
                         defaultChecked={value}
                         error={error?.message}
-                        label={'Random Calls Beta Access'}
+                        label={'Random Calls Access'}
                         required={false}
                       />
                     )}
@@ -593,7 +612,9 @@ const UserActions = ({
 
                   <StatusMessage
                     visible={changesSaved || !!errors?.root?.serverError}
-                    type={changesSaved ? StatusTypes.Success : StatusTypes.Error}
+                    type={
+                      changesSaved ? StatusTypes.Success : StatusTypes.Error
+                    }
                   >
                     {changesSaved
                       ? 'Changes updated successfully'
