@@ -13,12 +13,8 @@ export const formatEventTime = (date1: Date, date2?: Date) => {
   return `${formatTime(date1)} - ${formatTime(date2)}`;
 };
 
-export const formatDate = (
-  date: Date,
-  formatStr = 'cccc, LLLL do', // eslint-disable-line default-param-last
-  locale: string,
-) =>
-  format(date, formatStr, {
+export const formatDate = (date: Date, formatStr?: string, locale?: string) =>
+  format(date, formatStr ?? 'cccc, LLLL do', {
     locale: locale === LANGUAGES.en ? enGB : de,
   });
 
@@ -48,7 +44,7 @@ export const formatMessageDate = (date: Date, locale: string): string => {
 export const formatTimeDistance = (
   from: Date | string | number,
   to: Date | string | number,
-  locale: string,
+  locale?: string,
   isPast?: boolean,
 ) => {
   let safeFrom = from;

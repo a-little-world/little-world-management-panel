@@ -154,7 +154,7 @@ const Emails = () => {
   );
 
   const { data: dynamicEmails, isLoading } = useSWR(
-    '/api/matching/emails/dynamic_templates/?page_size=50',
+    '/api/matching/emails/dynamic_templates/?page_size=150',
     dataFetcher,
     {},
   );

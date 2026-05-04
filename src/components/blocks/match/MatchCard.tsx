@@ -9,7 +9,7 @@ import {
   Text,
 } from '@a-little-world/little-world-design-system';
 import React from 'react';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
 import { LANGUAGES, MATCH_STATUS } from '../../../constants';
 import { formatTimeDistance } from '../../../helpers/date';
@@ -19,25 +19,44 @@ import Stat from '../../atoms/Stats/Stat';
 import UserImage from '../../atoms/UserImage';
 import ConfirmUnmatchModal from './ConfirmUnmatchModal';
 
-const Container = styled.div`
+const CardRoot = styled.div<{ $variant: 'full' | 'compact' }>`
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.medium};
-  border: ${({ theme }) => theme.color.border.subtle} solid 1px;
-  border-radius: ${({ theme }) => theme.radius.small};
-  padding: ${({ theme }) => `${theme.spacing.large} ${theme.spacing.xxlarge}`};
-  max-width: 480px;
-  width: 100%;
-  margin: 0 auto;
+
+  ${({ $variant, theme }) =>
+    $variant === 'full'
+      ? css`
+          gap: ${theme.spacing.medium};
+          border: ${theme.color.border.subtle} solid 1px;
+          border-radius: ${theme.radius.small};
+          padding: ${theme.spacing.large} ${theme.spacing.xxlarge};
+          max-width: 480px;
+          width: 100%;
+          margin: 0 auto;
+        `
+      : css`
+          padding: 10px;
+          border: 1px solid #ccc;
+          border-radius: 8px;
+          width: 300px;
+        `}
 `;
 
-const MatchUsers = styled.div`
+const MatchUsersRow = styled.div<{ $variant: 'full' | 'compact' }>`
   display: flex;
   align-items: center;
-  justify-content: center;
-  flex-wrap: no-wrap;
-  gap: ${({ theme }) => theme.spacing.small};
+
+  ${({ $variant, theme }) =>
+    $variant === 'full'
+      ? css`
+          justify-content: center;
+          flex-wrap: nowrap;
+          gap: ${theme.spacing.small};
+        `
+      : css`
+          justify-content: space-between;
+        `}
 `;
 
 const UserInfoContainer = styled.div`
@@ -50,12 +69,21 @@ const UserInfoContainer = styled.div`
   gap: ${({ theme }) => theme.spacing.small};
 `;
 
-const Stats = styled.div`
+const StatsRow = styled.div<{ $variant: 'full' | 'compact' }>`
   display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.medium};
-  margin-bottom: ${({ theme }) => theme.spacing.medium};
   width: 100%;
+
+  ${({ $variant, theme }) =>
+    $variant === 'full'
+      ? css`
+          align-items: center;
+          gap: ${theme.spacing.medium};
+          margin-bottom: ${theme.spacing.medium};
+        `
+      : css`
+          justify-content: space-between;
+          margin-top: 10px;
+        `}
 `;
 
 const StyledTag = styled(Tag)`
@@ -65,12 +93,22 @@ const StyledTag = styled(Tag)`
   transform: translateX(-50%);
 `;
 
-const Info = styled.div``;
+const InfoSection = styled.div<{ $variant: 'full' | 'compact' }>`
+  ${({ $variant }) =>
+    $variant === 'compact' &&
+    css`
+      margin-top: 10px;
+    `}
+`;
 
 const UnmatchButton = styled(Button)`
   width: 320px;
   max-width: 100%;
   margin: auto;
+`;
+
+const ViewDetailsButton = styled(Button)`
+  margin-top: 10px;
 `;
 
 const StyledMatchReport = styled(MatchReport)`
@@ -103,36 +141,60 @@ const UserInfo = ({ user, match }: { match: any; user: any }) => (
   </UserInfoContainer>
 );
 
-const MatchCard = ({
-  match,
-  onMatchUpdate,
-}: {
+interface MatchCardPropsFull {
+  variant?: 'full';
   match: any;
   onMatchUpdate: any;
-}) => {
+}
+
+interface MatchCardPropsCompact {
+  variant: 'compact';
+  match: any;
+  onViewDetails: () => void;
+}
+
+export type MatchCardProps = MatchCardPropsFull | MatchCardPropsCompact;
+
+const MatchCard = (props: MatchCardProps) => {
+  const { match } = props;
+  const variant = props.variant ?? 'full';
+  const isCompact = variant === 'compact';
+  const onMatchUpdate = !isCompact
+    ? (props as MatchCardPropsFull).onMatchUpdate
+    : undefined;
+  const onViewDetails = isCompact
+    ? (props as MatchCardPropsCompact).onViewDetails
+    : undefined;
+
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const isProposed = match.status === MATCH_STATUS.proposed;
+  const timeLocale = isCompact ? LANGUAGES.de : LANGUAGES.en;
 
   return (
     <>
-      <Container>
-        <MatchUsers>
+      <CardRoot $variant={variant}>
+        <MatchUsersRow $variant={variant}>
           <UserInfo user={match.user1} match={match} />
-          <Logo label="Little World Logo" width={'64px'} />
+          <Logo
+            label="Little World Logo"
+            width={isCompact ? '32px' : '64px'}
+          />
           <UserInfo user={match.user2} match={match} />
-        </MatchUsers>
-        <Info>
-          {!match.active && (
+        </MatchUsersRow>
+        <InfoSection $variant={variant}>
+          {!isCompact && !match.active && (
             <StyledMatchReport {...getMatchReportProps(match, isProposed)} />
           )}
           <DataField title="Status" value={match.status} />
-          <DataField title="Type" value={match.match_type} />
+          {!isCompact && (
+            <DataField title="Type" value={match.match_type} />
+          )}
           <DataField
             title="Matched"
             value={formatTimeDistance(
               new Date(match.created_at),
               new Date(),
-              LANGUAGES.en,
+              timeLocale,
             )}
           />
           <DataField
@@ -140,24 +202,24 @@ const MatchCard = ({
             value={formatTimeDistance(
               new Date(match.latest_interaction_at),
               new Date(),
-              LANGUAGES.en,
+              timeLocale,
             )}
           />
-        </Info>
-        <Stats>
+        </InfoSection>
+        <StatsRow $variant={variant}>
           <Stat
-            label="No. of messages"
+            label={isCompact ? 'Messages' : 'No. of messages'}
             stat={match.total_messages_counter}
-            withBorder
+            withBorder={!isCompact}
           />
           <Stat
-            label="No. of video calls"
+            label={isCompact ? 'Video Calls' : 'No. of video calls'}
             stat={match.total_mutal_video_calls_counter}
-            withBorder
+            withBorder={!isCompact}
           />
-        </Stats>
+        </StatsRow>
 
-        {!isProposed && match.active && (
+        {!isCompact && !isProposed && match.active && (
           <UnmatchButton
             appearance={ButtonAppearance.Secondary}
             size={ButtonSizes.Large}
@@ -170,96 +232,27 @@ const MatchCard = ({
             Unmatch
           </UnmatchButton>
         )}
-      </Container>
-      <ConfirmUnmatchModal
-        dialogOpen={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-        onMatchUpdate={onMatchUpdate}
-        matchId={match.uuid}
-        user1Name={match.user1.profile.first_name}
-        user2Name={match.user2.profile.first_name}
-      />
+        {isCompact && (
+          <ViewDetailsButton
+            appearance={ButtonAppearance.Secondary}
+            size={ButtonSizes.Small}
+            onClick={onViewDetails}
+          >
+            View Details
+          </ViewDetailsButton>
+        )}
+      </CardRoot>
+      {!isCompact && onMatchUpdate !== undefined && (
+        <ConfirmUnmatchModal
+          dialogOpen={dialogOpen}
+          onClose={() => setDialogOpen(false)}
+          onMatchUpdate={onMatchUpdate}
+          matchId={match.uuid}
+          user1Name={match.user1.profile.first_name}
+          user2Name={match.user2.profile.first_name}
+        />
+      )}
     </>
-  );
-};
-
-const SelectedMatchCardContainer = styled.div`
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  width: 300px;
-`;
-
-const SelectedMatchUsers = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`;
-
-const SelectedInfo = styled.div`
-  margin-top: 10px;
-`;
-
-const SelectedStats = styled.div`
-  display: flex;
-  justify-content: space-between;
-  margin-top: 10px;
-`;
-
-const ViewDetailsButton = styled(Button)`
-  margin-top: 10px;
-`;
-
-export const SelectedMatchCard = ({
-  match,
-  onViewDetails,
-}: {
-  match: any;
-  onViewDetails: () => void;
-}) => {
-  const isProposed = match.status === MATCH_STATUS.proposed;
-
-  return (
-    <SelectedMatchCardContainer>
-      <SelectedMatchUsers>
-        <UserInfo user={match.user1} match={match} />
-        <Logo label="Little World Logo" width={'32px'} />
-        <UserInfo user={match.user2} match={match} />
-      </SelectedMatchUsers>
-      <SelectedInfo>
-        <DataField title="Status" value={match.status} />
-        <DataField
-          title="Matched"
-          value={formatTimeDistance(
-            new Date(match.created_at),
-            new Date(),
-            LANGUAGES.de,
-          )}
-        />
-        <DataField
-          title="Last interaction"
-          value={formatTimeDistance(
-            new Date(match.latest_interaction_at),
-            new Date(),
-            LANGUAGES.de,
-          )}
-        />
-      </SelectedInfo>
-      <SelectedStats>
-        <Stat label="Messages" stat={match.total_messages_counter} />
-        <Stat
-          label="Video Calls"
-          stat={match.total_mutal_video_calls_counter}
-        />
-      </SelectedStats>
-      <ViewDetailsButton
-        appearance={ButtonAppearance.Secondary}
-        size={ButtonSizes.Small}
-        onClick={onViewDetails}
-      >
-        View Details
-      </ViewDetailsButton>
-    </SelectedMatchCardContainer>
   );
 };
 
