@@ -67,15 +67,27 @@ export const UserNameContainer = styled.div<{ $tiny?: boolean }>`
   width: 100%;
   height: fit-content;
   text-align: center;
+  margin: 0 auto;
   font-size: ${({ $tiny }) => ($tiny ? '0.75rem' : '1.5rem')};
 `;
 
 export const UserInfoContainer = styled.div<{ $partial?: boolean }>`
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 0.5rem;
 
   ${({ $partial }) => $partial && 'align-items: flex-start;'}
+`;
+
+export const InfoRowWrap = styled.div`
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: ${({ theme }) => theme.spacing.small};
+  width: 100%;
 `;
 
 export const InfoRow = styled.div`
@@ -83,7 +95,15 @@ export const InfoRow = styled.div`
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  gap: 0.25rem;
+  gap: ${({ theme }) => theme.spacing.xxxsmall};
+`;
+
+export const MetaFieldGroup = styled.span`
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  gap: ${({ theme }) => theme.spacing.xxxsmall};
 `;
 
 export const MatchesContainer = styled.div<{ $partial?: boolean }>`
@@ -93,7 +113,7 @@ export const MatchesContainer = styled.div<{ $partial?: boolean }>`
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  align-items: center;
+  align-items: flex-start;
   border-color: blue;
 
   ${({ $partial }) => $partial && 'align-items: flex-start;'}

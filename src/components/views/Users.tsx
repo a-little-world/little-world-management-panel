@@ -210,6 +210,24 @@ const userColumns = [
         new Date(),
       )})`,
   }),
+  columnHelper.accessor('last_login', {
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Last Login
+          <ArrowsUpDownIcon className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) =>
+      `${formatDate(new Date(row.original.last_login))} (${formatTimeDistance(
+        new Date(row.original.last_login),
+        new Date(),
+      )})`,
+  }),
 ];
 
 export function UsersTable({ userList }) {

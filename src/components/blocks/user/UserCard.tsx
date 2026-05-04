@@ -34,6 +34,8 @@ import {
   HeaderContainer,
   ImageContainer,
   InfoRow,
+  InfoRowWrap,
+  MetaFieldGroup,
   MatchesContainer,
   StatusContainer,
   StyledCard,
@@ -82,6 +84,7 @@ interface User {
   hash: string;
   email: string;
   date_joined: string;
+  last_login?: string | null;
   profile: UserProfile;
   state: UserState;
   matches: UserMatches;
@@ -367,15 +370,30 @@ export const UserCard: React.FC<UserCardProps> = ({
         <UserNameContainer $tiny={tiny}>
           {user.profile.first_name} {user.profile.second_name}
         </UserNameContainer>
-        <InfoRow>
-          <Text tag="h4" bold>
-            Joined:
-          </Text>
-          <Text>
-            {formatDate(new Date(user.date_joined), 'cccc, LLLL do', 'en')} (
-            {formatTimeDistance(new Date(user.date_joined), new Date(), 'en')})
-          </Text>
-        </InfoRow>
+        <InfoRowWrap>
+          <MetaFieldGroup>
+            <Text tag="h4" bold>
+              Joined:
+            </Text>
+            <Text>
+              {formatDate(new Date(user.date_joined), 'dd.MM.yy', 'en')}
+            </Text>
+          </MetaFieldGroup>
+          <MetaFieldGroup>
+            <Text tag="h4" bold>
+              Last login:
+            </Text>
+            <Text>
+              {user.last_login
+                ? formatTimeDistance(
+                    new Date(user.last_login),
+                    new Date(),
+                    'en',
+                  )
+                : 'Never'}
+            </Text>
+          </MetaFieldGroup>
+        </InfoRowWrap>
         <InfoRow>
           <Text className="whitespace-nowrap" tag="h4" bold>
             Match eligibility:

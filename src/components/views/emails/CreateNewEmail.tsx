@@ -288,7 +288,7 @@ const CreateNewEmail = () => {
     isLoading: templatesLoading,
     mutate,
   } = useSWR(
-    '/api/matching/emails/dynamic_templates/?page_size=50',
+    '/api/matching/emails/dynamic_templates/?page_size=150',
     dataFetcher,
     {},
   );
@@ -606,7 +606,7 @@ const CreateNewEmail = () => {
           <Text type={TextTypes.Body3} bold>
             Building Blocks
           </Text>
-          <Blocks onSubmit={() => { }}>
+          <Blocks onSubmit={() => {}}>
             {map(ContentTypes, key => (
               <BlockOption
                 key={key}

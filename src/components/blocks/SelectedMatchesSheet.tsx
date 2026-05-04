@@ -15,7 +15,7 @@ import {
   SheetTrigger,
 } from '../atoms/Sheet';
 import SearchBar from './SearchBar';
-import { SelectedMatchCard } from './match/MatchCard';
+import MatchCard from './match/MatchCard';
 
 export function SelectedMatchesSheet() {
   const {
@@ -44,7 +44,13 @@ export function SelectedMatchesSheet() {
         </SheetHeader>
         <SheetScrollableContent className="h-full overflow-scroll">
           {map(selectedMatches, match => {
-            return <SelectedMatchCard match={match} onViewDetails={() => {}} />;
+            return (
+              <MatchCard
+                variant="compact"
+                match={match}
+                onViewDetails={() => {}}
+              />
+            );
           })}
         </SheetScrollableContent>
         <SheetFooter>
