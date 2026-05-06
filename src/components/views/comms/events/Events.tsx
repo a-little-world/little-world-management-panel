@@ -44,7 +44,6 @@ import {
   ColTime,
   ColTitle,
   Container,
-  Description,
   Header,
   HeaderText,
   ListPanel,
@@ -64,34 +63,22 @@ const FREQUENCY_LABELS: Record<CommunityEvent['frequency'], string> = {
 
 type TabValue = 'upcoming' | 'past';
 
-function isOnceWindowPast(event: CommunityEvent, now: Date): boolean {
-  if (event.frequency !== COMMUNITY_EVENT_FREQUENCIES.once) return false;
+function shouldBeInPastTab(event: CommunityEvent, now: Date): boolean {
   const start = new Date(event.time);
-  const end = event.end_time ? new Date(event.end_time) : null;
-  if (end) return now.getTime() > end.getTime();
-  return now.getTime() > start.getTime();
+  const effectiveEnd = event.end_time ? new Date(event.end_time) : start;
+
+  if (!event.active && effectiveEnd.getTime() < now.getTime()) {
+    return true;
+  }
+  return (
+    event.frequency === COMMUNITY_EVENT_FREQUENCIES.once &&
+    effectiveEnd.getTime() < now.getTime()
+  );
 }
 
 function isInUpcomingTab(event: CommunityEvent, now: Date): boolean {
-  const oncePast = isOnceWindowPast(event, now);
-
-  if (
-    event.active &&
-    event.frequency === COMMUNITY_EVENT_FREQUENCIES.once &&
-    oncePast
-  ) {
+  if (shouldBeInPastTab(event, now)) {
     return false;
-  }
-  if (
-    !event.active &&
-    event.frequency === COMMUNITY_EVENT_FREQUENCIES.once &&
-    oncePast
-  ) {
-    return false;
-  }
-
-  if (event.frequency === COMMUNITY_EVENT_FREQUENCIES.once) {
-    return !oncePast;
   }
 
   const nextStart = calculateNextOccurrence(
@@ -111,6 +98,11 @@ function getUpcomingSortTime(event: CommunityEvent): number {
     event.frequency,
     event.end_time ?? undefined,
   ).getTime();
+}
+
+function getPastSortTime(event: CommunityEvent): number {
+  const timestamp = new Date(event.time).getTime();
+  return Number.isNaN(timestamp) ? 0 : timestamp;
 }
 
 function getUpcomingDisplayWindow(event: CommunityEvent): {
@@ -227,7 +219,7 @@ function Events() {
     return (data || [])
       .filter(e => !isInUpcomingTab(e, now))
       .slice()
-      .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+      .sort((a, b) => getPastSortTime(b) - getPastSortTime(a));
   }, [data]);
 
   const customFilterOptions = useMemo(() => {
@@ -333,12 +325,6 @@ function Events() {
               Create event
             </Button>
           </TitleRow>
-          <Description>
-            Upcoming lists the next occurrence for recurring events (from
-            frequency and the stored start). Active events stay here except
-            one-off events whose window has already ended, which appear under
-            Past together with other finished or inactive past events.
-          </Description>
         </HeaderText>
       </Header>
 

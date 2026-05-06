@@ -17,10 +17,7 @@ import MatchesIcons from '../atoms/MatchesIcons';
 import SelectBox from '../atoms/SelectBox';
 import UserImage from '../atoms/UserImage';
 import { DataTable } from '../blocks/DataTable';
-import {
-  DEFAULT_HEADERS,
-  DownloadSettingsModal,
-} from '../blocks/DownloadSettingsModal';
+import { DownloadSettingsModal } from '../blocks/DownloadSettingsModal';
 import Filters, { containsFilterKey } from '../blocks/Filters';
 import FiltersToolbar from '../blocks/FiltersToolbar';
 import { SelectedUsersSheet } from '../blocks/SelectedUsersSheet';
@@ -277,14 +274,14 @@ export function Users() {
   const [filters, setFilters] = useState<Filters>({});
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [downloadSettingsOpen, setDownloadSettingsOpen] = useState(false);
-  const [selectedHeaders, setSelectedHeaders] =
-    useState<string[]>(DEFAULT_HEADERS);
+  const [selectedHeaders, setSelectedHeaders] = useState<string[]>([]);
+  const [availableHeaders, setAvailableHeaders] = useState<string[]>([]);
 
   const {
     userList,
     isLoading: usersLoading,
     error,
-  } = useUserListData(createSearchParams(searchParams));
+  } = useUserListData(createSearchParams(searchParams).toString());
 
   // Sync searchParams with filters state
   useEffect(() => {
@@ -340,19 +337,43 @@ export function Users() {
     }
   };
 
+  const extractHeaders = (response: any[]): string[] => {
+    if (!Array.isArray(response) || response.length === 0) {
+      return [];
+    }
+    return Object.keys(response[0]);
+  };
+
+  const resolveValueByHeader = (row: Record<string, any>, header: string) => {
+    return header.split('.').reduce((value, key) => value?.[key], row);
+  };
+
+  const toCsvValue = (value: unknown) => {
+    if (value === null || value === undefined) {
+      return '';
+    }
+    const normalizedValue =
+      typeof value === 'object' ? JSON.stringify(value) : String(value);
+    return `"${normalizedValue.replace(/"/g, '""')}"`;
+  };
+
   const handleDownload = () => {
     getUserListExport({
-      searchParams: createSearchParams(searchParams),
-      onSuccess: response => {
-        const headers = selectedHeaders.join(',');
+      searchParams: createSearchParams(searchParams).toString(),
+      onSuccess: (response: Record<string, any>[]) => {
+        const exportedHeaders = extractHeaders(response);
+        if (!availableHeaders.length && exportedHeaders.length) {
+          setAvailableHeaders(exportedHeaders);
+        }
+
+        const headersToUse =
+          selectedHeaders.length > 0 ? selectedHeaders : exportedHeaders;
+        const headers = headersToUse.join(',');
         const csvRows = response.map(row =>
-          selectedHeaders
+          headersToUse
             .map(header => {
-              if (header.includes('profile.')) {
-                const [_, field] = header.split('.');
-                return row.profile[field];
-              }
-              return row[header];
+              const value = resolveValueByHeader(row, header);
+              return toCsvValue(value);
             })
             .join(','),
         );
@@ -376,6 +397,22 @@ export function Users() {
     setSelectedHeaders(headers);
   };
 
+  const handleSettingsOpen = () => {
+    setDownloadSettingsOpen(true);
+    if (availableHeaders.length > 0) {
+      return;
+    }
+    getUserListExport({
+      searchParams: createSearchParams(searchParams).toString(),
+      onSuccess: (response: Record<string, any>[]) => {
+        const headers = extractHeaders(response);
+        setAvailableHeaders(headers);
+        setSelectedHeaders(headers);
+      },
+      onError: error => console.log({ error }),
+    });
+  };
+
   return (
     <>
       <FiltersToolbar
@@ -387,16 +424,17 @@ export function Users() {
         filtersActive={containsFilterKey(filters)}
         onFiltersClick={() => setFiltersOpen(true)}
         showDownloadButton
-        downloadDisabled={!list}
+        downloadDisabled={!list || usersLoading}
         onDownloadClick={handleDownload}
         showSettingsButton
-        settingsDisabled={!list}
-        onSettingsClick={() => setDownloadSettingsOpen(true)}
+        settingsDisabled={!list || usersLoading}
+        onSettingsClick={handleSettingsOpen}
         paginationList={userList}
         isLoading={usersLoading}
         loadingText="Loading users..."
       >
         <Dropdown
+          id="users_order_by_dropdown"
           label={'Sort'}
           value={orderBy}
           options={orderingOptions}
@@ -420,6 +458,7 @@ export function Users() {
         onRemoveFilter={removeSearchParam}
       />
       <DownloadSettingsModal
+        availableHeaders={availableHeaders}
         selectedHeaders={selectedHeaders}
         setSelectedHeaders={setSelectedHeaders}
         open={downloadSettingsOpen}
