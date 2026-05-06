@@ -92,6 +92,23 @@ function CompanyReportDownloadBlock() {
   );
 }
 
+function ShortLinkCampaignSummaryDownloadBlock() {
+  return (
+    <ReportDownloadSection
+      title="Short-Link Campaign Summary"
+      description="Clicks for mini/sinnvoll/nebenan (independent of users) plus campaign user overview with learner/volunteer split."
+      apiEndpoint="/api/matching/users/statistics/short_link_campaign_summary/"
+      downloadFilename={(startDate: string = '', endDate: string = '') =>
+        `short_link_campaign_summary_${startDate}_to_${endDate}.txt`
+      }
+      downloadMimeType="text/plain"
+      showDateRange
+      defaultStartDate="2025-01-01"
+      transformData={(data: { report?: string }) => data?.report ?? ''}
+    />
+  );
+}
+
 const ReportsDashboard: React.FC = () => {
   return (
     <DashboardContainer>
@@ -101,6 +118,7 @@ const ReportsDashboard: React.FC = () => {
       <ReportsList>
         <UserLossStatisticDownloadBlock />
         <CompanyReportDownloadBlock />
+        <ShortLinkCampaignSummaryDownloadBlock />
         <MatchQualityStatisticDownloadBlock />
         <MarketingCampaignReportDownloadBlock />
       </ReportsList>
