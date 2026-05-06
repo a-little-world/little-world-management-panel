@@ -3,6 +3,9 @@ import {
   Button,
   ButtonAppearance,
   Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
   CardSizes,
   Checkbox,
   Modal,
@@ -43,6 +46,10 @@ export function DownloadSettingsModal({
   title = 'Download Settings',
   description = 'Select the fields you want to include in the download',
 }: DownloadSettingsModalProps) {
+  const allSelected =
+    availableHeaders.length > 0 &&
+    selectedHeaders.length === availableHeaders.length;
+
   const handleHeaderToggle = (header: string) => {
     setSelectedHeaders(prev =>
       prev.includes(header)
@@ -59,41 +66,50 @@ export function DownloadSettingsModal({
   return (
     <Modal open={open} onClose={onClose}>
       <Card width={CardSizes.Medium}>
-        <div className="space-y-4 p-4">
-          <Text type={TextTypes.Body3} bold>
-            {title}
-          </Text>
-          <Text type={TextTypes.Body5}>
-            {description}
-          </Text>
+        <CardHeader>{title}</CardHeader>
+        <Text type={TextTypes.Body5}>{description}</Text>
 
-          <div className="space-y-2 max-h-60 overflow-y-auto">
-            {availableHeaders.map(header => (
-              <div key={header} className="flex items-center gap-2">
-                <Checkbox
-                  id={header}
-                  checked={selectedHeaders.includes(header)}
-                  onCheckedChange={() => handleHeaderToggle(header)}
-                  label={header
-                    .replace(/_/g, ' ')
-                    .replace(/\b\w/g, l => l.toUpperCase())}
-                />
-              </div>
-            ))}
-          </div>
-
-          <div className="flex justify-end gap-2 pt-4">
-            <Button appearance={ButtonAppearance.Secondary} onClick={onClose}>
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSave}
-              disabled={selectedHeaders.length === 0}
-            >
-              Save Settings
-            </Button>
-          </div>
+        <div className="flex justify-between items-center mt-2">
+          <Checkbox
+            id="download_settings_select_all"
+            label="Select All"
+            checked={allSelected}
+            onCheckedChange={checked =>
+              setSelectedHeaders(checked ? availableHeaders : [])
+            }
+            disabled={availableHeaders.length === 0}
+          />
+          <Button
+            appearance={ButtonAppearance.Secondary}
+            onClick={() => setSelectedHeaders([])}
+            disabled={selectedHeaders.length === 0}
+          >
+            Clear All
+          </Button>
         </div>
+
+        <CardContent align="flex-start">
+          {availableHeaders.map(header => (
+            <Checkbox
+              key={header}
+              id={header}
+              checked={selectedHeaders.includes(header)}
+              onCheckedChange={() => handleHeaderToggle(header)}
+              label={header
+                .replace(/_/g, ' ')
+                .replace(/\b\w/g, l => l.toUpperCase())}
+            />
+          ))}
+        </CardContent>
+
+        <CardFooter align="space-between">
+          <Button appearance={ButtonAppearance.Secondary} onClick={onClose}>
+            Cancel
+          </Button>
+          <Button onClick={handleSave} disabled={selectedHeaders.length === 0}>
+            Save Settings
+          </Button>
+        </CardFooter>
       </Card>
     </Modal>
   );

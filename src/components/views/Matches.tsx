@@ -5,9 +5,7 @@ import styled from 'styled-components';
 
 import { getMatchListExport } from '../../api/index';
 import { useMatchListData, useMatchesFilterOptions } from '../../store';
-import {
-  DownloadSettingsModal,
-} from '../blocks/DownloadSettingsModal';
+import { DownloadSettingsModal } from '../blocks/DownloadSettingsModal';
 import FiltersToolbar from '../blocks/FiltersToolbar';
 import { MatchesTable } from '../blocks/MatchesTable';
 import { SelectedMatchesSheet } from '../blocks/SelectedMatchesSheet';
@@ -107,7 +105,7 @@ export function Matches() {
   const { filterOptions, isLoading: filtersLoading } =
     useMatchesFilterOptions();
 
-  const { matchList, isLoading: usersLoading } = useMatchListData(
+  const { matchList, isLoading: matchesLoading } = useMatchListData(
     searchParams.toString(),
   );
 
@@ -164,7 +162,7 @@ export function Matches() {
         downloadDisabled={!list || selectedHeaders.length === 0}
         onDownloadClick={handleDownload}
         showSettingsButton
-        settingsDisabled={!list}
+        settingsDisabled={!list || matchesLoading}
         onSettingsClick={() => setDownloadSettingsOpen(true)}
         showPagination
         paginationList={matchList}
@@ -203,7 +201,7 @@ export function Matches() {
           maxWidth="160px"
         />
       </FiltersToolbar>
-      {usersLoading ? (
+      {matchesLoading ? (
         <Text center>Loading matches list '{list}' ...</Text>
       ) : (
         <MatchesTable matchList={matchList} list={list} />

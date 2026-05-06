@@ -167,7 +167,8 @@ const ReportDownloadSection: React.FC<ReportDownloadSectionProps> = ({
   }, []);
 
   const handleStartDateChange = useCallback(
-    (date: Date | string) => {
+    (date: Date | string | null) => {
+      if (!date) return;
       setStartDate(date);
       debouncedMutate();
     },
@@ -175,7 +176,8 @@ const ReportDownloadSection: React.FC<ReportDownloadSectionProps> = ({
   );
 
   const handleEndDateChange = useCallback(
-    (date: Date | string) => {
+    (date: Date | string | null) => {
+      if (!date) return;
       setEndDate(date);
       debouncedMutate();
     },
@@ -210,9 +212,10 @@ const ReportDownloadSection: React.FC<ReportDownloadSectionProps> = ({
   return (
     <DownloadBlock>
       <SectionTitle>{title}</SectionTitle>
-      {description && <Text tag="p">{description}</Text>}
+      {description && <Text>{description}</Text>}
       {dropdownLabel && (
         <Dropdown
+          id={`${title.replace(/\s+/g, '_').toLowerCase()}_dropdown`}
           disabled={isEmpty(dropdownOptions)}
           label={dropdownLabel}
           value={selectedDropdownValue}

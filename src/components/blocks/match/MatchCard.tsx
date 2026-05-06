@@ -12,7 +12,7 @@ import React from 'react';
 import styled, { css } from 'styled-components';
 
 import { LANGUAGES, MATCH_STATUS } from '../../../constants';
-import { formatTimeDistance } from '../../../helpers/date';
+import { formatDate, formatTimeDistance } from '../../../helpers/date';
 import DataField from '../../atoms/DataField';
 import MatchReport, { getMatchReportProps } from '../../atoms/MatchReport';
 import Stat from '../../atoms/Stats/Stat';
@@ -155,6 +155,9 @@ interface MatchCardPropsCompact {
 
 export type MatchCardProps = MatchCardPropsFull | MatchCardPropsCompact;
 
+const formatPanelInstant = (iso: string | null | undefined, locale: string) =>
+  iso ? formatDate(new Date(iso), 'dd.MM.yy HH:mm', locale) : 'n/a';
+
 const MatchCard = (props: MatchCardProps) => {
   const { match } = props;
   const variant = props.variant ?? 'full';
@@ -175,10 +178,7 @@ const MatchCard = (props: MatchCardProps) => {
       <CardRoot $variant={variant}>
         <MatchUsersRow $variant={variant}>
           <UserInfo user={match.user1} match={match} />
-          <Logo
-            label="Little World Logo"
-            width={isCompact ? '32px' : '64px'}
-          />
+          <Logo label="Little World Logo" width={isCompact ? '32px' : '64px'} />
           <UserInfo user={match.user2} match={match} />
         </MatchUsersRow>
         <InfoSection $variant={variant}>
@@ -186,9 +186,7 @@ const MatchCard = (props: MatchCardProps) => {
             <StyledMatchReport {...getMatchReportProps(match, isProposed)} />
           )}
           <DataField title="Status" value={match.status} />
-          {!isCompact && (
-            <DataField title="Type" value={match.match_type} />
-          )}
+          {!isCompact && <DataField title="Type" value={match.match_type} />}
           <DataField
             title="Matched"
             value={formatTimeDistance(
@@ -205,6 +203,28 @@ const MatchCard = (props: MatchCardProps) => {
               timeLocale,
             )}
           />
+          {!isCompact && (
+            <>
+              <DataField
+                title="Last video call"
+                value={formatPanelInstant(match.last_video_call_at, timeLocale)}
+              />
+              <DataField
+                title={`Last message by ${match.user1.profile.first_name} at`}
+                value={formatPanelInstant(
+                  match.user1_last_message_at,
+                  timeLocale,
+                )}
+              />
+              <DataField
+                title={`Last message sent by ${match.user2.profile.first_name} at`}
+                value={formatPanelInstant(
+                  match.user2_last_message_at,
+                  timeLocale,
+                )}
+              />
+            </>
+          )}
         </InfoSection>
         <StatsRow $variant={variant}>
           <Stat

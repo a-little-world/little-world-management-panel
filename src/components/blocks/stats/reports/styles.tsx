@@ -23,6 +23,28 @@ export const DownloadBlock = styled.div`
   padding-bottom: ${({ theme }) => theme.spacing.medium};
 `;
 
+export const DownloadContentRow = styled.div`
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: ${({ theme }) => theme.spacing.medium};
+`;
+
+export const DownloadControlsColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.small};
+  align-items: flex-start;
+`;
+
+export const OverviewPanel = styled.div`
+  min-width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xsmall};
+`;
+
 export const DatePickerContainer = styled.div`
   display: flex;
   flex-direction: row;
