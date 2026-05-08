@@ -28,6 +28,7 @@ export interface MatchProposal {
   accepted: boolean;
   rejected: boolean;
   expired?: boolean;
+  completed?: boolean;
   in_session: boolean;
   created_at?: string | null;
 }

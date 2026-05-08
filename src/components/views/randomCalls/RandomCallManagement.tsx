@@ -40,6 +40,7 @@ import {
   TableRow,
 } from '../../atoms/Table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../atoms/Tabs';
+import MatchProposalsTable from '../../blocks/randomCalls/MatchProposalsTable';
 import {
   CollapsibleContent,
   Container,
@@ -369,85 +370,6 @@ function TasksTable({ tasks }: { tasks: TaskData[] }) {
             </React.Fragment>
           );
         })}
-      </TableBody>
-    </Table>
-  );
-}
-
-function MatchProposalsTable({ matches }: { matches: MatchProposal[] }) {
-  if (isEmpty(matches)) {
-    return (
-      <Text className="p-4 w-full" center>
-        No matches in this category.
-      </Text>
-    );
-  }
-
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Match UUID</TableHead>
-          <TableHead>User 1</TableHead>
-          <TableHead>User 2</TableHead>
-          <TableHead>U1 Accepted</TableHead>
-          <TableHead>U2 Accepted</TableHead>
-          <TableHead>Status</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {matches.map(match => (
-          <TableRow key={match.uuid}>
-            <TableCell>{match.uuid}</TableCell>
-            <TableCell>
-              {match.u1_name} - {match.u1_user_type} ({match.u1_hash})
-            </TableCell>
-            <TableCell>
-              {match.u2_name} - {match.u2_user_type} ({match.u2_hash})
-            </TableCell>
-            <TableCell>
-              <Tag
-                appearance={
-                  match.u1_accepted
-                    ? TagAppearance.success
-                    : TagAppearance.error
-                }
-                size={TagSizes.small}
-              >
-                {match.u1_accepted ? 'Yes' : 'No'}
-              </Tag>
-            </TableCell>
-            <TableCell>
-              <Tag
-                appearance={
-                  match.u2_accepted
-                    ? TagAppearance.success
-                    : TagAppearance.error
-                }
-                size={TagSizes.small}
-              >
-                {match.u2_accepted ? 'Yes' : 'No'}
-              </Tag>
-            </TableCell>
-            <TableCell>
-              {match.accepted && (
-                <Tag appearance={TagAppearance.success} size={TagSizes.small}>
-                  Accepted
-                </Tag>
-              )}
-              {match.rejected && (
-                <Tag appearance={TagAppearance.error} size={TagSizes.small}>
-                  Rejected
-                </Tag>
-              )}
-              {!match.accepted && !match.rejected && (
-                <Tag appearance={TagAppearance.success} size={TagSizes.small}>
-                  Pending
-                </Tag>
-              )}
-            </TableCell>
-          </TableRow>
-        ))}
       </TableBody>
     </Table>
   );
@@ -980,7 +902,10 @@ function RandomCallManagement() {
               <MatchProposalsTable matches={match_proposals.pending} />
             </TabsContent>
             <TabsContent value="accepted">
-              <MatchProposalsTable matches={match_proposals.accepted} />
+              <MatchProposalsTable
+                matches={match_proposals.accepted}
+                showCompletedColumn
+              />
             </TabsContent>
             <TabsContent value="rejected">
               <MatchProposalsTable matches={match_proposals.rejected} />
