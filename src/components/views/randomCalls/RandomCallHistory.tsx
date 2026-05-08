@@ -2,9 +2,6 @@ import {
   Dropdown,
   Loading,
   LoadingSizes,
-  Tag,
-  TagAppearance,
-  TagSizes,
   Text,
 } from '@a-little-world/little-world-design-system';
 import { isEmpty } from 'lodash';
@@ -15,19 +12,11 @@ import {
   getAllLobbies,
   LobbyListItem,
   LobbyOverviewData,
-  MatchProposal,
   TasksData,
 } from '../../../api/randomCalls';
+import MatchProposalsTable from '../../blocks/randomCalls/MatchProposalsTable';
 import { formatDate, formatEventTime } from '../../../helpers/date';
 import { dataFetcher } from '../../../store';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '../../atoms/Table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../atoms/Tabs';
 import {
   Container,
@@ -41,71 +30,6 @@ import {
   StatValueSmall as StatValue,
   Title,
 } from './RandomCalls.styles';
-
-const MatchProposalsTable = ({ matches }: { matches: MatchProposal[] }) => {
-  if (isEmpty(matches)) {
-    return <Text color="secondary">No matches found</Text>;
-  }
-
-  return (
-    <Table>
-      <TableHead>
-        <TableRow>
-          <TableHeader>User 1</TableHeader>
-          <TableHeader>User 2</TableHeader>
-          <TableHeader>U1 Accepted</TableHeader>
-          <TableHeader>U2 Accepted</TableHeader>
-          <TableHeader>Status</TableHeader>
-        </TableRow>
-      </TableHead>
-      <TableBody>
-        {matches.map(match => (
-          <TableRow key={match.uuid}>
-            <TableCell>{match.u1_name}</TableCell>
-            <TableCell>{match.u2_name}</TableCell>
-            <TableCell>
-              {match.u1_accepted ? (
-                <Tag appearance={TagAppearance.success} size={TagSizes.small}>
-                  Yes
-                </Tag>
-              ) : (
-                <Tag appearance={TagAppearance.secondary} size={TagSizes.small}>
-                  No
-                </Tag>
-              )}
-            </TableCell>
-            <TableCell>
-              {match.u2_accepted ? (
-                <Tag appearance={TagAppearance.success} size={TagSizes.small}>
-                  Yes
-                </Tag>
-              ) : (
-                <Tag appearance={TagAppearance.secondary} size={TagSizes.small}>
-                  No
-                </Tag>
-              )}
-            </TableCell>
-            <TableCell>
-              {match.accepted ? (
-                <Tag appearance={TagAppearance.success} size={TagSizes.small}>
-                  Accepted
-                </Tag>
-              ) : match.rejected ? (
-                <Tag appearance={TagAppearance.error} size={TagSizes.small}>
-                  Rejected
-                </Tag>
-              ) : (
-                <Tag appearance={TagAppearance.secondary} size={TagSizes.small}>
-                  Pending
-                </Tag>
-              )}
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  );
-};
 
 function RandomCallHistory() {
   const [selectedLobbyUuid, setSelectedLobbyUuid] = useState<string | null>(
@@ -146,8 +70,8 @@ function RandomCallHistory() {
 
   // Fetch lobby overview data when a lobby is selected
   const { data: lobbyData, error: lobbyError } = useSWR<LobbyOverviewData>(
-    selectedLobbyName
-      ? `/api/random_calls/lobby/${selectedLobbyName}/management/overview`
+    selectedLobbyName && selectedLobbyUuid
+      ? `/api/random_calls/lobby/${selectedLobbyName}/management/overview?lobby_uuid=${selectedLobbyUuid}`
       : null,
     dataFetcher,
   );
@@ -294,7 +218,10 @@ function RandomCallHistory() {
                 <MatchProposalsTable matches={match_proposals.pending} />
               </TabsContent>
               <TabsContent value="accepted">
-                <MatchProposalsTable matches={match_proposals.accepted} />
+                <MatchProposalsTable
+                  matches={match_proposals.accepted}
+                  showCompletedColumn
+                />
               </TabsContent>
               <TabsContent value="rejected">
                 <MatchProposalsTable matches={match_proposals.rejected} />
