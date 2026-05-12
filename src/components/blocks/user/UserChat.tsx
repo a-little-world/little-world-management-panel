@@ -232,13 +232,13 @@ const UserChat = ({ user }) => {
                   const customChatElements = message?.parsable
                     ? getCustomChatElements({
                         message: { ...message, text: processedMessageText },
-                        userId: user.hash,
+                        userId: user.uuid ?? user.hash,
                       })
                     : [];
 
                   return (
                     <Message
-                      $isSelf={message.sender !== user.hash}
+                      $isSelf={message.sender !== (user.uuid ?? user.hash)}
                       key={message.uuid}
                     >
                       <ActionsContainer>
@@ -261,16 +261,16 @@ const UserChat = ({ user }) => {
                           <Button
                             variation={ButtonVariations.Inline}
                             disabled={
-                              message.sender !== user.hash || message.read
+                              message.sender !== (user.uuid ?? user.hash) || message.read
                             }
                             onClick={() => handleReadMessage(message.uuid)}
                           >
                             Mark as Read
                           </Button>
-                          {message.sender !== user.hash && (
+                          {message.sender !== (user.uuid ?? user.hash) && (
                             <Button
                               variation={ButtonVariations.Inline}
-                              disabled={message.sender === user.hash}
+                              disabled={message.sender === (user.uuid ?? user.hash)}
                               onClick={() => handleDeleteMessage(message.uuid)}
                             >
                               Delete Message
@@ -284,7 +284,7 @@ const UserChat = ({ user }) => {
                               as: 'div',
                             })}
                           disableParser={!message.parsable}
-                          $isSelf={message.sender !== user.hash}
+                          $isSelf={message.sender !== (user.uuid ?? user.hash)}
                           $isWidget={
                             message.parsable &&
                             messageContainsWidget(processedMessageText)

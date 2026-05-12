@@ -62,15 +62,15 @@ export function PrematchingAppointmentsTable({ appointments, list }) {
                   <SelectBox
                     checked={Object.keys(
                       selectedPrematchingAppointmentUsers,
-                    ).includes(appointment.user.hash)}
+                    ).includes(appointment.user.uuid ?? appointment.user.hash)}
                     onChange={() => {
                       if (
                         Object.keys(
                           selectedPrematchingAppointmentUsers,
-                        ).includes(appointment.user.hash)
+                        ).includes(appointment.user.uuid ?? appointment.user.hash)
                       ) {
                         deselectPrematchingAppointmentUser(
-                          appointment.user.hash,
+                          appointment.user.uuid ?? appointment.user.hash,
                         );
                       } else {
                         selectPrematchingAppointmentUser(appointment.user);

@@ -148,11 +148,11 @@ function NavBar({
             <li>
               <a
                 href={`data:text/json;charset=utf-8,${encodeURIComponent(
-                  JSON.stringify(users.map(u => u.hash)),
+                  JSON.stringify(users.map(u => u.uuid ?? u.hash)),
                 )}`}
                 download="list.json"
               >
-                hash only (json)
+                uuid only (json)
               </a>
             </li>
             <li>

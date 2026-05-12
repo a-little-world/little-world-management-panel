@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { addUserByHash } from '../api/index';
+import { addUserByUuid } from '../api/index';
 import { useGlobalState } from '../store';
 
 const useSelectUser = () => {
@@ -15,11 +15,11 @@ const useSelectUser = () => {
     setIsSubmitting(false);
   };
 
-  const onSelectUser = ({ userHash }: { userHash: string }) => {
+  const onSelectUser = ({ userId }: { userId: string }) => {
     setIsSubmitting(true);
-    const userHashes = userHash.split(',').map(hash => hash.trim())
-    for (const hash of userHashes) {
-      addUserByHash(hash, onError, (res: any) => {
+    const userIds = userId.split(',').map(id => id.trim())
+    for (const id of userIds) {
+      addUserByUuid(id, onError, (res: any) => {
         setIsSubmitting(false);
         selectUser(res);
       });

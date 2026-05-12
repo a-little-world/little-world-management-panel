@@ -2,12 +2,12 @@ import { Theme } from '../emails/shared/theme';
 import { getCookiesAsObject } from '../lib/utils';
 import { apiFetch, formatApiError } from './helpers';
 
-export const addUserByHash = async (
-  userHash: string,
+export const addUserByUuid = async (
+  userUuid: string,
   onError: (error: string) => void,
   onSuccess: (user: string[]) => void,
 ) => {
-  fetch(`/api/matching/users/${userHash}/`, {
+  fetch(`/api/matching/users/${userUuid}/`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

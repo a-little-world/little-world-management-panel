@@ -259,15 +259,15 @@ const GlobalStateContext = createContext({
   selectedPrematchingAppointmentUsers: {},
   setAllPrematchingAppointmentUsers: (users: any) => {},
   selectPrematchingAppointmentUser: (user: any) => {},
-  deselectPrematchingAppointmentUser: (userHash: string) => {},
+  deselectPrematchingAppointmentUser: (userId: string) => {},
   clearSelectedPrematchingAppointmentUsers: () => {},
   selectUser: (user: any) => {},
-  deselectUser: (userHash: string) => {},
+  deselectUser: (userId: string) => {},
   selectMatch: (match: any) => {},
   deselectMatch: (matchHash: string) => {},
   clearMatching: () => {},
   addUserToMatching: (user: any) => {},
-  removeUserFromMatching: (userHash: string) => {},
+  removeUserFromMatching: (userId: string) => {},
   potentialMatch: [],
   apiOptions: {},
   apiTranslations: {},
@@ -293,7 +293,7 @@ export function GlobalStateProvider(props) {
     (user: any) => {
       setSelectedUsers(currentUsers => ({
         ...currentUsers,
-        [user.hash]: user,
+        [user.uuid ?? user.hash]: user,
       }));
     },
     [setSelectedUsers],
@@ -321,10 +321,10 @@ export function GlobalStateProvider(props) {
   );
 
   const deselectUser = useCallback(
-    (userHash: string) => {
+    (userId: string) => {
       setSelectedUsers(currentUsers => {
         const newUsers = { ...currentUsers };
-        unset(newUsers, userHash);
+        unset(newUsers, userId);
         return newUsers;
       });
     },
@@ -335,17 +335,17 @@ export function GlobalStateProvider(props) {
     (user: any) => {
       setSelectedPrematchingAppointmentUsers(currentUsers => ({
         ...currentUsers,
-        [user.hash]: user,
+        [user.uuid ?? user.hash]: user,
       }));
     },
     [setSelectedPrematchingAppointmentUsers],
   );
 
   const deselectPrematchingAppointmentUser = useCallback(
-    (userHash: string) => {
+    (userId: string) => {
       setSelectedPrematchingAppointmentUsers(currentUsers => {
         const newUsers = { ...currentUsers };
-        unset(newUsers, userHash);
+        unset(newUsers, userId);
         return newUsers;
       });
     },
@@ -366,9 +366,9 @@ export function GlobalStateProvider(props) {
   );
 
   const removeUserFromMatching = useCallback(
-    (userHash: string) => {
+    (userId: string) => {
       setPotentialMatch(current =>
-        filter(current, (user: any) => user.hash !== userHash),
+        filter(current, (user: any) => (user.uuid ?? user.hash) !== userId),
       );
     },
     [setPotentialMatch],

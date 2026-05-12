@@ -58,7 +58,7 @@ export const ADMIN_ACTIONS = {
           usr_hash: {
             type: 'string',
             maxLength: 255,
-            default: u1?.user.hash,
+            default: u1?.user.uuid ?? u1?.user.hash,
           },
         },
         required: ['partner_hash', 'usr_hash'],
@@ -85,15 +85,15 @@ export const ADMIN_ACTIONS = {
         properties: {
           user1: {
             type: 'string',
-            default: u1?.user.hash,
+            default: u1?.user.uuid ?? u1?.user.hash,
           },
           user2: {
             type: 'string',
-            default: u2?.user.hash,
+            default: u2?.user.uuid ?? u2?.user.hash,
           },
           lookup: {
             type: 'string',
-            default: 'hash',
+            default: 'uuid',
           },
           force: {
             type: 'boolean',
@@ -125,7 +125,7 @@ export const ADMIN_ACTIONS = {
         properties: {
           user: {
             type: 'string',
-            default: u1?.user.hash,
+            default: u1?.user.uuid ?? u1?.user.hash,
           },
           filters: {
             type: 'array',
@@ -142,7 +142,7 @@ export const ADMIN_ACTIONS = {
           },
           lookup: {
             type: 'string',
-            default: 'hash',
+            default: 'uuid',
           },
           invalidate_all_old_scores: {
             type: 'boolean',
@@ -161,15 +161,15 @@ export const ADMIN_ACTIONS = {
         properties: {
           user1: {
             type: 'string',
-            default: u1?.user.hash,
+            default: u1?.user.uuid ?? u1?.user.hash,
           },
           user2: {
             type: 'string',
-            default: u2?.user.hash,
+            default: u2?.user.uuid ?? u2?.user.hash,
           },
           lookup: {
             type: 'string',
-            default: 'hash',
+            default: 'uuid',
           },
           delete_video_room: {
             type: 'boolean',

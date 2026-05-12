@@ -34,7 +34,7 @@ interface DownloadSettingsModalProps {
   description?: string;
 }
 
-const ALL_AVAILABLE_HEADERS = [...DEFAULT_HEADERS, 'hash', 'id'];
+const ALL_AVAILABLE_HEADERS = [...DEFAULT_HEADERS, 'uuid', 'id'];
 
 export function DownloadSettingsModal({
   selectedHeaders,

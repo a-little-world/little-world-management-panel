@@ -17,10 +17,10 @@ interface LobbyResponse {
 
 export interface MatchProposal {
   uuid: string;
-  u1_hash: string;
+  u1_uuid: string;
   u1_name: string;
   u1_user_type?: string;
-  u2_hash: string;
+  u2_uuid: string;
   u2_name: string;
   u2_user_type?: string;
   u1_accepted: boolean;
@@ -45,7 +45,7 @@ export interface LobbyOverviewData {
   };
   active_users: Array<{
     uuid: string;
-    user_hash: string;
+    user_uuid: string;
     user_name: string;
     is_active: boolean;
     last_status_checked_at: string | null;
@@ -75,7 +75,7 @@ type ClearUserProposalsResponse = {
   success: boolean;
   message: string;
   updated_count: number;
-  user_hash: string;
+  user_uuid: string;
 };
 
 type ClearDanglingMatchesResponse = {
@@ -183,11 +183,11 @@ export const endLobby = async ({
 };
 
 export const clearUserRandomCallProposals = async ({
-  userHash,
+  userUuid,
   onError,
   onSuccess,
 }: {
-  userHash: string;
+  userUuid: string;
   onError: (error: any) => void;
   onSuccess: (result: ClearUserProposalsResponse) => void;
 }) => {
@@ -197,7 +197,7 @@ export const clearUserRandomCallProposals = async ({
       {
         method: 'POST',
         body: {
-          user_hash: userHash,
+          user_uuid: userUuid,
         },
       },
     );

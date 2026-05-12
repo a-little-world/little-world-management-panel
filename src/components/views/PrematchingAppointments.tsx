@@ -52,7 +52,7 @@ export function PrematchingAppointments() {
     if (prematchAppointmentsList?.results) {
       const usersFromAppointment = prematchAppointmentsList.results.reduce(
         (acc, appointment) => {
-          acc[appointment.user.hash] = {
+          acc[appointment.user.uuid ?? appointment.user.hash] = {
             ...appointment.user,
             had_prematching_call: appointment.had_prematching_call,
           };

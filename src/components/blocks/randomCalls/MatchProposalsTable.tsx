@@ -26,8 +26,8 @@ interface MatchProposalsTableProps {
 function getUserLabel(match: MatchProposal, userNumber: 1 | 2): string {
   const name = userNumber === 1 ? match.u1_name : match.u2_name;
   const type = userNumber === 1 ? match.u1_user_type : match.u2_user_type;
-  const hash = userNumber === 1 ? match.u1_hash : match.u2_hash;
-  return `${name} - ${type ?? '—'} (${hash})`;
+  const userUuid = userNumber === 1 ? match.u1_uuid : match.u2_uuid;
+  return `${name} - ${type ?? '—'} (${userUuid})`;
 }
 
 export default function MatchProposalsTable({

@@ -31,15 +31,17 @@ const userColumns = [
     cell: ({ table, row }) => (
       <SelectBox
         checked={Object.keys(table.options.meta.selectedUsers).includes(
-          row.original.hash,
+          row.original.uuid ?? row.original.hash,
         )}
         onChange={() => {
           if (
             Object.keys(table.options.meta.selectedUsers).includes(
-              row.original.hash,
+              row.original.uuid ?? row.original.hash,
             )
           ) {
-            table.options.meta.deselectUser(row.original.hash);
+            table.options.meta.deselectUser(
+              row.original.uuid ?? row.original.hash,
+            );
           } else {
             table.options.meta.selectUser(row.original);
           }

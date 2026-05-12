@@ -107,7 +107,7 @@ function CreateListModal({ open, onClose, onSubmit }: CreateListModalProps) {
             <Text bold>Selected Users:</Text>
             <div className="max-h-40 overflow-y-auto border rounded p-2">
               {Object.values(selectedUsers).map(user => (
-                <div key={user.hash} className="flex items-center gap-2 py-1">
+                <div key={user.uuid ?? user.hash} className="flex items-center gap-2 py-1">
                   <Text>{user.email}</Text>
                 </div>
               ))}
@@ -185,7 +185,7 @@ function ModifyListModal({
             </Text>
             <div className="max-h-40 overflow-y-auto border rounded p-2">
               {Object.values(selectedUsers).map(user => (
-                <div key={user.hash} className="flex items-center gap-2 py-1">
+                <div key={user.uuid ?? user.hash} className="flex items-center gap-2 py-1">
                   <Text variant="body-small">{user.email}</Text>
                 </div>
               ))}

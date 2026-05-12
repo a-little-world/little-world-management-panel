@@ -32,12 +32,12 @@ const Menu = () => {
   return (
     <NavigationMenu withShadow>
       <SearchBar
-        name="userHash"
+        name="userId"
         hideSubmitBtn
         isSubmitting={isSubmitting}
         onSubmit={onSelectUser}
         error={error}
-        placeholder="Enter user hash"
+        placeholder="Enter user UUID"
       />
       <NavigationMenuItem>
         <NavigationMenuTrigger>Menu</NavigationMenuTrigger>

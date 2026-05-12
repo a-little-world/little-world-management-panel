@@ -39,7 +39,7 @@ export function SelectedUsersSheet() {
             map(selectedUsers, user => {
               return (
                 <UserDetailsCard
-                  key={'card' + user.hash}
+                  key={'card' + (user.uuid ?? user.hash)}
                   user={user}
                   deselectUser={deselectUser}
                 />
@@ -48,11 +48,11 @@ export function SelectedUsersSheet() {
         </SheetScrollableContent>
         <SheetFooter>
           <SearchBar
-            name="userHash"
+            name="userId"
             isSubmitting={isSubmitting}
             onSubmit={onSelectUser}
             error={error}
-            placeholder="Enter user hash"
+            placeholder="Enter user UUID"
           />
         </SheetFooter>
       </SheetContent>

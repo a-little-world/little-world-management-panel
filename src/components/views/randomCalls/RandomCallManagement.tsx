@@ -77,7 +77,7 @@ interface LobbyData {
   };
   active_users: Array<{
     uuid: string;
-    user_hash: string;
+    user_uuid: string;
     user_name: string;
     user_type: string;
     is_active: boolean;
@@ -156,18 +156,18 @@ function ActiveUsersTable({
   onClearProposals,
 }: {
   users: LobbyData['active_users'];
-  onClearProposals: (userHash: string) => Promise<number>;
+  onClearProposals: (userUuid: string) => Promise<number>;
 }) {
   const [loadingUserIds, setLoadingUserIds] = useState<Record<string, boolean>>(
     {},
   );
 
-  const handleClearProposals = async (userHash: string) => {
-    setLoadingUserIds(prev => ({ ...prev, [userHash]: true }));
+  const handleClearProposals = async (userUuid: string) => {
+    setLoadingUserIds(prev => ({ ...prev, [userUuid]: true }));
     try {
-      await onClearProposals(userHash);
+      await onClearProposals(userUuid);
     } finally {
-      setLoadingUserIds(prev => ({ ...prev, [userHash]: false }));
+      setLoadingUserIds(prev => ({ ...prev, [userUuid]: false }));
     }
   };
 
@@ -183,7 +183,7 @@ function ActiveUsersTable({
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>User Hash</TableHead>
+          <TableHead>User UUID</TableHead>
           <TableHead>Name</TableHead>
           <TableHead>Type</TableHead>
           <TableHead>Status</TableHead>
@@ -195,7 +195,7 @@ function ActiveUsersTable({
       <TableBody>
         {users.map(user => (
           <TableRow key={user.uuid}>
-            <TableCell>{user.user_hash}</TableCell>
+            <TableCell>{user.user_uuid}</TableCell>
             <TableCell>{user.user_name}</TableCell>
             <TableCell>{user.user_type}</TableCell>
             <TableCell>
@@ -224,9 +224,9 @@ function ActiveUsersTable({
               <Button
                 appearance={ButtonAppearance.Secondary}
                 size={ButtonSizes.Small}
-                onClick={() => handleClearProposals(user.user_hash)}
-                loading={loadingUserIds[user.user_hash]}
-                disabled={loadingUserIds[user.user_hash]}
+                onClick={() => handleClearProposals(user.user_uuid)}
+                loading={loadingUserIds[user.user_uuid]}
+                disabled={loadingUserIds[user.user_uuid]}
               >
                 Clear Proposals
               </Button>
@@ -401,10 +401,10 @@ function DanglingMatchesTable({ matches }: { matches: MatchProposal[] }) {
           <TableRow key={match.uuid}>
             <TableCell>{match.uuid}</TableCell>
             <TableCell>
-              {match.u1_name} - {match.u1_user_type ?? '—'} ({match.u1_hash})
+              {match.u1_name} - {match.u1_user_type ?? '—'} ({match.u1_uuid})
             </TableCell>
             <TableCell>
-              {match.u2_name} - {match.u2_user_type ?? '—'} ({match.u2_hash})
+              {match.u2_name} - {match.u2_user_type ?? '—'} ({match.u2_uuid})
             </TableCell>
             <TableCell>
               {match.created_at
@@ -555,10 +555,10 @@ function RandomCallManagement() {
     });
   };
 
-  const handleClearProposals = async (userHash: string) => {
+  const handleClearProposals = async (userUuid: string) => {
     return new Promise<number>((resolve, reject) => {
       clearUserRandomCallProposals({
-        userHash,
+        userUuid,
         onSuccess: result => {
           mutate(getLobbyOverviewEndpoint());
           setClearMatchesToast({
