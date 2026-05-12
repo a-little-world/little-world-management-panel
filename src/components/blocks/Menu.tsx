@@ -21,6 +21,7 @@ import {
   RANDOM_CALLS_ROUTE,
   SCORES_ROUTE,
   STATS_ROUTE,
+  SUPPORT_TASKS_ROUTE,
   USERS_ROUTE,
   VIDEO_CALLS_ROUTE,
 } from '../../routes';
@@ -42,6 +43,12 @@ const Menu = () => {
       <NavigationMenuItem>
         <NavigationMenuTrigger>Menu</NavigationMenuTrigger>
         <NavigationMenuContent layout={MenuContentLayout.callout}>
+          <NavigationMenuContentItem
+            to={SUPPORT_TASKS_ROUTE}
+            active={location.pathname.startsWith(SUPPORT_TASKS_ROUTE)}
+          >
+            Support Tasks
+          </NavigationMenuContentItem>
           <NavigationMenuContentItem
             to={MATCHES_LIST_ROUTE}
             active={location.pathname === MATCHES_LIST_ROUTE}

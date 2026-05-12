@@ -26,3 +26,7 @@ export const BANNER_EDIT_ROUTE = '/banners/:bannerId/';
 
 export const getEditEmailRoute = (templateId: number) =>
   `/email/${templateId}/edit`;
+
+export const SUPPORT_TASKS_ROUTE = '/support-tasks/';
+export const SUPPORT_TASK_DETAIL_ROUTE = '/support-tasks/:taskId/';
+export const getSupportTaskDetailRoute = (taskId: number) => `/support-tasks/${taskId}/`;
