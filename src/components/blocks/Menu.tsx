@@ -15,6 +15,7 @@ import {
   DOCUMENTATION_ROUTE,
   DYNAMIC_USER_LISTS_ROUTE,
   EVENTS_ROUTE,
+  SHORT_LINKS_ROUTE,
   EMAILS_ROUTE,
   MATCHES_LIST_ROUTE,
   PREMATCH_APPOINTMENTS_ROUTE,
@@ -109,6 +110,12 @@ const Menu = () => {
             active={location.pathname === EVENTS_ROUTE}
           >
             Events
+          </NavigationMenuContentItem>
+          <NavigationMenuContentItem
+            to={SHORT_LINKS_ROUTE}
+            active={location.pathname === SHORT_LINKS_ROUTE}
+          >
+            Short links
           </NavigationMenuContentItem>
           <NavigationMenuContentItem
             to={BANNERS_ROUTE}

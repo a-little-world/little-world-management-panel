@@ -1,8 +1,6 @@
 import {
   CustomThemeProvider,
   GlobalStyles,
-  ToastProvider,
-  ToastViewport,
 } from '@a-little-world/little-world-design-system';
 import React, { PropsWithChildren } from 'react';
 import {
@@ -13,6 +11,7 @@ import {
 } from 'react-router-dom';
 
 import Layout from './components/blocks/Layout';
+import { ToastProvider } from './components/blocks/Toast';
 import UserPanel from './components/blocks/user/UserPanel';
 import Algorithm from './components/views/Algorithm';
 import Documentation from './components/views/Documentation';
@@ -29,6 +28,7 @@ import VideoCalls from './components/views/VideoCalls';
 import Banners from './components/views/comms/banners/Banners';
 import EditBanner from './components/views/comms/banners/EditBanner';
 import Events from './components/views/comms/events/Events';
+import Links from './components/views/comms/links/Links';
 import CreateNewEmail from './components/views/emails/CreateNewEmail';
 import Email from './components/views/emails/Email';
 import EmailHtml from './components/views/emails/EmailHtml';
@@ -49,6 +49,7 @@ import {
   EMAIL_HTML_ROUTE,
   EMAIL_ROUTE,
   EVENTS_ROUTE,
+  SHORT_LINKS_ROUTE,
   MATCHES_LIST_ROUTE,
   MATCHING_ROUTE,
   MATCH_ROUTE,
@@ -78,7 +79,6 @@ export const Root = ({
         ) : (
           children || <Outlet />
         )}
-        <ToastViewport />
       </EmailThemeProvider>
     </ToastProvider>
   </CustomThemeProvider>
@@ -169,6 +169,10 @@ const router = createBrowserRouter(
         {
           path: EVENTS_ROUTE,
           element: <Events />,
+        },
+        {
+          path: SHORT_LINKS_ROUTE,
+          element: <Links />,
         },
         {
           path: BANNERS_ROUTE,

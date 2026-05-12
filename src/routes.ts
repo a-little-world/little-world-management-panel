@@ -21,6 +21,7 @@ export const USERS_ROUTE = '/users/';
 export const VIDEO_CALLS_ROUTE = '/video-calls/';
 export const RANDOM_CALLS_ROUTE = '/random-calls/';
 export const EVENTS_ROUTE = '/events/';
+export const SHORT_LINKS_ROUTE = '/short-links/';
 export const BANNERS_ROUTE = '/banners/';
 export const BANNER_EDIT_ROUTE = '/banners/:bannerId/';
 
