@@ -5,6 +5,11 @@ export interface TrackingCookieRow {
   value: string;
 }
 
+export interface ShortLinkSourceOption {
+  label: string;
+  value: string;
+}
+
 export interface AdminShortLink {
   id: number;
   tag: string;
@@ -32,6 +37,32 @@ export type AdminShortLinkUpdatePayload = Omit<
 >;
 
 export const ADMIN_SHORT_LINKS_ENDPOINT = '/api/admin/short_links/';
+export const ADMIN_SHORT_LINK_CLICKS_ENDPOINT = '/api/admin/short_link_clicks/';
+
+export interface AdminShortLinkClick {
+  id: number;
+  tag: string;
+  user: string;
+  created_at: string;
+  source: string;
+}
+
+export interface AdminShortLinkClickList {
+  count: number;
+  page: number;
+  next?: string | null;
+  previous?: string | null;
+  results: AdminShortLinkClick[];
+  page_size: number;
+  pages_total: number;
+  next_page: number | null;
+  previous_page: number | null;
+  last_page: number;
+  first_page: number;
+  items_total: number;
+  results_total: number;
+  source_options: ShortLinkSourceOption[];
+}
 
 export const fetchAdminShortLinks = (search: string) => {
   const q = search.trim();
@@ -61,3 +92,13 @@ export const archiveAdminShortLink = (id: number) =>
   apiFetch<AdminShortLink>(`${ADMIN_SHORT_LINKS_ENDPOINT}${id}/archive/`, {
     method: 'POST',
   });
+
+export const fetchAdminShortLinkClicks = (queryString: string) =>
+  apiFetch<AdminShortLinkClickList>(
+    queryString ?
+      `${ADMIN_SHORT_LINK_CLICKS_ENDPOINT}?${queryString}`
+    : ADMIN_SHORT_LINK_CLICKS_ENDPOINT,
+    {
+      method: 'GET',
+    },
+  );

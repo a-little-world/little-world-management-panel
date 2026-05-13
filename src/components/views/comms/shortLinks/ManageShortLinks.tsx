@@ -1,13 +1,18 @@
 import {
+  ArchiveIcon,
   Button,
   ButtonAppearance,
   ButtonSizes,
+  ButtonVariations,
   Card,
+  CardContent,
+  CardFooter,
   CardHeader,
   CardSizes,
   Loading,
   LoadingSizes,
   Modal,
+  PencilIcon,
   StatusMessage,
   StatusTypes,
   Tag,
@@ -20,6 +25,7 @@ import {
 import React, { useDeferredValue, useMemo, useState } from 'react';
 import useSWR, { mutate } from 'swr';
 
+import { useTheme } from 'styled-components';
 import {
   ADMIN_SHORT_LINKS_ENDPOINT,
   AdminShortLink,
@@ -36,7 +42,6 @@ import {
   TableHeader,
   TableRow,
 } from '../../../atoms/Table';
-import LinkForm, { LinkFormValues } from './LinkForm';
 import {
   Container,
   Description,
@@ -46,7 +51,8 @@ import {
   ListScroll,
   Title,
   TitleRow,
-} from '../events/Events.styles';
+} from '../../../atoms/PageLayout';
+import LinkForm, { LinkFormValues } from './EditShortLink';
 
 const getDefaultFormValues = (): LinkFormValues => ({
   tag: '',
@@ -61,8 +67,9 @@ const getEditFormValues = (link: AdminShortLink): LinkFormValues => ({
   url: link.url,
   tracking_cookies_enabled: link.tracking_cookies_enabled,
   register_at_app_root: link.register_at_app_root,
-  tracking_cookies:
-    link.tracking_cookies?.length ? link.tracking_cookies.map(c => ({ ...c })) : [],
+  tracking_cookies: link.tracking_cookies?.length
+    ? link.tracking_cookies.map(c => ({ ...c }))
+    : [],
 });
 
 function normalizeCookies(rows: LinkFormValues['tracking_cookies']) {
@@ -81,6 +88,7 @@ function Links() {
     title: string;
   } | null>(null);
 
+  const theme = useTheme();
   const [searchInput, setSearchInput] = useState('');
   const deferredSearch = useDeferredValue(searchInput.trim());
 
@@ -156,9 +164,9 @@ function Links() {
       setLinksToast({
         id: Date.now(),
         headline: 'Success',
-        title: wasEditing ?
-          'Short link updated successfully.'
-        : 'Short link created successfully.',
+        title: wasEditing
+          ? 'Short link updated successfully.'
+          : 'Short link created successfully.',
       });
       setFormModalOpen(false);
       setEditingLink(null);
@@ -230,12 +238,11 @@ function Links() {
             </Button>
           </TitleRow>
           <Description>
-            Short links redirect visitors from{' '}
-            <code>/links/&lt;tag&gt;/</code> on this site to the destination URL.
-            Enable “home app root” when the link must work from{' '}
-            <strong>home.little-world.com</strong>. Query parameters on the
-            incoming request are merged onto the destination URL when the key is
-            not already present (for example campaign{' '}
+            Short links redirect visitors from <code>/links/&lt;tag&gt;/</code>{' '}
+            on this site to the destination URL. Enable “home app root” when the
+            link must work from <strong>home.little-world.com</strong>. Query
+            parameters on the incoming request are merged onto the destination
+            URL when the key is not already present (for example campaign{' '}
             <code>source</code> / <code>s</code>, and optional{' '}
             <code>user_hash</code> / <code>u</code> / <code>h</code>). Archived
             links stop redirecting but remain in the database for reporting.
@@ -263,44 +270,49 @@ function Links() {
 
       <ListPanel>
         <ListScroll>
-          {isLoading ?
+          {isLoading ? (
             <div style={{ padding: '1rem 1.25rem' }}>
               <Loading size={LoadingSizes.Medium} />
             </div>
-          : (data ?? []).length === 0 ?
+          ) : (data ?? []).length === 0 ? (
             <div style={{ padding: '1rem 1.25rem' }}>
               <Text type={TextTypes.Body4}>
                 No short links yet, or nothing matches your search.
               </Text>
             </div>
-          : <Table>
+          ) : (
+            <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Tag</TableHead>
                   <TableHead>Destination</TableHead>
-                  <TableHead className="w-24 text-center">Clicks</TableHead>
+                  <TableHead className="w-44 text-center">Clicks</TableHead>
                   <TableHead className="w-28 text-center">Home root</TableHead>
                   <TableHead className="w-28 text-center">Tracking</TableHead>
                   <TableHead className="w-44">Updated</TableHead>
-                  <TableHead className="w-52 text-right">
-                    <span className="sr-only">Actions</span>
-                  </TableHead>
+                  <TableHead className="w-28 text-left">Edit</TableHead>
+                  <TableHead className="w-28 text-left">Archive</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {(data ?? []).map((link: AdminShortLink) => (
                   <TableRow key={link.id}>
                     <TableCell className="font-medium">{link.tag}</TableCell>
-                    <TableCell className="max-w-[18rem] truncate" title={link.url}>
+                    <TableCell
+                      className="max-w-[18rem] truncate"
+                      title={link.url}
+                    >
                       {link.url}
                     </TableCell>
-                    <TableCell className="text-center">{link.click_count}</TableCell>
+                    <TableCell className="text-center">
+                      {link.click_count}
+                    </TableCell>
                     <TableCell className="text-center">
                       <Tag
                         appearance={
-                          link.register_at_app_root ?
-                            TagAppearance.success
-                          : TagAppearance.error
+                          link.register_at_app_root
+                            ? TagAppearance.success
+                            : TagAppearance.error
                         }
                       >
                         {link.register_at_app_root ? 'Yes' : 'No'}
@@ -309,36 +321,44 @@ function Links() {
                     <TableCell className="text-center">
                       <Tag
                         appearance={
-                          link.tracking_cookies_enabled ?
-                            TagAppearance.success
-                          : TagAppearance.error
+                          link.tracking_cookies_enabled
+                            ? TagAppearance.success
+                            : TagAppearance.error
                         }
                       >
                         {link.tracking_cookies_enabled ? 'On' : 'Off'}
                       </Tag>
                     </TableCell>
                     <TableCell>{formatDateTime(link.updated_at)}</TableCell>
-                    <TableCell className="text-right space-x-2">
+                    <TableCell className="justify-center">
                       <Button
-                        appearance={ButtonAppearance.Secondary}
-                        size={ButtonSizes.Small}
+                        variation={ButtonVariations.Circle}
+                        size={ButtonSizes.Medium}
                         onClick={() => openEditModal(link)}
+                        color={theme.color.text.accent}
                       >
-                        Edit
+                        <PencilIcon label="edit icon" width={16} height={16} />
                       </Button>
+                    </TableCell>
+                    <TableCell className="justify-center">
                       <Button
-                        appearance={ButtonAppearance.Secondary}
-                        size={ButtonSizes.Small}
+                        variation={ButtonVariations.Circle}
+                        size={ButtonSizes.Medium}
                         onClick={() => openArchiveModal(link)}
+                        color={theme.color.text.error}
                       >
-                        Archive
+                        <ArchiveIcon
+                          label="archive icon"
+                          width={16}
+                          height={16}
+                        />
                       </Button>
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
-          }
+          )}
         </ListScroll>
       </ListPanel>
 
@@ -355,22 +375,17 @@ function Links() {
       <Modal open={archiveOpen} onClose={closeArchiveModal}>
         <Card width={CardSizes.Medium}>
           <CardHeader>Archive this short link?</CardHeader>
-          <Text type={TextTypes.Body4}>
-            {archivingLink ?
-              <>
-                The URL path <code>/links/{archivingLink.tag}/</code> will stop
-                redirecting. Analytics from past clicks are retained.
-              </>
-            : null}
-          </Text>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              gap: '0.5rem',
-              marginTop: '1rem',
-            }}
-          >
+          <CardContent marginBottom="32px">
+            <Text type={TextTypes.Body4}>
+              {archivingLink ? (
+                <>
+                  The URL path <code>/links/{archivingLink.tag}/</code> will
+                  stop redirecting. Analytics from past clicks are retained.
+                </>
+              ) : null}
+            </Text>
+          </CardContent>
+          <CardFooter align="space-between">
             <Button
               appearance={ButtonAppearance.Secondary}
               size={ButtonSizes.Small}
@@ -387,7 +402,7 @@ function Links() {
             >
               {archiveSubmitting ? 'Archiving…' : 'Archive'}
             </Button>
-          </div>
+          </CardFooter>
         </Card>
       </Modal>
 

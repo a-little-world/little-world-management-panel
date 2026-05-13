@@ -1,6 +1,7 @@
 import {
   CustomThemeProvider,
   GlobalStyles,
+  ToastProvider,
 } from '@a-little-world/little-world-design-system';
 import React, { PropsWithChildren } from 'react';
 import {
@@ -11,7 +12,6 @@ import {
 } from 'react-router-dom';
 
 import Layout from './components/blocks/Layout';
-import { ToastProvider } from './components/blocks/Toast';
 import UserPanel from './components/blocks/user/UserPanel';
 import Algorithm from './components/views/Algorithm';
 import Documentation from './components/views/Documentation';
@@ -25,10 +25,11 @@ import Scores from './components/views/Scores';
 import Stats from './components/views/Stats';
 import Users from './components/views/Users';
 import VideoCalls from './components/views/VideoCalls';
+import Communications from './components/views/comms/Communications';
 import Banners from './components/views/comms/banners/Banners';
 import EditBanner from './components/views/comms/banners/EditBanner';
 import Events from './components/views/comms/events/Events';
-import Links from './components/views/comms/links/Links';
+import ShortLinks from './components/views/comms/shortLinks/ShortLinks';
 import CreateNewEmail from './components/views/emails/CreateNewEmail';
 import Email from './components/views/emails/Email';
 import EmailHtml from './components/views/emails/EmailHtml';
@@ -41,6 +42,7 @@ import {
   BANNERS_ROUTE,
   BANNER_EDIT_ROUTE,
   BASE_ROUTE,
+  COMMUNICATIONS_ROUTE,
   CREATE_NEW_EMAIL_ROUTE,
   DOCUMENTATION_ROUTE,
   DYNAMIC_USER_LISTS_ROUTE,
@@ -49,7 +51,6 @@ import {
   EMAIL_HTML_ROUTE,
   EMAIL_ROUTE,
   EVENTS_ROUTE,
-  SHORT_LINKS_ROUTE,
   MATCHES_LIST_ROUTE,
   MATCHING_ROUTE,
   MATCH_ROUTE,
@@ -57,6 +58,7 @@ import {
   RANDOM_CALLS_ROUTE,
   SCORES_ROUTE,
   SEND_DYNAMIC_EMAIL_ROUTE,
+  SHORT_LINKS_ROUTE,
   STATS_ROUTE,
   USERS_ROUTE,
   USER_DETAILS_ROUTE,
@@ -93,6 +95,10 @@ const router = createBrowserRouter(
         {
           path: '',
           element: <Home />,
+        },
+        {
+          path: COMMUNICATIONS_ROUTE,
+          element: <Communications />,
         },
         {
           path: USERS_ROUTE,
@@ -172,7 +178,7 @@ const router = createBrowserRouter(
         },
         {
           path: SHORT_LINKS_ROUTE,
-          element: <Links />,
+          element: <ShortLinks />,
         },
         {
           path: BANNERS_ROUTE,

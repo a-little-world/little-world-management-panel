@@ -34,6 +34,15 @@ import {
   TableHeader,
   TableRow,
 } from '../../../atoms/Table';
+import {
+  Container,
+  Header,
+  HeaderText,
+  ListPanel,
+  ListScroll,
+  Title,
+  TitleRow,
+} from '../../../atoms/PageLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../atoms/Tabs';
 import EventForm, { EventFormValues } from './EventForm';
 import {
@@ -43,13 +52,6 @@ import {
   ColMutedStart,
   ColTime,
   ColTitle,
-  Container,
-  Header,
-  HeaderText,
-  ListPanel,
-  ListScroll,
-  Title,
-  TitleRow,
 } from './Events.styles';
 
 const LIST_LOCALE = LANGUAGES.en;

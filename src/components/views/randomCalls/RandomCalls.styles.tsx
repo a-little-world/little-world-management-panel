@@ -1,6 +1,12 @@
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
+import {
+  DatePickerContainer as BaseDatePickerContainer,
+  FormField as BaseFormField,
+  FormLabel as BaseFormLabel,
+} from '../../atoms/FormLayout';
+
 // Shared layout
 export const Container = styled.div`
   padding: ${({ theme }) => theme.spacing.medium};
@@ -180,26 +186,14 @@ export const ScheduleLink = styled(Link)`
 `;
 
 // Form (Create Lobby modal)
-export const DatePickerContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  gap: ${({ theme }) => theme.spacing.small};
-  width: 100%;
-`;
+export const DatePickerContainer = styled(BaseDatePickerContainer)``;
 
-export const FormField = styled.div`
-  display: flex;
-  flex-direction: column;
+export const FormField = styled(BaseFormField)`
   gap: ${({ theme }) => theme.spacing.small};
   margin-bottom: ${({ theme }) => theme.spacing.small};
-  flex: 1;
 `;
 
-export const FormLabel = styled.label`
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: ${({ theme }) => theme.color.text.primary};
-`;
+export const FormLabel = styled(BaseFormLabel)``;
 
 export const TimeInput = styled.input.attrs({
   type: 'time',

@@ -44,7 +44,9 @@ export const StyledForm = styled.form`
 export const CookiesHeader = styled.div`
   display: flex;
   align-items: end;
+  justify-content: space-between;
   gap: ${({ theme }) => theme.spacing.large};
+  width: 100%;
 `;
 
 const CookieField = styled.div`
@@ -99,7 +101,7 @@ function LinkForm({
   }, [initialValues, reset]);
 
   return (
-    <Card width={CardSizes.Large}>
+    <Card width={CardSizes.Medium}>
       <StyledForm
         onSubmit={handleSubmit(values => {
           onSubmit(values);
@@ -108,16 +110,15 @@ function LinkForm({
         <CardHeader>
           {editingLink ? 'Edit short link' : 'Create short link'}
         </CardHeader>
-        <CardContent align="flex-start">
-          {!editingLink && (
-            <TextInput
-              label="Tag"
-              id="short-link-tag"
-              placeholder="e.g. spring-campaign"
-              {...register('tag', { required: 'Tag is required' })}
-              error={errors.tag?.message}
-            />
-          )}
+        <CardContent align="flex-start" marginBottom={theme.spacing.large}>
+          <TextInput
+            readOnly={!!editingLink}
+            label={editingLink ? 'Tag [Cannot be changed]' : 'Tag'}
+            id="short-link-tag"
+            placeholder="e.g. spring-campaign"
+            {...register('tag', { required: 'Tag is required' })}
+            error={errors.tag?.message}
+          />
 
           <TextInput
             label="Destination URL"
@@ -156,7 +157,7 @@ function LinkForm({
           />
           <CookiesHeader>
             <Label bold marginBottom={0}>
-              Tracking cookies
+              Tracking cookies:
             </Label>
             <AddMoreButton
               variation={ButtonVariations.Circle}
@@ -219,8 +220,9 @@ function LinkForm({
             appearance={ButtonAppearance.Primary}
             size={ButtonSizes.Medium}
             disabled={saving}
+            loading={saving}
           >
-            {saving ? 'Saving…' : editingLink ? 'Save changes' : 'Create link'}
+            {editingLink ? 'Save changes' : 'Create link'}
           </Button>
         </CardFooter>
       </StyledForm>

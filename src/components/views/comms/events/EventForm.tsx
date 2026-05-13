@@ -27,6 +27,7 @@ import {
 } from '../../../../api/communityEvents';
 import { registerInput } from '../../../../store';
 import { DatePicker } from '../../../atoms/DatePicker';
+import { FormField, FormLabel } from '../../../atoms/FormLayout';
 import { ImageUploadField } from '../../../atoms/ImageUploadField';
 import {
   EventModalAside,
@@ -35,8 +36,6 @@ import {
   EventModalLayout,
   EventModalPrimary,
   EventModalScheduleRow,
-  FormField,
-  FormLabel,
   TimeInput,
 } from './Events.styles';
 

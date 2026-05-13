@@ -24,6 +24,7 @@ export const EVENTS_ROUTE = '/events/';
 export const SHORT_LINKS_ROUTE = '/short-links/';
 export const BANNERS_ROUTE = '/banners/';
 export const BANNER_EDIT_ROUTE = '/banners/:bannerId/';
+export const COMMUNICATIONS_ROUTE = '/communications/';
 
 export const getEditEmailRoute = (templateId: number) =>
   `/email/${templateId}/edit`;

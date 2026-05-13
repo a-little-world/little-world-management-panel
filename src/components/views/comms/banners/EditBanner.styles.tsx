@@ -1,6 +1,8 @@
 import { Banner, Button } from '@a-little-world/little-world-design-system';
 import styled, { css } from 'styled-components';
 
+import { FormStack as BaseFormStack } from '../../../atoms/FormLayout';
+
 export const Container = styled.div`
   width: 100%;
   max-height: calc(100dvh - 5rem);
@@ -96,9 +98,7 @@ export const HeaderActions = styled.div`
   gap: ${({ theme }) => theme.spacing.small};
 `;
 
-export const FormStack = styled.div`
-  display: flex;
-  flex-direction: column;
+export const FormStack = styled(BaseFormStack)`
   width: 100%;
 `;
 
