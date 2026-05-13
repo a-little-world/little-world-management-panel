@@ -250,11 +250,13 @@ const TASK_EXPORT_HEADERS = [
 
 const DEFAULT_EXPORT_HEADERS = ['id', 'title', 'status', 'priority', 'created_at'];
 
+const ALL_STATUSES = 'ALL';
+
 const STATUS_OPTIONS = [
-  { value: '', label: 'All statuses' },
-  { value: 'NEW', label: 'New' },
+  { value: ALL_STATUSES, label: 'All statuses' },
+  { value: 'NEW',         label: 'New' },
   { value: 'IN_PROGRESS', label: 'In progress' },
-  { value: 'COMPLETED', label: 'Completed' },
+  { value: 'COMPLETED',   label: 'Completed' },
 ];
 
 const SORT_OPTIONS = [
@@ -425,7 +427,8 @@ export default function SupportTasksOverview() {
   const [selectedHeaders, setSelectedHeaders] = useState<string[]>(DEFAULT_EXPORT_HEADERS);
   const [availableHeaders, setAvailableHeaders] = useState<string[]>(TASK_EXPORT_HEADERS);
 
-  const statusFilter = searchParams.get('status') ?? '';
+  const statusParam = searchParams.get('status') ?? ALL_STATUSES;
+  const statusFilter = statusParam === ALL_STATUSES ? '' : statusParam;
   const sortOrder = (searchParams.get('sort_order') ?? 'desc') as 'asc' | 'desc';
   const search = searchParams.get('search') ?? '';
 
@@ -527,9 +530,9 @@ export default function SupportTasksOverview() {
       >
         <Dropdown
           label="Status"
-          value={statusFilter}
+          value={statusParam}
           options={STATUS_OPTIONS}
-          onValueChange={v => updateSearchParam('status', v)}
+          onValueChange={v => updateSearchParam('status', v === ALL_STATUSES ? '' : v)}
           placeholder="All statuses"
           cannotError
           maxWidth="160px"
