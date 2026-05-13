@@ -12,6 +12,7 @@ export interface SupportTaskAction {
   status: ActionStatus;
   reviewed_by_id: number | null;
   reviewed_at: string | null;
+  history?: ObjectHistory[];
 }
 
 export interface UserProfile {
@@ -48,6 +49,7 @@ export interface SupportTask {
   created_at: string;
   updated_at: string;
   action: SupportTaskAction;
+  history?: ObjectHistory[];
 }
 
 export interface StaffUser {
@@ -75,6 +77,15 @@ export const fetchSupportTasks = (
   const qs = query.toString();
   return apiFetch(`/api/support_task/${qs ? `?${qs}` : ''}`);
 };
+
+export const fetchSupportTask = (id: number): Promise<SupportTask> =>
+  apiFetch(`/api/support_task/${id}/`);
+
+export const patchSupportTask = (
+  id: number,
+  data: Partial<Pick<SupportTask, 'status' | 'priority'> & { assigned_to_id: number | null }>,
+): Promise<SupportTask> =>
+  apiFetch(`/api/support_task/${id}/update/`, { method: 'PATCH', body: data });
 
 export const fetchStaffUsers = (): Promise<StaffUser[]> =>
   apiFetch('/api/support_task/staff_users/');

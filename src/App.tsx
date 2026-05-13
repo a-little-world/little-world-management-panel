@@ -35,6 +35,7 @@ import EmailHtml from './components/views/emails/EmailHtml';
 import Emails from './components/views/emails/Emails';
 import { SendDynamicTemplateView } from './components/views/emails/SendDynamicTemplate';
 import RandomCalls from './components/views/randomCalls/RandomCalls';
+import SupportTaskDetail from './components/views/SupportTaskDetail';
 import SupportTasksOverview from './components/views/SupportTasksOverview';
 import { EmailThemeProvider } from './emails/shared/theme';
 import {
@@ -187,7 +188,7 @@ const router = createBrowserRouter(
         },
         {
           path: SUPPORT_TASK_DETAIL_ROUTE,
-          element: <SupportTasksOverview />,
+          element: <SupportTaskDetail />,
         },
       ],
     },
