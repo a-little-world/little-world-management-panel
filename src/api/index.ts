@@ -767,6 +767,46 @@ export const setRandomCallsAccess = async ({
   }
 };
 
+export type ManagementPermissionRow = {
+  permission: string;
+  codename: string;
+  label?: string;
+  enabled: boolean;
+};
+
+export const fetchUserManagementPermissions = (userId: string) =>
+  apiFetch<{ permissions: ManagementPermissionRow[] }>(
+    `/api/matching/users/${userId}/permissions/`,
+    { method: 'GET' },
+  );
+
+export const setUserManagementPermission = async ({
+  userId,
+  action,
+  permission,
+  onError,
+  onSuccess,
+}: {
+  userId: string;
+  action: 'add' | 'remove';
+  permission: string;
+  onError: (error: any) => void;
+  onSuccess: (result: any) => void;
+}) => {
+  try {
+    const result = await apiFetch(
+      `/api/matching/users/${userId}/permissions/${action}/`,
+      {
+        method: 'POST',
+        body: { permission },
+      },
+    );
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
+  }
+};
+
 export const inviteNativeAppTester = async ({
   userId,
   platform,

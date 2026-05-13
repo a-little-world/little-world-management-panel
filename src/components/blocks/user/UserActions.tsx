@@ -9,6 +9,7 @@ import {
   CardSizes,
   Checkbox,
   Dropdown,
+  Loading,
   Modal,
   StatusMessage,
   StatusTypes,
@@ -21,9 +22,11 @@ import { isEmpty, map } from 'lodash';
 import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTheme } from 'styled-components';
+import useSWR from 'swr';
 
 import {
   deleteUser,
+  fetchUserManagementPermissions,
   inviteNativeAppTester,
   sendPushNotification,
   sendSms,
@@ -31,6 +34,7 @@ import {
   setHasMatchPriority,
   setNewsletterSubscribed,
   setRandomCallsAccess,
+  setUserManagementPermission,
   setUserSearching,
   setUserUnresponsive,
 } from '../../../api/index';
@@ -51,6 +55,94 @@ const NATIVE_APP_PLATFORM_OPTIONS = [
   { label: 'iOS', value: 'ios' },
   { label: 'Android', value: 'android' },
 ];
+
+/** Django `management.apply_management_permissions` — cannot be granted/revoked via API. */
+const APPLY_MANAGEMENT_PERMISSIONS = 'management.apply_management_permissions';
+
+function ManagementPermissionsSection({
+  onUserUpdated,
+  userId,
+  permissionsData,
+  permissionsError,
+  permissionsLoading,
+  permissionsMutate,
+}: {
+  onUserUpdated: () => void;
+  userId: string;
+  permissionsData?: { permissions: any[] };
+  permissionsError?: unknown;
+  permissionsLoading: boolean;
+  permissionsMutate: () => Promise<any>;
+}) {
+  const [pendingPermission, setPendingPermission] = useState<string | null>(
+    null,
+  );
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  const rows = permissionsData?.permissions ?? [];
+
+  const onToggle = (permission: string, nextEnabled: boolean) => {
+    if (permission === APPLY_MANAGEMENT_PERMISSIONS) return;
+    setActionError(null);
+    setPendingPermission(permission);
+    setUserManagementPermission({
+      userId,
+      action: nextEnabled ? 'add' : 'remove',
+      permission,
+      onSuccess: async () => {
+        await permissionsMutate();
+        onUserUpdated();
+        setPendingPermission(null);
+      },
+      onError: (e: any) => {
+        setActionError(e?.message || 'Could not update permission.');
+        setPendingPermission(null);
+        permissionsMutate();
+      },
+    });
+  };
+
+  if (permissionsLoading) {
+    return <Loading />;
+  }
+
+  if (permissionsError) {
+    return (
+      <Text type={TextTypes.Body4}>Could not load management permissions.</Text>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-3 pt-2">
+      {actionError && (
+        <StatusMessage type={StatusTypes.Error} visible>
+          {actionError}
+        </StatusMessage>
+      )}
+      {rows.map(row => (
+        <div key={row.permission} className="flex flex-col gap-1">
+          <Checkbox
+            disabled={pendingPermission !== null}
+            readOnly={row.permission === APPLY_MANAGEMENT_PERMISSIONS}
+            id={`mgmt-perm-${row.codename}`}
+            label={
+              row.permission === APPLY_MANAGEMENT_PERMISSIONS
+                ? `${row.label} [READ ONLY]`
+                : (row.label ?? row.codename)
+            }
+            checked={row.enabled}
+            onCheckedChange={(val: boolean) => {
+              if (val !== row.enabled) {
+                onToggle(row.permission, val);
+              }
+            }}
+            required={false}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
 
 function SendSms({ userId }: { userId: string }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -341,6 +433,16 @@ const UserActions = ({
   const [deleteUserModalOpen, setDeleteUserModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [changesSaved, setChangesSaved] = useState(false);
+  const {
+    data: permissionsData,
+    error: permissionsError,
+    isLoading: permissionsLoading,
+    mutate: permissionsMutate,
+  } = useSWR(
+    `/api/matching/users/${user.id}/permissions/`,
+    () => fetchUserManagementPermissions(user.id),
+    { revalidateOnFocus: false },
+  );
 
   const {
     control,
@@ -416,6 +518,12 @@ const UserActions = ({
   const hasRandomCallsAccess = (
     user.state.extra_user_permissions || []
   ).includes('use-random-calls');
+  const permissionsStatus = (
+    permissionsError as { status?: number } | undefined
+  )?.status;
+  const showManagementPermissionsSection =
+    Boolean(permissionsData) ||
+    (Boolean(permissionsError) && permissionsStatus !== 403);
 
   return (
     <div className="w-full">
@@ -430,6 +538,23 @@ const UserActions = ({
               </div>
             ),
           },
+          ...(showManagementPermissionsSection
+            ? [
+                {
+                  header: 'Management permissions',
+                  content: (
+                    <ManagementPermissionsSection
+                      userId={user.id}
+                      onUserUpdated={onUpdate}
+                      permissionsData={permissionsData}
+                      permissionsError={permissionsError}
+                      permissionsLoading={permissionsLoading}
+                      permissionsMutate={permissionsMutate}
+                    />
+                  ),
+                },
+              ]
+            : []),
           {
             header: 'Support User Actions',
             content: (
