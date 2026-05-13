@@ -23,6 +23,19 @@ export interface UserProfile {
   image_type: 'image' | 'avatar';
 }
 
+export type ObjectHistoryType = 'CREATE' | 'UPDATE';
+
+export interface ObjectHistory {
+  id: number;
+  model_type: string;
+  changed_by_profile: UserProfile | null;
+  changed_at: string;
+  type: ObjectHistoryType;
+  field: string;
+  old_value: unknown;
+  new_value: unknown;
+}
+
 export interface SupportTask {
   id: number;
   title: string;
@@ -51,7 +64,9 @@ export interface SupportTaskListParams {
   sort_order?: 'asc' | 'desc';
 }
 
-export const fetchSupportTasks = (params: SupportTaskListParams = {}): Promise<SupportTask[]> => {
+export const fetchSupportTasks = (
+  params: SupportTaskListParams = {},
+): Promise<SupportTask[]> => {
   const query = new URLSearchParams();
   if (params.status) query.set('status', params.status);
   if (params.assigned_to) query.set('assigned_to', String(params.assigned_to));

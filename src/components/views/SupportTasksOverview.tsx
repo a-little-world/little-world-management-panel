@@ -739,7 +739,7 @@ export default function SupportTasksOverview() {
               label="Assigned to me"
               checked={onlyMe}
               onCheckedChange={toggleOnlyMe}
-              inputRef={null}
+
             />
           )}
         </QuickFilters>
