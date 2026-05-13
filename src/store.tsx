@@ -440,3 +440,8 @@ export function useGlobalState() {
 
   return context;
 }
+
+export function useCurrentUserId(): number | null {
+  const { apiOptions } = useGlobalState();
+  return (apiOptions as any)?.current_user_id ?? null;
+}

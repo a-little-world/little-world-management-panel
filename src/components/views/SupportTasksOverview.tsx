@@ -1,4 +1,5 @@
 import {
+  Checkbox,
   Dropdown,
   Tag,
   TagAppearance,
@@ -28,6 +29,7 @@ import {
 } from '../../api/supportTasks';
 import { formatTimeDistance } from '../../helpers/date';
 import { getSupportTaskDetailRoute } from '../../routes';
+import { useCurrentUserId } from '../../store';
 import { Button } from '../atoms/Button';
 import UserImage from '../atoms/UserImage';
 import { DataTable } from '../blocks/DataTable';
@@ -203,6 +205,12 @@ const RowActionLink = styled(Link)`
     background: ${({ theme }) => theme.color.surface.secondary};
     border-color: ${({ theme }) => theme.color.border.subtle};
   }
+`;
+
+const QuickFilters = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.medium};
 `;
 
 // ─── Design token constants ───────────────────────────────────────────────────
@@ -524,6 +532,7 @@ function SummaryTile({
 
 export default function SupportTasksOverview() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const currentUserId = useCurrentUserId();
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [downloadSettingsOpen, setDownloadSettingsOpen] = useState(false);
   const [selectedHeaders, setSelectedHeaders] = useState<string[]>(
@@ -564,6 +573,22 @@ export default function SupportTasksOverview() {
   const priorityFilter = searchParams.getAll(TaskFilterKeys.Priority);
   const actionTypeFilter = searchParams.getAll(TaskFilterKeys.ActionType);
   const assignedToFilter = searchParams.get(TaskFilterKeys.AssignedTo) ?? '';
+
+  const onlyNew = statusParam === 'NEW';
+  const onlyMe =
+    currentUserId !== null && assignedToFilter === String(currentUserId);
+
+  const toggleOnlyNew = () => {
+    updateSearchParam('status', onlyNew ? ALL_STATUSES : 'NEW');
+  };
+
+  const toggleOnlyMe = () => {
+    if (onlyMe) {
+      removeSearchParam(TaskFilterKeys.AssignedTo);
+    } else if (currentUserId !== null) {
+      updateSearchParam(TaskFilterKeys.AssignedTo, String(currentUserId));
+    }
+  };
 
   const filtered = useMemo(() => {
     let result = tasks;
@@ -700,6 +725,24 @@ export default function SupportTasksOverview() {
         isLoading={isLoading}
         loadingText="Loading tasks…"
       >
+        <QuickFilters>
+          <Checkbox
+            name="only_new"
+            label="New"
+            checked={onlyNew}
+            onCheckedChange={toggleOnlyNew}
+            inputRef={null}
+          />
+          {currentUserId !== null && (
+            <Checkbox
+              name="assigned_to_me"
+              label="Assigned to me"
+              checked={onlyMe}
+              onCheckedChange={toggleOnlyMe}
+              inputRef={null}
+            />
+          )}
+        </QuickFilters>
         <Dropdown
           label="Status"
           value={statusParam}
