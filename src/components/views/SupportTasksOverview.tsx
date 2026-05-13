@@ -33,8 +33,11 @@ import { Button } from '../atoms/Button';
 import UserImage from '../atoms/UserImage';
 import { DataTable } from '../blocks/DataTable';
 import { DownloadSettingsModal } from '../blocks/DownloadSettingsModal';
-import Filters, { containsFilterKey } from '../blocks/Filters';
 import FiltersToolbar from '../blocks/FiltersToolbar';
+import SupportTaskFilters, {
+  TaskFilterKeys,
+  containsTaskFilterKey,
+} from '../blocks/SupportTaskFilters';
 
 // ─── Styled components ────────────────────────────────────────────────────────
 
@@ -47,7 +50,8 @@ const PageWrapper = styled.div`
 `;
 
 const SummaryGrid = styled.div`
-  padding: ${({ theme }) => theme.spacing.medium} ${({ theme }) => theme.spacing.xlarge} 0;
+  padding: ${({ theme }) => theme.spacing.medium}
+    ${({ theme }) => theme.spacing.xlarge} 0;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: ${({ theme }) => theme.spacing.small};
@@ -153,7 +157,8 @@ const AgeText = styled.span<{ $warn?: boolean }>`
   white-space: nowrap;
   font-size: 13px;
   font-variant-numeric: tabular-nums;
-  color: ${({ $warn, theme }) => ($warn ? theme.color.text.title : theme.color.text.secondary)};
+  color: ${({ $warn, theme }) =>
+    $warn ? theme.color.text.title : theme.color.text.secondary};
   font-weight: ${({ $warn }) => ($warn ? 600 : 400)};
 `;
 
@@ -214,61 +219,94 @@ const YELLOW_10 = '#fef9d9';
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const STATUS_CONFIG: Record<TaskStatus, { label: string; color: string }> = {
-  NEW:         { label: 'New',         color: BLUE_40 },
+  NEW: { label: 'New', color: BLUE_40 },
   IN_PROGRESS: { label: 'In progress', color: ORANGE_40 },
-  COMPLETED:   { label: 'Completed',   color: GREEN_40 },
+  COMPLETED: { label: 'Completed', color: GREEN_40 },
 };
 
-const PRIORITY_CONFIG: Record<TaskPriority, { label: string; color: string }> = {
-  LOW:    { label: 'Low',    color: '#6d6d6d' },
-  MEDIUM: { label: 'Medium', color: BLUE_40 },
-  HIGH:   { label: 'High',   color: ORANGE_40 },
-  URGENT: { label: 'Urgent', color: '#c93333' },
-};
+const PRIORITY_CONFIG: Record<TaskPriority, { label: string; color: string }> =
+  {
+    LOW: { label: 'Low', color: '#6d6d6d' },
+    MEDIUM: { label: 'Medium', color: BLUE_40 },
+    HIGH: { label: 'High', color: ORANGE_40 },
+    URGENT: { label: 'Urgent', color: '#c93333' },
+  };
 
 const ACTION_TYPE_CONFIG: Record<string, { label: string; color: string }> = {
-  support_reply:                              { label: 'Support reply',      color: BLUE_40 },
-  message_action_remove_match:                { label: 'Remove match',       color: '#8a2a2a' },
-  profile_change_action_country_of_residence: { label: 'Country change',     color: '#7a4a00' },
-  message_action_change_user_type:            { label: 'Change user type',   color: ORANGE_40 },
-  profile_action_suspicious_profile:          { label: 'Suspicious profile', color: '#4a1f1f' },
-  profile_action_too_empty_profile:           { label: 'Incomplete profile', color: '#5b2c87' },
+  support_reply: { label: 'Support reply', color: BLUE_40 },
+  message_action_remove_match: { label: 'Remove match', color: '#8a2a2a' },
+  profile_change_action_country_of_residence: {
+    label: 'Country change',
+    color: '#7a4a00',
+  },
+  message_action_change_user_type: {
+    label: 'Change user type',
+    color: ORANGE_40,
+  },
+  profile_action_suspicious_profile: {
+    label: 'Suspicious profile',
+    color: '#4a1f1f',
+  },
+  profile_action_too_empty_profile: {
+    label: 'Incomplete profile',
+    color: '#5b2c87',
+  },
 };
 
 function getActionTypeConfig(actionType: string) {
-  return ACTION_TYPE_CONFIG[actionType] ?? {
-    label: actionType.replace(/_/g, ' '),
-    color: '#6d6d6d',
-  };
+  return (
+    ACTION_TYPE_CONFIG[actionType] ?? {
+      label: actionType.replace(/_/g, ' '),
+      color: '#6d6d6d',
+    }
+  );
 }
 
 const TASK_EXPORT_HEADERS = [
-  'id', 'title', 'description', 'status', 'priority',
-  'related_user_id', 'assigned_to_id', 'created_by_id',
-  'created_at', 'updated_at',
+  'id',
+  'title',
+  'description',
+  'status',
+  'priority',
+  'related_user_id',
+  'assigned_to_id',
+  'created_by_id',
+  'created_at',
+  'updated_at',
 ];
 
-const DEFAULT_EXPORT_HEADERS = ['id', 'title', 'status', 'priority', 'created_at'];
+const DEFAULT_EXPORT_HEADERS = [
+  'id',
+  'title',
+  'status',
+  'priority',
+  'created_at',
+];
 
 const ALL_STATUSES = 'ALL';
 
 const STATUS_OPTIONS = [
   { value: ALL_STATUSES, label: 'All statuses' },
-  { value: 'NEW',         label: 'New' },
+  { value: 'NEW', label: 'New' },
   { value: 'IN_PROGRESS', label: 'In progress' },
-  { value: 'COMPLETED',   label: 'Completed' },
+  { value: 'COMPLETED', label: 'Completed' },
 ];
 
 const SORT_OPTIONS = [
   { value: 'desc', label: '(Desc) Newest first' },
-  { value: 'asc',  label: '(Asc) Oldest first' },
+  { value: 'asc', label: '(Asc) Oldest first' },
 ];
 
 // ─── Column definitions ───────────────────────────────────────────────────────
 
 const columnHelper = createColumnHelper<SupportTask>();
 
-function buildColumns(staffById: Record<number, { id: number; email: string; first_name: string; last_name: string }>): ColumnDef<SupportTask, any>[] {
+function buildColumns(
+  staffById: Record<
+    number,
+    { id: number; email: string; first_name: string; last_name: string }
+  >,
+): ColumnDef<SupportTask, any>[] {
   return [
     columnHelper.accessor('id', {
       header: 'ID',
@@ -276,7 +314,10 @@ function buildColumns(staffById: Record<number, { id: number; email: string; fir
     }),
     columnHelper.accessor('title', {
       header: ({ column }) => (
-        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
           Task <ArrowsUpDownIcon className="ml-2 h-4 w-4" />
         </Button>
       ),
@@ -289,14 +330,22 @@ function buildColumns(staffById: Record<number, { id: number; email: string; fir
     }),
     columnHelper.accessor('status', {
       header: ({ column }) => (
-        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
           Status <ArrowsUpDownIcon className="ml-2 h-4 w-4" />
         </Button>
       ),
       cell: ({ getValue }) => {
         const cfg = STATUS_CONFIG[getValue() as TaskStatus];
         return (
-          <Tag bold size={TagSizes.small} appearance={TagAppearance.outline} color={cfg.color}>
+          <Tag
+            bold
+            size={TagSizes.small}
+            appearance={TagAppearance.outline}
+            color={cfg.color}
+          >
             {cfg.label}
           </Tag>
         );
@@ -307,7 +356,12 @@ function buildColumns(staffById: Record<number, { id: number; email: string; fir
       cell: ({ getValue }) => {
         const cfg = PRIORITY_CONFIG[getValue() as TaskPriority];
         return (
-          <Tag bold size={TagSizes.small} appearance={TagAppearance.outline} color={cfg.color}>
+          <Tag
+            bold
+            size={TagSizes.small}
+            appearance={TagAppearance.outline}
+            color={cfg.color}
+          >
             {cfg.label}
           </Tag>
         );
@@ -319,7 +373,12 @@ function buildColumns(staffById: Record<number, { id: number; email: string; fir
       cell: ({ row }) => {
         const cfg = getActionTypeConfig(row.original.action?.action_type ?? '');
         return (
-          <Tag bold size={TagSizes.small} appearance={TagAppearance.outline} color={cfg.color}>
+          <Tag
+            bold
+            size={TagSizes.small}
+            appearance={TagAppearance.outline}
+            color={cfg.color}
+          >
             {cfg.label}
           </Tag>
         );
@@ -336,7 +395,7 @@ function buildColumns(staffById: Record<number, { id: number; email: string; fir
               user={{ id }}
               dimensions={{ width: 28, height: 28 }}
             />
-            <UserName>#{id}</UserName>
+            {/* <UserName>#{id}</UserName> */}
           </UserCell>
         );
       },
@@ -354,21 +413,29 @@ function buildColumns(staffById: Record<number, { id: number; email: string; fir
               user={{ id: staff.id }}
               dimensions={{ width: 28, height: 28 }}
             />
-            <UserName>{staff.first_name} {staff.last_name}</UserName>
+            <UserName>
+              {staff.first_name} {staff.last_name}
+            </UserName>
           </UserCell>
         );
       },
     }),
     columnHelper.accessor('created_at', {
       header: ({ column }) => (
-        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
           Created <ArrowsUpDownIcon className="ml-2 h-4 w-4" />
         </Button>
       ),
       cell: ({ getValue }) => {
-        const isOld = Date.now() - new Date(getValue()).getTime() > 2 * 60 * 60 * 1000;
+        const isOld =
+          Date.now() - new Date(getValue()).getTime() > 2 * 60 * 60 * 1000;
         return (
-          <AgeText $warn={isOld}>{formatTimeDistance(getValue(), new Date())}</AgeText>
+          <AgeText $warn={isOld}>
+            {formatTimeDistance(getValue(), new Date())}
+          </AgeText>
         );
       },
     }),
@@ -401,10 +468,19 @@ function buildColumns(staffById: Record<number, { id: number; email: string; fir
 // ─── Summary tile ─────────────────────────────────────────────────────────────
 
 function SummaryTile({
-  label, value, sub, icon, accentBg, accentColor,
+  label,
+  value,
+  sub,
+  icon,
+  accentBg,
+  accentColor,
 }: {
-  label: string; value: number; sub: string;
-  icon: React.ReactNode; accentBg: string; accentColor: string;
+  label: string;
+  value: number;
+  sub: string;
+  icon: React.ReactNode;
+  accentBg: string;
+  accentColor: string;
 }) {
   return (
     <TileCard>
@@ -413,7 +489,9 @@ function SummaryTile({
         <TileValue>{value}</TileValue>
         <TileSub>{sub}</TileSub>
       </div>
-      <TileIcon $bg={accentBg} $color={accentColor}>{icon}</TileIcon>
+      <TileIcon $bg={accentBg} $color={accentColor}>
+        {icon}
+      </TileIcon>
     </TileCard>
   );
 }
@@ -424,39 +502,82 @@ export default function SupportTasksOverview() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [downloadSettingsOpen, setDownloadSettingsOpen] = useState(false);
-  const [selectedHeaders, setSelectedHeaders] = useState<string[]>(DEFAULT_EXPORT_HEADERS);
-  const [availableHeaders, setAvailableHeaders] = useState<string[]>(TASK_EXPORT_HEADERS);
+  const [selectedHeaders, setSelectedHeaders] = useState<string[]>(
+    DEFAULT_EXPORT_HEADERS,
+  );
+  const [availableHeaders, setAvailableHeaders] =
+    useState<string[]>(TASK_EXPORT_HEADERS);
 
   const statusParam = searchParams.get('status') ?? ALL_STATUSES;
   const statusFilter = statusParam === ALL_STATUSES ? '' : statusParam;
-  const sortOrder = (searchParams.get('sort_order') ?? 'desc') as 'asc' | 'desc';
+  const sortOrder = (searchParams.get('sort_order') ?? 'desc') as
+    | 'asc'
+    | 'desc';
   const search = searchParams.get('search') ?? '';
 
-  const { data: tasks = [], isLoading, mutate } = useSWR(
-    ['support_tasks', statusFilter, sortOrder],
-    () => fetchSupportTasks({ status: statusFilter || undefined, sort_by: 'created_at', sort_order: sortOrder }),
+  const {
+    data: tasks = [],
+    isLoading,
+    mutate,
+  } = useSWR(['support_tasks', statusFilter, sortOrder], () =>
+    fetchSupportTasks({
+      status: statusFilter || undefined,
+      sort_by: 'created_at',
+      sort_order: sortOrder,
+    }),
   );
 
   const { data: staffUsers = [] } = useSWR('staff_users', fetchStaffUsers);
 
   const staffById = useMemo(() => {
     const m: Record<number, (typeof staffUsers)[0]> = {};
-    staffUsers.forEach(u => { m[u.id] = u; });
+    staffUsers.forEach(u => {
+      m[u.id] = u;
+    });
     return m;
   }, [staffUsers]);
 
-  const filtered = useMemo(() => {
-    if (!search.trim()) return tasks;
-    const q = search.toLowerCase();
-    return tasks.filter(t => t.title.toLowerCase().includes(q) || String(t.id).includes(q));
-  }, [tasks, search]);
+  const priorityFilter = searchParams.getAll(TaskFilterKeys.Priority);
+  const actionTypeFilter = searchParams.getAll(TaskFilterKeys.ActionType);
+  const assignedToFilter = searchParams.get(TaskFilterKeys.AssignedTo) ?? '';
 
-  const counts = useMemo(() => ({
-    NEW:         tasks.filter(t => t.status === 'NEW').length,
-    IN_PROGRESS: tasks.filter(t => t.status === 'IN_PROGRESS').length,
-    COMPLETED:   tasks.filter(t => t.status === 'COMPLETED').length,
-    awaitingAction: tasks.filter(t => t.action?.status === 'OPEN' && t.status !== 'COMPLETED').length,
-  }), [tasks]);
+  const filtered = useMemo(() => {
+    let result = tasks;
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      result = result.filter(
+        t => t.title.toLowerCase().includes(q) || String(t.id).includes(q),
+      );
+    }
+    if (priorityFilter.length) {
+      result = result.filter(t => priorityFilter.includes(t.priority));
+    }
+    if (actionTypeFilter.length) {
+      result = result.filter(t =>
+        actionTypeFilter.includes(t.action?.action_type ?? ''),
+      );
+    }
+    if (assignedToFilter === 'unassigned') {
+      result = result.filter(t => !t.assigned_to_id);
+    } else if (assignedToFilter) {
+      result = result.filter(
+        t => String(t.assigned_to_id) === assignedToFilter,
+      );
+    }
+    return result;
+  }, [tasks, search, priorityFilter, actionTypeFilter, assignedToFilter]);
+
+  const counts = useMemo(
+    () => ({
+      NEW: tasks.filter(t => t.status === 'NEW').length,
+      IN_PROGRESS: tasks.filter(t => t.status === 'IN_PROGRESS').length,
+      COMPLETED: tasks.filter(t => t.status === 'COMPLETED').length,
+      awaitingAction: tasks.filter(
+        t => t.action?.status === 'OPEN' && t.status !== 'COMPLETED',
+      ).length,
+    }),
+    [tasks],
+  );
 
   const columns = useMemo(() => buildColumns(staffById), [staffById]);
 
@@ -481,22 +602,32 @@ export default function SupportTasksOverview() {
 
   const currentFilters = useMemo(() => {
     const obj: Record<string, string> = {};
-    searchParams.forEach((v, k) => { obj[k] = v; });
+    searchParams.forEach((v, k) => {
+      obj[k] = v;
+    });
     return obj;
   }, [searchParams]);
 
   const handleDownload = () => {
-    const headers = selectedHeaders.length ? selectedHeaders : TASK_EXPORT_HEADERS;
+    const headers = selectedHeaders.length
+      ? selectedHeaders
+      : TASK_EXPORT_HEADERS;
     const rows = filtered.map(task =>
-      headers.map(h => {
-        const val = (task as any)[h];
-        const str = val === null || val === undefined ? '' : String(val);
-        return str.includes(',') || str.includes('"') ? `"${str.replace(/"/g, '""')}"` : str;
-      }).join(','),
+      headers
+        .map(h => {
+          const val = (task as any)[h];
+          const str = val === null || val === undefined ? '' : String(val);
+          return str.includes(',') || str.includes('"')
+            ? `"${str.replace(/"/g, '""')}"`
+            : str;
+        })
+        .join(','),
     );
     const csv = [headers.join(','), ...rows].join('\n');
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+    a.href = URL.createObjectURL(
+      new Blob([csv], { type: 'text/csv;charset=utf-8;' }),
+    );
     a.download = `support-tasks-${new Date().toLocaleDateString('de')}.csv`;
     a.click();
   };
@@ -504,10 +635,38 @@ export default function SupportTasksOverview() {
   return (
     <PageWrapper>
       <SummaryGrid>
-        <SummaryTile label="New"             value={counts.NEW}            sub="Open, unassigned"      accentBg={BLUE_10}   accentColor={BLUE_40}   icon={<ActivityIcon size={24} />} />
-        <SummaryTile label="In progress"     value={counts.IN_PROGRESS}    sub="Being worked on"       accentBg={ORANGE_10} accentColor={ORANGE_40} icon={<ClockIcon size={24} />} />
-        <SummaryTile label="Awaiting action" value={counts.awaitingAction} sub="Action pending review" accentBg={YELLOW_10} accentColor="#7a5b00"   icon={<MessageSquareIcon size={24} />} />
-        <SummaryTile label="Completed"       value={counts.COMPLETED}      sub="All time"              accentBg={GREEN_10}  accentColor={GREEN_40}  icon={<CheckIcon size={24} />} />
+        <SummaryTile
+          label="New"
+          value={counts.NEW}
+          sub="Open, unassigned"
+          accentBg={BLUE_10}
+          accentColor={BLUE_40}
+          icon={<ActivityIcon size={24} />}
+        />
+        <SummaryTile
+          label="In progress"
+          value={counts.IN_PROGRESS}
+          sub="Being worked on"
+          accentBg={ORANGE_10}
+          accentColor={ORANGE_40}
+          icon={<ClockIcon size={24} />}
+        />
+        <SummaryTile
+          label="Awaiting action"
+          value={counts.awaitingAction}
+          sub="Action pending review"
+          accentBg={YELLOW_10}
+          accentColor="#7a5b00"
+          icon={<MessageSquareIcon size={24} />}
+        />
+        <SummaryTile
+          label="Completed"
+          value={counts.COMPLETED}
+          sub="All time"
+          accentBg={GREEN_10}
+          accentColor={GREEN_40}
+          icon={<CheckIcon size={24} />}
+        />
       </SummaryGrid>
 
       <FiltersToolbar
@@ -516,7 +675,7 @@ export default function SupportTasksOverview() {
         searchDefaultValue={search}
         onSearchSubmit={s => updateSearchParam('search', s)}
         showFiltersButton
-        filtersActive={containsFilterKey(currentFilters)}
+        filtersActive={containsTaskFilterKey(currentFilters)}
         onFiltersClick={() => setFiltersOpen(true)}
         showDownloadButton
         downloadDisabled={isLoading || filtered.length === 0}
@@ -532,7 +691,9 @@ export default function SupportTasksOverview() {
           label="Status"
           value={statusParam}
           options={STATUS_OPTIONS}
-          onValueChange={v => updateSearchParam('status', v === ALL_STATUSES ? '' : v)}
+          onValueChange={v =>
+            updateSearchParam('status', v === ALL_STATUSES ? '' : v)
+          }
           placeholder="All statuses"
           cannotError
           maxWidth="160px"
@@ -554,12 +715,13 @@ export default function SupportTasksOverview() {
         <DataTable columns={columns} data={filtered} />
       )}
 
-      <Filters
-        defaultValues={currentFilters}
+      <SupportTaskFilters
         open={filtersOpen}
         onClose={() => setFiltersOpen(false)}
+        defaultValues={currentFilters}
         onUpdateFilters={updateSearchParam}
         onRemoveFilter={removeSearchParam}
+        staffUsers={staffUsers}
       />
 
       <DownloadSettingsModal
