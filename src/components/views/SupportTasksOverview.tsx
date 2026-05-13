@@ -12,7 +12,6 @@ import {
   CheckIcon,
   ClockIcon,
   EyeIcon,
-  MessageSquareIcon,
   MoreHorizontalIcon,
 } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
@@ -597,9 +596,6 @@ export default function SupportTasksOverview() {
       NEW: tasks.filter(t => t.status === 'NEW').length,
       IN_PROGRESS: tasks.filter(t => t.status === 'IN_PROGRESS').length,
       COMPLETED: tasks.filter(t => t.status === 'COMPLETED').length,
-      awaitingAction: tasks.filter(
-        t => t.action?.status === 'OPEN' && t.status !== 'COMPLETED',
-      ).length,
     }),
     [tasks],
   );
@@ -675,14 +671,6 @@ export default function SupportTasksOverview() {
           accentBg={ORANGE_10}
           accentColor={ORANGE_40}
           icon={<ClockIcon size={24} />}
-        />
-        <SummaryTile
-          label="Awaiting action"
-          value={counts.awaitingAction}
-          sub="Action pending review"
-          accentBg={YELLOW_10}
-          accentColor="#7a5b00"
-          icon={<MessageSquareIcon size={24} />}
         />
         <SummaryTile
           label="Completed"
