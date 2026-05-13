@@ -14,7 +14,6 @@ import {
   ChevronDownIcon,
   ClockIcon,
   EyeIcon,
-  MessageSquareIcon,
   MoreHorizontalIcon,
   PlusIcon,
   RefreshCwIcon,
@@ -40,7 +39,6 @@ const PageWrapper = styled.div`
   flex: 1;
   overflow-y: auto;
   background: ${({ theme }) => theme.color.surface.primary};
-  font-family: 'Signika Negative', system-ui, sans-serif;
 `;
 
 const PageTitleBar = styled.div`
@@ -93,7 +91,6 @@ const TileLabel = styled.div`
 `;
 
 const TileValue = styled.div`
-  font-family: 'Work Sans', system-ui, sans-serif;
   font-weight: 700;
   font-size: 36px;
   line-height: 1;
@@ -136,7 +133,6 @@ const TabButton = styled.button<{ $active: boolean }>`
   margin-bottom: -1px;
   cursor: pointer;
   font-size: 15px;
-  font-family: inherit;
   font-weight: ${({ $active }) => ($active ? 600 : 500)};
   color: ${({ $active, theme }) =>
     $active ? theme.color.text.title : theme.color.text.tertiary};
@@ -181,7 +177,6 @@ const SearchInput = styled.input`
   border: 1px solid ${({ theme }) => theme.color.border.subtle};
   border-radius: ${({ theme }) => theme.radius.xsmall};
   font-size: 15px;
-  font-family: inherit;
   outline: none;
 
   &:focus {
@@ -229,7 +224,6 @@ const SortButton = styled.button`
   background: ${({ theme }) => theme.color.surface.primary};
   border: 1px solid ${({ theme }) => theme.color.border.subtle};
   font-size: 14px;
-  font-family: inherit;
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -270,7 +264,6 @@ const PageSizeSelect = styled.select`
   border-radius: ${({ theme }) => theme.radius.xxsmall};
   border: 1px solid ${({ theme }) => theme.color.border.subtle};
   background: ${({ theme }) => theme.color.surface.primary};
-  font-family: inherit;
   font-size: 14px;
 `;
 
@@ -286,7 +279,6 @@ const PageBtn = styled.button<{ $active?: boolean }>`
   padding: 0 10px;
   border-radius: ${({ theme }) => theme.radius.xxsmall};
   font-size: 14px;
-  font-family: inherit;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -320,7 +312,6 @@ const StyledTable = styled.table`
 
 const Th = styled.th<{ $first?: boolean; $last?: boolean; $width?: string }>`
   text-align: left;
-  font-family: 'Work Sans', system-ui, sans-serif;
   font-weight: 700;
   font-size: 12px;
   color: ${({ theme }) => theme.color.text.primary};
@@ -409,7 +400,6 @@ const TaskDesc = styled.span`
 `;
 
 const MonoId = styled.span`
-  font-family: source-code-pro, Menlo, Monaco, monospace;
   font-size: 12px;
   color: ${({ theme }) => theme.color.text.tertiary};
 `;
@@ -511,7 +501,6 @@ const AvatarCircle = styled.div<{ $gradient: string; $size: number }>`
   border-radius: ${({ theme }) => theme.radius.half};
   background: ${({ $gradient }) => $gradient};
   color: #fff;
-  font-family: 'Work Sans', system-ui, sans-serif;
   font-weight: 700;
   font-size: ${({ $size }) => Math.round($size * 0.36)}px;
   display: inline-flex;
@@ -920,18 +909,6 @@ export default function SupportTasksOverview() {
           accentBg={ORANGE_10}
           accentColor={ORANGE_40}
           icon={<ClockIcon size={24} />}
-        />
-        <SummaryTile
-          label="Awaiting action"
-          value={
-            tasks.filter(
-              t => t.action?.status === 'OPEN' && t.status !== 'COMPLETED',
-            ).length
-          }
-          sub="Action pending review"
-          accentBg={YELLOW_10}
-          accentColor="#7a5b00"
-          icon={<MessageSquareIcon size={24} />}
         />
         <SummaryTile
           label="Completed"
