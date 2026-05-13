@@ -1,4 +1,5 @@
 import {
+  Dropdown,
   Tag,
   TagAppearance,
   TagSizes,
@@ -13,7 +14,9 @@ import useSWR from 'swr';
 import {
   TaskPriority,
   TaskStatus,
+  fetchStaffUsers,
   fetchSupportTask,
+  patchSupportTask,
 } from '../../api/supportTasks';
 import { formatTimeDistance } from '../../helpers/date';
 import { SUPPORT_TASKS_ROUTE } from '../../routes';
@@ -26,7 +29,7 @@ const BLUE_40 = '#0063af';
 const ORANGE_40 = '#db590b';
 const GREEN_40 = '#045e45';
 
-// ─── Config maps ─────────────────────────────────────────────────────────────
+// ─── Config maps (mirrors SupportTasksOverview) ───────────────────────────────
 
 const STATUS_CONFIG: Record<TaskStatus, { label: string; color: string }> = {
   NEW: { label: 'New', color: BLUE_40 },
@@ -72,6 +75,17 @@ function getActionTypeConfig(actionType: string) {
   );
 }
 
+const STATUS_OPTIONS = Object.entries(STATUS_CONFIG).map(([value, cfg]) => ({
+  value,
+  label: cfg.label,
+}));
+
+const PRIORITY_OPTIONS = Object.entries(PRIORITY_CONFIG).map(
+  ([value, cfg]) => ({ value, label: cfg.label }),
+);
+
+const UNASSIGNED = 'UNASSIGNED';
+
 // ─── Styled components ────────────────────────────────────────────────────────
 
 const PageWrapper = styled.div`
@@ -93,7 +107,6 @@ const Breadcrumb = styled.div`
   align-items: center;
   gap: ${({ theme }) => theme.spacing.xxsmall};
   font-size: 13px;
-  color: ${({ theme }) => theme.color.text.tertiary};
   margin-bottom: ${({ theme }) => theme.spacing.small};
 `;
 
@@ -108,13 +121,10 @@ const BreadcrumbLink = styled(Link)`
   }
 `;
 
-const BreadcrumbSep = styled.span`
-  color: ${({ theme }) => theme.color.text.quaternary};
-`;
-
 const MonoId = styled.span`
   font-family: source-code-pro, Menlo, Monaco, monospace;
   color: ${({ theme }) => theme.color.text.secondary};
+  font-size: 13px;
 `;
 
 const TitleRow = styled.div`
@@ -158,7 +168,6 @@ const MetaItem = styled.div`
   display: flex;
   flex-direction: column;
   gap: 6px;
-  min-width: 0;
 `;
 
 const MetaLabel = styled.div`
@@ -178,49 +187,22 @@ const MetaValue = styled.div`
   gap: 8px;
 `;
 
-const CreatedByInner = styled.div`
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-`;
-
-const CreatedByCol = styled.div`
-  display: flex;
-  flex-direction: column;
-  line-height: 1.15;
-`;
-
-const CreatedByName = styled.span`
+const MetaUserName = styled.span`
   font-size: 13.5px;
   font-weight: 600;
   color: ${({ theme }) => theme.color.text.primary};
+  display: block;
+  line-height: 1.15;
 `;
 
-const CreatedByRole = styled.span`
+const MetaUserRole = styled.span`
   font-size: 10.5px;
   color: ${({ theme }) => theme.color.text.tertiary};
   text-transform: uppercase;
   letter-spacing: 0.07em;
   font-weight: 600;
-`;
-
-const PriorityDot = styled.span<{ $color: string }>`
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: ${({ $color }) => $color};
-  flex-shrink: 0;
-`;
-
-const PriorityLabel = styled.span<{ $color: string }>`
-  color: ${({ $color }) => $color};
-  font-weight: 700;
-`;
-
-const UnassignedText = styled.span`
-  color: ${({ theme }) => theme.color.text.quaternary};
-  font-style: italic;
-  font-weight: 400;
+  display: block;
+  line-height: 1.15;
 `;
 
 const ContentGrid = styled.div`
@@ -228,10 +210,6 @@ const ContentGrid = styled.div`
   grid-template-columns: minmax(0, 1fr) 360px;
   gap: 24px;
 `;
-
-const MainColumn = styled.div``;
-
-const Sidebar = styled.aside``;
 
 const Card = styled.div`
   background: ${({ theme }) => theme.color.surface.primary};
@@ -261,6 +239,11 @@ const CardHeadTitle = styled.h3`
   letter-spacing: 0.01em;
 `;
 
+const CardHeadSub = styled.span`
+  font-size: 13px;
+  color: ${({ theme }) => theme.color.text.tertiary};
+`;
+
 const CardBody = styled.div`
   padding: 4px 26px 24px;
 `;
@@ -285,7 +268,6 @@ const MsgWho = styled.div`
 
 const MsgText = styled.p`
   margin: 0 0 8px;
-
   &:last-child {
     margin-bottom: 0;
   }
@@ -311,17 +293,14 @@ const UserName = styled.div`
   line-height: 1.2;
 `;
 
-const UserLinkRow = styled.div`
-  text-align: center;
-  padding-top: 10px;
-`;
-
 const ProfileLink = styled(Link)`
   color: ${({ theme }) => theme.color.text.link};
   text-decoration: none;
   font-size: 13px;
   font-weight: 600;
-
+  display: block;
+  text-align: center;
+  padding-top: 10px;
   &:hover {
     text-decoration: underline;
   }
@@ -337,9 +316,12 @@ export default function SupportTaskDetail() {
     data: task,
     isLoading,
     error,
+    mutate,
   } = useSWR(taskId ? ['support_task_detail', id] : null, () =>
     fetchSupportTask(id),
   );
+
+  const { data: staffUsers = [] } = useSWR('staff_users', fetchStaffUsers);
 
   if (isLoading) {
     return (
@@ -361,16 +343,38 @@ export default function SupportTaskDetail() {
     );
   }
 
-  const statusCfg = STATUS_CONFIG[task.status];
-  const priorityCfg = PRIORITY_CONFIG[task.priority];
   const actionTypeCfg = getActionTypeConfig(task.action?.action_type ?? '');
   const relatedUser = task.related_user_profile;
   const createdBy = task.created_by_profile;
-  const assignedTo = task.assigned_to_profile;
   const now = new Date();
   const messagePreview =
     (task.action?.static_parameters?.message_preview as string | undefined) ??
     task.description;
+
+  const assigneeOptions = [
+    { value: UNASSIGNED, label: '— Unassigned' },
+    ...staffUsers.map(u => ({
+      value: String(u.id),
+      label: `${u.first_name} ${u.last_name}`,
+    })),
+  ];
+
+  const currentAssignee = task.assigned_to_profile
+    ? String(task.assigned_to_profile.id)
+    : UNASSIGNED;
+
+  const patch = async (
+    data: Parameters<typeof patchSupportTask>[1],
+    optimistic: Partial<typeof task>,
+  ) => {
+    await mutate(
+      async () => {
+        const updated = await patchSupportTask(id, data);
+        return updated;
+      },
+      { optimisticData: { ...task, ...optimistic }, rollbackOnError: true },
+    );
+  };
 
   return (
     <PageWrapper>
@@ -380,7 +384,7 @@ export default function SupportTaskDetail() {
             <ChevronLeftIcon size={14} />
             Support tasks
           </BreadcrumbLink>
-          <BreadcrumbSep>›</BreadcrumbSep>
+          <span>›</span>
           <MonoId>#{task.id}</MonoId>
         </Breadcrumb>
 
@@ -391,9 +395,9 @@ export default function SupportTaskDetail() {
               bold
               size={TagSizes.large}
               appearance={TagAppearance.outline}
-              color={statusCfg.color}
+              color={STATUS_CONFIG[task.status].color}
             >
-              {statusCfg.label}
+              {STATUS_CONFIG[task.status].label}
             </Tag>
             <Tag
               bold
@@ -415,53 +419,89 @@ export default function SupportTaskDetail() {
           </MetaItem>
 
           <MetaItem>
+            <MetaLabel>Status</MetaLabel>
+            <Dropdown
+              value={task.status}
+              options={STATUS_OPTIONS}
+              onValueChange={v =>
+                patch({ status: v as TaskStatus }, { status: v as TaskStatus })
+              }
+              placeholder="Status"
+              cannotError
+              maxWidth="160px"
+            />
+          </MetaItem>
+
+          <MetaItem>
+            <MetaLabel>Priority</MetaLabel>
+            <Dropdown
+              value={task.priority}
+              options={PRIORITY_OPTIONS}
+              onValueChange={v =>
+                patch(
+                  { priority: v as TaskPriority },
+                  { priority: v as TaskPriority },
+                )
+              }
+              placeholder="Priority"
+              cannotError
+              maxWidth="140px"
+            />
+          </MetaItem>
+
+          <MetaItem>
             <MetaLabel>Assigned to</MetaLabel>
-            <MetaValue>
-              {assignedTo ? (
-                <>
-                  <UserImage
-                    alt={`${assignedTo.first_name} ${assignedTo.second_name}`}
-                    user={assignedTo}
-                    dimensions={{ width: 26, height: 26 }}
-                  />
-                  {assignedTo.first_name} {assignedTo.second_name}
-                </>
-              ) : (
-                <UnassignedText>— Unassigned</UnassignedText>
-              )}
-            </MetaValue>
+            <Dropdown
+              value={currentAssignee}
+              options={assigneeOptions}
+              onValueChange={v =>
+                patch(
+                  { assigned_to_id: v === UNASSIGNED ? null : Number(v) },
+                  {
+                    assigned_to_profile:
+                      v === UNASSIGNED
+                        ? null
+                        : (staffUsers.find(u => String(u.id) === v)
+                            ? {
+                                id: Number(v),
+                                first_name:
+                                  staffUsers.find(u => String(u.id) === v)
+                                    ?.first_name ?? '',
+                                second_name:
+                                  staffUsers.find(u => String(u.id) === v)
+                                    ?.last_name ?? '',
+                                image: null,
+                                avatar_config: {},
+                                image_type: 'avatar' as const,
+                              }
+                            : null),
+                  },
+                )
+              }
+              placeholder="Unassigned"
+              cannotError
+              maxWidth="200px"
+            />
           </MetaItem>
 
           {createdBy && (
             <MetaItem>
               <MetaLabel>Created by</MetaLabel>
               <MetaValue>
-                <CreatedByInner>
-                  <UserImage
-                    alt={`${createdBy.first_name} ${createdBy.second_name}`}
-                    user={createdBy}
-                    dimensions={{ width: 28, height: 28 }}
-                  />
-                  <CreatedByCol>
-                    <CreatedByName>
-                      {createdBy.first_name} {createdBy.second_name}
-                    </CreatedByName>
-                    <CreatedByRole>User</CreatedByRole>
-                  </CreatedByCol>
-                </CreatedByInner>
+                <UserImage
+                  alt={`${createdBy.first_name} ${createdBy.second_name}`}
+                  user={createdBy}
+                  dimensions={{ width: 28, height: 28 }}
+                />
+                <div>
+                  <MetaUserName>
+                    {createdBy.first_name} {createdBy.second_name}
+                  </MetaUserName>
+                  <MetaUserRole>User</MetaUserRole>
+                </div>
               </MetaValue>
             </MetaItem>
           )}
-
-          <MetaItem>
-            <MetaLabel>Priority</MetaLabel>
-            <MetaValue>
-              <PriorityDot $color={priorityCfg.color} />
-              <PriorityLabel $color={priorityCfg.color}>
-                {priorityCfg.label}
-              </PriorityLabel>
-            </MetaValue>
-          </MetaItem>
 
           <MetaItem>
             <MetaLabel>Created</MetaLabel>
@@ -475,11 +515,12 @@ export default function SupportTaskDetail() {
         </MetaStrip>
 
         <ContentGrid>
-          <MainColumn>
+          <div>
             {messagePreview && (
               <Card>
                 <CardHead>
                   <CardHeadTitle>Original message</CardHeadTitle>
+                  <CardHeadSub>Submitted via in-app help form</CardHeadSub>
                 </CardHead>
                 <CardBody>
                   <MsgQuote>
@@ -494,9 +535,9 @@ export default function SupportTaskDetail() {
                 </CardBody>
               </Card>
             )}
-          </MainColumn>
+          </div>
 
-          <Sidebar>
+          <aside>
             {relatedUser && (
               <Card>
                 <CardHead>
@@ -510,22 +551,18 @@ export default function SupportTaskDetail() {
                         user={relatedUser}
                         dimensions={{ width: 56, height: 56 }}
                       />
-                      <div>
-                        <UserName>
-                          {relatedUser.first_name} {relatedUser.second_name}
-                        </UserName>
-                      </div>
+                      <UserName>
+                        {relatedUser.first_name} {relatedUser.second_name}
+                      </UserName>
                     </UserTop>
-                    <UserLinkRow>
-                      <ProfileLink to={`/user/${relatedUser.id}`}>
-                        Open full profile →
-                      </ProfileLink>
-                    </UserLinkRow>
+                    <ProfileLink to={`/user/${relatedUser.id}`}>
+                      Open full profile →
+                    </ProfileLink>
                   </UserBlock>
                 </CardBody>
               </Card>
             )}
-          </Sidebar>
+          </aside>
         </ContentGrid>
       </PageContent>
     </PageWrapper>
