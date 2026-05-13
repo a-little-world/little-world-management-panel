@@ -10,7 +10,7 @@ import useSWR from 'swr';
 
 import { modifyDataToPercentages } from '../../../helpers/stats';
 import { dataFetcher } from '../../../store';
-import Matrix, { MatrixData } from '../../atoms/Stats/Matrix';
+import Matrix, { MatrixData } from '../../atoms/stats/Matrix';
 import {
   BarChartTimeRanged,
   MatchingFunnelEvolution,

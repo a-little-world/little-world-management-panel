@@ -9,7 +9,6 @@ import {
   Dropdown,
   ImageSearchIcon,
   InputWidth,
-  Label,
   Loading,
   LoadingSizes,
   StatusMessage,
@@ -555,16 +554,12 @@ function EditBanner() {
                     control={control}
                     render={({ field: { value, onChange } }) => (
                       <DateField>
-                        <Label
-                          bold
-                          tooltipText="Saved as start of selected day in Europe/Berlin timezone (00:00). Banner can auto-activate once server time passes this."
-                        >
-                          Activation date
-                        </Label>
                         <DatePicker
                           date={parseIsoToDate(value)}
                           setDate={d => onChange(toActivationIso(d))}
                           disabled={saving}
+                          label="Activation date"
+                          tooltipText="Saved as start of selected day in Europe/Berlin timezone (00:00). Banner can auto-activate once server time passes this."
                         />
                       </DateField>
                     )}
@@ -574,16 +569,12 @@ function EditBanner() {
                     control={control}
                     render={({ field: { value, onChange } }) => (
                       <DateField>
-                        <Label
-                          bold
-                          tooltipText="Saved as end of selected day in Europe/Berlin timezone (23:59:59). Banner remains valid through this date and deactivates after this timestamp."
-                        >
-                          Expiration date
-                        </Label>
                         <DatePicker
                           date={parseIsoToDate(value)}
                           setDate={d => onChange(toExpirationIso(d))}
                           disabled={saving}
+                          label="Expiration date"
+                          tooltipText="Saved as end of selected day in Europe/Berlin timezone (23:59:59). Banner remains valid through this date and deactivates after this timestamp."
                         />
                       </DateField>
                     )}
