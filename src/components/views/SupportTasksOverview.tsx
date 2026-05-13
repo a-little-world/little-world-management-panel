@@ -268,9 +268,15 @@ const TASK_EXPORT_HEADERS = [
   'description',
   'status',
   'priority',
-  'related_user_id',
-  'assigned_to_id',
-  'created_by_id',
+  'related_user_profile.id',
+  'related_user_profile.first_name',
+  'related_user_profile.second_name',
+  'assigned_to_profile.id',
+  'assigned_to_profile.first_name',
+  'assigned_to_profile.second_name',
+  'created_by_profile.id',
+  'created_by_profile.first_name',
+  'created_by_profile.second_name',
   'created_at',
   'updated_at',
 ];
@@ -301,12 +307,7 @@ const SORT_OPTIONS = [
 
 const columnHelper = createColumnHelper<SupportTask>();
 
-function buildColumns(
-  staffById: Record<
-    number,
-    { id: number; email: string; first_name: string; last_name: string }
-  >,
-): ColumnDef<SupportTask, any>[] {
+function buildColumns(): ColumnDef<SupportTask, any>[] {
   return [
     columnHelper.accessor('id', {
       header: 'ID',
@@ -384,37 +385,61 @@ function buildColumns(
         );
       },
     }),
-    columnHelper.accessor('related_user_id', {
-      header: 'Related user',
-      cell: ({ getValue }) => {
-        const id = getValue();
+    columnHelper.display({
+      id: 'created_by',
+      header: 'Created by',
+      cell: ({ row }) => {
+        const profile = row.original.created_by_profile;
+        if (!profile) return <UnassignedText>— System</UnassignedText>;
         return (
           <UserCell>
             <UserImage
-              alt="related user"
-              user={{ id }}
+              alt={`${profile.first_name} ${profile.second_name}`}
+              user={profile}
               dimensions={{ width: 28, height: 28 }}
             />
-            {/* <UserName>#{id}</UserName> */}
+            <UserName>
+              {profile.first_name} {profile.second_name}
+            </UserName>
           </UserCell>
         );
       },
     }),
-    columnHelper.accessor('assigned_to_id', {
-      header: 'Assigned to',
-      cell: ({ getValue }) => {
-        const id = getValue();
-        const staff = id ? staffById[id] : null;
-        if (!staff) return <UnassignedText>— Unassigned</UnassignedText>;
+    columnHelper.display({
+      id: 'related_user',
+      header: 'Related user',
+      cell: ({ row }) => {
+        const profile = row.original.related_user_profile;
+        if (!profile) return <UnassignedText>—</UnassignedText>;
         return (
           <UserCell>
             <UserImage
-              alt={`${staff.first_name} ${staff.last_name}`}
-              user={{ id: staff.id }}
+              alt={`${profile.first_name} ${profile.second_name}`}
+              user={profile}
               dimensions={{ width: 28, height: 28 }}
             />
             <UserName>
-              {staff.first_name} {staff.last_name}
+              {profile.first_name} {profile.second_name}
+            </UserName>
+          </UserCell>
+        );
+      },
+    }),
+    columnHelper.display({
+      id: 'assigned_to',
+      header: 'Assigned to',
+      cell: ({ row }) => {
+        const profile = row.original.assigned_to_profile;
+        if (!profile) return <UnassignedText>— Unassigned</UnassignedText>;
+        return (
+          <UserCell>
+            <UserImage
+              alt={`${profile.first_name} ${profile.second_name}`}
+              user={profile}
+              dimensions={{ width: 28, height: 28 }}
+            />
+            <UserName>
+              {profile.first_name} {profile.second_name}
             </UserName>
           </UserCell>
         );
@@ -558,10 +583,10 @@ export default function SupportTasksOverview() {
       );
     }
     if (assignedToFilter === 'unassigned') {
-      result = result.filter(t => !t.assigned_to_id);
+      result = result.filter(t => !t.assigned_to_profile);
     } else if (assignedToFilter) {
       result = result.filter(
-        t => String(t.assigned_to_id) === assignedToFilter,
+        t => String(t.assigned_to_profile?.id) === assignedToFilter,
       );
     }
     return result;
@@ -579,7 +604,7 @@ export default function SupportTasksOverview() {
     [tasks],
   );
 
-  const columns = useMemo(() => buildColumns(staffById), [staffById]);
+  const columns = useMemo(() => buildColumns(), []);
 
   const updateSearchParam = (key: string, value: string | string[]) => {
     const next = new URLSearchParams(searchParams);

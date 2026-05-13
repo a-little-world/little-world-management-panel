@@ -14,15 +14,24 @@ export interface SupportTaskAction {
   reviewed_at: string | null;
 }
 
+export interface UserProfile {
+  id: number;
+  first_name: string;
+  second_name: string;
+  image: string | null;
+  avatar_config: Record<string, unknown>;
+  image_type: 'image' | 'avatar';
+}
+
 export interface SupportTask {
   id: number;
   title: string;
   description: string;
   status: TaskStatus;
   priority: TaskPriority;
-  assigned_to_id: number | null;
-  created_by_id: number | null;
-  related_user_id: number;
+  related_user_profile: UserProfile | null;
+  assigned_to_profile: UserProfile | null;
+  created_by_profile: UserProfile | null;
   created_at: string;
   updated_at: string;
   action: SupportTaskAction;
