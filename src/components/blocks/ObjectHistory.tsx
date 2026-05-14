@@ -132,11 +132,20 @@ const DiffBlock = styled.div`
 
 const DiffRow = styled.div<{ $type: 'old' | 'new' }>`
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 10px;
   padding: 8px 14px;
   background: ${({ $type }) =>
     $type === 'old' ? '#fde8e8' : '#d4f0de'};
+`;
+
+const ProfileChip = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: ${({ theme }) => theme.color.text.primary};
 `;
 
 const DiffSign = styled.span`
@@ -168,9 +177,35 @@ function formatFieldName(field: string): string {
     .replace(/\b\w/g, c => c.toUpperCase());
 }
 
+function isUserProfile(value: unknown): value is UserProfile {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    'first_name' in (value as object) &&
+    'second_name' in (value as object)
+  );
+}
+
 function formatValue(value: unknown): string {
   if (value === null || value === undefined || value === '') return '';
   return String(value);
+}
+
+function renderDiffValue(value: unknown): React.ReactNode {
+  if (isUserProfile(value)) {
+    return (
+      <ProfileChip>
+        <UserImage
+          alt={`${value.first_name} ${value.second_name}`}
+          user={value}
+          dimensions={{ width: 20, height: 20 }}
+        />
+        {value.first_name} {value.second_name}
+      </ProfileChip>
+    );
+  }
+  const str = formatValue(value);
+  return <DiffValue $empty={!str}>{str || 'empty'}</DiffValue>;
 }
 
 function getInitials(profile: UserProfile): string {
@@ -195,7 +230,7 @@ export default function ObjectHistoryList({
 
   return (
     <Wrapper>
-      <Title>{title}</Title>
+      {title && <Title>{title}</Title>}
       <Timeline>
         {sorted.map((entry, i) => {
           const actor = entry.changed_by_profile;
@@ -263,15 +298,11 @@ export default function ObjectHistoryList({
                     <DiffBlock>
                       <DiffRow $type="old">
                         <DiffSign>−</DiffSign>
-                        <DiffValue $empty={!formatValue(entry.old_value)}>
-                          {formatValue(entry.old_value) || 'empty'}
-                        </DiffValue>
+                        {renderDiffValue(entry.old_value)}
                       </DiffRow>
                       <DiffRow $type="new">
                         <DiffSign>+</DiffSign>
-                        <DiffValue $empty={!formatValue(entry.new_value)}>
-                          {formatValue(entry.new_value) || 'empty'}
-                        </DiffValue>
+                        {renderDiffValue(entry.new_value)}
                       </DiffRow>
                     </DiffBlock>
                   </>

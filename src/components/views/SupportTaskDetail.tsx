@@ -18,10 +18,10 @@ import {
   fetchSupportTask,
   patchSupportTask,
 } from '../../api/supportTasks';
-import ObjectHistoryList, { ObjectHistory } from '../blocks/ObjectHistory';
 import { formatTimeDistance } from '../../helpers/date';
 import { SUPPORT_TASKS_ROUTE } from '../../routes';
 import UserImage from '../atoms/UserImage';
+import ObjectHistoryList, { ObjectHistory } from '../blocks/ObjectHistory';
 
 // ─── Design token constants ───────────────────────────────────────────────────
 
@@ -188,24 +188,6 @@ const MetaValue = styled.div`
   gap: 8px;
 `;
 
-const MetaUserName = styled.span`
-  font-size: 13.5px;
-  font-weight: 600;
-  color: ${({ theme }) => theme.color.text.primary};
-  display: block;
-  line-height: 1.15;
-`;
-
-const MetaUserRole = styled.span`
-  font-size: 10.5px;
-  color: ${({ theme }) => theme.color.text.tertiary};
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  font-weight: 600;
-  display: block;
-  line-height: 1.15;
-`;
-
 const ContentGrid = styled.div`
   display: grid;
   grid-template-columns: minmax(0, 1fr) 360px;
@@ -299,7 +281,8 @@ const HistoryCardHead = styled(CardHead)`
   user-select: none;
   &:hover {
     background: ${({ theme }) => theme.color.surface.secondary};
-    border-radius: ${({ theme }) => theme.radius.large} ${({ theme }) => theme.radius.large} 0 0;
+    border-radius: ${({ theme }) => theme.radius.large}
+      ${({ theme }) => theme.radius.large} 0 0;
   }
 `;
 
@@ -477,20 +460,20 @@ export default function SupportTaskDetail() {
                     assigned_to_profile:
                       v === UNASSIGNED
                         ? null
-                        : (staffUsers.find(u => String(u.id) === v)
-                            ? {
-                                id: Number(v),
-                                first_name:
-                                  staffUsers.find(u => String(u.id) === v)
-                                    ?.first_name ?? '',
-                                second_name:
-                                  staffUsers.find(u => String(u.id) === v)
-                                    ?.last_name ?? '',
-                                image: null,
-                                avatar_config: {},
-                                image_type: 'avatar' as const,
-                              }
-                            : null),
+                        : staffUsers.find(u => String(u.id) === v)
+                          ? {
+                              id: Number(v),
+                              first_name:
+                                staffUsers.find(u => String(u.id) === v)
+                                  ?.first_name ?? '',
+                              second_name:
+                                staffUsers.find(u => String(u.id) === v)
+                                  ?.last_name ?? '',
+                              image: null,
+                              avatar_config: {},
+                              image_type: 'avatar' as const,
+                            }
+                          : null,
                   },
                 )
               }
@@ -509,12 +492,7 @@ export default function SupportTaskDetail() {
                   user={createdBy}
                   dimensions={{ width: 28, height: 28 }}
                 />
-                <div>
-                  <MetaUserName>
-                    {createdBy.first_name} {createdBy.second_name}
-                  </MetaUserName>
-                  <MetaUserRole>User</MetaUserRole>
-                </div>
+                {createdBy.first_name} {createdBy.second_name}
               </MetaValue>
             </MetaItem>
           )}
