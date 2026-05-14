@@ -28,7 +28,20 @@ Source lives at `../../../little-world-design-system/packages/web/src/components
 **Available components (non-exhaustive):**
 `Button` · `Dropdown` · `Tag` · `Text` · `Loading` · `Modal` · `Card` · `Tabs` · `MultiCheckbox` · `Checkbox` · `Switch` · `RadioGroup` · `TextInput` · `Label` · `Tooltip` · `Popover` · `Separator` · `NavigationMenu` · `Toast`
 
-When no DS component fits, create a local **styled-component** (layout/atoms) or a **React function component** (when it has internal state or composition).
+When no DS component fits, check local components first:
+
+**Component folder structure (`src/components/`):**
+- `atoms/` — simple, single-purpose components (e.g. `UserImage`). Building blocks used everywhere.
+- `blocks/` — composite components built from atoms (e.g. `FiltersToolbar`, `DataTable`, `ObjectHistory`).
+- `views/` — full pages (e.g. `Users.tsx`, `SupportTasksOverview.tsx`).
+
+**Component reuse rules (in priority order):**
+1. DS component
+2. Existing local component in `atoms/` or `blocks/`
+3. New shared component — add to `atoms/` if self-contained, `blocks/` if it composes others
+4. Inline styled-component inside a view — **last resort only**
+
+When creating a new component, ask: could this be used elsewhere? If yes, save it in `atoms/` or `blocks/` rather than inline in the view.
 
 ---
 
@@ -42,22 +55,19 @@ When no DS component fits, create a local **styled-component** (layout/atoms) or
 
 // ✓ correct
 const Box = styled.div`
-  color: red;
+  color: ${({ theme }) => theme.color.text.primary};
   padding: ${({ theme }) => theme.spacing.small};
 `;
 ```
 
-Use `theme` tokens wherever possible:
+Use `theme` tokens for all colors, spacing, radii, and z-index — **no hard-coded values**:
 - `theme.color.surface.*` · `theme.color.text.*` · `theme.color.border.*` · `theme.color.gradient.*`
 - `theme.spacing.{xxxxsmall … massive}`
 - `theme.radius.{xxxsmall … full}`
 - `theme.breakpoints.{xsmall … xxlarge}`
 - `theme.zIndex.*`
 
-Font families are **not** in the theme — hardcode them:
-- Headings: `'Work Sans', system-ui, sans-serif`
-- Body: `'Signika Negative', system-ui, sans-serif`
-- Mono: `source-code-pro, Menlo, Monaco, monospace`
+**No hard-coded colors, font families, or font sizes.** Achieve layout goals with flex, padding, margin, and grid — let the theme handle visual tokens.
 
 ---
 
@@ -130,7 +140,8 @@ Export a `contains*FilterKey(filters)` helper keyed to that page's own filter ke
 1. Read design system exports (`packages/web/src/index.ts`) to inventory available components.
 2. Read comparable pages (`Users.tsx`, `Matches.tsx`) for the exact patterns in use.
 3. Read the prop interfaces of every DS component you plan to use.
-4. Read shared blocks (`FiltersToolbar`, `DataTable`, `DownloadSettingsModal`) before writing your own.
-5. Map each design element to a DS component first; fall back to styled-components.
-6. Use theme tokens throughout; hardcode only font families.
-7. Run `npx tsc --noEmit` — no type errors before the task is done.
+4. Read `src/components/atoms/` and `src/components/blocks/` for reusable local components before writing new ones.
+5. Map each design element: DS component → existing local component → new shared component → inline styled-component.
+6. New components that could be reused go in `atoms/` or `blocks/`, not inline in the view.
+7. Use theme tokens throughout — no hard-coded colors, font sizes, or spacing values.
+8. Run `npx tsc --noEmit` — no type errors before the task is done.
