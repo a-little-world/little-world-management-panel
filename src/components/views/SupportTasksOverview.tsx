@@ -13,8 +13,6 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
   ClockIcon,
-  EyeIcon,
-  MoreHorizontalIcon,
 } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -89,7 +87,6 @@ const TileValue = styled.div`
   color: ${({ theme }) => theme.color.text.title};
 `;
 
-
 const TileIcon = styled.div<{ $bg: string; $color: string }>`
   width: 52px;
   height: 52px;
@@ -124,12 +121,6 @@ const TaskDesc = styled.span`
   max-width: 300px;
 `;
 
-const MonoId = styled.span`
-  font-family: source-code-pro, Menlo, Monaco, monospace;
-  font-size: 12px;
-  color: ${({ theme }) => theme.color.text.tertiary};
-`;
-
 const UserCell = styled.div`
   display: flex;
   align-items: center;
@@ -160,48 +151,15 @@ const AgeText = styled.span<{ $warn?: boolean }>`
   font-weight: ${({ $warn }) => ($warn ? 600 : 400)};
 `;
 
-const RowActions = styled.div`
-  display: inline-flex;
-  gap: 4px;
-`;
-
-const RowActionBtn = styled.button`
-  width: 32px;
-  height: 32px;
-  border-radius: ${({ theme }) => theme.radius.xxsmall};
-  background: transparent;
-  border: 1px solid transparent;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
+const CenteredCell = styled.div`
+  display: flex;
   justify-content: center;
-  color: ${({ theme }) => theme.color.text.tertiary};
-  transition: all 0.15s;
-
-  &:hover {
-    background: ${({ theme }) => theme.color.surface.primary};
-    border-color: ${({ theme }) => theme.color.border.subtle};
-  }
 `;
 
 const RowActionLink = styled(Link)`
-  width: 32px;
-  height: 32px;
-  border-radius: ${({ theme }) => theme.radius.xxsmall};
-  background: transparent;
-  border: 1px solid transparent;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: ${({ theme }) => theme.color.text.tertiary};
   text-decoration: none;
-  transition: all 0.15s;
 
-  &:hover {
-    background: ${({ theme }) => theme.color.surface.secondary};
-    border-color: ${({ theme }) => theme.color.border.subtle};
-  }
+  text-decoration: underline;
 `;
 
 const QuickFilters = styled.div`
@@ -321,11 +279,19 @@ function buildColumns(
   return [
     columnHelper.accessor('id', {
       header: () => (
-        <Button variant="ghost" onClick={() => onSort('id')}>
-          ID <SortIcon field="id" sortBy={sortBy} sortOrder={sortOrder} />
-        </Button>
+        <CenteredCell>
+          <Button variant="ghost" onClick={() => onSort('id')}>
+            ID <SortIcon field="id" sortBy={sortBy} sortOrder={sortOrder} />
+          </Button>
+        </CenteredCell>
       ),
-      cell: ({ getValue }) => <MonoId>#{getValue()}</MonoId>,
+      cell: ({ getValue }) => (
+        <CenteredCell>
+          <RowActionLink to={getSupportTaskDetailRoute(getValue())}>
+            {getValue()}
+          </RowActionLink>
+        </CenteredCell>
+      ),
     }),
     columnHelper.accessor('title', {
       header: () => (
@@ -485,23 +451,6 @@ function buildColumns(
       ),
       cell: ({ getValue }) => (
         <AgeText>{formatTimeDistance(getValue(), new Date())}</AgeText>
-      ),
-    }),
-    columnHelper.display({
-      id: 'actions',
-      header: '',
-      cell: ({ row }) => (
-        <RowActions>
-          <RowActionLink
-            to={getSupportTaskDetailRoute(row.original.id)}
-            onClick={e => e.stopPropagation()}
-          >
-            <EyeIcon size={16} />
-          </RowActionLink>
-          <RowActionBtn>
-            <MoreHorizontalIcon size={16} />
-          </RowActionBtn>
-        </RowActions>
       ),
     }),
   ];
