@@ -6,6 +6,7 @@ import {
 import React from 'react';
 import styled from 'styled-components';
 
+import { BLUE_40, ORANGE_40 } from '../../constants';
 import { formatTimeDistance } from '../../helpers/date';
 import UserImage from '../atoms/UserImage';
 
@@ -33,10 +34,15 @@ export interface ObjectHistory {
   new_value: unknown;
 }
 
-// ─── Styled components ────────────────────────────────────────────────────────
+// ─── Local color constants ────────────────────────────────────────────────────
 
-const ORANGE_40 = '#db590b';
-const BLUE_40 = '#0063af';
+const DIFF_OLD_BG = '#fde8e8';
+const DIFF_NEW_BG = '#d4f0de';
+const AVATAR_BLUE_BG = '#cfe3f8';
+const AVATAR_NEUTRAL_BG = '#e8e8e8';
+const AVATAR_NEUTRAL_COLOR = '#888';
+
+// ─── Styled components ────────────────────────────────────────────────────────
 
 const Wrapper = styled.div`
   display: flex;
@@ -139,7 +145,7 @@ const DiffRow = styled.div<{ $type: 'old' | 'new' }>`
   align-items: center;
   gap: 10px;
   padding: 8px 14px;
-  background: ${({ $type }) => ($type === 'old' ? '#fde8e8' : '#d4f0de')};
+  background: ${({ $type }) => ($type === 'old' ? DIFF_OLD_BG : DIFF_NEW_BG)};
 `;
 
 const ProfileChip = styled.div`
@@ -271,12 +277,12 @@ export default function ObjectHistoryList({
                       dimensions={{ width: 36, height: 36 }}
                     />
                   ) : (
-                    <InitialsDot $bg="#cfe3f8" $color={BLUE_40}>
+                    <InitialsDot $bg={AVATAR_BLUE_BG} $color={BLUE_40}>
                       {getInitials(actor)}
                     </InitialsDot>
                   )
                 ) : (
-                  <InitialsDot $bg="#e8e8e8" $color="#888">
+                  <InitialsDot $bg={AVATAR_NEUTRAL_BG} $color={AVATAR_NEUTRAL_COLOR}>
                     ·
                   </InitialsDot>
                 )}

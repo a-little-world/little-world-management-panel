@@ -27,6 +27,7 @@ import {
   fetchSupportTaskStats,
   fetchSupportTasks,
 } from '../../api/supportTasks';
+import { BLUE_10, BLUE_40, GREEN_10, GREEN_40, ORANGE_10, ORANGE_40 } from '../../constants';
 import { formatTimeDistance } from '../../helpers/date';
 import { getSupportTaskDetailRoute } from '../../routes';
 import { useCurrentUserId } from '../../store';
@@ -157,8 +158,6 @@ const CenteredCell = styled.div`
 `;
 
 const RowActionLink = styled(Link)`
-  text-decoration: none;
-
   text-decoration: underline;
 `;
 
@@ -167,15 +166,6 @@ const QuickFilters = styled.div`
   align-items: center;
   gap: ${({ theme }) => theme.spacing.medium};
 `;
-
-// ─── Design token constants ───────────────────────────────────────────────────
-
-const BLUE_10 = '#f3fbff';
-const BLUE_40 = '#0063af';
-const ORANGE_10 = '#fde5cf';
-const ORANGE_40 = '#db590b';
-const GREEN_10 = '#c7ebd1';
-const GREEN_40 = '#045e45';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

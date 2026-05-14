@@ -19,17 +19,11 @@ import {
   fetchSupportTask,
   patchSupportTask,
 } from '../../api/supportTasks';
+import { BLUE_10, BLUE_40, GREEN_40, ORANGE_40 } from '../../constants';
 import { formatTimeDistance } from '../../helpers/date';
 import { SUPPORT_TASKS_ROUTE } from '../../routes';
 import UserImage from '../atoms/UserImage';
 import ObjectHistoryList, { ObjectHistory } from '../blocks/ObjectHistory';
-
-// ─── Design token constants ───────────────────────────────────────────────────
-
-const BLUE_10 = '#f3fbff';
-const BLUE_40 = '#0063af';
-const ORANGE_40 = '#db590b';
-const GREEN_40 = '#045e45';
 
 // ─── Config maps (mirrors SupportTasksOverview) ───────────────────────────────
 
@@ -106,7 +100,7 @@ const PageContent = styled.div`
 
 const Breadcrumb = styled.div`
   display: inline-flex;
-  align-items: center;When 
+  align-items: center;
   gap: ${({ theme }) => theme.spacing.xxsmall};
   font-size: 13px;
   margin-bottom: ${({ theme }) => theme.spacing.small};

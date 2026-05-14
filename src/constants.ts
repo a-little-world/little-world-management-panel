@@ -287,3 +287,11 @@ export const MATCH_STATUS = {
 };
 
 export const UNAVAILABLE = 'n/a';
+
+// Brand color palette — used across admin panel components (not in theme tokens)
+export const BLUE_10 = '#f3fbff';
+export const BLUE_40 = '#0063af';
+export const ORANGE_10 = '#fde5cf';
+export const ORANGE_40 = '#db590b';
+export const GREEN_10 = '#c7ebd1';
+export const GREEN_40 = '#045e45';
