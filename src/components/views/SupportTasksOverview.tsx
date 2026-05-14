@@ -16,7 +16,7 @@ import {
   EyeIcon,
   MoreHorizontalIcon,
 } from 'lucide-react';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import useSWR from 'swr';
@@ -555,6 +555,15 @@ export default function SupportTasksOverview() {
   );
   const [availableHeaders, setAvailableHeaders] =
     useState<string[]>(TASK_EXPORT_HEADERS);
+
+  useEffect(() => {
+    if (!searchParams.has('status')) {
+      const next = new URLSearchParams(searchParams);
+      next.append('status', 'NEW');
+      next.append('status', 'IN_PROGRESS');
+      setSearchParams(next, { replace: true });
+    }
+  }, []);
 
   const statusFilters = searchParams.getAll('status');
   const sortBy = searchParams.get('sort_by') ?? 'created_at';
