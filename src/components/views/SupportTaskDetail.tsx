@@ -5,8 +5,8 @@ import {
   TagSizes,
   Text,
 } from '@a-little-world/little-world-design-system';
-import { ChevronLeftIcon } from 'lucide-react';
-import React from 'react';
+import { ChevronDownIcon, ChevronLeftIcon, ChevronUpIcon } from 'lucide-react';
+import React, { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import useSWR from 'swr';
@@ -294,6 +294,20 @@ const UserName = styled.div`
   line-height: 1.2;
 `;
 
+const HistoryCardHead = styled(CardHead)`
+  cursor: pointer;
+  user-select: none;
+  &:hover {
+    background: ${({ theme }) => theme.color.surface.secondary};
+    border-radius: ${({ theme }) => theme.radius.large} ${({ theme }) => theme.radius.large} 0 0;
+  }
+`;
+
+const HistoryCardBody = styled(CardBody)`
+  max-height: 480px;
+  overflow-y: auto;
+`;
+
 const ProfileLink = styled(Link)`
   color: ${({ theme }) => theme.color.text.link};
   text-decoration: none;
@@ -312,6 +326,7 @@ const ProfileLink = styled(Link)`
 export default function SupportTaskDetail() {
   const { taskId } = useParams<{ taskId: string }>();
   const id = Number(taskId);
+  const [historyOpen, setHistoryOpen] = useState(true);
 
   const {
     data: task,
@@ -563,6 +578,34 @@ export default function SupportTaskDetail() {
                 </CardBody>
               </Card>
             )}
+            {(() => {
+              const combined: ObjectHistory[] = [
+                ...(task.history ?? []),
+                ...(task.action?.history ?? []),
+              ].sort(
+                (a, b) =>
+                  new Date(b.changed_at).getTime() -
+                  new Date(a.changed_at).getTime(),
+              );
+              if (combined.length === 0) return null;
+              return (
+                <Card>
+                  <HistoryCardHead onClick={() => setHistoryOpen(o => !o)}>
+                    <CardHeadTitle>History</CardHeadTitle>
+                    {historyOpen ? (
+                      <ChevronUpIcon size={16} />
+                    ) : (
+                      <ChevronDownIcon size={16} />
+                    )}
+                  </HistoryCardHead>
+                  {historyOpen && (
+                    <HistoryCardBody>
+                      <ObjectHistoryList history={combined} title="" />
+                    </HistoryCardBody>
+                  )}
+                </Card>
+              );
+            })()}
           </aside>
         </ContentGrid>
       </PageContent>
