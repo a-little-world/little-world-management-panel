@@ -1,6 +1,5 @@
 import {
   Checkbox,
-  Dropdown,
   Tag,
   TagAppearance,
   TagSizes,
@@ -224,7 +223,6 @@ const ORANGE_10 = '#fde5cf';
 const ORANGE_40 = '#db590b';
 const GREEN_10 = '#c7ebd1';
 const GREEN_40 = '#045e45';
-const YELLOW_10 = '#fef9d9';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -299,29 +297,6 @@ const DEFAULT_EXPORT_HEADERS = [
   'created_at',
 ];
 
-const ALL_STATUSES = 'ALL';
-
-const STATUS_OPTIONS = [
-  { value: ALL_STATUSES, label: 'All statuses' },
-  { value: 'NEW', label: 'New' },
-  { value: 'IN_PROGRESS', label: 'In progress' },
-  { value: 'COMPLETED', label: 'Completed' },
-];
-
-const SORT_BY_OPTIONS = [
-  { value: 'created_at', label: 'Created' },
-  { value: 'updated_at', label: 'Updated' },
-  { value: 'id', label: 'ID' },
-  { value: 'title', label: 'Title' },
-  { value: 'status', label: 'Status' },
-  { value: 'priority', label: 'Priority' },
-];
-
-const SORT_ORDER_OPTIONS = [
-  { value: 'desc', label: 'Descending' },
-  { value: 'asc', label: 'Ascending' },
-];
-
 // ─── Column definitions ───────────────────────────────────────────────────────
 
 const columnHelper = createColumnHelper<SupportTask>();
@@ -373,7 +348,8 @@ function buildColumns(
     columnHelper.accessor('status', {
       header: () => (
         <Button variant="ghost" onClick={() => onSort('status')}>
-          Status <SortIcon field="status" sortBy={sortBy} sortOrder={sortOrder} />
+          Status{' '}
+          <SortIcon field="status" sortBy={sortBy} sortOrder={sortOrder} />
         </Button>
       ),
       cell: ({ getValue }) => {
@@ -393,7 +369,8 @@ function buildColumns(
     columnHelper.accessor('priority', {
       header: () => (
         <Button variant="ghost" onClick={() => onSort('priority')}>
-          Priority <SortIcon field="priority" sortBy={sortBy} sortOrder={sortOrder} />
+          Priority{' '}
+          <SortIcon field="priority" sortBy={sortBy} sortOrder={sortOrder} />
         </Button>
       ),
       cell: ({ getValue }) => {
@@ -490,7 +467,8 @@ function buildColumns(
     columnHelper.accessor('created_at', {
       header: () => (
         <Button variant="ghost" onClick={() => onSort('created_at')}>
-          Created <SortIcon field="created_at" sortBy={sortBy} sortOrder={sortOrder} />
+          Created{' '}
+          <SortIcon field="created_at" sortBy={sortBy} sortOrder={sortOrder} />
         </Button>
       ),
       cell: ({ getValue }) => {
@@ -506,7 +484,8 @@ function buildColumns(
     columnHelper.accessor('updated_at', {
       header: () => (
         <Button variant="ghost" onClick={() => onSort('updated_at')}>
-          Updated <SortIcon field="updated_at" sortBy={sortBy} sortOrder={sortOrder} />
+          Updated{' '}
+          <SortIcon field="updated_at" sortBy={sortBy} sortOrder={sortOrder} />
         </Button>
       ),
       cell: ({ getValue }) => (
@@ -577,8 +556,7 @@ export default function SupportTasksOverview() {
   const [availableHeaders, setAvailableHeaders] =
     useState<string[]>(TASK_EXPORT_HEADERS);
 
-  const statusParam = searchParams.get('status') ?? ALL_STATUSES;
-  const statusFilter = statusParam === ALL_STATUSES ? '' : statusParam;
+  const statusFilters = searchParams.getAll('status');
   const sortBy = searchParams.get('sort_by') ?? 'created_at';
   const sortOrder = (searchParams.get('sort_order') ?? 'desc') as
     | 'asc'
@@ -589,12 +567,8 @@ export default function SupportTasksOverview() {
     data: tasks = [],
     isLoading,
     mutate,
-  } = useSWR(['support_tasks', statusFilter, sortBy, sortOrder], () =>
-    fetchSupportTasks({
-      status: statusFilter || undefined,
-      sort_by: sortBy,
-      sort_order: sortOrder,
-    }),
+  } = useSWR(['support_tasks', sortBy, sortOrder], () =>
+    fetchSupportTasks({ sort_by: sortBy, sort_order: sortOrder }),
   );
 
   const { data: stats } = useSWR('support_task_stats', fetchSupportTaskStats);
@@ -607,24 +581,26 @@ export default function SupportTasksOverview() {
 
   const { data: staffUsers = [] } = useSWR('staff_users', fetchStaffUsers);
 
-  const staffById = useMemo(() => {
-    const m: Record<number, (typeof staffUsers)[0]> = {};
-    staffUsers.forEach(u => {
-      m[u.id] = u;
-    });
-    return m;
-  }, [staffUsers]);
-
   const priorityFilter = searchParams.getAll(TaskFilterKeys.Priority);
   const actionTypeFilter = searchParams.getAll(TaskFilterKeys.ActionType);
   const assignedToFilter = searchParams.get(TaskFilterKeys.AssignedTo) ?? '';
 
-  const onlyNew = statusParam === 'NEW';
+  const onlyNew = statusFilters.includes('NEW');
+  const onlyInProgress = statusFilters.includes('IN_PROGRESS');
+  const onlyCompleted = statusFilters.includes('COMPLETED');
   const onlyMe =
     currentUserId !== null && assignedToFilter === String(currentUserId);
 
-  const toggleOnlyNew = () => {
-    updateSearchParam('status', onlyNew ? ALL_STATUSES : 'NEW');
+  const toggleStatusFilter = (s: string) => {
+    const next = new URLSearchParams(searchParams);
+    const current = next.getAll('status');
+    next.delete('status');
+    if (current.includes(s)) {
+      current.filter(v => v !== s).forEach(v => next.append('status', v));
+    } else {
+      [...current, s].forEach(v => next.append('status', v));
+    }
+    setSearchParams(next);
   };
 
   const toggleOnlyMe = () => {
@@ -637,6 +613,9 @@ export default function SupportTasksOverview() {
 
   const filtered = useMemo(() => {
     let result = tasks;
+    if (statusFilters.length > 0) {
+      result = result.filter(t => statusFilters.includes(t.status));
+    }
     if (search.trim()) {
       const q = search.toLowerCase();
       result = result.filter(
@@ -659,7 +638,14 @@ export default function SupportTasksOverview() {
       );
     }
     return result;
-  }, [tasks, search, priorityFilter, actionTypeFilter, assignedToFilter]);
+  }, [
+    tasks,
+    statusFilters,
+    search,
+    priorityFilter,
+    actionTypeFilter,
+    assignedToFilter,
+  ]);
 
   const onSort = useCallback(
     (field: string) => {
@@ -783,8 +769,19 @@ export default function SupportTasksOverview() {
             name="only_new"
             label="New"
             checked={onlyNew}
-            onCheckedChange={toggleOnlyNew}
-            inputRef={null}
+            onCheckedChange={() => toggleStatusFilter('NEW')}
+          />
+          <Checkbox
+            name="only_in_progress"
+            label="In progress"
+            checked={onlyInProgress}
+            onCheckedChange={() => toggleStatusFilter('IN_PROGRESS')}
+          />
+          <Checkbox
+            name="only_completed"
+            label="Completed"
+            checked={onlyCompleted}
+            onCheckedChange={() => toggleStatusFilter('COMPLETED')}
           />
           {currentUserId !== null && (
             <Checkbox
@@ -792,39 +789,9 @@ export default function SupportTasksOverview() {
               label="Assigned to me"
               checked={onlyMe}
               onCheckedChange={toggleOnlyMe}
-
             />
           )}
         </QuickFilters>
-        <Dropdown
-          label="Status"
-          value={statusParam}
-          options={STATUS_OPTIONS}
-          onValueChange={v =>
-            updateSearchParam('status', v === ALL_STATUSES ? '' : v)
-          }
-          placeholder="All statuses"
-          cannotError
-          maxWidth="160px"
-        />
-        <Dropdown
-          label="Sort by"
-          value={sortBy}
-          options={SORT_BY_OPTIONS}
-          onValueChange={v => updateSearchParam('sort_by', v)}
-          placeholder="Sort by…"
-          cannotError
-          maxWidth="160px"
-        />
-        <Dropdown
-          label="Order"
-          value={sortOrder}
-          options={SORT_ORDER_OPTIONS}
-          onValueChange={v => updateSearchParam('sort_order', v)}
-          placeholder="Order…"
-          cannotError
-          maxWidth="160px"
-        />
       </FiltersToolbar>
 
       {isLoading ? (
