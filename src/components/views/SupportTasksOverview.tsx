@@ -89,11 +89,6 @@ const TileValue = styled.div`
   color: ${({ theme }) => theme.color.text.title};
 `;
 
-const TileSub = styled.div`
-  font-size: 13px;
-  color: ${({ theme }) => theme.color.text.tertiary};
-  margin-top: ${({ theme }) => theme.spacing.xxsmall};
-`;
 
 const TileIcon = styled.div<{ $bg: string; $color: string }>`
   width: 52px;
@@ -517,14 +512,12 @@ function buildColumns(
 function SummaryTile({
   label,
   value,
-  sub,
   icon,
   accentBg,
   accentColor,
 }: {
   label: string;
   value: number;
-  sub: string;
   icon: React.ReactNode;
   accentBg: string;
   accentColor: string;
@@ -534,7 +527,6 @@ function SummaryTile({
       <div>
         <TileLabel>{label}</TileLabel>
         <TileValue>{value}</TileValue>
-        <TileSub>{sub}</TileSub>
       </div>
       <TileIcon $bg={accentBg} $color={accentColor}>
         {icon}
@@ -732,7 +724,6 @@ export default function SupportTasksOverview() {
         <SummaryTile
           label="New"
           value={counts.NEW}
-          sub="Open, unassigned"
           accentBg={BLUE_10}
           accentColor={BLUE_40}
           icon={<ActivityIcon size={24} />}
@@ -740,7 +731,6 @@ export default function SupportTasksOverview() {
         <SummaryTile
           label="In progress"
           value={counts.IN_PROGRESS}
-          sub="Being worked on"
           accentBg={ORANGE_10}
           accentColor={ORANGE_40}
           icon={<ClockIcon size={24} />}
@@ -748,7 +738,6 @@ export default function SupportTasksOverview() {
         <SummaryTile
           label="Completed"
           value={counts.COMPLETED}
-          sub="All time"
           accentBg={GREEN_10}
           accentColor={GREEN_40}
           icon={<CheckIcon size={24} />}
