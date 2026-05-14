@@ -27,6 +27,7 @@ import {
   TaskPriority,
   TaskStatus,
   fetchStaffUsers,
+  fetchSupportTaskStats,
   fetchSupportTasks,
 } from '../../api/supportTasks';
 import { formatTimeDistance } from '../../helpers/date';
@@ -596,6 +597,14 @@ export default function SupportTasksOverview() {
     }),
   );
 
+  const { data: stats } = useSWR('support_task_stats', fetchSupportTaskStats);
+
+  const counts = {
+    NEW: stats?.NEW ?? 0,
+    IN_PROGRESS: stats?.IN_PROGRESS ?? 0,
+    COMPLETED: stats?.COMPLETED ?? 0,
+  };
+
   const { data: staffUsers = [] } = useSWR('staff_users', fetchStaffUsers);
 
   const staffById = useMemo(() => {
@@ -651,15 +660,6 @@ export default function SupportTasksOverview() {
     }
     return result;
   }, [tasks, search, priorityFilter, actionTypeFilter, assignedToFilter]);
-
-  const counts = useMemo(
-    () => ({
-      NEW: tasks.filter(t => t.status === 'NEW').length,
-      IN_PROGRESS: tasks.filter(t => t.status === 'IN_PROGRESS').length,
-      COMPLETED: tasks.filter(t => t.status === 'COMPLETED').length,
-    }),
-    [tasks],
-  );
 
   const onSort = useCallback(
     (field: string) => {

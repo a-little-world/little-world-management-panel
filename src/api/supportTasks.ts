@@ -89,3 +89,12 @@ export const patchSupportTask = (
 
 export const fetchStaffUsers = (): Promise<StaffUser[]> =>
   apiFetch('/api/support_task/staff_users/');
+
+export interface SupportTaskStats {
+  NEW: number;
+  IN_PROGRESS: number;
+  COMPLETED: number;
+}
+
+export const fetchSupportTaskStats = (): Promise<SupportTaskStats> =>
+  apiFetch('/api/support_task/stats/');
