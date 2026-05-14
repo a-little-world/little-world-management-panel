@@ -11,11 +11,13 @@ import { ColumnDef, createColumnHelper } from '@tanstack/react-table';
 import {
   ActivityIcon,
   CheckIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
   ClockIcon,
   EyeIcon,
   MoreHorizontalIcon,
 } from 'lucide-react';
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import useSWR from 'swr';
@@ -305,28 +307,59 @@ const STATUS_OPTIONS = [
   { value: 'COMPLETED', label: 'Completed' },
 ];
 
-const SORT_OPTIONS = [
-  { value: 'desc', label: '(Desc) Newest first' },
-  { value: 'asc', label: '(Asc) Oldest first' },
+const SORT_BY_OPTIONS = [
+  { value: 'created_at', label: 'Created' },
+  { value: 'updated_at', label: 'Updated' },
+  { value: 'id', label: 'ID' },
+  { value: 'title', label: 'Title' },
+  { value: 'status', label: 'Status' },
+  { value: 'priority', label: 'Priority' },
+];
+
+const SORT_ORDER_OPTIONS = [
+  { value: 'desc', label: 'Descending' },
+  { value: 'asc', label: 'Ascending' },
 ];
 
 // ─── Column definitions ───────────────────────────────────────────────────────
 
 const columnHelper = createColumnHelper<SupportTask>();
 
-function buildColumns(): ColumnDef<SupportTask, any>[] {
+function SortIcon({
+  field,
+  sortBy,
+  sortOrder,
+}: {
+  field: string;
+  sortBy: string;
+  sortOrder: 'asc' | 'desc';
+}) {
+  if (sortBy !== field) return <ArrowsUpDownIcon className="ml-2 h-4 w-4" />;
+  return sortOrder === 'asc' ? (
+    <ChevronUpIcon size={14} className="ml-2" />
+  ) : (
+    <ChevronDownIcon size={14} className="ml-2" />
+  );
+}
+
+function buildColumns(
+  sortBy: string,
+  sortOrder: 'asc' | 'desc',
+  onSort: (field: string) => void,
+): ColumnDef<SupportTask, any>[] {
   return [
     columnHelper.accessor('id', {
-      header: 'ID',
+      header: () => (
+        <Button variant="ghost" onClick={() => onSort('id')}>
+          ID <SortIcon field="id" sortBy={sortBy} sortOrder={sortOrder} />
+        </Button>
+      ),
       cell: ({ getValue }) => <MonoId>#{getValue()}</MonoId>,
     }),
     columnHelper.accessor('title', {
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          Task <ArrowsUpDownIcon className="ml-2 h-4 w-4" />
+      header: () => (
+        <Button variant="ghost" onClick={() => onSort('title')}>
+          Task <SortIcon field="title" sortBy={sortBy} sortOrder={sortOrder} />
         </Button>
       ),
       cell: ({ row }) => (
@@ -337,12 +370,9 @@ function buildColumns(): ColumnDef<SupportTask, any>[] {
       ),
     }),
     columnHelper.accessor('status', {
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          Status <ArrowsUpDownIcon className="ml-2 h-4 w-4" />
+      header: () => (
+        <Button variant="ghost" onClick={() => onSort('status')}>
+          Status <SortIcon field="status" sortBy={sortBy} sortOrder={sortOrder} />
         </Button>
       ),
       cell: ({ getValue }) => {
@@ -360,7 +390,11 @@ function buildColumns(): ColumnDef<SupportTask, any>[] {
       },
     }),
     columnHelper.accessor('priority', {
-      header: 'Priority',
+      header: () => (
+        <Button variant="ghost" onClick={() => onSort('priority')}>
+          Priority <SortIcon field="priority" sortBy={sortBy} sortOrder={sortOrder} />
+        </Button>
+      ),
       cell: ({ getValue }) => {
         const cfg = PRIORITY_CONFIG[getValue() as TaskPriority];
         return (
@@ -453,12 +487,9 @@ function buildColumns(): ColumnDef<SupportTask, any>[] {
       },
     }),
     columnHelper.accessor('created_at', {
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          Created <ArrowsUpDownIcon className="ml-2 h-4 w-4" />
+      header: () => (
+        <Button variant="ghost" onClick={() => onSort('created_at')}>
+          Created <SortIcon field="created_at" sortBy={sortBy} sortOrder={sortOrder} />
         </Button>
       ),
       cell: ({ getValue }) => {
@@ -472,7 +503,11 @@ function buildColumns(): ColumnDef<SupportTask, any>[] {
       },
     }),
     columnHelper.accessor('updated_at', {
-      header: 'Updated',
+      header: () => (
+        <Button variant="ghost" onClick={() => onSort('updated_at')}>
+          Updated <SortIcon field="updated_at" sortBy={sortBy} sortOrder={sortOrder} />
+        </Button>
+      ),
       cell: ({ getValue }) => (
         <AgeText>{formatTimeDistance(getValue(), new Date())}</AgeText>
       ),
@@ -543,6 +578,7 @@ export default function SupportTasksOverview() {
 
   const statusParam = searchParams.get('status') ?? ALL_STATUSES;
   const statusFilter = statusParam === ALL_STATUSES ? '' : statusParam;
+  const sortBy = searchParams.get('sort_by') ?? 'created_at';
   const sortOrder = (searchParams.get('sort_order') ?? 'desc') as
     | 'asc'
     | 'desc';
@@ -552,10 +588,10 @@ export default function SupportTasksOverview() {
     data: tasks = [],
     isLoading,
     mutate,
-  } = useSWR(['support_tasks', statusFilter, sortOrder], () =>
+  } = useSWR(['support_tasks', statusFilter, sortBy, sortOrder], () =>
     fetchSupportTasks({
       status: statusFilter || undefined,
-      sort_by: 'created_at',
+      sort_by: sortBy,
       sort_order: sortOrder,
     }),
   );
@@ -625,7 +661,24 @@ export default function SupportTasksOverview() {
     [tasks],
   );
 
-  const columns = useMemo(() => buildColumns(), []);
+  const onSort = useCallback(
+    (field: string) => {
+      const next = new URLSearchParams(searchParams);
+      if (field === sortBy) {
+        next.set('sort_order', sortOrder === 'asc' ? 'desc' : 'asc');
+      } else {
+        next.set('sort_by', field);
+        next.set('sort_order', 'desc');
+      }
+      setSearchParams(next);
+    },
+    [sortBy, sortOrder, searchParams, setSearchParams],
+  );
+
+  const columns = useMemo(
+    () => buildColumns(sortBy, sortOrder, onSort),
+    [sortBy, sortOrder, onSort],
+  );
 
   const updateSearchParam = (key: string, value: string | string[]) => {
     const next = new URLSearchParams(searchParams);
@@ -755,11 +808,20 @@ export default function SupportTasksOverview() {
           maxWidth="160px"
         />
         <Dropdown
-          label="Sort"
-          value={sortOrder}
-          options={SORT_OPTIONS}
-          onValueChange={v => updateSearchParam('sort_order', v)}
+          label="Sort by"
+          value={sortBy}
+          options={SORT_BY_OPTIONS}
+          onValueChange={v => updateSearchParam('sort_by', v)}
           placeholder="Sort by…"
+          cannotError
+          maxWidth="160px"
+        />
+        <Dropdown
+          label="Order"
+          value={sortOrder}
+          options={SORT_ORDER_OPTIONS}
+          onValueChange={v => updateSearchParam('sort_order', v)}
+          placeholder="Order…"
           cannotError
           maxWidth="160px"
         />
