@@ -18,6 +18,7 @@ import {
   fetchSupportTask,
   patchSupportTask,
 } from '../../api/supportTasks';
+import ObjectHistoryList, { ObjectHistory } from '../blocks/ObjectHistory';
 import { formatTimeDistance } from '../../helpers/date';
 import { SUPPORT_TASKS_ROUTE } from '../../routes';
 import UserImage from '../atoms/UserImage';

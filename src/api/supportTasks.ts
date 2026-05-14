@@ -1,4 +1,7 @@
 import { apiFetch } from './helpers';
+import { ObjectHistory, UserProfile } from '../components/blocks/ObjectHistory';
+
+export type { ObjectHistory, ObjectHistoryType, UserProfile } from '../components/blocks/ObjectHistory';
 
 export type TaskStatus = 'NEW' | 'IN_PROGRESS' | 'COMPLETED';
 export type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
@@ -13,28 +16,6 @@ export interface SupportTaskAction {
   reviewed_by_id: number | null;
   reviewed_at: string | null;
   history?: ObjectHistory[];
-}
-
-export interface UserProfile {
-  id: number;
-  first_name: string;
-  second_name: string;
-  image: string | null;
-  avatar_config: Record<string, unknown>;
-  image_type: 'image' | 'avatar';
-}
-
-export type ObjectHistoryType = 'CREATE' | 'UPDATE';
-
-export interface ObjectHistory {
-  id: number;
-  model_type: string;
-  changed_by_profile: UserProfile | null;
-  changed_at: string;
-  type: ObjectHistoryType;
-  field: string;
-  old_value: unknown;
-  new_value: unknown;
 }
 
 export interface SupportTask {
