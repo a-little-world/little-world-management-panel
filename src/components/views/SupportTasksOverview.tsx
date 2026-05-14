@@ -4,6 +4,7 @@ import {
   TagAppearance,
   TagSizes,
   Text,
+  TextTypes,
 } from '@a-little-world/little-world-design-system';
 import { ArrowsUpDownIcon } from '@heroicons/react/20/solid';
 import { ColumnDef, createColumnHelper } from '@tanstack/react-table';
@@ -20,7 +21,6 @@ import styled from 'styled-components';
 import useSWR from 'swr';
 
 import {
-  ACTION_TYPE_CONFIG,
   PRIORITY_CONFIG,
   STATUS_CONFIG,
   SupportTask,
@@ -110,11 +110,6 @@ const TaskCell = styled.div`
   gap: 3px;
   min-width: 200px;
   max-width: 320px;
-`;
-
-const TaskTitle = styled.span`
-  font-size: 14px;
-  font-weight: 600;
 `;
 
 const TaskDesc = styled.span`
@@ -251,7 +246,7 @@ function buildColumns(
       ),
       cell: ({ row }) => (
         <TaskCell>
-          <TaskTitle>{row.original.title}</TaskTitle>
+          <Text type={TextTypes.Body6} bold tag="span">{row.original.title}</Text>
           <TaskDesc>{row.original.description}</TaskDesc>
         </TaskCell>
       ),

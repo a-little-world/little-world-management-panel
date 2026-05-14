@@ -4,6 +4,7 @@ import {
   TagAppearance,
   TagSizes,
   Text,
+  TextTypes,
 } from '@a-little-world/little-world-design-system';
 import { ChevronDownIcon, ChevronLeftIcon, ChevronUpIcon } from 'lucide-react';
 import React, { useState } from 'react';
@@ -25,8 +26,11 @@ import {
 import { BLUE_10, BLUE_40, ORANGE_40 } from '../../constants';
 import { formatTimeDistance } from '../../helpers/date';
 import { SUPPORT_TASKS_ROUTE } from '../../routes';
+import { Card, CardContent, CardHeader, CardTitle } from '../atoms/Card';
 import UserImage from '../atoms/UserImage';
 import ObjectHistoryList, { ObjectHistory } from '../blocks/ObjectHistory';
+
+// ─── Dropdown options ─────────────────────────────────────────────────────────
 
 const STATUS_OPTIONS = Object.entries(STATUS_CONFIG).map(([value, cfg]) => ({
   value,
@@ -40,7 +44,7 @@ const PRIORITY_OPTIONS = Object.entries(PRIORITY_CONFIG).map(([value, cfg]) => (
 
 const UNASSIGNED = 'UNASSIGNED';
 
-// ─── Styled components ────────────────────────────────────────────────────────
+// ─── Styled ───────────────────────────────────────────────────────────────────
 
 const PageWrapper = styled.div`
   flex: 1;
@@ -56,40 +60,28 @@ const PageContent = styled.div`
     ${({ theme }) => theme.spacing.xxlarge};
 `;
 
-const Breadcrumb = styled.div`
-  display: inline-flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.xxsmall};
-  font-size: 13px;
-  margin-bottom: ${({ theme }) => theme.spacing.small};
-`;
-
-const BreadcrumbLink = styled(Link)`
-  color: ${({ theme }) => theme.color.text.link};
-  text-decoration: none;
+const BackLink = styled(Link)`
   display: inline-flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing.xxxsmall};
+  font-size: 13px;
+  color: ${({ theme }) => theme.color.text.link};
+  text-decoration: none;
+  margin-bottom: ${({ theme }) => theme.spacing.small};
   &:hover {
     text-decoration: underline;
   }
 `;
 
-const MonoId = styled.span`
-  font-family: source-code-pro, Menlo, Monaco, monospace;
-  color: ${({ theme }) => theme.color.text.secondary};
-  font-size: 13px;
-`;
-
 const TitleRow = styled.div`
   display: flex;
   align-items: flex-start;
-  gap: 18px;
+  gap: ${({ theme }) => theme.spacing.small};
   flex-wrap: wrap;
   margin-bottom: ${({ theme }) => theme.spacing.xxsmall};
 `;
 
-const TaskTitle = styled.h2`
+const PageTitle = styled.h2`
   font-family: 'Work Sans', system-ui, sans-serif;
   font-weight: 700;
   font-size: 36px;
@@ -101,44 +93,26 @@ const TaskTitle = styled.h2`
   min-width: 0;
 `;
 
-const PillsRow = styled.div`
-  display: flex;
-  gap: 10px;
-  padding-top: 6px;
-  align-items: center;
-  flex-shrink: 0;
-`;
-
-const MetaStrip = styled.div`
+const MetaRow = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: 28px 36px;
   padding: 18px 0 26px;
   border-bottom: 1px solid ${({ theme }) => theme.color.border.subtle};
-  margin-bottom: 28px;
+  margin-bottom: ${({ theme }) => theme.spacing.large};
 `;
 
-const MetaItem = styled.div`
+const MetaField = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: ${({ theme }) => theme.spacing.xxxsmall};
 `;
 
-const MetaLabel = styled.div`
-  font-size: 11px;
+const MetaLabel = styled(Text).attrs({ type: TextTypes.Body7, tag: 'span' as const })`
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: ${({ theme }) => theme.color.text.tertiary};
   font-weight: 600;
-`;
-
-const MetaValue = styled.div`
-  font-size: 14px;
-  color: ${({ theme }) => theme.color.text.primary};
-  font-weight: 500;
-  display: inline-flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.xxsmall};
 `;
 
 const ContentGrid = styled.div`
@@ -147,142 +121,51 @@ const ContentGrid = styled.div`
   gap: ${({ theme }) => theme.spacing.medium};
 `;
 
-const Card = styled.div`
-  background: ${({ theme }) => theme.color.surface.primary};
-  border: 1px solid ${({ theme }) => theme.color.border.subtle};
-  border-radius: ${({ theme }) => theme.radius.large};
-  box-shadow: 0 1px 25px 1px rgba(0, 0, 0, 0.04);
-
-  & + & {
-    margin-top: 20px;
-  }
-`;
-
-const CardHead = styled.div`
-  padding: 20px 26px 14px;
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.xsmall};
-  justify-content: space-between;
-`;
-
-const CardHeadTitle = styled.h3`
-  font-family: 'Work Sans', system-ui, sans-serif;
-  font-weight: 700;
-  font-size: 17px;
-  color: ${({ theme }) => theme.color.text.heading};
-  margin: 0;
-  letter-spacing: 0.01em;
-`;
-
-const CardHeadSub = styled.span`
-  font-size: 13px;
-  color: ${({ theme }) => theme.color.text.tertiary};
-`;
-
-const CardBody = styled.div`
-  padding: 4px 26px 24px;
-`;
-
-const MsgQuote = styled.div`
-  background: ${BLUE_10};
-  border-left: 3px solid ${BLUE_40};
-  padding: 16px 18px;
-  border-radius: 0 ${({ theme }) => theme.radius.xsmall}
-    ${({ theme }) => theme.radius.xsmall} 0;
-  font-size: 15px;
-  line-height: 1.55;
-  color: ${({ theme }) => theme.color.text.primary};
-`;
-
-const MsgWho = styled.div`
-  font-size: 12px;
-  color: ${({ theme }) => theme.color.text.tertiary};
-  margin-bottom: ${({ theme }) => theme.spacing.xxsmall};
-  font-weight: 500;
-`;
-
-const MsgText = styled.p`
-  margin: 0 0 ${({ theme }) => theme.spacing.xxsmall};
-  &:last-child {
-    margin-bottom: 0;
-  }
-`;
-
-const UserBlock = styled.div`
+const SideColumn = styled.aside`
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: ${({ theme }) => theme.spacing.medium};
 `;
 
-const UserTop = styled.div`
+const MessageQuote = styled.blockquote`
+  background: ${BLUE_10};
+  border-left: 3px solid ${BLUE_40};
+  padding: ${({ theme }) => theme.spacing.small};
+  border-radius: 0 ${({ theme }) => theme.radius.xsmall}
+    ${({ theme }) => theme.radius.xsmall} 0;
+  line-height: 1.55;
+  color: ${({ theme }) => theme.color.text.primary};
+  margin: 0;
+`;
+
+const UserInfoRow = styled.div`
   display: flex;
-  gap: 14px;
+  gap: ${({ theme }) => theme.spacing.small};
   align-items: center;
+  margin-bottom: ${({ theme }) => theme.spacing.small};
 `;
 
-const UserName = styled.div`
-  font-family: 'Work Sans', system-ui, sans-serif;
-  font-weight: 700;
-  font-size: 18px;
-  color: ${ORANGE_40};
-  line-height: 1.2;
-`;
-
-const UserEmail = styled.div`
-  font-family: source-code-pro, Menlo, Monaco, monospace;
-  font-size: 13px;
-  color: ${({ theme }) => theme.color.text.secondary};
-`;
-
-const StatsGrid = styled.div`
+const StatGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: ${({ theme }) => theme.spacing.xsmall};
+  margin-bottom: ${({ theme }) => theme.spacing.xsmall};
 `;
 
 const StatBox = styled.div`
   background: ${({ theme }) => theme.color.surface.secondary};
   border-radius: ${({ theme }) => theme.radius.medium};
-  padding: 12px 14px;
+  padding: ${({ theme }) => theme.spacing.xsmall};
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.xxxsmall};
 `;
 
-const StatLabel = styled.div`
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: ${({ theme }) => theme.color.text.tertiary};
-`;
-
-const StatValue = styled.div`
-  font-family: 'Work Sans', system-ui, sans-serif;
-  font-size: 22px;
-  font-weight: 700;
-  color: ${ORANGE_40};
-  line-height: 1.1;
-`;
-
-const LastActiveRow = styled.div`
+const CollapsibleHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 13px;
-`;
-
-const LastActiveLabel = styled.span`
-  color: ${({ theme }) => theme.color.text.secondary};
-`;
-
-const LastActiveValue = styled.span`
-  font-weight: 700;
-  color: ${({ theme }) => theme.color.text.primary};
-`;
-
-const HistoryCardHead = styled(CardHead)`
+  padding: ${({ theme }) => theme.spacing.small} ${({ theme }) => theme.spacing.medium};
   cursor: pointer;
   user-select: none;
   &:hover {
@@ -292,19 +175,21 @@ const HistoryCardHead = styled(CardHead)`
   }
 `;
 
-const HistoryCardBody = styled(CardBody)`
+const HistoryScroll = styled.div`
   max-height: 480px;
   overflow-y: auto;
+  padding: 0 ${({ theme }) => theme.spacing.medium}
+    ${({ theme }) => theme.spacing.medium};
 `;
 
 const ProfileLink = styled(Link)`
+  display: block;
+  text-align: center;
   color: ${({ theme }) => theme.color.text.link};
   text-decoration: none;
   font-size: 13px;
   font-weight: 600;
-  display: block;
-  text-align: center;
-  padding-top: 10px;
+  padding-top: ${({ theme }) => theme.spacing.xsmall};
   &:hover {
     text-decoration: underline;
   }
@@ -365,9 +250,6 @@ export default function SupportTaskDetail() {
     return format(date, 'MMM d, yyyy');
   }
 
-  function formatMemberSince(iso: string): string {
-    return format(parseISO(iso), 'MMM yyyy');
-  }
   const messagePreview =
     (task.action?.static_parameters?.message_preview as string | undefined) ??
     task.description;
@@ -397,49 +279,49 @@ export default function SupportTaskDetail() {
     );
   };
 
+  const combined: ObjectHistory[] = [
+    ...(task.history ?? []),
+    ...(task.action?.history ?? []),
+  ].sort(
+    (a, b) =>
+      new Date(b.changed_at).getTime() - new Date(a.changed_at).getTime(),
+  );
+
   return (
     <PageWrapper>
       <PageContent>
-        <Breadcrumb>
-          <BreadcrumbLink to={SUPPORT_TASKS_ROUTE}>
-            <ChevronLeftIcon size={14} />
-            Support tasks
-          </BreadcrumbLink>
-          <span>›</span>
-          <MonoId>#{task.id}</MonoId>
-        </Breadcrumb>
+        <BackLink to={SUPPORT_TASKS_ROUTE}>
+          <ChevronLeftIcon size={14} />
+          Support tasks
+        </BackLink>
 
         <TitleRow>
-          <TaskTitle>{task.title}</TaskTitle>
-          <PillsRow>
-            <Tag
-              bold
-              size={TagSizes.large}
-              appearance={TagAppearance.outline}
-              color={STATUS_CONFIG[task.status].color}
-            >
-              {STATUS_CONFIG[task.status].label}
-            </Tag>
-            <Tag
-              bold
-              size={TagSizes.large}
-              appearance={TagAppearance.outline}
-              color={actionTypeCfg.color}
-            >
-              {actionTypeCfg.label}
-            </Tag>
-          </PillsRow>
+          <PageTitle>{task.title}</PageTitle>
+          <Tag
+            bold
+            size={TagSizes.large}
+            appearance={TagAppearance.outline}
+            color={STATUS_CONFIG[task.status].color}
+          >
+            {STATUS_CONFIG[task.status].label}
+          </Tag>
+          <Tag
+            bold
+            size={TagSizes.large}
+            appearance={TagAppearance.outline}
+            color={actionTypeCfg.color}
+          >
+            {actionTypeCfg.label}
+          </Tag>
         </TitleRow>
 
-        <MetaStrip>
-          <MetaItem>
+        <MetaRow>
+          <MetaField>
             <MetaLabel>Task ID</MetaLabel>
-            <MetaValue>
-              <MonoId>#{task.id}</MonoId>
-            </MetaValue>
-          </MetaItem>
+            <Text type={TextTypes.Body6}>#{task.id}</Text>
+          </MetaField>
 
-          <MetaItem>
+          <MetaField>
             <MetaLabel>Status</MetaLabel>
             <Dropdown
               value={task.status}
@@ -451,9 +333,9 @@ export default function SupportTaskDetail() {
               cannotError
               maxWidth="160px"
             />
-          </MetaItem>
+          </MetaField>
 
-          <MetaItem>
+          <MetaField>
             <MetaLabel>Priority</MetaLabel>
             <Dropdown
               value={task.priority}
@@ -468,9 +350,9 @@ export default function SupportTaskDetail() {
               cannotError
               maxWidth="140px"
             />
-          </MetaItem>
+          </MetaField>
 
-          <MetaItem>
+          <MetaField>
             <MetaLabel>Assigned to</MetaLabel>
             <Dropdown
               value={currentAssignee}
@@ -503,138 +385,122 @@ export default function SupportTaskDetail() {
               cannotError
               maxWidth="200px"
             />
-          </MetaItem>
+          </MetaField>
 
           {createdBy && (
-            <MetaItem>
+            <MetaField>
               <MetaLabel>Created by</MetaLabel>
-              <MetaValue>
-                <UserImage
-                  alt={`${createdBy.first_name} ${createdBy.second_name}`}
-                  user={createdBy}
-                  dimensions={{ width: 28, height: 28 }}
-                />
+              <Text type={TextTypes.Body6}>
                 {createdBy.first_name} {createdBy.second_name}
-              </MetaValue>
-            </MetaItem>
+              </Text>
+            </MetaField>
           )}
 
-          <MetaItem>
+          <MetaField>
             <MetaLabel>Created</MetaLabel>
-            <MetaValue>{formatTimeDistance(task.created_at, now)}</MetaValue>
-          </MetaItem>
+            <Text type={TextTypes.Body6}>{formatTimeDistance(task.created_at, now)}</Text>
+          </MetaField>
 
-          <MetaItem>
+          <MetaField>
             <MetaLabel>Updated</MetaLabel>
-            <MetaValue>{formatTimeDistance(task.updated_at, now)}</MetaValue>
-          </MetaItem>
-        </MetaStrip>
+            <Text type={TextTypes.Body6}>{formatTimeDistance(task.updated_at, now)}</Text>
+          </MetaField>
+        </MetaRow>
 
         <ContentGrid>
           <div>
             {messagePreview && (
-              <Card>
-                <CardHead>
-                  <CardHeadTitle>Original message</CardHeadTitle>
-                  <CardHeadSub>Submitted via in-app help form</CardHeadSub>
-                </CardHead>
-                <CardBody>
-                  <MsgQuote>
+              <Card center={false}>
+                <CardHeader>
+                  <CardTitle>Original message</CardTitle>
+                  <Text type={TextTypes.Body7}>Submitted via in-app help form</Text>
+                </CardHeader>
+                <CardContent>
+                  <MessageQuote>
                     {relatedUser && (
-                      <MsgWho>
-                        {relatedUser.first_name} {relatedUser.second_name} ·{' '}
+                      <Text type={TextTypes.Body7} tag="p">
+                        {relatedUser.first_name} {relatedUser.second_name}
+                        {' · '}
                         {formatTimeDistance(task.created_at, now)}
-                      </MsgWho>
+                      </Text>
                     )}
-                    <MsgText>{messagePreview}</MsgText>
-                  </MsgQuote>
-                </CardBody>
+                    <Text tag="p">{messagePreview}</Text>
+                  </MessageQuote>
+                </CardContent>
               </Card>
             )}
           </div>
 
-          <aside>
+          <SideColumn>
             {relatedUser && (
-              <Card>
-                <CardHead>
-                  <CardHeadTitle>Related user</CardHeadTitle>
-                </CardHead>
-                <CardBody>
-                  <UserBlock>
-                    <UserTop>
-                      <UserImage
-                        alt={`${relatedUser.first_name} ${relatedUser.second_name}`}
-                        user={relatedUser}
-                        dimensions={{ width: 56, height: 56 }}
-                      />
-                      <div>
-                        <UserName>
-                          {relatedUser.first_name} {relatedUser.second_name}
-                        </UserName>
-                        <UserEmail>{relatedUser.email}</UserEmail>
-                      </div>
-                    </UserTop>
-                    <StatsGrid>
-                      <StatBox>
-                        <StatLabel>Member since</StatLabel>
-                        <StatValue>
-                          {formatMemberSince(relatedUser.date_joined)}
-                        </StatValue>
-                      </StatBox>
-                      <StatBox>
-                        <StatLabel>Past tickets</StatLabel>
-                        <StatValue>{relatedUser.past_tickets}</StatValue>
-                      </StatBox>
-                    </StatsGrid>
-                    <LastActiveRow>
-                      <LastActiveLabel>Last active</LastActiveLabel>
-                      <LastActiveValue>
-                        {formatLastActive(relatedUser.last_active)}
-                      </LastActiveValue>
-                    </LastActiveRow>
-                    <ProfileLink to={`/user/${relatedUser.id}`}>
-                      Open full profile →
-                    </ProfileLink>
-                  </UserBlock>
-                </CardBody>
+              <Card center={false}>
+                <CardHeader>
+                  <CardTitle>Related user</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <UserInfoRow>
+                    <UserImage
+                      alt={`${relatedUser.first_name} ${relatedUser.second_name}`}
+                      user={relatedUser}
+                      dimensions={{ width: 56, height: 56 }}
+                    />
+                    <div>
+                      <Text bold color={ORANGE_40} tag="div">
+                        {relatedUser.first_name} {relatedUser.second_name}
+                      </Text>
+                      <Text type={TextTypes.Body7} tag="div">{relatedUser.email}</Text>
+                    </div>
+                  </UserInfoRow>
+                  <StatGrid>
+                    <StatBox>
+                      <MetaLabel>Member since</MetaLabel>
+                      <Text bold tag="div">
+                        {format(parseISO(relatedUser.date_joined), 'MMM yyyy')}
+                      </Text>
+                    </StatBox>
+                    <StatBox>
+                      <MetaLabel>Past tickets</MetaLabel>
+                      <Text bold tag="div">{relatedUser.past_tickets}</Text>
+                    </StatBox>
+                  </StatGrid>
+                  <MetaField>
+                    <MetaLabel>Last active</MetaLabel>
+                    <Text type={TextTypes.Body6} tag="div">
+                      {formatLastActive(relatedUser.last_active)}
+                    </Text>
+                  </MetaField>
+                  <ProfileLink to={`/user/${relatedUser.id}`}>
+                    Open full profile →
+                  </ProfileLink>
+                </CardContent>
               </Card>
             )}
-            {(() => {
-              const combined: ObjectHistory[] = [
-                ...(task.history ?? []),
-                ...(task.action?.history ?? []),
-              ].sort(
-                (a, b) =>
-                  new Date(b.changed_at).getTime() -
-                  new Date(a.changed_at).getTime(),
-              );
-              if (combined.length === 0) return null;
-              return (
-                <Card>
-                  <HistoryCardHead onClick={() => setHistoryOpen(o => !o)}>
-                    <CardHeadTitle>History</CardHeadTitle>
-                    {historyOpen ? (
-                      <ChevronUpIcon size={16} />
-                    ) : (
-                      <ChevronDownIcon size={16} />
-                    )}
-                  </HistoryCardHead>
-                  {historyOpen && (
-                    <HistoryCardBody>
-                      <ObjectHistoryList
-                        history={combined}
-                        title=""
-                        labelByModelType={{
-                          supporttask: `Task`,
-                          supporttaskaction: `Action`,
-                        }}
-                      />
-                    </HistoryCardBody>
+
+            {combined.length > 0 && (
+              <Card center={false}>
+                <CollapsibleHeader onClick={() => setHistoryOpen(o => !o)}>
+                  <Text bold tag="span">History</Text>
+                  {historyOpen ? (
+                    <ChevronUpIcon size={16} />
+                  ) : (
+                    <ChevronDownIcon size={16} />
                   )}
-                </Card>
-              );
-            })()}
-          </aside>
+                </CollapsibleHeader>
+                {historyOpen && (
+                  <HistoryScroll>
+                    <ObjectHistoryList
+                      history={combined}
+                      title=""
+                      labelByModelType={{
+                        supporttask: 'Task',
+                        supporttaskaction: 'Action',
+                      }}
+                    />
+                  </HistoryScroll>
+                )}
+              </Card>
+            )}
+          </SideColumn>
         </ContentGrid>
       </PageContent>
     </PageWrapper>
