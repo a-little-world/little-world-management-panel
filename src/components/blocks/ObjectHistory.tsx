@@ -1,4 +1,8 @@
-import { Tag, TagAppearance, TagSizes } from '@a-little-world/little-world-design-system';
+import {
+  Tag,
+  TagAppearance,
+  TagSizes,
+} from '@a-little-world/little-world-design-system';
 import React from 'react';
 import styled from 'styled-components';
 
@@ -135,8 +139,7 @@ const DiffRow = styled.div<{ $type: 'old' | 'new' }>`
   align-items: center;
   gap: 10px;
   padding: 8px 14px;
-  background: ${({ $type }) =>
-    $type === 'old' ? '#fde8e8' : '#d4f0de'};
+  background: ${({ $type }) => ($type === 'old' ? '#fde8e8' : '#d4f0de')};
 `;
 
 const ProfileChip = styled.div`
@@ -169,12 +172,25 @@ const Timestamp = styled.div`
   color: ${({ theme }) => theme.color.text.tertiary};
 `;
 
+const TimestampRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const EntryLabel = styled.span`
+  font-family: 'Work Sans', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: ${ORANGE_40};
+`;
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatFieldName(field: string): string {
-  return field
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, c => c.toUpperCase());
+  return field.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
 function isUserProfile(value: unknown): value is UserProfile {
@@ -217,14 +233,17 @@ function getInitials(profile: UserProfile): string {
 interface ObjectHistoryListProps {
   history: ObjectHistory[];
   title?: string;
+  labelByModelType?: Record<string, string>;
 }
 
 export default function ObjectHistoryList({
   history,
   title = 'History',
+  labelByModelType,
 }: ObjectHistoryListProps) {
   const sorted = [...history].sort(
-    (a, b) => new Date(b.changed_at).getTime() - new Date(a.changed_at).getTime(),
+    (a, b) =>
+      new Date(b.changed_at).getTime() - new Date(a.changed_at).getTime(),
   );
   const now = new Date();
 
@@ -307,7 +326,12 @@ export default function ObjectHistoryList({
                     </DiffBlock>
                   </>
                 )}
-                <Timestamp>{formatTimeDistance(entry.changed_at, now)}</Timestamp>
+                <TimestampRow>
+                  <Timestamp>{formatTimeDistance(entry.changed_at, now)}</Timestamp>
+                  {labelByModelType?.[entry.model_type] && (
+                    <EntryLabel>{labelByModelType[entry.model_type]}</EntryLabel>
+                  )}
+                </TimestampRow>
               </EntryContent>
             </TimelineItem>
           );

@@ -578,7 +578,14 @@ export default function SupportTaskDetail() {
                   </HistoryCardHead>
                   {historyOpen && (
                     <HistoryCardBody>
-                      <ObjectHistoryList history={combined} title="" />
+                      <ObjectHistoryList
+                        history={combined}
+                        title=""
+                        labelByModelType={{
+                          supporttask: `Task`,
+                          supporttaskaction: `Action`,
+                        }}
+                      />
                     </HistoryCardBody>
                   )}
                 </Card>
