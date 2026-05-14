@@ -295,3 +295,11 @@ export const ORANGE_10 = '#fde5cf';
 export const ORANGE_40 = '#db590b';
 export const GREEN_10 = '#c7ebd1';
 export const GREEN_40 = '#045e45';
+
+// Task status / priority / action-type display colors
+export const GRAY_40 = '#6d6d6d';
+export const RED_40 = '#c93333';
+export const CRIMSON_40 = '#8a2a2a';
+export const AMBER_40 = '#7a4a00';
+export const MAROON_40 = '#4a1f1f';
+export const PURPLE_40 = '#5b2c87';

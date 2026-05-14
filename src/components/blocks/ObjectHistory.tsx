@@ -65,7 +65,7 @@ const Timeline = styled.ol`
 
 const TimelineItem = styled.li<{ $last: boolean }>`
   display: flex;
-  gap: 16px;
+  gap: ${({ theme }) => theme.spacing.small};
   position: relative;
 
   &:not(:last-child) {
@@ -137,7 +137,7 @@ const DiffBlock = styled.div`
   flex-direction: column;
   border-radius: ${({ theme }) => theme.radius.small};
   overflow: hidden;
-  margin-bottom: 8px;
+  margin-bottom: ${({ theme }) => theme.spacing.xxsmall};
 `;
 
 const DiffRow = styled.div<{ $type: 'old' | 'new' }>`
@@ -181,7 +181,7 @@ const Timestamp = styled.div`
 const TimestampRow = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: ${({ theme }) => theme.spacing.xxsmall};
 `;
 
 const EntryLabel = styled.span`
@@ -266,7 +266,7 @@ export default function ObjectHistoryList({
             <TimelineItem key={entry.id} $last={isLast}>
               <AvatarSlot>
                 {isCreate ? (
-                  <InitialsDot $bg={ORANGE_40} $color="#fff">
+                  <InitialsDot $bg={ORANGE_40} $color="white">
                     +
                   </InitialsDot>
                 ) : actor ? (

@@ -13,7 +13,7 @@ import {
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
-import { StaffUser } from '../../api/supportTasks';
+import { ACTION_TYPE_CONFIG, PRIORITY_CONFIG, StaffUser } from '../../api/supportTasks';
 
 // ─── Filter keys ──────────────────────────────────────────────────────────────
 
@@ -28,21 +28,15 @@ export const containsTaskFilterKey = (filters: Record<string, any>): boolean =>
 
 // ─── Options ──────────────────────────────────────────────────────────────────
 
-const PRIORITY_OPTIONS = [
-  { label: 'Low',    value: 'LOW' },
-  { label: 'Medium', value: 'MEDIUM' },
-  { label: 'High',   value: 'HIGH' },
-  { label: 'Urgent', value: 'URGENT' },
-];
+const PRIORITY_OPTIONS = Object.entries(PRIORITY_CONFIG).map(([value, cfg]) => ({
+  value,
+  label: cfg.label,
+}));
 
-const ACTION_TYPE_OPTIONS = [
-  { label: 'Support reply',      value: 'support_reply' },
-  { label: 'Remove match',       value: 'message_action_remove_match' },
-  { label: 'Country change',     value: 'profile_change_action_country_of_residence' },
-  { label: 'Change user type',   value: 'message_action_change_user_type' },
-  { label: 'Suspicious profile', value: 'profile_action_suspicious_profile' },
-  { label: 'Incomplete profile', value: 'profile_action_too_empty_profile' },
-];
+const ACTION_TYPE_OPTIONS = Object.entries(ACTION_TYPE_CONFIG).map(([value, cfg]) => ({
+  value,
+  label: cfg.label,
+}));
 
 // ─── Styled ───────────────────────────────────────────────────────────────────
 

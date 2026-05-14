@@ -13,72 +13,30 @@ import useSWR from 'swr';
 
 import { format, parseISO } from 'date-fns';
 import {
+  PRIORITY_CONFIG,
+  STATUS_CONFIG,
   TaskPriority,
   TaskStatus,
   fetchStaffUsers,
   fetchSupportTask,
+  getActionTypeConfig,
   patchSupportTask,
 } from '../../api/supportTasks';
-import { BLUE_10, BLUE_40, GREEN_40, ORANGE_40 } from '../../constants';
+import { BLUE_10, BLUE_40, ORANGE_40 } from '../../constants';
 import { formatTimeDistance } from '../../helpers/date';
 import { SUPPORT_TASKS_ROUTE } from '../../routes';
 import UserImage from '../atoms/UserImage';
 import ObjectHistoryList, { ObjectHistory } from '../blocks/ObjectHistory';
-
-// ─── Config maps (mirrors SupportTasksOverview) ───────────────────────────────
-
-const STATUS_CONFIG: Record<TaskStatus, { label: string; color: string }> = {
-  NEW: { label: 'New', color: BLUE_40 },
-  IN_PROGRESS: { label: 'In progress', color: ORANGE_40 },
-  COMPLETED: { label: 'Completed', color: GREEN_40 },
-};
-
-const PRIORITY_CONFIG: Record<TaskPriority, { label: string; color: string }> =
-  {
-    LOW: { label: 'Low', color: '#6d6d6d' },
-    MEDIUM: { label: 'Medium', color: BLUE_40 },
-    HIGH: { label: 'High', color: ORANGE_40 },
-    URGENT: { label: 'Urgent', color: '#c93333' },
-  };
-
-const ACTION_TYPE_CONFIG: Record<string, { label: string; color: string }> = {
-  support_reply: { label: 'Support reply', color: BLUE_40 },
-  message_action_remove_match: { label: 'Remove match', color: '#8a2a2a' },
-  profile_change_action_country_of_residence: {
-    label: 'Country change',
-    color: '#7a4a00',
-  },
-  message_action_change_user_type: {
-    label: 'Change user type',
-    color: ORANGE_40,
-  },
-  profile_action_suspicious_profile: {
-    label: 'Suspicious profile',
-    color: '#4a1f1f',
-  },
-  profile_action_too_empty_profile: {
-    label: 'Incomplete profile',
-    color: '#5b2c87',
-  },
-};
-
-function getActionTypeConfig(actionType: string) {
-  return (
-    ACTION_TYPE_CONFIG[actionType] ?? {
-      label: actionType.replace(/_/g, ' '),
-      color: '#6d6d6d',
-    }
-  );
-}
 
 const STATUS_OPTIONS = Object.entries(STATUS_CONFIG).map(([value, cfg]) => ({
   value,
   label: cfg.label,
 }));
 
-const PRIORITY_OPTIONS = Object.entries(PRIORITY_CONFIG).map(
-  ([value, cfg]) => ({ value, label: cfg.label }),
-);
+const PRIORITY_OPTIONS = Object.entries(PRIORITY_CONFIG).map(([value, cfg]) => ({
+  value,
+  label: cfg.label,
+}));
 
 const UNASSIGNED = 'UNASSIGNED';
 
@@ -111,7 +69,7 @@ const BreadcrumbLink = styled(Link)`
   text-decoration: none;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: ${({ theme }) => theme.spacing.xxxsmall};
   &:hover {
     text-decoration: underline;
   }
@@ -180,13 +138,13 @@ const MetaValue = styled.div`
   font-weight: 500;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: ${({ theme }) => theme.spacing.xxsmall};
 `;
 
 const ContentGrid = styled.div`
   display: grid;
   grid-template-columns: minmax(0, 1fr) 360px;
-  gap: 24px;
+  gap: ${({ theme }) => theme.spacing.medium};
 `;
 
 const Card = styled.div`
@@ -204,7 +162,7 @@ const CardHead = styled.div`
   padding: 20px 26px 14px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: ${({ theme }) => theme.spacing.xsmall};
   justify-content: space-between;
 `;
 
@@ -240,12 +198,12 @@ const MsgQuote = styled.div`
 const MsgWho = styled.div`
   font-size: 12px;
   color: ${({ theme }) => theme.color.text.tertiary};
-  margin-bottom: 8px;
+  margin-bottom: ${({ theme }) => theme.spacing.xxsmall};
   font-weight: 500;
 `;
 
 const MsgText = styled.p`
-  margin: 0 0 8px;
+  margin: 0 0 ${({ theme }) => theme.spacing.xxsmall};
   &:last-child {
     margin-bottom: 0;
   }
@@ -289,7 +247,7 @@ const StatBox = styled.div`
   padding: 12px 14px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: ${({ theme }) => theme.spacing.xxxsmall};
 `;
 
 const StatLabel = styled.div`

@@ -20,12 +20,16 @@ import styled from 'styled-components';
 import useSWR from 'swr';
 
 import {
+  ACTION_TYPE_CONFIG,
+  PRIORITY_CONFIG,
+  STATUS_CONFIG,
   SupportTask,
   TaskPriority,
   TaskStatus,
   fetchStaffUsers,
   fetchSupportTaskStats,
   fetchSupportTasks,
+  getActionTypeConfig,
 } from '../../api/supportTasks';
 import { BLUE_10, BLUE_40, GREEN_10, GREEN_40, ORANGE_10, ORANGE_40 } from '../../constants';
 import { formatTimeDistance } from '../../helpers/date';
@@ -67,7 +71,7 @@ const TileCard = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: ${({ theme }) => theme.spacing.xsmall};
   box-shadow: 0 1px 25px 1px rgba(0, 0, 0, 0.04);
 `;
 
@@ -168,50 +172,6 @@ const QuickFilters = styled.div`
 `;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-const STATUS_CONFIG: Record<TaskStatus, { label: string; color: string }> = {
-  NEW: { label: 'New', color: BLUE_40 },
-  IN_PROGRESS: { label: 'In progress', color: ORANGE_40 },
-  COMPLETED: { label: 'Completed', color: GREEN_40 },
-};
-
-const PRIORITY_CONFIG: Record<TaskPriority, { label: string; color: string }> =
-  {
-    LOW: { label: 'Low', color: '#6d6d6d' },
-    MEDIUM: { label: 'Medium', color: BLUE_40 },
-    HIGH: { label: 'High', color: ORANGE_40 },
-    URGENT: { label: 'Urgent', color: '#c93333' },
-  };
-
-const ACTION_TYPE_CONFIG: Record<string, { label: string; color: string }> = {
-  support_reply: { label: 'Support reply', color: BLUE_40 },
-  message_action_remove_match: { label: 'Remove match', color: '#8a2a2a' },
-  profile_change_action_country_of_residence: {
-    label: 'Country change',
-    color: '#7a4a00',
-  },
-  message_action_change_user_type: {
-    label: 'Change user type',
-    color: ORANGE_40,
-  },
-  profile_action_suspicious_profile: {
-    label: 'Suspicious profile',
-    color: '#4a1f1f',
-  },
-  profile_action_too_empty_profile: {
-    label: 'Incomplete profile',
-    color: '#5b2c87',
-  },
-};
-
-function getActionTypeConfig(actionType: string) {
-  return (
-    ACTION_TYPE_CONFIG[actionType] ?? {
-      label: actionType.replace(/_/g, ' '),
-      color: '#6d6d6d',
-    }
-  );
-}
 
 const TASK_EXPORT_HEADERS = [
   'id',
