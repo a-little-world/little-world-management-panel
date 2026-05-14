@@ -11,6 +11,7 @@ import { Link, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import useSWR from 'swr';
 
+import { format, parseISO } from 'date-fns';
 import {
   TaskPriority,
   TaskStatus,
@@ -105,7 +106,7 @@ const PageContent = styled.div`
 
 const Breadcrumb = styled.div`
   display: inline-flex;
-  align-items: center;
+  align-items: center;When 
   gap: ${({ theme }) => theme.spacing.xxsmall};
   font-size: 13px;
   margin-bottom: ${({ theme }) => theme.spacing.small};
@@ -272,8 +273,61 @@ const UserName = styled.div`
   font-family: 'Work Sans', system-ui, sans-serif;
   font-weight: 700;
   font-size: 18px;
-  color: ${({ theme }) => theme.color.text.title};
+  color: ${ORANGE_40};
   line-height: 1.2;
+`;
+
+const UserEmail = styled.div`
+  font-family: source-code-pro, Menlo, Monaco, monospace;
+  font-size: 13px;
+  color: ${({ theme }) => theme.color.text.secondary};
+`;
+
+const StatsGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+`;
+
+const StatBox = styled.div`
+  background: ${({ theme }) => theme.color.surface.secondary};
+  border-radius: ${({ theme }) => theme.radius.medium};
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const StatLabel = styled.div`
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: ${({ theme }) => theme.color.text.tertiary};
+`;
+
+const StatValue = styled.div`
+  font-family: 'Work Sans', system-ui, sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: ${ORANGE_40};
+  line-height: 1.1;
+`;
+
+const LastActiveRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+`;
+
+const LastActiveLabel = styled.span`
+  color: ${({ theme }) => theme.color.text.secondary};
+`;
+
+const LastActiveValue = styled.span`
+  font-weight: 700;
+  color: ${({ theme }) => theme.color.text.primary};
 `;
 
 const HistoryCardHead = styled(CardHead)`
@@ -346,6 +400,22 @@ export default function SupportTaskDetail() {
   const relatedUser = task.related_user_profile;
   const createdBy = task.created_by_profile;
   const now = new Date();
+
+  function formatLastActive(iso: string | null): string {
+    if (!iso) return 'Never';
+    const date = parseISO(iso);
+    const diffDays = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24),
+    );
+    const timeStr = format(date, 'h:mmaaa');
+    if (diffDays === 0) return `Today, ${timeStr}`;
+    if (diffDays === 1) return `Yesterday, ${timeStr}`;
+    return format(date, 'MMM d, yyyy');
+  }
+
+  function formatMemberSince(iso: string): string {
+    return format(parseISO(iso), 'MMM yyyy');
+  }
   const messagePreview =
     (task.action?.static_parameters?.message_preview as string | undefined) ??
     task.description;
@@ -545,10 +615,31 @@ export default function SupportTaskDetail() {
                         user={relatedUser}
                         dimensions={{ width: 56, height: 56 }}
                       />
-                      <UserName>
-                        {relatedUser.first_name} {relatedUser.second_name}
-                      </UserName>
+                      <div>
+                        <UserName>
+                          {relatedUser.first_name} {relatedUser.second_name}
+                        </UserName>
+                        <UserEmail>{relatedUser.email}</UserEmail>
+                      </div>
                     </UserTop>
+                    <StatsGrid>
+                      <StatBox>
+                        <StatLabel>Member since</StatLabel>
+                        <StatValue>
+                          {formatMemberSince(relatedUser.date_joined)}
+                        </StatValue>
+                      </StatBox>
+                      <StatBox>
+                        <StatLabel>Past tickets</StatLabel>
+                        <StatValue>{relatedUser.past_tickets}</StatValue>
+                      </StatBox>
+                    </StatsGrid>
+                    <LastActiveRow>
+                      <LastActiveLabel>Last active</LastActiveLabel>
+                      <LastActiveValue>
+                        {formatLastActive(relatedUser.last_active)}
+                      </LastActiveValue>
+                    </LastActiveRow>
                     <ProfileLink to={`/user/${relatedUser.id}`}>
                       Open full profile →
                     </ProfileLink>

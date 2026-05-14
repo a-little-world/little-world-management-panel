@@ -18,13 +18,20 @@ export interface SupportTaskAction {
   history?: ObjectHistory[];
 }
 
+export interface RelatedUserProfile extends UserProfile {
+  email: string;
+  date_joined: string;
+  last_active: string | null;
+  past_tickets: number;
+}
+
 export interface SupportTask {
   id: number;
   title: string;
   description: string;
   status: TaskStatus;
   priority: TaskPriority;
-  related_user_profile: UserProfile | null;
+  related_user_profile: RelatedUserProfile | null;
   assigned_to_profile: UserProfile | null;
   created_by_profile: UserProfile | null;
   created_at: string;
