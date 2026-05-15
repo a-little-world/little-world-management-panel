@@ -17,7 +17,7 @@ import {
   ChartTooltipContent,
 } from '../../atoms/Chart';
 import { DatePicker } from '../../atoms/DatePicker';
-import HorizontalBarChart from '../../atoms/stats/HorizontalBarChart';
+import HorizontalBarChart from '../../atoms/Stats/HorizontalBarChart';
 
 const matchJourneyChartCategories = [
   {
