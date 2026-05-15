@@ -32,7 +32,7 @@ import {
   ListScroll,
   Title,
   TitleRow,
-} from '../events/Events.styles';
+} from '../../../atoms/PageLayout';
 
 const buildBannerEditRoute = (id: number | 'new') => `${BANNERS_ROUTE}${id}/`;
 const formatDateTime = (value: string | null) =>

@@ -2,7 +2,6 @@ import {
   CustomThemeProvider,
   GlobalStyles,
   ToastProvider,
-  ToastViewport,
 } from '@a-little-world/little-world-design-system';
 import React, { PropsWithChildren } from 'react';
 import {
@@ -26,9 +25,11 @@ import Scores from './components/views/Scores';
 import Stats from './components/views/Stats';
 import Users from './components/views/Users';
 import VideoCalls from './components/views/VideoCalls';
+import Communications from './components/views/comms/Communications';
 import Banners from './components/views/comms/banners/Banners';
 import EditBanner from './components/views/comms/banners/EditBanner';
 import Events from './components/views/comms/events/Events';
+import ShortLinks from './components/views/comms/shortLinks/ShortLinks';
 import CreateNewEmail from './components/views/emails/CreateNewEmail';
 import Email from './components/views/emails/Email';
 import EmailHtml from './components/views/emails/EmailHtml';
@@ -41,6 +42,7 @@ import {
   BANNERS_ROUTE,
   BANNER_EDIT_ROUTE,
   BASE_ROUTE,
+  COMMUNICATIONS_ROUTE,
   CREATE_NEW_EMAIL_ROUTE,
   DOCUMENTATION_ROUTE,
   DYNAMIC_USER_LISTS_ROUTE,
@@ -56,6 +58,7 @@ import {
   RANDOM_CALLS_ROUTE,
   SCORES_ROUTE,
   SEND_DYNAMIC_EMAIL_ROUTE,
+  SHORT_LINKS_ROUTE,
   STATS_ROUTE,
   USERS_ROUTE,
   USER_DETAILS_ROUTE,
@@ -78,7 +81,6 @@ export const Root = ({
         ) : (
           children || <Outlet />
         )}
-        <ToastViewport />
       </EmailThemeProvider>
     </ToastProvider>
   </CustomThemeProvider>
@@ -93,6 +95,10 @@ const router = createBrowserRouter(
         {
           path: '',
           element: <Home />,
+        },
+        {
+          path: COMMUNICATIONS_ROUTE,
+          element: <Communications />,
         },
         {
           path: USERS_ROUTE,
@@ -169,6 +175,10 @@ const router = createBrowserRouter(
         {
           path: EVENTS_ROUTE,
           element: <Events />,
+        },
+        {
+          path: SHORT_LINKS_ROUTE,
+          element: <ShortLinks />,
         },
         {
           path: BANNERS_ROUTE,
