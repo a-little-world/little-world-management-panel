@@ -97,6 +97,15 @@ export const patchSupportTask = (
 export const fetchStaffUsers = (): Promise<StaffUser[]> =>
   apiFetch('/api/support_task/staff_users/');
 
+export const patchAction = (
+  taskId: number,
+  parameters: Record<string, unknown>,
+): Promise<SupportTaskAction> =>
+  apiFetch(`/api/support_task/${taskId}/action/`, {
+    method: 'PATCH',
+    body: { parameters },
+  });
+
 export const executeAction = (taskId: number): Promise<SupportTaskAction> =>
   apiFetch(`/api/support_task/${taskId}/action/execute/`, { method: 'POST' });
 

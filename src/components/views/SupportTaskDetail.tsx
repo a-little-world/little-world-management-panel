@@ -472,7 +472,9 @@ export default function SupportTaskDetail() {
                 )}
               </Card>
             )}
-            {action && <SupportTaskActionCard action={action} />}
+            {action && (
+              <SupportTaskActionCard action={action} taskId={id} onResolved={mutate} />
+            )}
           </MainColumn>
 
           <SideColumn>

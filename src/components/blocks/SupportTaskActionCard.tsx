@@ -1,6 +1,7 @@
 import {
   Button,
   ButtonAppearance,
+  Tag,
   Text,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
@@ -8,9 +9,15 @@ import { CheckIcon } from 'lucide-react';
 import React, { useState } from 'react';
 import styled from 'styled-components';
 
-import { ActionStatus, SupportTaskAction } from '../../api/supportTasks';
+import {
+  ActionStatus,
+  SupportTaskAction,
+  cancelAction,
+  executeAction,
+} from '../../api/supportTasks';
 import { ORANGE_40 } from '../../constants';
 import { Card, CardContent, CardFooter, CardHeader } from '../atoms/Card';
+import ChangeCountryOfResidenceAction from './supportTaskActions/ChangeCountryOfResidenceAction';
 
 // ─── Styled ───────────────────────────────────────────────────────────────────
 
@@ -22,7 +29,7 @@ const HeaderTitle = styled.h3`
   margin: 0 0 2px;
 `;
 
-const FooterActions = styled.div`\
+const FooterActions = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.spacing.xsmall};
   flex-shrink: 0;
@@ -43,15 +50,17 @@ const STATUS_SUBTITLE: Record<ActionStatus, string> = {
   CANCELLED: 'Cancelled',
 };
 
-// ─── Component ────────────────────────────────────────────────────────────────
+// ─── SupportTaskActionCard ────────────────────────────────────────────────────
 
 interface SupportTaskActionCardProps {
   action: SupportTaskAction;
+  taskId: number;
   onResolved?: () => void;
 }
 
 export default function SupportTaskActionCard({
   action,
+  taskId,
   onResolved,
 }: SupportTaskActionCardProps) {
   const [loading, setLoading] = useState<'execute' | 'cancel' | null>(null);
@@ -62,8 +71,8 @@ export default function SupportTaskActionCard({
     setLoading(type);
     setError(null);
     try {
-      // if (type === 'execute') await executeAction(action.task_id);
-      // else await cancelAction(action.task_id);
+      if (type === 'execute') await executeAction(taskId);
+      else await cancelAction(taskId);
       onResolved?.();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Something went wrong');
@@ -72,18 +81,38 @@ export default function SupportTaskActionCard({
     }
   };
 
+  function renderContent() {
+    switch (action.action_type) {
+      case 'profile_change_action_country_of_residence':
+        return (
+          <ChangeCountryOfResidenceAction
+            currentCode={String(action.static_parameters.current_value ?? '')}
+            newCode={String(action.parameters.new_value ?? '')}
+            taskId={taskId}
+            isEditable={isOpen}
+            onChanged={onResolved ?? (() => {})}
+          />
+        );
+      default:
+        return null;
+    }
+  }
+
   return (
     <Card center={false}>
       <CardHeader>
         <HeaderTitle>Action - {action.action_type}</HeaderTitle>
-        <Text type={TextTypes.Body6} tag="span">
-          {STATUS_SUBTITLE[action.status]}
-        </Text>
+        <Tag>{STATUS_SUBTITLE[action.status]}</Tag>
       </CardHeader>
 
-      <CardContent></CardContent>
+      <CardContent>{renderContent()}</CardContent>
 
       <StyledFooter>
+        {error && (
+          <Text type={TextTypes.Body6} tag="span">
+            {error}
+          </Text>
+        )}
         {isOpen && (
           <FooterActions>
             <Button
