@@ -7,7 +7,7 @@ import {
   TextTypes,
 } from '@a-little-world/little-world-design-system';
 import { ChevronDownIcon, ChevronLeftIcon, ChevronUpIcon } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import useSWR from 'swr';
@@ -26,9 +26,11 @@ import {
 import { BLUE_10, BLUE_40, ORANGE_40 } from '../../constants';
 import { formatTimeDistance } from '../../helpers/date';
 import { SUPPORT_TASKS_ROUTE } from '../../routes';
+import { dataFetcher } from '../../store';
 import { Card, CardContent, CardHeader, CardTitle } from '../atoms/Card';
 import UserImage from '../atoms/UserImage';
 import ObjectHistoryList, { ObjectHistory } from '../blocks/ObjectHistory';
+import UserChat from '../blocks/user/UserChat';
 
 // ─── Dropdown options ─────────────────────────────────────────────────────────
 
@@ -126,6 +128,12 @@ const ContentGrid = styled.div`
   gap: ${({ theme }) => theme.spacing.medium};
 `;
 
+const MainColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.medium};
+`;
+
 const SideColumn = styled.aside`
   display: flex;
   flex-direction: column;
@@ -166,26 +174,23 @@ const StatBox = styled.div`
   gap: ${({ theme }) => theme.spacing.xxxsmall};
 `;
 
-const CollapsibleHeader = styled.div`
-  display: flex;
+const CollapsibleHeader = styled(CardHeader)`
+  flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  padding: ${({ theme }) => theme.spacing.small}
-    ${({ theme }) => theme.spacing.medium};
   cursor: pointer;
   user-select: none;
   &:hover {
     background: ${({ theme }) => theme.color.surface.secondary};
-    border-radius: ${({ theme }) => theme.radius.large}
-      ${({ theme }) => theme.radius.large} 0 0;
   }
 `;
 
-const HistoryScroll = styled.div`
-  max-height: 480px;
-  overflow-y: auto;
-  padding: 0 ${({ theme }) => theme.spacing.medium}
-    ${({ theme }) => theme.spacing.medium};
+const ChatWrapper = styled.div`
+  max-height: 500px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: ${({ theme }) => theme.spacing.medium};
 `;
 
 const ProfileLink = styled(Link)`
@@ -206,6 +211,9 @@ const ProfileLink = styled(Link)`
 export default function SupportTaskDetail() {
   const { taskId } = useParams<{ taskId: string }>();
   const id = Number(taskId);
+  const [descriptionOpen, setDescriptionOpen] = useState(true);
+  const [chatOpen, setChatOpen] = useState(true);
+  const [relatedUserOpen, setRelatedUserOpen] = useState(true);
   const [historyOpen, setHistoryOpen] = useState(true);
 
   const {
@@ -218,6 +226,17 @@ export default function SupportTaskDetail() {
   );
 
   const { data: staffUsers = [] } = useSWR('staff_users', fetchStaffUsers);
+
+  const { data: relatedUserDetail } = useSWR(
+    task?.related_user_profile
+      ? `/api/matching/users/${task.related_user_profile.id}/?messages=include`
+      : null,
+    dataFetcher,
+  );
+
+  useEffect(() => {
+    console.log(`relatedUserDetail`, relatedUserDetail);
+  }, [relatedUserDetail]);
 
   if (isLoading) {
     return (
@@ -416,68 +435,102 @@ export default function SupportTaskDetail() {
         </MetaRow>
 
         <ContentGrid>
-          <div>
+          <MainColumn>
             {description && (
               <Card center={false}>
-                <CardHeader>
+                <CollapsibleHeader onClick={() => setDescriptionOpen(o => !o)}>
                   <CardTitle>Description</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Text tag="p">{description}</Text>
-                </CardContent>
+                  {descriptionOpen ? (
+                    <ChevronUpIcon size={16} />
+                  ) : (
+                    <ChevronDownIcon size={16} />
+                  )}
+                </CollapsibleHeader>
+                {descriptionOpen && (
+                  <CardContent>
+                    <Text tag="p">{description}</Text>
+                  </CardContent>
+                )}
               </Card>
             )}
-          </div>
+            {relatedUserDetail && (
+              <Card center={false}>
+                <CollapsibleHeader onClick={() => setChatOpen(o => !o)}>
+                  <CardTitle>Support Chat</CardTitle>
+                  {chatOpen ? (
+                    <ChevronUpIcon size={16} />
+                  ) : (
+                    <ChevronDownIcon size={16} />
+                  )}
+                </CollapsibleHeader>
+                {chatOpen && (
+                  <ChatWrapper>
+                    <UserChat user={relatedUserDetail} />
+                  </ChatWrapper>
+                )}
+              </Card>
+            )}
+          </MainColumn>
 
           <SideColumn>
             {relatedUser && (
               <Card center={false}>
-                <CardHeader>
+                <CollapsibleHeader onClick={() => setRelatedUserOpen(o => !o)}>
                   <CardTitle>Related user</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <UserInfoRow>
-                    <UserImage
-                      alt={`${relatedUser.first_name} ${relatedUser.second_name}`}
-                      user={relatedUser}
-                      dimensions={{ width: 56, height: 56 }}
-                    />
-                    <div>
-                      <Text bold color={ORANGE_40} tag="div">
-                        {relatedUser.first_name} {relatedUser.second_name}
+                  {relatedUserOpen ? (
+                    <ChevronUpIcon size={16} />
+                  ) : (
+                    <ChevronDownIcon size={16} />
+                  )}
+                </CollapsibleHeader>
+                {relatedUserOpen && (
+                  <CardContent>
+                    <UserInfoRow>
+                      <UserImage
+                        alt={`${relatedUser.first_name} ${relatedUser.second_name}`}
+                        user={relatedUser}
+                        dimensions={{ width: 56, height: 56 }}
+                      />
+                      <div>
+                        <Text bold color={ORANGE_40} tag="div">
+                          {relatedUser.first_name} {relatedUser.second_name}
+                        </Text>
+                        <Text type={TextTypes.Body5} tag="div">
+                          {relatedUser.user_type}
+                        </Text>
+                        <Text type={TextTypes.Body5} tag="div">
+                          {relatedUser.email}
+                        </Text>
+                      </div>
+                    </UserInfoRow>
+                    <StatGrid>
+                      <StatBox>
+                        <MetaLabel>Member since</MetaLabel>
+                        <Text bold tag="div">
+                          {format(
+                            parseISO(relatedUser.date_joined),
+                            'MMM yyyy',
+                          )}
+                        </Text>
+                      </StatBox>
+                      <StatBox>
+                        <MetaLabel>Past tickets</MetaLabel>
+                        <Text bold tag="div">
+                          {relatedUser.past_tickets}
+                        </Text>
+                      </StatBox>
+                    </StatGrid>
+                    <MetaField>
+                      <MetaLabel>Last active</MetaLabel>
+                      <Text type={TextTypes.Body6} tag="div">
+                        {formatLastActive(relatedUser.last_active)}
                       </Text>
-                      <Text type={TextTypes.Body5} tag="div">
-                        {relatedUser.user_type}
-                      </Text>
-                      <Text type={TextTypes.Body5} tag="div">
-                        {relatedUser.email}
-                      </Text>
-                    </div>
-                  </UserInfoRow>
-                  <StatGrid>
-                    <StatBox>
-                      <MetaLabel>Member since</MetaLabel>
-                      <Text bold tag="div">
-                        {format(parseISO(relatedUser.date_joined), 'MMM yyyy')}
-                      </Text>
-                    </StatBox>
-                    <StatBox>
-                      <MetaLabel>Past tickets</MetaLabel>
-                      <Text bold tag="div">
-                        {relatedUser.past_tickets}
-                      </Text>
-                    </StatBox>
-                  </StatGrid>
-                  <MetaField>
-                    <MetaLabel>Last active</MetaLabel>
-                    <Text type={TextTypes.Body6} tag="div">
-                      {formatLastActive(relatedUser.last_active)}
-                    </Text>
-                  </MetaField>
-                  <ProfileLink to={`/user/${relatedUser.id}`}>
-                    Open full profile →
-                  </ProfileLink>
-                </CardContent>
+                    </MetaField>
+                    <ProfileLink to={`/user/${relatedUser.id}`}>
+                      Open full profile →
+                    </ProfileLink>
+                  </CardContent>
+                )}
               </Card>
             )}
 
