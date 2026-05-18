@@ -34,6 +34,7 @@ export interface RelatedUserProfile extends UserProfile {
   date_joined: string;
   last_active: string | null;
   past_tickets: number;
+  user_type: string | null;
 }
 
 export interface SupportTask {

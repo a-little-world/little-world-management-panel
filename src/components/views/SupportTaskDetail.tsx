@@ -37,10 +37,12 @@ const STATUS_OPTIONS = Object.entries(STATUS_CONFIG).map(([value, cfg]) => ({
   label: cfg.label,
 }));
 
-const PRIORITY_OPTIONS = Object.entries(PRIORITY_CONFIG).map(([value, cfg]) => ({
-  value,
-  label: cfg.label,
-}));
+const PRIORITY_OPTIONS = Object.entries(PRIORITY_CONFIG).map(
+  ([value, cfg]) => ({
+    value,
+    label: cfg.label,
+  }),
+);
 
 const UNASSIGNED = 'UNASSIGNED';
 
@@ -108,7 +110,10 @@ const MetaField = styled.div`
   gap: ${({ theme }) => theme.spacing.xxxsmall};
 `;
 
-const MetaLabel = styled(Text).attrs({ type: TextTypes.Body7, tag: 'span' as const })`
+const MetaLabel = styled(Text).attrs({
+  type: TextTypes.Body7,
+  tag: 'span' as const,
+})`
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: ${({ theme }) => theme.color.text.tertiary};
@@ -165,7 +170,8 @@ const CollapsibleHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: ${({ theme }) => theme.spacing.small} ${({ theme }) => theme.spacing.medium};
+  padding: ${({ theme }) => theme.spacing.small}
+    ${({ theme }) => theme.spacing.medium};
   cursor: pointer;
   user-select: none;
   &:hover {
@@ -250,9 +256,7 @@ export default function SupportTaskDetail() {
     return format(date, 'MMM d, yyyy');
   }
 
-  const messagePreview =
-    (task.action?.static_parameters?.message_preview as string | undefined) ??
-    task.description;
+  const description = task.description;
 
   const assigneeOptions = [
     { value: UNASSIGNED, label: '— Unassigned' },
@@ -398,34 +402,28 @@ export default function SupportTaskDetail() {
 
           <MetaField>
             <MetaLabel>Created</MetaLabel>
-            <Text type={TextTypes.Body6}>{formatTimeDistance(task.created_at, now)}</Text>
+            <Text type={TextTypes.Body6}>
+              {formatTimeDistance(task.created_at, now)}
+            </Text>
           </MetaField>
 
           <MetaField>
             <MetaLabel>Updated</MetaLabel>
-            <Text type={TextTypes.Body6}>{formatTimeDistance(task.updated_at, now)}</Text>
+            <Text type={TextTypes.Body6}>
+              {formatTimeDistance(task.updated_at, now)}
+            </Text>
           </MetaField>
         </MetaRow>
 
         <ContentGrid>
           <div>
-            {messagePreview && (
+            {description && (
               <Card center={false}>
                 <CardHeader>
-                  <CardTitle>Original message</CardTitle>
-                  <Text type={TextTypes.Body7}>Submitted via in-app help form</Text>
+                  <CardTitle>Description</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <MessageQuote>
-                    {relatedUser && (
-                      <Text type={TextTypes.Body7} tag="p">
-                        {relatedUser.first_name} {relatedUser.second_name}
-                        {' · '}
-                        {formatTimeDistance(task.created_at, now)}
-                      </Text>
-                    )}
-                    <Text tag="p">{messagePreview}</Text>
-                  </MessageQuote>
+                  <Text tag="p">{description}</Text>
                 </CardContent>
               </Card>
             )}
@@ -448,7 +446,12 @@ export default function SupportTaskDetail() {
                       <Text bold color={ORANGE_40} tag="div">
                         {relatedUser.first_name} {relatedUser.second_name}
                       </Text>
-                      <Text type={TextTypes.Body7} tag="div">{relatedUser.email}</Text>
+                      <Text type={TextTypes.Body5} tag="div">
+                        {relatedUser.user_type}
+                      </Text>
+                      <Text type={TextTypes.Body5} tag="div">
+                        {relatedUser.email}
+                      </Text>
                     </div>
                   </UserInfoRow>
                   <StatGrid>
@@ -460,7 +463,9 @@ export default function SupportTaskDetail() {
                     </StatBox>
                     <StatBox>
                       <MetaLabel>Past tickets</MetaLabel>
-                      <Text bold tag="div">{relatedUser.past_tickets}</Text>
+                      <Text bold tag="div">
+                        {relatedUser.past_tickets}
+                      </Text>
                     </StatBox>
                   </StatGrid>
                   <MetaField>
@@ -479,7 +484,9 @@ export default function SupportTaskDetail() {
             {combined.length > 0 && (
               <Card center={false}>
                 <CollapsibleHeader onClick={() => setHistoryOpen(o => !o)}>
-                  <Text bold tag="span">History</Text>
+                  <Text bold tag="span">
+                    History
+                  </Text>
                   {historyOpen ? (
                     <ChevronUpIcon size={16} />
                   ) : (

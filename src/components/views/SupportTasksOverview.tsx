@@ -31,7 +31,14 @@ import {
   fetchSupportTasks,
   getActionTypeConfig,
 } from '../../api/supportTasks';
-import { BLUE_10, BLUE_40, GREEN_10, GREEN_40, ORANGE_10, ORANGE_40 } from '../../constants';
+import {
+  BLUE_10,
+  BLUE_40,
+  GREEN_10,
+  GREEN_40,
+  ORANGE_10,
+  ORANGE_40,
+} from '../../constants';
 import { formatTimeDistance } from '../../helpers/date';
 import { getSupportTaskDetailRoute } from '../../routes';
 import { useCurrentUserId } from '../../store';
@@ -246,7 +253,9 @@ function buildColumns(
       ),
       cell: ({ row }) => (
         <TaskCell>
-          <Text type={TextTypes.Body6} bold tag="span">{row.original.title}</Text>
+          <Text type={TextTypes.Body6} bold tag="span">
+            {row.original.title}
+          </Text>
           <TaskDesc>{row.original.description}</TaskDesc>
         </TaskCell>
       ),
@@ -378,13 +387,7 @@ function buildColumns(
         </Button>
       ),
       cell: ({ getValue }) => {
-        const isOld =
-          Date.now() - new Date(getValue()).getTime() > 2 * 60 * 60 * 1000;
-        return (
-          <AgeText $warn={isOld}>
-            {formatTimeDistance(getValue(), new Date())}
-          </AgeText>
-        );
+        return <Text>{formatTimeDistance(getValue(), new Date())}</Text>;
       },
     }),
     columnHelper.accessor('updated_at', {
@@ -395,7 +398,7 @@ function buildColumns(
         </Button>
       ),
       cell: ({ getValue }) => (
-        <AgeText>{formatTimeDistance(getValue(), new Date())}</AgeText>
+        <Text>{formatTimeDistance(getValue(), new Date())}</Text>
       ),
     }),
   ];
