@@ -219,7 +219,11 @@ function isUserProfile(value: unknown): value is UserProfile {
 }
 
 function formatValue(value: unknown): string {
-  if (value === null || value === undefined || value === '') return '';
+  if (typeof value === 'object') {
+    try {
+      value = JSON.stringify(value, null, 2);
+    } catch (_e) {}
+  }
   return String(value);
 }
 
