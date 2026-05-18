@@ -3,11 +3,13 @@ import {
   TagAppearance,
   TagSizes,
 } from '@a-little-world/little-world-design-system';
-import React from 'react';
+import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 
 import { BLUE_40, ORANGE_40 } from '../../constants';
 import { formatTimeDistance } from '../../helpers/date';
+import { Card, CardHeader, CardTitle } from '../atoms/Card';
 import UserImage from '../atoms/UserImage';
 
 // ─── Types (moved from api/supportTasks.ts) ───────────────────────────────────
@@ -44,17 +46,25 @@ const AVATAR_NEUTRAL_COLOR = '#888';
 
 // ─── Styled components ────────────────────────────────────────────────────────
 
-const Wrapper = styled.div`
-  display: flex;
-  flex-direction: column;
+const CollapsibleHeader = styled(CardHeader)`
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+  & > * + * {
+    margin-top: 0;
+  }
+  &:hover {
+    background: ${({ theme }) => theme.color.surface.secondary};
+  }
 `;
 
-const Title = styled.h3`
-  font-family: 'Work Sans', system-ui, sans-serif;
-  font-weight: 700;
-  font-size: 20px;
-  color: ${ORANGE_40};
-  margin: 0 0 20px;
+const HistoryScroll = styled.div`
+  max-height: 480px;
+  overflow-y: auto;
+  padding: 0 ${({ theme }) => theme.spacing.medium}
+    ${({ theme }) => theme.spacing.medium};
 `;
 
 const Timeline = styled.ol`
@@ -247,6 +257,7 @@ export default function ObjectHistoryList({
   title = 'History',
   labelByModelType,
 }: ObjectHistoryListProps) {
+  const [open, setOpen] = useState(true);
   const sorted = [...history].sort(
     (a, b) =>
       new Date(b.changed_at).getTime() - new Date(a.changed_at).getTime(),
@@ -254,95 +265,109 @@ export default function ObjectHistoryList({
   const now = new Date();
 
   return (
-    <Wrapper>
-      {title && <Title>{title}</Title>}
-      <Timeline>
-        {sorted.map((entry, i) => {
-          const actor = entry.changed_by_profile;
-          const isCreate = entry.type === 'CREATE';
-          const isLast = i === sorted.length - 1;
+    <Card center={false}>
+      <CollapsibleHeader onClick={() => setOpen(o => !o)}>
+        <CardTitle>{title}</CardTitle>
+        {open ? <ChevronUpIcon size={16} /> : <ChevronDownIcon size={16} />}
+      </CollapsibleHeader>
+      {open && (
+        <HistoryScroll>
+          <Timeline>
+            {sorted.map((entry, i) => {
+              const actor = entry.changed_by_profile;
+              const isCreate = entry.type === 'CREATE';
+              const isLast = i === sorted.length - 1;
 
-          return (
-            <TimelineItem key={entry.id} $last={isLast}>
-              <AvatarSlot>
-                {isCreate ? (
-                  <InitialsDot $bg={ORANGE_40} $color="white">
-                    +
-                  </InitialsDot>
-                ) : actor ? (
-                  actor.image_type === 'image' && actor.image ? (
-                    <UserImage
-                      alt={`${actor.first_name} ${actor.second_name}`}
-                      user={actor}
-                      dimensions={{ width: 36, height: 36 }}
-                    />
-                  ) : (
-                    <InitialsDot $bg={AVATAR_BLUE_BG} $color={BLUE_40}>
-                      {getInitials(actor)}
-                    </InitialsDot>
-                  )
-                ) : (
-                  <InitialsDot $bg={AVATAR_NEUTRAL_BG} $color={AVATAR_NEUTRAL_COLOR}>
-                    ·
-                  </InitialsDot>
-                )}
-              </AvatarSlot>
-
-              <EntryContent>
-                {isCreate ? (
-                  <EntryHeader>
-                    {actor ? (
-                      <ActorName>
-                        {actor.first_name} {actor.second_name}
-                      </ActorName>
-                    ) : (
-                      <ActorName>System</ActorName>
-                    )}
-                    created this task
-                  </EntryHeader>
-                ) : (
-                  <>
-                    <EntryHeader>
-                      {actor ? (
-                        <ActorName>
-                          {actor.first_name} {actor.second_name}
-                        </ActorName>
+              return (
+                <TimelineItem key={entry.id} $last={isLast}>
+                  <AvatarSlot>
+                    {isCreate ? (
+                      <InitialsDot $bg={ORANGE_40} $color="white">
+                        +
+                      </InitialsDot>
+                    ) : actor ? (
+                      actor.image_type === 'image' && actor.image ? (
+                        <UserImage
+                          alt={`${actor.first_name} ${actor.second_name}`}
+                          user={actor}
+                          dimensions={{ width: 36, height: 36 }}
+                        />
                       ) : (
-                        <ActorName>System</ActorName>
-                      )}
-                      changed
-                      <Tag
-                        bold
-                        size={TagSizes.small}
-                        appearance={TagAppearance.outline}
-                        color={BLUE_40}
+                        <InitialsDot $bg={AVATAR_BLUE_BG} $color={BLUE_40}>
+                          {getInitials(actor)}
+                        </InitialsDot>
+                      )
+                    ) : (
+                      <InitialsDot
+                        $bg={AVATAR_NEUTRAL_BG}
+                        $color={AVATAR_NEUTRAL_COLOR}
                       >
-                        {formatFieldName(entry.field)}
-                      </Tag>
-                    </EntryHeader>
-                    <DiffBlock>
-                      <DiffRow $type="old">
-                        <DiffSign>−</DiffSign>
-                        {renderDiffValue(entry.old_value)}
-                      </DiffRow>
-                      <DiffRow $type="new">
-                        <DiffSign>+</DiffSign>
-                        {renderDiffValue(entry.new_value)}
-                      </DiffRow>
-                    </DiffBlock>
-                  </>
-                )}
-                <TimestampRow>
-                  <Timestamp>{formatTimeDistance(entry.changed_at, now)}</Timestamp>
-                  {labelByModelType?.[entry.model_type] && (
-                    <EntryLabel>{labelByModelType[entry.model_type]}</EntryLabel>
-                  )}
-                </TimestampRow>
-              </EntryContent>
-            </TimelineItem>
-          );
-        })}
-      </Timeline>
-    </Wrapper>
+                        ·
+                      </InitialsDot>
+                    )}
+                  </AvatarSlot>
+
+                  <EntryContent>
+                    {isCreate ? (
+                      <EntryHeader>
+                        {actor ? (
+                          <ActorName>
+                            {actor.first_name} {actor.second_name}
+                          </ActorName>
+                        ) : (
+                          <ActorName>System</ActorName>
+                        )}
+                        created this task
+                      </EntryHeader>
+                    ) : (
+                      <>
+                        <EntryHeader>
+                          {actor ? (
+                            <ActorName>
+                              {actor.first_name} {actor.second_name}
+                            </ActorName>
+                          ) : (
+                            <ActorName>System</ActorName>
+                          )}
+                          changed
+                          <Tag
+                            bold
+                            size={TagSizes.small}
+                            appearance={TagAppearance.outline}
+                            color={BLUE_40}
+                          >
+                            {formatFieldName(entry.field)}
+                          </Tag>
+                        </EntryHeader>
+                        <DiffBlock>
+                          <DiffRow $type="old">
+                            <DiffSign>−</DiffSign>
+                            {renderDiffValue(entry.old_value)}
+                          </DiffRow>
+                          <DiffRow $type="new">
+                            <DiffSign>+</DiffSign>
+                            {renderDiffValue(entry.new_value)}
+                          </DiffRow>
+                        </DiffBlock>
+                      </>
+                    )}
+                    <TimestampRow>
+                      <Timestamp>
+                        {formatTimeDistance(entry.changed_at, now)}
+                      </Timestamp>
+                      {labelByModelType?.[entry.model_type] && (
+                        <EntryLabel>
+                          {labelByModelType[entry.model_type]}
+                        </EntryLabel>
+                      )}
+                    </TimestampRow>
+                  </EntryContent>
+                </TimelineItem>
+              );
+            })}
+          </Timeline>
+        </HistoryScroll>
+      )}
+    </Card>
   );
 }

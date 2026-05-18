@@ -214,7 +214,6 @@ export default function SupportTaskDetail() {
   const [descriptionOpen, setDescriptionOpen] = useState(true);
   const [chatOpen, setChatOpen] = useState(true);
   const [relatedUserOpen, setRelatedUserOpen] = useState(true);
-  const [historyOpen, setHistoryOpen] = useState(true);
 
   const {
     data: task,
@@ -535,30 +534,13 @@ export default function SupportTaskDetail() {
             )}
 
             {combined.length > 0 && (
-              <Card center={false}>
-                <CollapsibleHeader onClick={() => setHistoryOpen(o => !o)}>
-                  <Text bold tag="span">
-                    History
-                  </Text>
-                  {historyOpen ? (
-                    <ChevronUpIcon size={16} />
-                  ) : (
-                    <ChevronDownIcon size={16} />
-                  )}
-                </CollapsibleHeader>
-                {historyOpen && (
-                  <HistoryScroll>
-                    <ObjectHistoryList
-                      history={combined}
-                      title=""
-                      labelByModelType={{
-                        supporttask: 'Task',
-                        supporttaskaction: 'Action',
-                      }}
-                    />
-                  </HistoryScroll>
-                )}
-              </Card>
+              <ObjectHistoryList
+                history={combined}
+                labelByModelType={{
+                  supporttask: 'Task',
+                  supporttaskaction: 'Action',
+                }}
+              />
             )}
           </SideColumn>
         </ContentGrid>
