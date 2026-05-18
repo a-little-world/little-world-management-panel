@@ -1,12 +1,8 @@
-import {
-  Tag,
-  TagAppearance,
-  TagSizes,
-} from '@a-little-world/little-world-design-system';
 import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
 import React, { useState } from 'react';
 import styled from 'styled-components';
 
+import { Text } from '@a-little-world/little-world-design-system';
 import { BLUE_40, ORANGE_40 } from '../../constants';
 import { formatTimeDistance } from '../../helpers/date';
 import { Card, CardHeader, CardTitle } from '../atoms/Card';
@@ -203,6 +199,12 @@ const EntryLabel = styled.span`
   color: ${ORANGE_40};
 `;
 
+const ChangedField = styled(Text)`
+  background: ${({ theme }) => theme.color.surface.secondary};
+  font-weight: 600;
+  padding: 0 ${({ theme }) => theme.spacing.xxxsmall};
+`;
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatFieldName(field: string): string {
@@ -334,14 +336,9 @@ export default function ObjectHistoryList({
                             <ActorName>System</ActorName>
                           )}
                           changed
-                          <Tag
-                            bold
-                            size={TagSizes.small}
-                            appearance={TagAppearance.outline}
-                            color={BLUE_40}
-                          >
+                          <ChangedField>
                             {formatFieldName(entry.field)}
-                          </Tag>
+                          </ChangedField>
                         </EntryHeader>
                         <DiffBlock>
                           <DiffRow $type="old">
