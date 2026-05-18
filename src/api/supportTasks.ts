@@ -1,4 +1,3 @@
-import { apiFetch } from './helpers';
 import { ObjectHistory, UserProfile } from '../components/blocks/ObjectHistory';
 import {
   AMBER_40,
@@ -11,8 +10,13 @@ import {
   PURPLE_40,
   RED_40,
 } from '../constants';
+import { apiFetch } from './helpers';
 
-export type { ObjectHistory, ObjectHistoryType, UserProfile } from '../components/blocks/ObjectHistory';
+export type {
+  ObjectHistory,
+  ObjectHistoryType,
+  UserProfile,
+} from '../components/blocks/ObjectHistory';
 
 export type TaskStatus = 'NEW' | 'IN_PROGRESS' | 'COMPLETED';
 export type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
@@ -20,6 +24,7 @@ export type ActionStatus = 'OPEN' | 'EXECUTED' | 'CANCELLED';
 
 export interface SupportTaskAction {
   id: number;
+  task_id: number;
   action_type: string;
   static_parameters: Record<string, unknown>;
   parameters: Record<string, unknown>;
@@ -83,12 +88,20 @@ export const fetchSupportTask = (id: number): Promise<SupportTask> =>
 
 export const patchSupportTask = (
   id: number,
-  data: Partial<Pick<SupportTask, 'status' | 'priority'> & { assigned_to_id: number | null }>,
+  data: Partial<
+    Pick<SupportTask, 'status' | 'priority'> & { assigned_to_id: number | null }
+  >,
 ): Promise<SupportTask> =>
   apiFetch(`/api/support_task/${id}/update/`, { method: 'PATCH', body: data });
 
 export const fetchStaffUsers = (): Promise<StaffUser[]> =>
   apiFetch('/api/support_task/staff_users/');
+
+export const executeAction = (taskId: number): Promise<SupportTaskAction> =>
+  apiFetch(`/api/support_task/${taskId}/action/execute/`, { method: 'POST' });
+
+export const cancelAction = (taskId: number): Promise<SupportTaskAction> =>
+  apiFetch(`/api/support_task/${taskId}/action/cancel/`, { method: 'POST' });
 
 export interface SupportTaskStats {
   NEW: number;
@@ -99,28 +112,57 @@ export interface SupportTaskStats {
 export const fetchSupportTaskStats = (): Promise<SupportTaskStats> =>
   apiFetch('/api/support_task/stats/');
 
-export const STATUS_CONFIG: Record<TaskStatus, { label: string; color: string }> = {
+export const STATUS_CONFIG: Record<
+  TaskStatus,
+  { label: string; color: string }
+> = {
   NEW: { label: 'New', color: BLUE_40 },
   IN_PROGRESS: { label: 'In progress', color: ORANGE_40 },
   COMPLETED: { label: 'Completed', color: GREEN_40 },
 };
 
-export const PRIORITY_CONFIG: Record<TaskPriority, { label: string; color: string }> = {
+export const PRIORITY_CONFIG: Record<
+  TaskPriority,
+  { label: string; color: string }
+> = {
   LOW: { label: 'Low', color: GRAY_40 },
   MEDIUM: { label: 'Medium', color: BLUE_40 },
   HIGH: { label: 'High', color: ORANGE_40 },
   URGENT: { label: 'Urgent', color: RED_40 },
 };
 
-export const ACTION_TYPE_CONFIG: Record<string, { label: string; color: string }> = {
+export const ACTION_TYPE_CONFIG: Record<
+  string,
+  { label: string; color: string }
+> = {
   support_reply: { label: 'Support reply', color: BLUE_40 },
   message_action_remove_match: { label: 'Remove match', color: CRIMSON_40 },
-  profile_change_action_country_of_residence: { label: 'Country change', color: AMBER_40 },
-  message_action_change_user_type: { label: 'Change user type', color: ORANGE_40 },
-  profile_action_suspicious_profile: { label: 'Suspicious profile', color: MAROON_40 },
-  profile_action_too_empty_profile: { label: 'Incomplete profile', color: PURPLE_40 },
+  profile_change_action_country_of_residence: {
+    label: 'Country change',
+    color: AMBER_40,
+  },
+  message_action_change_user_type: {
+    label: 'Change user type',
+    color: ORANGE_40,
+  },
+  profile_action_suspicious_profile: {
+    label: 'Suspicious profile',
+    color: MAROON_40,
+  },
+  profile_action_too_empty_profile: {
+    label: 'Incomplete profile',
+    color: PURPLE_40,
+  },
 };
 
-export function getActionTypeConfig(actionType: string): { label: string; color: string } {
-  return ACTION_TYPE_CONFIG[actionType] ?? { label: actionType.replace(/_/g, ' '), color: GRAY_40 };
+export function getActionTypeConfig(actionType: string): {
+  label: string;
+  color: string;
+} {
+  return (
+    ACTION_TYPE_CONFIG[actionType] ?? {
+      label: actionType.replace(/_/g, ' '),
+      color: GRAY_40,
+    }
+  );
 }

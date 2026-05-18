@@ -30,6 +30,7 @@ import { dataFetcher } from '../../store';
 import { Card, CardContent, CardHeader, CardTitle } from '../atoms/Card';
 import UserImage from '../atoms/UserImage';
 import ObjectHistoryList, { ObjectHistory } from '../blocks/ObjectHistory';
+import SupportTaskActionCard from '../blocks/SupportTaskActionCard';
 import UserChat from '../blocks/user/UserChat';
 
 // ─── Dropdown options ─────────────────────────────────────────────────────────
@@ -288,6 +289,8 @@ export default function SupportTaskDetail() {
     ? String(task.assigned_to_profile.id)
     : UNASSIGNED;
 
+  const action = task.action;
+
   const patch = async (
     data: Parameters<typeof patchSupportTask>[1],
     optimistic: Partial<typeof task>,
@@ -469,6 +472,7 @@ export default function SupportTaskDetail() {
                 )}
               </Card>
             )}
+            {action && <SupportTaskActionCard action={action} />}
           </MainColumn>
 
           <SideColumn>
