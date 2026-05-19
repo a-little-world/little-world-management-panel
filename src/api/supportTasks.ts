@@ -8,7 +8,6 @@ import {
   MAROON_40,
   ORANGE_40,
   PURPLE_40,
-  RED_40,
 } from '../constants';
 import { apiFetch } from './helpers';
 
@@ -130,15 +129,6 @@ export const STATUS_CONFIG: Record<
   COMPLETED: { label: 'Completed', color: GREEN_40 },
 };
 
-export const PRIORITY_CONFIG: Record<
-  TaskPriority,
-  { label: string; color: string }
-> = {
-  LOW: { label: 'Low', color: GRAY_40 },
-  MEDIUM: { label: 'Medium', color: BLUE_40 },
-  HIGH: { label: 'High', color: ORANGE_40 },
-  URGENT: { label: 'Urgent', color: RED_40 },
-};
 
 export const ACTION_TYPE_CONFIG: Record<
   string,

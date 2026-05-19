@@ -13,7 +13,8 @@ import {
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
-import { ACTION_TYPE_CONFIG, PRIORITY_CONFIG, StaffUser } from '../../api/supportTasks';
+import { ACTION_TYPE_CONFIG, StaffUser } from '../../api/supportTasks';
+import { useTaskPriorityList } from '../../hooks/useTaskPriorities';
 
 // ─── Filter keys ──────────────────────────────────────────────────────────────
 
@@ -27,11 +28,6 @@ export const containsTaskFilterKey = (filters: Record<string, any>): boolean =>
   Object.keys(filters).some(k => Object.values(TaskFilterKeys).includes(k as TaskFilterKeys));
 
 // ─── Options ──────────────────────────────────────────────────────────────────
-
-const PRIORITY_OPTIONS = Object.entries(PRIORITY_CONFIG).map(([value, cfg]) => ({
-  value,
-  label: cfg.label,
-}));
 
 const ACTION_TYPE_OPTIONS = Object.entries(ACTION_TYPE_CONFIG).map(([value, cfg]) => ({
   value,
@@ -75,6 +71,9 @@ const SupportTaskFilters: React.FC<SupportTaskFiltersProps> = ({
   onRemoveFilter,
   staffUsers,
 }) => {
+  const priorityList = useTaskPriorityList();
+  const priorityOptions = priorityList.map(({ priority, label }) => ({ value: priority, label }));
+
   const [filters, setFilters] = useState<Record<string, any>>({});
 
   useEffect(() => {
@@ -100,7 +99,7 @@ const SupportTaskFilters: React.FC<SupportTaskFiltersProps> = ({
             key={filters[TaskFilterKeys.Priority]}
             name={TaskFilterKeys.Priority}
             heading="Priority"
-            options={PRIORITY_OPTIONS}
+            options={priorityOptions}
             preSelected={
               filters[TaskFilterKeys.Priority]
                 ? [filters[TaskFilterKeys.Priority]].flat()

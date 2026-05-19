@@ -7,14 +7,13 @@ import {
   TextTypes,
 } from '@a-little-world/little-world-design-system';
 import { ChevronDownIcon, ChevronLeftIcon, ChevronUpIcon } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import useSWR from 'swr';
 
 import { format, parseISO } from 'date-fns';
 import {
-  PRIORITY_CONFIG,
   STATUS_CONFIG,
   TaskPriority,
   TaskStatus,
@@ -23,6 +22,7 @@ import {
   getActionTypeConfig,
   patchSupportTask,
 } from '../../api/supportTasks';
+import { useTaskPriorityList } from '../../hooks/useTaskPriorities';
 import { BLUE_10, BLUE_40, ORANGE_40 } from '../../constants';
 import { formatTimeDistance } from '../../helpers/date';
 import { SUPPORT_TASKS_ROUTE } from '../../routes';
@@ -39,13 +39,6 @@ const STATUS_OPTIONS = Object.entries(STATUS_CONFIG).map(([value, cfg]) => ({
   value,
   label: cfg.label,
 }));
-
-const PRIORITY_OPTIONS = Object.entries(PRIORITY_CONFIG).map(
-  ([value, cfg]) => ({
-    value,
-    label: cfg.label,
-  }),
-);
 
 const UNASSIGNED = 'UNASSIGNED';
 
@@ -198,9 +191,6 @@ const ProfileLink = styled(Link)`
   display: block;
   text-align: center;
   color: ${({ theme }) => theme.color.text.link};
-  text-decoration: none;
-  font-size: 13px;
-  font-weight: 600;
   padding-top: ${({ theme }) => theme.spacing.xsmall};
   &:hover {
     text-decoration: underline;
@@ -210,6 +200,9 @@ const ProfileLink = styled(Link)`
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function SupportTaskDetail() {
+  const priorityList = useTaskPriorityList();
+  const priorityOptions = priorityList.map(({ priority, label }) => ({ value: priority, label }));
+
   const { taskId } = useParams<{ taskId: string }>();
   const id = Number(taskId);
   const [descriptionOpen, setDescriptionOpen] = useState(true);
@@ -233,10 +226,6 @@ export default function SupportTaskDetail() {
       : null,
     dataFetcher,
   );
-
-  useEffect(() => {
-    console.log(`relatedUserDetail`, relatedUserDetail);
-  }, [relatedUserDetail]);
 
   if (isLoading) {
     return (
@@ -364,7 +353,7 @@ export default function SupportTaskDetail() {
             <MetaLabel>Priority</MetaLabel>
             <Dropdown
               value={task.priority}
-              options={PRIORITY_OPTIONS}
+              options={priorityOptions}
               onValueChange={v =>
                 patch(
                   { priority: v as TaskPriority },
@@ -473,7 +462,11 @@ export default function SupportTaskDetail() {
               </Card>
             )}
             {action && (
-              <SupportTaskActionCard action={action} taskId={id} onResolved={mutate} />
+              <SupportTaskActionCard
+                action={action}
+                taskId={id}
+                onResolved={mutate}
+              />
             )}
           </MainColumn>
 

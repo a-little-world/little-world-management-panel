@@ -21,7 +21,6 @@ import styled from 'styled-components';
 import useSWR from 'swr';
 
 import {
-  PRIORITY_CONFIG,
   STATUS_CONFIG,
   SupportTask,
   TaskPriority,
@@ -31,6 +30,7 @@ import {
   fetchSupportTasks,
   getActionTypeConfig,
 } from '../../api/supportTasks';
+import { PriorityConfig, useTaskPriorities } from '../../hooks/useTaskPriorities';
 import {
   BLUE_10,
   BLUE_40,
@@ -227,6 +227,7 @@ function buildColumns(
   sortBy: string,
   sortOrder: 'asc' | 'desc',
   onSort: (field: string) => void,
+  priorityConfig: Record<TaskPriority, PriorityConfig>,
 ): ColumnDef<SupportTask, any>[] {
   return [
     columnHelper.accessor('id', {
@@ -289,7 +290,7 @@ function buildColumns(
         </Button>
       ),
       cell: ({ getValue }) => {
-        const cfg = PRIORITY_CONFIG[getValue() as TaskPriority];
+        const cfg = priorityConfig[getValue() as TaskPriority];
         return (
           <Tag
             bold
@@ -435,6 +436,8 @@ function SummaryTile({
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function SupportTasksOverview() {
+  const priorityConfig = useTaskPriorities();
+
   const [searchParams, setSearchParams] = useSearchParams();
   const currentUserId = useCurrentUserId();
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -560,8 +563,8 @@ export default function SupportTasksOverview() {
   );
 
   const columns = useMemo(
-    () => buildColumns(sortBy, sortOrder, onSort),
-    [sortBy, sortOrder, onSort],
+    () => buildColumns(sortBy, sortOrder, onSort, priorityConfig),
+    [sortBy, sortOrder, onSort, priorityConfig],
   );
 
   const updateSearchParam = (key: string, value: string | string[]) => {
