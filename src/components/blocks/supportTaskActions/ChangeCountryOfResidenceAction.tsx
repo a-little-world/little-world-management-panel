@@ -5,6 +5,7 @@ import {
 } from '@a-little-world/little-world-design-system';
 import { ArrowRightIcon } from 'lucide-react';
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 
 import { patchAction } from '../../../api/supportTasks';
@@ -100,12 +101,13 @@ export default function ChangeCountryOfResidenceAction({
 }: ChangeCountryOfResidenceActionProps) {
   const [saving, setSaving] = useState(false);
   const { apiOptions } = useGlobalState();
+  const { t } = useTranslation();
 
   const countryOptions: { value: string; label: string }[] = (
     (apiOptions as any)?.profile?.country_of_residence ?? []
   ).map(({ value, tag }: { value: string; tag: string }) => ({
     value,
-    label: tag,
+    label: t(tag),
   }));
 
   const getCountryName = (code: string) =>
