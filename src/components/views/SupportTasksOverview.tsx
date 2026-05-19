@@ -486,9 +486,9 @@ export default function SupportTasksOverview() {
   const actionTypeFilter = searchParams.getAll(TaskFilterKeys.ActionType);
   const assignedToFilter = searchParams.get(TaskFilterKeys.AssignedTo) ?? '';
 
-  const onlyNew = statusFilters.includes('NEW');
-  const onlyInProgress = statusFilters.includes('IN_PROGRESS');
-  const onlyCompleted = statusFilters.includes('COMPLETED');
+  const showNew = statusFilters.includes('NEW');
+  const showInProgress = statusFilters.includes('IN_PROGRESS');
+  const showCompleted = statusFilters.includes('COMPLETED');
   const onlyMe =
     currentUserId !== null && assignedToFilter === String(currentUserId);
 
@@ -664,31 +664,36 @@ export default function SupportTasksOverview() {
       >
         <QuickFilters>
           <Checkbox
-            name="only_new"
+            id="show_new"
+            name="show_new"
             label="New"
-            checked={onlyNew}
+            checked={showNew}
             onCheckedChange={() => toggleStatusFilter('NEW')}
           />
           <Checkbox
-            name="only_in_progress"
+            id="show_in_progress"
+            name="show_in_progress"
             label="In progress"
-            checked={onlyInProgress}
+            checked={showInProgress}
             onCheckedChange={() => toggleStatusFilter('IN_PROGRESS')}
           />
           <Checkbox
-            name="only_completed"
+            id="show_completed"
+            name="show_completed"
             label="Completed"
-            checked={onlyCompleted}
+            checked={showCompleted}
             onCheckedChange={() => toggleStatusFilter('COMPLETED')}
           />
           {currentUserId !== null && (
             <Checkbox
+              id="assigned_to_me"
               name="assigned_to_me"
               label="Assigned to me"
               checked={onlyMe}
               onCheckedChange={toggleOnlyMe}
             />
           )}
+          <DSButton onClick={() => setCreateOpen(true)}>New task</DSButton>
         </QuickFilters>
       </FiltersToolbar>
 
