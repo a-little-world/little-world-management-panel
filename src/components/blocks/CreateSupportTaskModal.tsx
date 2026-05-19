@@ -95,13 +95,12 @@ export default function CreateSupportTaskModal({ open, onClose, staffUsers, onCr
           />
           <div>
             <Label>Priority</Label>
-            <RadioGroup
-              inputRef={priorityRef}
-              type={RadioGroupVariations.Pill}
-              items={priorityItems}
+            <Dropdown
               value={priority}
+              options={priorityOptions}
               onValueChange={v => setPriority(v as TaskPriority)}
-              inline
+              placeholder="Priority"
+              cannotError
             />
           </div>
           <div>
