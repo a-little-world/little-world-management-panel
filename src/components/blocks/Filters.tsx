@@ -30,14 +30,14 @@ const FiltersModal = styled(Modal)`
   z-index: 1000;
 `;
 
-const DropdownRow = styled.div`
+export const DropdownRow = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: ${({ theme }) => theme.spacing.small};
   width: 100%;
 `;
 
-const DropdownItem = styled.div`
+export const DropdownItem = styled.div`
   flex: 1 1 16rem;
   min-width: 0;
 `;

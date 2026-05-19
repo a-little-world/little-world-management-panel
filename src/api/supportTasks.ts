@@ -120,6 +120,29 @@ export interface SupportTaskStats {
 export const fetchSupportTaskStats = (): Promise<SupportTaskStats> =>
   apiFetch('/api/support_task/stats/');
 
+export interface CreateManualTaskPayload {
+  title: string;
+  description?: string;
+  priority: TaskPriority;
+  related_user_id?: number | null;
+  assigned_to_id?: number | null;
+}
+
+export const createManualSupportTask = (
+  data: CreateManualTaskPayload,
+): Promise<SupportTask> =>
+  apiFetch('/api/support_task/create_manual/', { method: 'POST', body: data });
+
+export interface UserSearchResult {
+  id: number;
+  email: string;
+  first_name: string;
+  second_name: string;
+}
+
+export const searchUsers = (q: string): Promise<UserSearchResult[]> =>
+  apiFetch(`/api/support_task/user_search/?q=${encodeURIComponent(q)}`);
+
 export const STATUS_CONFIG: Record<
   TaskStatus,
   { label: string; color: string }

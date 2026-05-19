@@ -1,5 +1,6 @@
 import {
   Checkbox,
+  Button as DSButton,
   Tag,
   TagAppearance,
   TagSizes,
@@ -30,7 +31,6 @@ import {
   fetchSupportTasks,
   getActionTypeConfig,
 } from '../../api/supportTasks';
-import { PriorityConfig, useTaskPriorities } from '../../hooks/useTaskPriorities';
 import {
   BLUE_10,
   BLUE_40,
@@ -40,6 +40,10 @@ import {
   ORANGE_40,
 } from '../../constants';
 import { formatTimeDistance } from '../../helpers/date';
+import {
+  PriorityConfig,
+  useTaskPriorities,
+} from '../../hooks/useTaskPriorities';
 import { getSupportTaskDetailRoute } from '../../routes';
 import { useCurrentUserId } from '../../store';
 import { Button } from '../atoms/Button';
@@ -51,6 +55,7 @@ import SupportTaskFilters, {
   TaskFilterKeys,
   containsTaskFilterKey,
 } from '../blocks/SupportTaskFilters';
+import SupportTaskModal from '../blocks/SupportTaskModal';
 
 // ─── Styled components ────────────────────────────────────────────────────────
 
@@ -442,6 +447,7 @@ export default function SupportTasksOverview() {
   const currentUserId = useCurrentUserId();
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [downloadSettingsOpen, setDownloadSettingsOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
   const [selectedHeaders, setSelectedHeaders] = useState<string[]>(
     DEFAULT_EXPORT_HEADERS,
   );
@@ -722,6 +728,19 @@ export default function SupportTasksOverview() {
         title="Task Export Settings"
         description="Choose which task fields to include in the CSV export."
       />
+
+      <SupportTaskModal
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        staffUsers={staffUsers}
+        onCreated={() => mutate}
+      />
+      {/* <CreateSupportTaskModal
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        staffUsers={staffUsers}
+        onCreated={() => mutate()}
+      /> */}
     </PageWrapper>
   );
 }
