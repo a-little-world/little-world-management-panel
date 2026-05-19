@@ -48,6 +48,7 @@ import { getSupportTaskDetailRoute } from '../../routes';
 import { useCurrentUserId } from '../../store';
 import { Button } from '../atoms/Button';
 import UserImage from '../atoms/UserImage';
+import CreateSupportTaskModal from '../blocks/CreateSupportTaskModal';
 import { DataTable } from '../blocks/DataTable';
 import { DownloadSettingsModal } from '../blocks/DownloadSettingsModal';
 import FiltersToolbar from '../blocks/FiltersToolbar';
@@ -55,7 +56,6 @@ import SupportTaskFilters, {
   TaskFilterKeys,
   containsTaskFilterKey,
 } from '../blocks/SupportTaskFilters';
-import SupportTaskModal from '../blocks/SupportTaskModal';
 
 // ─── Styled components ────────────────────────────────────────────────────────
 
@@ -729,18 +729,18 @@ export default function SupportTasksOverview() {
         description="Choose which task fields to include in the CSV export."
       />
 
-      <SupportTaskModal
+      {/* <SupportTaskModal
         open={createOpen}
         onClose={() => setCreateOpen(false)}
         staffUsers={staffUsers}
         onCreated={() => mutate}
-      />
-      {/* <CreateSupportTaskModal
+      /> */}
+      <CreateSupportTaskModal
         open={createOpen}
         onClose={() => setCreateOpen(false)}
         staffUsers={staffUsers}
         onCreated={() => mutate()}
-      /> */}
+      />
     </PageWrapper>
   );
 }
