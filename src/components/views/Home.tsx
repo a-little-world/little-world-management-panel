@@ -15,6 +15,7 @@ import {
   DOCUMENTATION_ROUTE,
   DYNAMIC_USER_LISTS_ROUTE,
   MATCHES_LIST_ROUTE,
+  MATCHING_USERS_ROUTE,
   PREMATCH_APPOINTMENTS_ROUTE,
   RANDOM_CALLS_ROUTE,
   SCORES_ROUTE,
@@ -33,6 +34,11 @@ const TABS: NavigationTile[] = [
   {
     name: 'Users',
     path: USERS_ROUTE,
+    icon: <UserGroupIcon className="h-16 w-16 text-white mb-2" />,
+  },
+  {
+    name: 'Matching users',
+    path: MATCHING_USERS_ROUTE,
     icon: <UserGroupIcon className="h-16 w-16 text-white mb-2" />,
   },
   {

@@ -210,6 +210,20 @@ export const useUserListData = (searchParams: string) => {
   };
 };
 
+export const useMatchingUsersListData = (searchParams: string) => {
+  const { data, error, mutate, isLoading } = useSWR(
+    `/api/matching/matching_users/?${searchParams}`,
+    dataFetcher,
+  );
+
+  return {
+    matchingUsersList: data,
+    error,
+    mutate,
+    isLoading,
+  };
+};
+
 export const useVideoCallsListData = (searchParams: string) => {
   const { data, error, mutate, isLoading } = useSWR(
     `/api/matching/video_calls/?${searchParams}`,

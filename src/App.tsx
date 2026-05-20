@@ -23,6 +23,7 @@ import Matching from './components/views/Matching';
 import PrematchingAppointments from './components/views/PrematchingAppointments';
 import Scores from './components/views/Scores';
 import Stats from './components/views/Stats';
+import MatchingUsers from './components/views/MatchingUsers';
 import Users from './components/views/Users';
 import VideoCalls from './components/views/VideoCalls';
 import Communications from './components/views/comms/Communications';
@@ -52,6 +53,7 @@ import {
   EMAIL_ROUTE,
   EVENTS_ROUTE,
   MATCHES_LIST_ROUTE,
+  MATCHING_USERS_ROUTE,
   MATCHING_ROUTE,
   MATCH_ROUTE,
   PREMATCH_APPOINTMENTS_ROUTE,
@@ -103,6 +105,10 @@ const router = createBrowserRouter(
         {
           path: USERS_ROUTE,
           element: <Users />,
+        },
+        {
+          path: MATCHING_USERS_ROUTE,
+          element: <MatchingUsers />,
         },
         {
           path: USER_DETAILS_ROUTE,

@@ -16,6 +16,7 @@ import {
   DOCUMENTATION_ROUTE,
   DYNAMIC_USER_LISTS_ROUTE,
   MATCHES_LIST_ROUTE,
+  MATCHING_USERS_ROUTE,
   PREMATCH_APPOINTMENTS_ROUTE,
   RANDOM_CALLS_ROUTE,
   SCORES_ROUTE,
@@ -60,6 +61,12 @@ const Menu = () => {
             active={location.pathname === USERS_ROUTE}
           >
             Users
+          </NavigationMenuContentItem>
+          <NavigationMenuContentItem
+            to={MATCHING_USERS_ROUTE}
+            active={location.pathname === MATCHING_USERS_ROUTE}
+          >
+            Matching users
           </NavigationMenuContentItem>
           <NavigationMenuContentItem
             to={COMMUNICATIONS_ROUTE}
