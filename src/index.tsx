@@ -5,7 +5,15 @@ import { MatchingPannel } from './App';
 import { EmailHtmlRenderer } from './components/views/emails/EmailHtml';
 import './index.css';
 
-function renderApp({ apiOptions, apiTranslations }) {
+function renderApp({
+  apiOptions,
+  apiTranslations,
+  user = {},
+}: {
+  apiOptions: Record<string, unknown>;
+  apiTranslations: Record<string, unknown>;
+  user?: Record<string, unknown>;
+}) {
   const root = ReactDOM.createRoot(document.getElementById('root'));
   console.log('RENDERING APP');
   root.render(
@@ -13,6 +21,7 @@ function renderApp({ apiOptions, apiTranslations }) {
       <MatchingPannel
         apiOptions={apiOptions}
         apiTranslations={apiTranslations}
+        panelUser={user}
       />
     </React.StrictMode>,
   );

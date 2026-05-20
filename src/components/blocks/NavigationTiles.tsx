@@ -17,7 +17,7 @@ function NavigationTiles({
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-col justify-center items-center h-screen gap-6">
+    <div className="flex flex-col flex-1 justify-center items-center gap-6 py-6 min-h-0">
       {title ? (
         <h1 className="text-slate-800 text-2xl font-bold">{title}</h1>
       ) : null}

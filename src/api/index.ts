@@ -774,6 +774,19 @@ export type ManagementPermissionRow = {
   enabled: boolean;
 };
 
+export type MatchingPanelUser = {
+  id: number;
+  uuid: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  is_staff: boolean;
+  is_superuser: boolean;
+  is_matching_user: boolean;
+  can_edit_management_permissions: boolean;
+  permissions: ManagementPermissionRow[];
+};
+
 export const fetchUserManagementPermissions = (userId: string) =>
   apiFetch<{ permissions: ManagementPermissionRow[] }>(
     `/api/matching/users/${userId}/permissions/`,

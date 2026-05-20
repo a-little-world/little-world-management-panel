@@ -1,4 +1,10 @@
 import {
+  Tag,
+  TagSizes,
+  Text,
+  TextTypes,
+} from '@a-little-world/little-world-design-system';
+import {
   CalendarDaysIcon,
   ChartBarIcon,
   ChatBubbleLeftRightIcon,
@@ -10,6 +16,8 @@ import {
 import React from 'react';
 
 import { Calculator, HeadsetIcon, HeartHandshake } from 'lucide-react';
+
+import type { MatchingPanelUser } from '../../api/index';
 import {
   COMMUNICATIONS_ROUTE,
   DOCUMENTATION_ROUTE,
@@ -23,6 +31,7 @@ import {
   USERS_ROUTE,
   VIDEO_CALLS_ROUTE,
 } from '../../routes';
+import { useGlobalState } from '../../store';
 import NavigationTiles, { NavigationTile } from '../blocks/NavigationTiles';
 
 const TABS: NavigationTile[] = [
@@ -83,8 +92,61 @@ const TABS: NavigationTile[] = [
   },
 ];
 
+function PanelUserPermissionsOverview({ user }: { user: MatchingPanelUser }) {
+  const enabledPermissions = (user.permissions ?? []).filter(row => row.enabled);
+
+  if (!enabledPermissions.length && !user.is_staff) {
+    return null;
+  }
+
+  return (
+    <div className="flex flex-col items-center gap-3 w-full max-w-2xl">
+      <Text type={TextTypes.Body4} tag="p" center>
+        Your permissions
+      </Text>
+      <div className="flex flex-wrap justify-center gap-2">
+        {user.is_staff && (
+          <Tag bold size={TagSizes.small} color="#7c3aed">
+            Staff
+          </Tag>
+        )}
+        {enabledPermissions.map(row => (
+          <Tag
+            key={row.permission}
+            bold
+            size={TagSizes.small}
+            color="#2563eb"
+          >
+            {row.label ?? row.codename}
+          </Tag>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 const Home = () => {
-  return <NavigationTiles items={TABS} />;
+  const { panelUser } = useGlobalState();
+  const user = panelUser as MatchingPanelUser;
+  const hasName = Boolean(user?.first_name || user?.last_name);
+  const hasPermissions =
+    user?.is_staff || (user?.permissions ?? []).some(row => row.enabled);
+
+  return (
+    <div className="flex flex-col flex-1 min-h-0 overflow-auto">
+      {(hasName || hasPermissions) && (
+        <section className="flex flex-col items-center text-center gap-4 px-6 pt-10 pb-4 shrink-0 w-full">
+          {hasName && (
+            <Text type={TextTypes.Heading4} tag="h1" center>
+              Welcome, {user.first_name} {user.last_name}
+            </Text>
+          )}
+          {hasPermissions && <PanelUserPermissionsOverview user={user} />}
+        </section>
+      )}
+      <NavigationTiles items={TABS} />
+    </div>
+  );
 };
 
 export default Home;

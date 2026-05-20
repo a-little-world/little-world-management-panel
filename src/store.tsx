@@ -285,6 +285,7 @@ const GlobalStateContext = createContext({
   potentialMatch: [],
   apiOptions: {},
   apiTranslations: {},
+  panelUser: {},
   updateCurrentUser: () => null,
   setUpdateCurrentUser: (fn: () => void) => {},
 });
@@ -301,6 +302,7 @@ export function GlobalStateProvider(props) {
   const [potentialMatch, setPotentialMatch] = useState<any[]>([]);
   const [apiOptions] = useState(props?.apiOptions || {});
   const [apiTranslations] = useState(props?.apiTranslations || {});
+  const [panelUser] = useState(props?.panelUser || {});
   const [updateCurrentUser, setUpdateCurrentUser] = useState(() => () => null);
 
   const selectUser = useCallback(
@@ -406,6 +408,7 @@ export function GlobalStateProvider(props) {
       clearMatching,
       apiOptions,
       apiTranslations,
+      panelUser,
       updateCurrentUser,
       setUpdateCurrentUser,
       allPrematchingAppointmentUsers,
@@ -429,6 +432,7 @@ export function GlobalStateProvider(props) {
       clearMatching,
       apiOptions,
       apiTranslations,
+      panelUser,
       updateCurrentUser,
       setUpdateCurrentUser,
       allPrematchingAppointmentUsers,

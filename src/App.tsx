@@ -204,11 +204,20 @@ const router = createBrowserRouter(
   { basename: BASE_ROUTE },
 );
 
-export function MatchingPannel({ apiOptions, apiTranslations }) {
+export function MatchingPannel({
+  apiOptions,
+  apiTranslations,
+  panelUser = {},
+}: {
+  apiOptions: Record<string, unknown>;
+  apiTranslations: Record<string, unknown>;
+  panelUser?: Record<string, unknown>;
+}) {
   return (
     <GlobalStateProvider
       apiOptions={apiOptions}
       apiTranslations={apiTranslations}
+      panelUser={panelUser}
     >
       <RouterProvider router={router} />
     </GlobalStateProvider>
