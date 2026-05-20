@@ -2329,52 +2329,6 @@ const automatedEmails = {
       },
     ],
   },
-  'prematching-call-no-show': {
-    id: 'prematching-call-no-show',
-    label: 'Prematching call no show',
-    category_id: EmailCategories.Automated,
-    preview: automatedText['prematching-call-no-show.preview'],
-    subject: automatedText['prematching-call-no-show.subject'],
-    content: [
-      {
-        type: ContentTypes.Title,
-        text: automatedText['prematching-call-no-show.block-1'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['prematching-call-no-show.block-2'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['prematching-call-no-show.block-3'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['prematching-call-no-show.block-4'],
-      },
-      {
-        type: ContentTypes.Link,
-        text: 'Buche einen neuen Termin',
-        href: automatedText['prematching-call-no-show.booking-link'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: '',
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['prematching-call-no-show.block-5'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['prematching-call-no-show.block-6'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['prematching-call-no-show.block-7'],
-      },
-    ],
-  },
   'reset-password': {
     id: 'reset-password',
     label: 'Reset Password',
