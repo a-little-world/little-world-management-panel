@@ -2,7 +2,6 @@ import {
   CustomThemeProvider,
   GlobalStyles,
   ToastProvider,
-  ToastViewport,
 } from '@a-little-world/little-world-design-system';
 import React, { PropsWithChildren } from 'react';
 import {
@@ -24,11 +23,14 @@ import Matching from './components/views/Matching';
 import PrematchingAppointments from './components/views/PrematchingAppointments';
 import Scores from './components/views/Scores';
 import Stats from './components/views/Stats';
+import MatchingUsers from './components/views/MatchingUsers';
 import Users from './components/views/Users';
 import VideoCalls from './components/views/VideoCalls';
+import Communications from './components/views/comms/Communications';
 import Banners from './components/views/comms/banners/Banners';
 import EditBanner from './components/views/comms/banners/EditBanner';
 import Events from './components/views/comms/events/Events';
+import ShortLinks from './components/views/comms/shortLinks/ShortLinks';
 import CreateNewEmail from './components/views/emails/CreateNewEmail';
 import Email from './components/views/emails/Email';
 import EmailHtml from './components/views/emails/EmailHtml';
@@ -43,6 +45,7 @@ import {
   BANNERS_ROUTE,
   BANNER_EDIT_ROUTE,
   BASE_ROUTE,
+  COMMUNICATIONS_ROUTE,
   CREATE_NEW_EMAIL_ROUTE,
   DOCUMENTATION_ROUTE,
   DYNAMIC_USER_LISTS_ROUTE,
@@ -52,12 +55,14 @@ import {
   EMAIL_ROUTE,
   EVENTS_ROUTE,
   MATCHES_LIST_ROUTE,
+  MATCHING_USERS_ROUTE,
   MATCHING_ROUTE,
   MATCH_ROUTE,
   PREMATCH_APPOINTMENTS_ROUTE,
   RANDOM_CALLS_ROUTE,
   SCORES_ROUTE,
   SEND_DYNAMIC_EMAIL_ROUTE,
+  SHORT_LINKS_ROUTE,
   STATS_ROUTE,
   USERS_ROUTE,
   USER_DETAILS_ROUTE,
@@ -82,7 +87,6 @@ export const Root = ({
         ) : (
           children || <Outlet />
         )}
-        <ToastViewport />
       </EmailThemeProvider>
     </ToastProvider>
   </CustomThemeProvider>
@@ -99,8 +103,16 @@ const router = createBrowserRouter(
           element: <Home />,
         },
         {
+          path: COMMUNICATIONS_ROUTE,
+          element: <Communications />,
+        },
+        {
           path: USERS_ROUTE,
           element: <Users />,
+        },
+        {
+          path: MATCHING_USERS_ROUTE,
+          element: <MatchingUsers />,
         },
         {
           path: USER_DETAILS_ROUTE,
@@ -175,6 +187,10 @@ const router = createBrowserRouter(
           element: <Events />,
         },
         {
+          path: SHORT_LINKS_ROUTE,
+          element: <ShortLinks />,
+        },
+        {
           path: BANNERS_ROUTE,
           element: <Banners />,
         },
@@ -200,11 +216,20 @@ const router = createBrowserRouter(
   { basename: BASE_ROUTE },
 );
 
-export function MatchingPannel({ apiOptions, apiTranslations }) {
+export function MatchingPannel({
+  apiOptions,
+  apiTranslations,
+  panelUser = {},
+}: {
+  apiOptions: Record<string, unknown>;
+  apiTranslations: Record<string, unknown>;
+  panelUser?: Record<string, unknown>;
+}) {
   return (
     <GlobalStateProvider
       apiOptions={apiOptions}
       apiTranslations={apiTranslations}
+      panelUser={panelUser}
     >
       <RouterProvider router={router} />
     </GlobalStateProvider>

@@ -92,7 +92,7 @@ const UserPanel = () => {
     error: appointmentError,
     isLoading: appointmentLoading,
   } = useSWR(
-    user ? `/api/matching/users/${user.hash}/prematching_appointment/` : null,
+    user ? `/api/matching/users/${user.uuid ?? user.hash}/prematching_appointment/` : null,
     dataFetcher,
   );
 

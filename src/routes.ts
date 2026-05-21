@@ -18,11 +18,14 @@ export const SEND_DYNAMIC_EMAIL_ROUTE =
 export const STATS_ROUTE = '/stats/';
 export const USER_DETAILS_ROUTE = '/user/:userId';
 export const USERS_ROUTE = '/users/';
+export const MATCHING_USERS_ROUTE = '/matching-users/';
 export const VIDEO_CALLS_ROUTE = '/video-calls/';
 export const RANDOM_CALLS_ROUTE = '/random-calls/';
 export const EVENTS_ROUTE = '/events/';
+export const SHORT_LINKS_ROUTE = '/short-links/';
 export const BANNERS_ROUTE = '/banners/';
 export const BANNER_EDIT_ROUTE = '/banners/:bannerId/';
+export const COMMUNICATIONS_ROUTE = '/communications/';
 
 export const getEditEmailRoute = (templateId: number) =>
   `/email/${templateId}/edit`;

@@ -81,7 +81,8 @@ interface UserMatches {
 
 interface User {
   id: string;
-  hash: string;
+  uuid?: string;
+  hash?: string;
   email: string;
   date_joined: string;
   last_login?: string | null;
@@ -94,7 +95,7 @@ interface User {
 interface UserCardProps {
   user: User;
   appointment?: { start_time: string; end_time: string };
-  deselectUser?: (hash: string) => void;
+  deselectUser?: (userId: string) => void;
   partial?: boolean;
   horizontal?: boolean;
   tiny?: boolean;
@@ -307,7 +308,7 @@ export const UserCard: React.FC<UserCardProps> = ({
   };
 
   const handleDeselectUser = (e: React.MouseEvent<HTMLButtonElement>) => {
-    deselectUser?.(user.hash);
+    deselectUser?.(user.uuid ?? user.hash ?? '');
     e.stopPropagation();
   };
 
@@ -434,7 +435,7 @@ export const UserCard: React.FC<UserCardProps> = ({
         <>
           <div className="my-2">
             <Link
-              href={`https://little-world.com/app/profile/${user.hash}`}
+              href={`https://little-world.com/app/profile/${user.uuid ?? user.hash}`}
               target="_blank"
               buttonAppearance={ButtonAppearance.Secondary}
               buttonSize={ButtonSizes.Stretch}

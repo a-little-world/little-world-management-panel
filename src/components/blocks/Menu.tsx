@@ -12,11 +12,11 @@ import { useLocation } from 'react-router-dom';
 import useSelectUser from '../../hooks/useSelectUser';
 import {
   BANNERS_ROUTE,
+  COMMUNICATIONS_ROUTE,
   DOCUMENTATION_ROUTE,
   DYNAMIC_USER_LISTS_ROUTE,
-  EVENTS_ROUTE,
-  EMAILS_ROUTE,
   MATCHES_LIST_ROUTE,
+  MATCHING_USERS_ROUTE,
   PREMATCH_APPOINTMENTS_ROUTE,
   RANDOM_CALLS_ROUTE,
   SCORES_ROUTE,
@@ -30,15 +30,23 @@ import SearchBar from './SearchBar';
 const Menu = () => {
   const location = useLocation();
   const { isSubmitting, onSelectUser, error } = useSelectUser({});
+  const isCommunicationsRoute =
+    location.pathname === COMMUNICATIONS_ROUTE ||
+    location.pathname.startsWith('/emails/') ||
+    location.pathname.startsWith('/email/') ||
+    location.pathname.startsWith('/send-dynamic-email/') ||
+    location.pathname.startsWith(BANNERS_ROUTE) ||
+    location.pathname.startsWith('/events/') ||
+    location.pathname.startsWith('/short-links/');
   return (
     <NavigationMenu withShadow>
       <SearchBar
-        name="userHash"
+        name="userId"
         hideSubmitBtn
         isSubmitting={isSubmitting}
         onSubmit={onSelectUser}
         error={error}
-        placeholder="Enter user hash"
+        placeholder="Enter user UUID"
       />
       <NavigationMenuItem>
         <NavigationMenuTrigger>Menu</NavigationMenuTrigger>
@@ -62,10 +70,16 @@ const Menu = () => {
             Users
           </NavigationMenuContentItem>
           <NavigationMenuContentItem
-            to={EMAILS_ROUTE}
-            active={location.pathname === EMAILS_ROUTE}
+            to={MATCHING_USERS_ROUTE}
+            active={location.pathname === MATCHING_USERS_ROUTE}
           >
-            Emails
+            Matching users
+          </NavigationMenuContentItem>
+          <NavigationMenuContentItem
+            to={COMMUNICATIONS_ROUTE}
+            active={isCommunicationsRoute}
+          >
+            Communications
           </NavigationMenuContentItem>
           {
             <NavigationMenuContentItem
@@ -91,7 +105,7 @@ const Menu = () => {
             to={VIDEO_CALLS_ROUTE}
             active={location.pathname === VIDEO_CALLS_ROUTE}
           >
-            VideoCalls
+            Video Calls
           </NavigationMenuContentItem>
           <NavigationMenuContentItem
             to={PREMATCH_APPOINTMENTS_ROUTE}
@@ -110,18 +124,6 @@ const Menu = () => {
             active={location.pathname === RANDOM_CALLS_ROUTE}
           >
             Random Calls
-          </NavigationMenuContentItem>
-          <NavigationMenuContentItem
-            to={EVENTS_ROUTE}
-            active={location.pathname === EVENTS_ROUTE}
-          >
-            Events
-          </NavigationMenuContentItem>
-          <NavigationMenuContentItem
-            to={BANNERS_ROUTE}
-            active={location.pathname.startsWith(BANNERS_ROUTE)}
-          >
-            Banners
           </NavigationMenuContentItem>
         </NavigationMenuContent>
       </NavigationMenuItem>

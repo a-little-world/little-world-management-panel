@@ -54,9 +54,10 @@ const LeftSection = styled.div`
 
 const MiddleSection = styled.div`
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: ${({ theme }) => theme.spacing.small};
   min-width: 0;
+  flex: 1;
 `;
 
 const RightSection = styled.div`

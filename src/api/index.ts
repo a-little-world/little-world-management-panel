@@ -2,12 +2,12 @@ import { Theme } from '../emails/shared/theme';
 import { getCookiesAsObject } from '../lib/utils';
 import { apiFetch, formatApiError } from './helpers';
 
-export const addUserByHash = async (
-  userHash: string,
+export const addUserByUuid = async (
+  userUuid: string,
   onError: (error: string) => void,
   onSuccess: (user: string[]) => void,
 ) => {
-  fetch(`/api/matching/users/${userHash}/`, {
+  fetch(`/api/matching/users/${userUuid}/`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -759,6 +759,59 @@ export const setRandomCallsAccess = async ({
         body: {
           random_call_access: randomCallsAccess,
         },
+      },
+    );
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
+  }
+};
+
+export type ManagementPermissionRow = {
+  permission: string;
+  codename: string;
+  label?: string;
+  enabled: boolean;
+};
+
+export type MatchingPanelUser = {
+  id: number;
+  uuid: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  is_staff: boolean;
+  is_superuser: boolean;
+  is_matching_user: boolean;
+  can_edit_management_permissions: boolean;
+  permissions: ManagementPermissionRow[];
+};
+
+export const fetchUserManagementPermissions = (userId: string) =>
+  apiFetch<{ permissions: ManagementPermissionRow[] }>(
+    `/api/matching/users/${userId}/permissions/`,
+    { method: 'GET' },
+  );
+
+export const setUserManagementPermission = async ({
+  userId,
+  action,
+  permission,
+  onError,
+  onSuccess,
+}: {
+  userId: string;
+  action: 'add' | 'remove';
+  permission: string;
+  onError: (error: any) => void;
+  onSuccess: (result: any) => void;
+}) => {
+  try {
+    const result = await apiFetch(
+      `/api/matching/users/${userId}/permissions/${action}/`,
+      {
+        method: 'POST',
+        body: { permission },
       },
     );
     onSuccess(result);

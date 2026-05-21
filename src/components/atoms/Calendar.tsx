@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import * as React from 'react';
-import { DayPicker } from 'react-day-picker';
+import { DayPicker, Matcher } from 'react-day-picker';
 
 import { cn } from '../../lib/utils';
 import { buttonVariants } from './Button';
@@ -19,12 +19,12 @@ function Calendar({
   disableFutureDays?: boolean;
 }) {
   const today = new Date();
-  const disabledDays =
+  const disabledDays: Matcher[] | undefined =
     disablePastDays || disableFutureDays
-      ? {
-          ...(disablePastDays && { before: today }),
-          ...(disableFutureDays && { after: today }),
-        }
+      ? [
+          ...(disablePastDays ? [{ before: today }] : []),
+          ...(disableFutureDays ? [{ after: today }] : []),
+        ]
       : undefined;
   return (
     <DayPicker
@@ -41,21 +41,21 @@ function Calendar({
         nav: 'flex items-center gap-1',
         button_previous: cn(
           buttonVariants({ variant: 'outline' }),
-          'h-7 w-7 shrink-0 bg-transparent p-0 opacity-50 hover:opacity-100',
+          'h-10 w-10 shrink-0 bg-transparent p-0 opacity-50 hover:opacity-100',
         ),
         button_next: cn(
           buttonVariants({ variant: 'outline' }),
-          'h-7 w-7 shrink-0 bg-transparent p-0 opacity-50 hover:opacity-100',
+          'h-10 w-10 shrink-0 bg-transparent p-0 opacity-50 hover:opacity-100',
         ),
         month_grid: 'w-full',
         weekdays: 'grid grid-cols-7',
         weekday:
-          'flex items-center justify-center text-neutral-500 rounded-md h-9 w-9 font-normal text-[0.8rem] dark:text-neutral-400',
+          'flex items-center justify-center text-neutral-500 rounded-md h-10 w-10 font-normal text-[0.8rem] dark:text-neutral-400',
         weeks: 'space-y-1',
         week: 'grid grid-cols-7 w-full mt-2',
         day: cn(
           buttonVariants({ variant: 'ghost' }),
-          'h-9 w-9 p-0 font-normal aria-selected:opacity-100',
+          'h-10 w-10 p-0 font-normal aria-selected:opacity-100',
         ),
         range_end: 'day-range-end',
         today:

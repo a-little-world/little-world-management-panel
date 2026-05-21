@@ -38,7 +38,8 @@ import {
 // Types
 interface User {
   id: number;
-  hash: string;
+  uuid?: string;
+  hash?: string;
   profile: {
     first_name: string;
     second_name: string;
