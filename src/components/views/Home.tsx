@@ -15,7 +15,12 @@ import {
 } from '@heroicons/react/20/solid';
 import React from 'react';
 
-import { Calculator, HeadsetIcon, HeartHandshake } from 'lucide-react';
+import {
+  Calculator,
+  ClipboardCheckIcon,
+  HeadsetIcon,
+  HeartHandshake,
+} from 'lucide-react';
 
 import type { MatchingPanelUser } from '../../api/index';
 import {
@@ -28,6 +33,7 @@ import {
   RANDOM_CALLS_ROUTE,
   SCORES_ROUTE,
   STATS_ROUTE,
+  SUPPORT_TASKS_ROUTE,
   USERS_ROUTE,
   VIDEO_CALLS_ROUTE,
 } from '../../routes';
@@ -44,6 +50,11 @@ const TABS: NavigationTile[] = [
     name: 'Users',
     path: USERS_ROUTE,
     icon: <UserGroupIcon className="h-16 w-16 text-white mb-2" />,
+  },
+  {
+    name: 'Support Tasks',
+    path: SUPPORT_TASKS_ROUTE,
+    icon: <ClipboardCheckIcon className="h-16 w-16 text-white mb-2" />,
   },
   {
     name: 'Matching users',
@@ -93,7 +104,9 @@ const TABS: NavigationTile[] = [
 ];
 
 function PanelUserPermissionsOverview({ user }: { user: MatchingPanelUser }) {
-  const enabledPermissions = (user.permissions ?? []).filter(row => row.enabled);
+  const enabledPermissions = (user.permissions ?? []).filter(
+    row => row.enabled,
+  );
 
   if (!enabledPermissions.length && !user.is_staff) {
     return null;
@@ -111,12 +124,7 @@ function PanelUserPermissionsOverview({ user }: { user: MatchingPanelUser }) {
           </Tag>
         )}
         {enabledPermissions.map(row => (
-          <Tag
-            key={row.permission}
-            bold
-            size={TagSizes.small}
-            color="#2563eb"
-          >
+          <Tag key={row.permission} bold size={TagSizes.small} color="#2563eb">
             {row.label ?? row.codename}
           </Tag>
         ))}
