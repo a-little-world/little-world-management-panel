@@ -128,4 +128,3 @@ export const TimeInput = styled.input.attrs({
   font-size: 0.875rem;
   width: 100%;
 `;
-

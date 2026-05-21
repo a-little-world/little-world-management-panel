@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 
 import { MatchingPannel } from './App';
 import { EmailHtmlRenderer } from './components/views/emails/EmailHtml';
+import { updateTranslationResources } from './i18n';
 import './index.css';
 
 function renderApp({
@@ -14,6 +15,7 @@ function renderApp({
   apiTranslations: Record<string, unknown>;
   user?: Record<string, unknown>;
 }) {
+  updateTranslationResources({ apiTranslations });
   const root = ReactDOM.createRoot(document.getElementById('root'));
   console.log('RENDERING APP');
   root.render(

@@ -458,3 +458,8 @@ export function useGlobalState() {
 
   return context;
 }
+
+export function useCurrentUserId(): number | null {
+  const { panelUser } = useGlobalState();
+  return (panelUser as any)?.id ?? null;
+}
