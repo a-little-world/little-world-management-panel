@@ -460,6 +460,6 @@ export function useGlobalState() {
 }
 
 export function useCurrentUserId(): number | null {
-  const { apiOptions } = useGlobalState();
-  return (apiOptions as any)?.current_user_id ?? null;
+  const { panelUser } = useGlobalState();
+  return (panelUser as any)?.id ?? null;
 }
