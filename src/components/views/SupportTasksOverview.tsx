@@ -445,9 +445,6 @@ export default function SupportTasksOverview() {
 
   const [searchParams, setSearchParams] = useSearchParams();
   const currentUserId = useCurrentUserId();
-  useEffect(() => {
-    console.log('current user id', currentUserId);
-  }, [currentUserId]);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [downloadSettingsOpen, setDownloadSettingsOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
