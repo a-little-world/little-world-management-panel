@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "prettier": "@a-little-world/little-world-prettier-config",
+  "packageManager": "pnpm@10.22.0",
   "dependencies": {
     "@a-little-world/little-world-design-system": "^2.14.0",
     "@heroicons/react": "^2.0.18",

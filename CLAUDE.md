@@ -7,9 +7,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-npm run start        # webpack watch (dev, hot reload via Docker volume)
-npm run build        # production build
-npx tsc --noEmit     # type-check without emitting — run before declaring done
+pnpm run start        # webpack watch (dev, hot reload via Docker volume)
+pnpm run build        # production build
+pnpm exec tsc --noEmit     # type-check without emitting — run before declaring done
 ```
 
 ---
@@ -306,4 +306,4 @@ Filter options (priority, action type, etc.) must be derived from the shared con
 8. Use theme spacing/radius tokens — refer to the token maps above.
 9. Import brand colors from `src/constants.ts`. No anonymous hex literals.
 10. Keep styled-component count low — if a plain `<Text>` or `<div>` works, use it.
-11. Run `npx tsc --noEmit` — no type errors before the task is done.
+11. Run `pnpm exec tsc --noEmit` — no type errors before the task is done.
