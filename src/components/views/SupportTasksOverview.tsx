@@ -17,7 +17,7 @@ import {
   ClockIcon,
 } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import useSWR from 'swr';
 
@@ -168,10 +168,6 @@ const CenteredCell = styled.div`
   justify-content: center;
 `;
 
-const RowActionLink = styled(Link)`
-  text-decoration: underline;
-`;
-
 const QuickFilters = styled.div`
   display: inline-flex;
   align-items: center;
@@ -243,13 +239,7 @@ function buildColumns(
           </Button>
         </CenteredCell>
       ),
-      cell: ({ getValue }) => (
-        <CenteredCell>
-          <RowActionLink to={getSupportTaskDetailRoute(getValue())}>
-            {getValue()}
-          </RowActionLink>
-        </CenteredCell>
-      ),
+      cell: ({ getValue }) => <CenteredCell>{getValue()}</CenteredCell>,
     }),
     columnHelper.accessor('title', {
       header: () => (
@@ -706,7 +696,11 @@ export default function SupportTasksOverview() {
       {isLoading ? (
         <Text center>Loading tasks…</Text>
       ) : (
-        <DataTable columns={columns} data={filtered} />
+        <DataTable
+          columns={columns}
+          data={filtered}
+          getRowLink={task => getSupportTaskDetailRoute(task.id)}
+        />
       )}
 
       <SupportTaskFilters
