@@ -14,7 +14,7 @@ import {
   TextInput,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import styled from 'styled-components';
 
@@ -80,11 +80,11 @@ export default function CreateSupportTaskModal({
     })),
   ];
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     reset();
     setError(null);
     onClose();
-  };
+  }, [reset, onClose]);
 
   const onSubmit = async (data: any) => {
     setSubmitting(true);
