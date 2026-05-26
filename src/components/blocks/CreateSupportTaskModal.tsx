@@ -110,7 +110,7 @@ export default function CreateSupportTaskModal({
     <Modal open={open} onClose={handleClose}>
       <Card width={CardSizes.Large}>
         <CardHeader>New task</CardHeader>
-        <CardContent align="flex-start">
+        <CardContent align="flex-start" scrollable={false}>
           <TextInput
             {...registerInput({
               register,
