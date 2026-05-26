@@ -463,12 +463,15 @@ export default function SupportTasksOverview() {
   const {
     data: tasks = [],
     isLoading,
-    mutate,
+    mutate: mutateTasks,
   } = useSWR(['support_tasks', sortBy, sortOrder], () =>
     fetchSupportTasks({ sort_by: sortBy, sort_order: sortOrder }),
   );
 
-  const { data: stats } = useSWR('support_task_stats', fetchSupportTaskStats);
+  const { data: stats, mutate: mutateTaskStats } = useSWR(
+    'support_task_stats',
+    fetchSupportTaskStats,
+  );
 
   const counts = {
     NEW: stats?.NEW ?? 0,
@@ -733,7 +736,10 @@ export default function SupportTasksOverview() {
         open={createOpen}
         onClose={() => setCreateOpen(false)}
         staffUsers={staffUsers}
-        onCreated={() => mutate()}
+        onCreated={() => {
+          mutateTasks();
+          mutateTaskStats();
+        }}
       />
     </PageWrapper>
   );
