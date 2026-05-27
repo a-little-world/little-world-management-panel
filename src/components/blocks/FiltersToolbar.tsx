@@ -1,10 +1,12 @@
 import {
+  ButtonAppearance,
   ButtonSizes,
   ButtonVariations,
+  DownloadIcon,
   Button as DSButton,
   Text,
 } from '@a-little-world/little-world-design-system';
-import { DownloadIcon, Settings, SlidersHorizontalIcon } from 'lucide-react';
+import { Settings, SlidersHorizontalIcon } from 'lucide-react';
 import React from 'react';
 import styled from 'styled-components';
 
@@ -154,9 +156,11 @@ export const FiltersToolbar: React.FC<FiltersToolbarProps> = ({
               onClick={onDownloadClick}
               disabled={downloadDisabled}
               variation={ButtonVariations.Circle}
+              appearance={ButtonAppearance.Secondary}
+              color={'black'}
               className="shrink-0"
             >
-              <DownloadIcon />
+              <DownloadIcon width={16} height={16} label="download icon" />
             </DSButton>
           )}
 
@@ -165,6 +169,8 @@ export const FiltersToolbar: React.FC<FiltersToolbarProps> = ({
               onClick={onSettingsClick}
               disabled={settingsDisabled}
               variation={ButtonVariations.Circle}
+              appearance={ButtonAppearance.Secondary}
+              color={'black'}
               className="shrink-0"
             >
               <Settings size={16} />

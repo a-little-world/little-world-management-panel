@@ -92,7 +92,9 @@ const UserPanel = () => {
     error: appointmentError,
     isLoading: appointmentLoading,
   } = useSWR(
-    user ? `/api/matching/users/${user.uuid ?? user.hash}/prematching_appointment/` : null,
+    user
+      ? `/api/matching/users/${user.uuid ?? user.hash}/prematching_appointment/`
+      : null,
     dataFetcher,
   );
 
@@ -148,12 +150,7 @@ const UserPanel = () => {
                 onClick={onAddToMatching}
                 style={{ flexGrow: 0 }}
               >
-                <PlusIcon
-                  color={theme.color.surface.primary}
-                  label="select user"
-                  width={16}
-                  height={16}
-                />
+                <PlusIcon label="select user" width={16} height={16} />
               </Button>
             </SectionHeader>
             <SectionContent>

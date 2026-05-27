@@ -1,8 +1,8 @@
 import {
-  Card,
-  CardFooter,
-  Text,
-  TextTypes,
+    Card,
+    CardFooter,
+    Text,
+    TextTypes,
 } from '@a-little-world/little-world-design-system';
 import React from 'react';
 import styled from 'styled-components';
@@ -10,10 +10,10 @@ import useSWR from 'swr';
 
 import { modifyDataToPercentages } from '../../../helpers/stats';
 import { dataFetcher } from '../../../store';
-import Matrix, { MatrixData } from '../../atoms/Stats/Matrix';
+import Matrix, { MatrixData } from '../../atoms/stats/Matrix';
 import {
-  BarChartTimeRanged,
-  MatchingFunnelEvolution,
+    BarChartTimeRanged,
+    MatchingFunnelEvolution,
 } from './BarChartTimeRanged';
 import { MatchQuality } from './MatchQualityStatistic';
 

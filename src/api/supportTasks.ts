@@ -63,21 +63,45 @@ export interface StaffUser {
   last_name: string;
 }
 
+export interface PaginatedSupportTaskList {
+  results: SupportTask[];
+  count: number;
+  page: number;
+  page_size: number;
+  next_page: number | null;
+  previous_page: number | null;
+  last_page: number;
+}
+
 export interface SupportTaskListParams {
-  status?: string;
-  assigned_to?: number;
+  status?: string | string[];
+  priority?: string | string[];
+  action_type?: string | string[];
+  assigned_to?: string;
   sort_by?: string;
   sort_order?: 'asc' | 'desc';
+  search?: string;
+  page?: number;
+  page_size?: number;
 }
 
 export const fetchSupportTasks = (
   params: SupportTaskListParams = {},
-): Promise<SupportTask[]> => {
+): Promise<PaginatedSupportTaskList> => {
   const query = new URLSearchParams();
-  if (params.status) query.set('status', params.status);
-  if (params.assigned_to) query.set('assigned_to', String(params.assigned_to));
+  const appendList = (key: string, val: string | string[] | undefined) => {
+    if (!val) return;
+    (Array.isArray(val) ? val : [val]).forEach(v => query.append(key, v));
+  };
+  appendList('status', params.status);
+  appendList('priority', params.priority);
+  appendList('action_type', params.action_type);
+  if (params.assigned_to) query.set('assigned_to', params.assigned_to);
   if (params.sort_by) query.set('sort_by', params.sort_by);
   if (params.sort_order) query.set('sort_order', params.sort_order);
+  if (params.search) query.set('search', params.search);
+  if (params.page) query.set('page', String(params.page));
+  if (params.page_size) query.set('page_size', String(params.page_size));
   const qs = query.toString();
   return apiFetch(`/api/support_task/${qs ? `?${qs}` : ''}`);
 };
@@ -151,7 +175,6 @@ export const STATUS_CONFIG: Record<
   IN_PROGRESS: { label: 'In progress', color: ORANGE_40 },
   COMPLETED: { label: 'Completed', color: GREEN_40 },
 };
-
 
 export const ACTION_TYPE_CONFIG: Record<
   string,

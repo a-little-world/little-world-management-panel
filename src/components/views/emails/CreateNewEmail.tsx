@@ -589,8 +589,8 @@ const CreateNewEmail = () => {
             trigger={
               <Button
                 variation={ButtonVariations.Circle}
+                appearance={ButtonAppearance.Secondary}
                 size={ButtonSizes.Large}
-                color={theme.color.surface.bold}
               >
                 <InfoIcon width="20" height="20" label="infoIcon" />
               </Button>

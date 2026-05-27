@@ -35,6 +35,16 @@ import {
   updateAdminShortLink,
 } from '../../../../api/shortLinks';
 import {
+  Description,
+  HeaderText,
+  ListPanel,
+  ListScroll,
+  PageContainer,
+  PageHeader,
+  Title,
+  TitleRow,
+} from '../../../atoms/PageLayout';
+import {
   Table,
   TableBody,
   TableCell,
@@ -42,16 +52,6 @@ import {
   TableHeader,
   TableRow,
 } from '../../../atoms/Table';
-import {
-  Container,
-  Description,
-  Header,
-  HeaderText,
-  ListPanel,
-  ListScroll,
-  Title,
-  TitleRow,
-} from '../../../atoms/PageLayout';
 import LinkForm, { LinkFormValues } from './EditShortLink';
 
 const getDefaultFormValues = (): LinkFormValues => ({
@@ -224,8 +224,8 @@ function Links() {
     new Date(value).toLocaleString('en-GB');
 
   return (
-    <Container>
-      <Header>
+    <PageContainer>
+      <PageHeader>
         <HeaderText>
           <TitleRow>
             <Title>Short links</Title>
@@ -248,7 +248,7 @@ function Links() {
             links stop redirecting but remain in the database for reporting.
           </Description>
         </HeaderText>
-      </Header>
+      </PageHeader>
 
       {error && (
         <StatusMessage type={StatusTypes.Error} visible>
@@ -333,6 +333,7 @@ function Links() {
                     <TableCell className="justify-center">
                       <Button
                         variation={ButtonVariations.Circle}
+                        appearance={ButtonAppearance.Secondary}
                         size={ButtonSizes.Medium}
                         onClick={() => openEditModal(link)}
                         color={theme.color.text.accent}
@@ -343,6 +344,7 @@ function Links() {
                     <TableCell className="justify-center">
                       <Button
                         variation={ButtonVariations.Circle}
+                        appearance={ButtonAppearance.Secondary}
                         size={ButtonSizes.Medium}
                         onClick={() => openArchiveModal(link)}
                         color={theme.color.text.error}
@@ -414,7 +416,7 @@ function Links() {
           onClose={() => setLinksToast(null)}
         />
       )}
-    </Container>
+    </PageContainer>
   );
 }
 

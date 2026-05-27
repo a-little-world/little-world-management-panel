@@ -137,7 +137,7 @@ export function MatchesTable({ matchList, list }) {
                     return (
                       <TableCell key={match.uuid + key}>
                         <BucketTag bold color="#000000">
-                          {match.bucket}
+                          {match.bucket_label ?? match.bucket}
                         </BucketTag>
                       </TableCell>
                     );

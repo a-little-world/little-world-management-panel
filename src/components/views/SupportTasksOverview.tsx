@@ -16,14 +16,16 @@ import {
   ChevronUpIcon,
   ClockIcon,
 } from 'lucide-react';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import React, { useCallback, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import useSWR from 'swr';
 
 import {
+  PaginatedSupportTaskList,
   STATUS_CONFIG,
   SupportTask,
+  SupportTaskListParams,
   TaskPriority,
   TaskStatus,
   fetchStaffUsers,
@@ -168,10 +170,6 @@ const CenteredCell = styled.div`
   justify-content: center;
 `;
 
-const RowActionLink = styled(Link)`
-  text-decoration: underline;
-`;
-
 const QuickFilters = styled.div`
   display: inline-flex;
   align-items: center;
@@ -243,13 +241,7 @@ function buildColumns(
           </Button>
         </CenteredCell>
       ),
-      cell: ({ getValue }) => (
-        <CenteredCell>
-          <RowActionLink to={getSupportTaskDetailRoute(getValue())}>
-            {getValue()}
-          </RowActionLink>
-        </CenteredCell>
-      ),
+      cell: ({ getValue }) => <CenteredCell>{getValue()}</CenteredCell>,
     }),
     columnHelper.accessor('title', {
       header: () => (
@@ -445,9 +437,6 @@ export default function SupportTasksOverview() {
 
   const [searchParams, setSearchParams] = useSearchParams();
   const currentUserId = useCurrentUserId();
-  useEffect(() => {
-    console.log('current user id', currentUserId);
-  }, [currentUserId]);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [downloadSettingsOpen, setDownloadSettingsOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
@@ -457,31 +446,44 @@ export default function SupportTasksOverview() {
   const [availableHeaders, setAvailableHeaders] =
     useState<string[]>(TASK_EXPORT_HEADERS);
 
-  useEffect(() => {
-    if (!searchParams.has('status')) {
-      const next = new URLSearchParams(searchParams);
-      next.append('status', 'NEW');
-      next.append('status', 'IN_PROGRESS');
-      setSearchParams(next, { replace: true });
-    }
-  }, []);
-
   const statusFilters = searchParams.getAll('status');
   const sortBy = searchParams.get('sort_by') ?? 'created_at';
   const sortOrder = (searchParams.get('sort_order') ?? 'desc') as
     | 'asc'
     | 'desc';
   const search = searchParams.get('search') ?? '';
+  const assignedToFilter = searchParams.get(TaskFilterKeys.AssignedTo) ?? '';
 
-  const {
-    data: tasks = [],
-    isLoading,
-    mutate,
-  } = useSWR(['support_tasks', sortBy, sortOrder], () =>
-    fetchSupportTasks({ sort_by: sortBy, sort_order: sortOrder }),
+  const params = useMemo(
+    (): SupportTaskListParams => ({
+      status: searchParams.getAll('status'),
+      priority: searchParams.getAll(TaskFilterKeys.Priority),
+      action_type: searchParams.getAll(TaskFilterKeys.ActionType),
+      assigned_to: searchParams.get(TaskFilterKeys.AssignedTo) || undefined,
+      sort_by: searchParams.get('sort_by') || undefined,
+      sort_order: (searchParams.get('sort_order') || undefined) as
+        | 'asc'
+        | 'desc'
+        | undefined,
+      search: searchParams.get('search') || undefined,
+      page: Number(searchParams.get('page')) || undefined,
+      page_size: Number(searchParams.get('page_size')) || undefined,
+    }),
+    [searchParams],
   );
 
-  const { data: stats } = useSWR('support_task_stats', fetchSupportTaskStats);
+  const {
+    data: taskList,
+    isLoading,
+    mutate: mutateTasks,
+  } = useSWR<PaginatedSupportTaskList>(params, fetchSupportTasks);
+
+  const tasks = taskList?.results ?? [];
+
+  const { data: stats, mutate: mutateTaskStats } = useSWR(
+    'support_task_stats',
+    fetchSupportTaskStats,
+  );
 
   const counts = {
     NEW: stats?.NEW ?? 0,
@@ -491,10 +493,6 @@ export default function SupportTasksOverview() {
 
   const { data: staffUsers = [] } = useSWR('staff_users', fetchStaffUsers);
 
-  const priorityFilter = searchParams.getAll(TaskFilterKeys.Priority);
-  const actionTypeFilter = searchParams.getAll(TaskFilterKeys.ActionType);
-  const assignedToFilter = searchParams.get(TaskFilterKeys.AssignedTo) ?? '';
-
   const showNew = statusFilters.includes('NEW');
   const showInProgress = statusFilters.includes('IN_PROGRESS');
   const showCompleted = statusFilters.includes('COMPLETED');
@@ -503,6 +501,7 @@ export default function SupportTasksOverview() {
 
   const toggleStatusFilter = (s: string) => {
     const next = new URLSearchParams(searchParams);
+    next.delete('page');
     const current = next.getAll('status');
     next.delete('status');
     if (current.includes(s)) {
@@ -521,45 +520,10 @@ export default function SupportTasksOverview() {
     }
   };
 
-  const filtered = useMemo(() => {
-    let result = tasks;
-    if (statusFilters.length > 0) {
-      result = result.filter(t => statusFilters.includes(t.status));
-    }
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      result = result.filter(
-        t => t.title.toLowerCase().includes(q) || String(t.id).includes(q),
-      );
-    }
-    if (priorityFilter.length) {
-      result = result.filter(t => priorityFilter.includes(t.priority));
-    }
-    if (actionTypeFilter.length) {
-      result = result.filter(t =>
-        actionTypeFilter.includes(t.action?.action_type ?? ''),
-      );
-    }
-    if (assignedToFilter === 'unassigned') {
-      result = result.filter(t => !t.assigned_to_profile);
-    } else if (assignedToFilter) {
-      result = result.filter(
-        t => String(t.assigned_to_profile?.id) === assignedToFilter,
-      );
-    }
-    return result;
-  }, [
-    tasks,
-    statusFilters,
-    search,
-    priorityFilter,
-    actionTypeFilter,
-    assignedToFilter,
-  ]);
-
   const onSort = useCallback(
     (field: string) => {
       const next = new URLSearchParams(searchParams);
+      next.delete('page');
       if (field === sortBy) {
         next.set('sort_order', sortOrder === 'asc' ? 'desc' : 'asc');
       } else {
@@ -578,6 +542,7 @@ export default function SupportTasksOverview() {
 
   const updateSearchParam = (key: string, value: string | string[]) => {
     const next = new URLSearchParams(searchParams);
+    next.delete('page');
     if (!value || (Array.isArray(value) && !value.length)) {
       next.delete(key);
     } else if (Array.isArray(value)) {
@@ -591,6 +556,7 @@ export default function SupportTasksOverview() {
 
   const removeSearchParam = (key: string) => {
     const next = new URLSearchParams(searchParams);
+    next.delete('page');
     next.delete(key);
     setSearchParams(next);
   };
@@ -607,7 +573,7 @@ export default function SupportTasksOverview() {
     const headers = selectedHeaders.length
       ? selectedHeaders
       : TASK_EXPORT_HEADERS;
-    const rows = filtered.map(task =>
+    const rows = tasks.map(task =>
       headers
         .map(h => {
           const val = (task as any)[h];
@@ -662,12 +628,12 @@ export default function SupportTasksOverview() {
         filtersActive={containsTaskFilterKey(currentFilters)}
         onFiltersClick={() => setFiltersOpen(true)}
         showDownloadButton
-        downloadDisabled={isLoading || filtered.length === 0}
+        downloadDisabled={isLoading || !taskList?.count}
         onDownloadClick={handleDownload}
         showSettingsButton
         settingsDisabled={isLoading}
         onSettingsClick={() => setDownloadSettingsOpen(true)}
-        showPagination={false}
+        paginationList={taskList}
         isLoading={isLoading}
         loadingText="Loading tasks…"
       >
@@ -709,7 +675,11 @@ export default function SupportTasksOverview() {
       {isLoading ? (
         <Text center>Loading tasks…</Text>
       ) : (
-        <DataTable columns={columns} data={filtered} />
+        <DataTable
+          columns={columns}
+          data={tasks}
+          getRowLink={task => getSupportTaskDetailRoute(task.id)}
+        />
       )}
 
       <SupportTaskFilters
@@ -742,7 +712,10 @@ export default function SupportTasksOverview() {
         open={createOpen}
         onClose={() => setCreateOpen(false)}
         staffUsers={staffUsers}
-        onCreated={() => mutate()}
+        onCreated={() => {
+          mutateTasks();
+          mutateTaskStats();
+        }}
       />
     </PageWrapper>
   );

@@ -20,10 +20,12 @@ import Home from './components/views/Home';
 import MatchPanel from './components/views/MatchPanel';
 import Matches from './components/views/Matches';
 import Matching from './components/views/Matching';
+import MatchingUsers from './components/views/MatchingUsers';
 import PrematchingAppointments from './components/views/PrematchingAppointments';
 import Scores from './components/views/Scores';
 import Stats from './components/views/Stats';
-import MatchingUsers from './components/views/MatchingUsers';
+import SupportTaskDetail from './components/views/SupportTaskDetail';
+import SupportTasksOverview from './components/views/SupportTasksOverview';
 import Users from './components/views/Users';
 import VideoCalls from './components/views/VideoCalls';
 import Communications from './components/views/comms/Communications';
@@ -31,14 +33,14 @@ import Banners from './components/views/comms/banners/Banners';
 import EditBanner from './components/views/comms/banners/EditBanner';
 import Events from './components/views/comms/events/Events';
 import ShortLinks from './components/views/comms/shortLinks/ShortLinks';
+import Courses from './components/views/courses/Courses';
+import EditCourse from './components/views/courses/EditCourse';
 import CreateNewEmail from './components/views/emails/CreateNewEmail';
 import Email from './components/views/emails/Email';
 import EmailHtml from './components/views/emails/EmailHtml';
 import Emails from './components/views/emails/Emails';
 import { SendDynamicTemplateView } from './components/views/emails/SendDynamicTemplate';
 import RandomCalls from './components/views/randomCalls/RandomCalls';
-import SupportTaskDetail from './components/views/SupportTaskDetail';
-import SupportTasksOverview from './components/views/SupportTasksOverview';
 import { EmailThemeProvider } from './emails/shared/theme';
 import {
   ALGORITHM_ROUTE,
@@ -46,6 +48,8 @@ import {
   BANNER_EDIT_ROUTE,
   BASE_ROUTE,
   COMMUNICATIONS_ROUTE,
+  COURSES_ROUTE,
+  COURSE_EDIT_ROUTE,
   CREATE_NEW_EMAIL_ROUTE,
   DOCUMENTATION_ROUTE,
   DYNAMIC_USER_LISTS_ROUTE,
@@ -55,8 +59,8 @@ import {
   EMAIL_ROUTE,
   EVENTS_ROUTE,
   MATCHES_LIST_ROUTE,
-  MATCHING_USERS_ROUTE,
   MATCHING_ROUTE,
+  MATCHING_USERS_ROUTE,
   MATCH_ROUTE,
   PREMATCH_APPOINTMENTS_ROUTE,
   RANDOM_CALLS_ROUTE,
@@ -64,11 +68,11 @@ import {
   SEND_DYNAMIC_EMAIL_ROUTE,
   SHORT_LINKS_ROUTE,
   STATS_ROUTE,
+  SUPPORT_TASKS_ROUTE,
+  SUPPORT_TASK_DETAIL_ROUTE,
   USERS_ROUTE,
   USER_DETAILS_ROUTE,
   VIDEO_CALLS_ROUTE,
-  SUPPORT_TASKS_ROUTE,
-  SUPPORT_TASK_DETAIL_ROUTE,
 } from './routes';
 import { GlobalStateProvider } from './store';
 
@@ -205,6 +209,14 @@ const router = createBrowserRouter(
         {
           path: SUPPORT_TASK_DETAIL_ROUTE,
           element: <SupportTaskDetail />,
+        },
+        {
+          path: COURSES_ROUTE,
+          element: <Courses />,
+        },
+        {
+          path: COURSE_EDIT_ROUTE,
+          element: <EditCourse />,
         },
       ],
     },

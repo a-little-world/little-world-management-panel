@@ -1,6 +1,7 @@
 import {
   AttachmentIcon,
   Button,
+  ButtonAppearance,
   ButtonSizes,
   ButtonVariations,
   CloseIcon,
@@ -206,10 +207,10 @@ const UserChat = ({ user }) => {
             {fetchError
               ? 'Error fetching messages'
               : isLoading
-              ? 'Loading messages'
-              : unreadOnly
-              ? 'No unread messages'
-              : 'No messages sent yet'}
+                ? 'Loading messages'
+                : unreadOnly
+                  ? 'No unread messages'
+                  : 'No messages sent yet'}
           </NoMessages>
         ) : (
           <>
@@ -261,7 +262,8 @@ const UserChat = ({ user }) => {
                           <Button
                             variation={ButtonVariations.Inline}
                             disabled={
-                              message.sender !== (user.uuid ?? user.hash) || message.read
+                              message.sender !== (user.uuid ?? user.hash) ||
+                              message.read
                             }
                             onClick={() => handleReadMessage(message.uuid)}
                           >
@@ -270,7 +272,9 @@ const UserChat = ({ user }) => {
                           {message.sender !== (user.uuid ?? user.hash) && (
                             <Button
                               variation={ButtonVariations.Inline}
-                              disabled={message.sender === (user.uuid ?? user.hash)}
+                              disabled={
+                                message.sender === (user.uuid ?? user.hash)
+                              }
                               onClick={() => handleDeleteMessage(message.uuid)}
                             >
                               Delete Message
@@ -362,6 +366,7 @@ const UserChat = ({ user }) => {
           size={ButtonSizes.Large}
           type="button"
           variation={ButtonVariations.Circle}
+          appearance={ButtonAppearance.Secondary}
           backgroundColor={
             selectedFile
               ? theme.color.status.error
@@ -389,7 +394,6 @@ const UserChat = ({ user }) => {
           type="submit"
           disabled={isSubmitting}
           variation={ButtonVariations.Circle}
-          backgroundColor={theme.color.gradient.orange10}
         >
           <SendIcon
             label={'Send message'}

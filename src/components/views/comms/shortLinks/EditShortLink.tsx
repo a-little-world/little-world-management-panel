@@ -161,8 +161,8 @@ function LinkForm({
             </Label>
             <AddMoreButton
               variation={ButtonVariations.Circle}
+              appearance={ButtonAppearance.Secondary}
               size={ButtonSizes.Medium}
-              color="orange"
               onClick={() => append({ name: '', value: '' })}
             >
               <PlusIcon label="Add cookie row" width={16} height={16} />

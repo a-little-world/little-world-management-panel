@@ -65,6 +65,15 @@ export const formatTimeDistance = (
   });
 };
 
+export const formatDateWithDistance = (date?: string) => {
+  if (!date) {
+    return '—';
+  }
+
+  const newDate = new Date(date);
+  return `${formatDate(newDate)} (${formatTimeDistance(newDate, new Date(), LANGUAGES.en)})`;
+};
+
 export function addMinutesToDate(date: Date, minutes: number) {
   const MINUTE_IN_MS = 60 * 1000;
   return new Date(date.getTime() + minutes * MINUTE_IN_MS);

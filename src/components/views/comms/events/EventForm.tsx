@@ -106,6 +106,7 @@ function EventForm({
                 labelInline
                 checked={value}
                 onCheckedChange={onChange}
+                cannotError
               />
             )}
           />

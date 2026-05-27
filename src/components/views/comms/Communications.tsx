@@ -1,26 +1,25 @@
-import { MegaphoneIcon } from '@heroicons/react/20/solid';
 import React from 'react';
 
-import { CalendarCog, Link } from 'lucide-react';
+import { CalendarCog, Link, Mail, Megaphone } from 'lucide-react';
 import {
   BANNERS_ROUTE,
   EMAILS_ROUTE,
   EVENTS_ROUTE,
   SHORT_LINKS_ROUTE,
 } from '../../../routes';
-import { HeroiconsSolidMail } from '../../atoms/HeroiconsSolidMail';
+
 import NavigationTiles, { NavigationTile } from '../../blocks/NavigationTiles';
 
 const COMMUNICATIONS_ITEMS: NavigationTile[] = [
   {
     name: 'Banners',
     path: BANNERS_ROUTE,
-    icon: <MegaphoneIcon className="h-16 w-16 text-white mb-2" />,
+    icon: <Megaphone className="h-16 w-16 text-white mb-2" />,
   },
   {
     name: 'Emails',
     path: EMAILS_ROUTE,
-    icon: <HeroiconsSolidMail className="h-16 w-16 text-white mb-2" />,
+    icon: <Mail className="h-16 w-16 text-white mb-2" />,
   },
   {
     name: 'Events',
