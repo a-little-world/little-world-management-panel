@@ -91,7 +91,7 @@ const MatchReport: React.FC<MatchReportProps> = ({
     <MatchReportContainer className={className}>
       <Text bold center>{`${inactiveCause}${
         date
-          ? ` on ${formatDate(new Date(date), 'cccc, LLLL do', LANGUAGES.en)}`
+          ? ` on ${formatDate(new Date(date), 'dd.LL.yyyy', LANGUAGES.en)}`
           : ''
       }`}</Text>
       {reason && <Reason>{`<bold>Reason</bold>: ${reason}`}</Reason>}

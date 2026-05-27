@@ -5,7 +5,6 @@ import styled, { css } from 'styled-components';
 const StyledSection = styled.div<{ $fullHeight?: boolean }>`
   background-color: var(--bg-card);
   color: var(--text-card-foreground);
-  max-width: 1024px;
   width: 100%;
   margin: 0 auto;
   display: flex;

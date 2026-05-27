@@ -7,9 +7,8 @@ import {
   NavigationMenuTrigger,
 } from '@a-little-world/little-world-design-system';
 import React from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
-import useSelectUser from '../../hooks/useSelectUser';
 import {
   BANNERS_ROUTE,
   COMMUNICATIONS_ROUTE,
@@ -29,7 +28,29 @@ import SearchBar from './SearchBar';
 
 const Menu = () => {
   const location = useLocation();
-  const { isSubmitting, onSelectUser, error } = useSelectUser({});
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  const onUserSearch = ({ search }: { search: string }) => {
+    const params =
+      location.pathname === USERS_ROUTE
+        ? new URLSearchParams(searchParams)
+        : new URLSearchParams({
+            order_by: '-date_joined',
+            page_size: '50',
+          });
+
+    params.delete('page');
+
+    if (!search) {
+      params.delete('search');
+    } else {
+      params.set('search', search);
+    }
+
+    navigate({ pathname: USERS_ROUTE, search: params.toString() });
+  };
+
   const isCommunicationsRoute =
     location.pathname === COMMUNICATIONS_ROUTE ||
     location.pathname.startsWith('/emails/') ||
@@ -41,12 +62,17 @@ const Menu = () => {
   return (
     <NavigationMenu withShadow>
       <SearchBar
-        name="userId"
+        name="search"
         hideSubmitBtn
-        isSubmitting={isSubmitting}
-        onSubmit={onSelectUser}
-        error={error}
-        placeholder="Enter user UUID"
+        isSubmitting={false}
+        onSubmit={onUserSearch}
+        error={null}
+        placeholder="Search by name or email"
+        defaultValue={
+          location.pathname === USERS_ROUTE
+            ? (searchParams.get('search') ?? undefined)
+            : undefined
+        }
       />
       <NavigationMenuItem>
         <NavigationMenuTrigger>Menu</NavigationMenuTrigger>

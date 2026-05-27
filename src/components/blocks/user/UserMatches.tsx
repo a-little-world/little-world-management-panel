@@ -1,9 +1,13 @@
-import { Accordion, Text } from '@a-little-world/little-world-design-system';
+import {
+  Accordion,
+  AccordionContent,
+  Text,
+} from '@a-little-world/little-world-design-system';
 import React from 'react';
 import styled, { useTheme } from 'styled-components';
 
 import { formatDate, formatTime } from '../../../helpers/date';
-import UserMatch from '../match/UserMatch';
+import UserMatchesTable from './UserMatchesTable';
 
 const PrematchingAppointment = styled.div`
   display: flex;
@@ -11,6 +15,29 @@ const PrematchingAppointment = styled.div`
   align-items: center;
   margin-bottom: ${({ theme }) => theme.spacing.small};
 `;
+
+const ContentWrapper = styled(AccordionContent)`
+  padding: 0;
+  padding-bottom: ${({ theme }) => theme.spacing.small};
+  gap: 0;
+  background-color: ${({ theme }) => theme.color.surface.primary};
+`;
+
+const renderMatchTable = ({
+  matches,
+  isProposed,
+  userName,
+}: {
+  matches: any[];
+  isProposed?: boolean;
+  userName: string;
+}) => (
+  <UserMatchesTable
+    matches={matches}
+    userName={userName}
+    isProposed={isProposed}
+  />
+);
 
 interface UserMatchesProps {
   user: any;
@@ -20,10 +47,11 @@ interface UserMatchesProps {
 const UserMatches = ({ user, appointment }: UserMatchesProps) => {
   const theme = useTheme();
 
+  const activeProposals = user?.matches.proposed?.results.length ?? 0;
+  const oldProposals = user?.matches.old_proposals?.results.length ?? 0;
   const proposedText =
-    user?.matches.proposed?.results.length ||
-    user?.matches.old_proposals?.results.length
-      ? `${user?.matches.proposed?.results.length} active | ${user?.matches.old_proposals?.results.length} old`
+    activeProposals || oldProposals
+      ? `${activeProposals} active | ${oldProposals} old`
       : '0';
 
   return (
@@ -56,59 +84,46 @@ const UserMatches = ({ user, appointment }: UserMatchesProps) => {
         )}
       </PrematchingAppointment>
       <Accordion
+        ContentWrapper={ContentWrapper}
         items={[
           {
-            content: user?.matches.confirmed?.results.map((match: any) => (
-              <UserMatch
-                key={match.id}
-                match={match}
-                userName={user.profile.first_name}
-              />
-            )),
-            header: `Confirmed (${user?.matches.confirmed?.results.length})`,
+            content: renderMatchTable({
+              matches: user?.matches.confirmed?.results ?? [],
+              userName: user.profile.first_name,
+            }),
+            header: `Confirmed (${user?.matches.confirmed?.results.length ?? 0}${user?.matches.confirmed?.count > (user?.matches.confirmed?.results.length ?? 0) ? ` of ${user?.matches.confirmed?.count}` : ''})`,
           },
           {
-            content: user?.matches.inactive?.results.map((match: any) => (
-              <UserMatch
-                key={match.id}
-                match={match}
-                userName={user.profile.first_name}
-              />
-            )),
-            header: `Inactive (${user?.matches.inactive?.results.length})`,
+            content: renderMatchTable({
+              matches: user?.matches.inactive?.results ?? [],
+              userName: user.profile.first_name,
+            }),
+            header: `Inactive (${user?.matches.inactive?.results.length ?? 0}${user?.matches.inactive?.count > (user?.matches.inactive?.results.length ?? 0) ? ` of ${user?.matches.inactive?.count}` : ''})`,
           },
           {
-            content: user?.matches.unconfirmed?.results.map((match: any) => (
-              <UserMatch
-                key={match.id}
-                match={match}
-                userName={user.profile.first_name}
-              />
-            )),
-            header: `Unconfirmed (${user?.matches.unconfirmed?.results.length})`,
+            content: renderMatchTable({
+              matches: user?.matches.unconfirmed?.results ?? [],
+              userName: user.profile.first_name,
+            }),
+            header: `Unconfirmed (${user?.matches.unconfirmed?.results.length ?? 0}${user?.matches.unconfirmed?.count > (user?.matches.unconfirmed?.results.length ?? 0) ? ` of ${user?.matches.unconfirmed?.count}` : ''})`,
           },
           {
-            content: [
-              ...user?.matches.proposed?.results,
-              ...user?.matches.old_proposals?.results,
-            ].map((match: any) => (
-              <UserMatch
-                key={match.id}
-                match={match}
-                userName={user.profile.first_name}
-              />
-            )),
+            content: renderMatchTable({
+              matches: [
+                ...(user?.matches.proposed?.results ?? []),
+                ...(user?.matches.old_proposals?.results ?? []),
+              ],
+              userName: user.profile.first_name,
+              isProposed: true,
+            }),
             header: `Proposed (${proposedText})`,
           },
           {
-            content: user?.matches.support?.results.map((match: any) => (
-              <UserMatch
-                key={match.id}
-                match={match}
-                userName={user.profile.first_name}
-              />
-            )),
-            header: `Support (${user?.matches.support?.results.length})`,
+            content: renderMatchTable({
+              matches: user?.matches.support?.results ?? [],
+              userName: user.profile.first_name,
+            }),
+            header: `Support (${user?.matches.support?.results.length ?? 0}${user?.matches.support?.count > (user?.matches.support?.results.length ?? 0) ? ` of ${user?.matches.support?.count}` : ''})`,
           },
         ]}
       />
