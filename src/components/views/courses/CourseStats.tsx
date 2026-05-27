@@ -15,7 +15,7 @@ import useSWR from 'swr';
 
 import {
   ADMIN_COURSES_ENDPOINT,
-  AdminCourseListItem,
+  AdminCourseList,
   fetchAdminCourses,
   fetchAdminCourseStats,
 } from '../../../api/courses';
@@ -91,15 +91,17 @@ function CourseStats() {
   const startDate = parseDateParam(searchParams.get('start_date'));
   const endDate = parseDateParam(searchParams.get('end_date'));
 
-  const { data: courses, isLoading: coursesLoading } = useSWR<
-    AdminCourseListItem[]
-  >(ADMIN_COURSES_ENDPOINT, fetchAdminCourses, {
-    revalidateOnFocus: false,
-  });
+  const { data: coursesData, isLoading: coursesLoading } = useSWR<AdminCourseList>(
+    `${ADMIN_COURSES_ENDPOINT}?page_size=100`,
+    () => fetchAdminCourses('page_size=100'),
+    {
+      revalidateOnFocus: false,
+    },
+  );
 
   const courseOptions = useMemo(
-    () => (courses ?? []).map(c => ({ label: c.title, value: c.slug })),
-    [courses],
+    () => (coursesData?.results ?? []).map(c => ({ label: c.title, value: c.slug })),
+    [coursesData],
   );
 
   const statsQueryString = useMemo(() => {

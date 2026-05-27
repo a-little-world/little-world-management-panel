@@ -54,13 +54,31 @@ export interface AdminCourseListItem {
   chapter_count: number;
 }
 
+export interface AdminCourseList {
+  count: number;
+  page: number;
+  results: AdminCourseListItem[];
+  page_size: number;
+  pages_total: number;
+  next_page: number | null;
+  previous_page: number | null;
+  last_page: number;
+  first_page: number;
+  items_total: number;
+  results_total: number;
+}
+
 /** Payload for create/update. Image is managed separately via uploadCourseImage/removeCourseImage. */
 export type CoursePayload = Omit<AdminCourse, 'id' | 'image' | 'created_at' | 'updated_at'>;
 
 export const ADMIN_COURSES_ENDPOINT = '/api/admin/courses/';
 
-export const fetchAdminCourses = () =>
-  apiFetch<AdminCourseListItem[]>(ADMIN_COURSES_ENDPOINT);
+export const fetchAdminCourses = (queryString?: string) =>
+  apiFetch<AdminCourseList>(
+    queryString ?
+      `${ADMIN_COURSES_ENDPOINT}?${queryString}`
+    : ADMIN_COURSES_ENDPOINT,
+  );
 
 export const fetchAdminCourse = (slug: string) =>
   apiFetch<AdminCourse>(`${ADMIN_COURSES_ENDPOINT}${slug}/`);
@@ -88,14 +106,10 @@ export const uploadCourseImage = (slug: string, file: File): Promise<AdminCourse
 };
 
 /** Remove the existing image from a course. */
-export const removeCourseImage = (slug: string): Promise<AdminCourse> => {
-  const fd = new FormData();
-  fd.append('clear', 'true');
-  return apiFetch<AdminCourse>(`${ADMIN_COURSES_ENDPOINT}${slug}/image/`, {
-    method: 'PATCH',
-    body: fd,
+export const removeCourseImage = (slug: string): Promise<AdminCourse> =>
+  apiFetch<AdminCourse>(`${ADMIN_COURSES_ENDPOINT}${slug}/image/`, {
+    method: 'DELETE',
   });
-};
 
 /**
  * Resolves a course image URL to an absolute URL. The backend may return a
