@@ -813,16 +813,16 @@ function RandomCallManagement() {
           <SectionTitle>{lobbyPeriodLabel}</SectionTitle>
           <StatsGrid>
             <StatCard>
-              <StatLabel>Active Users</StatLabel>
               <StatValue>{lobby.active_users_count}</StatValue>
+              <StatLabel>Active Users</StatLabel>
             </StatCard>
             <StatCard>
-              <StatLabel>Total Users</StatLabel>
               <StatValue>{lobby.total_users_count}</StatValue>
+              <StatLabel>Total Users</StatLabel>
             </StatCard>
             <StatCard>
-              <StatLabel>Total Matches</StatLabel>
               <StatValue>{statistics.total_matches}</StatValue>
+              <StatLabel>Total Matches</StatLabel>
             </StatCard>
           </StatsGrid>
         </Section>
@@ -832,24 +832,24 @@ function RandomCallManagement() {
           <SectionTitle>Match Statistics</SectionTitle>
           <StatsGrid>
             <StatCard>
-              <StatLabel>Pending Matches</StatLabel>
               <StatValue>{statistics.pending_count}</StatValue>
+              <StatLabel>Pending Matches</StatLabel>
             </StatCard>
             <StatCard>
-              <StatLabel>Accepted Matches</StatLabel>
               <StatValue>{statistics.accepted_count}</StatValue>
+              <StatLabel>Accepted Matches</StatLabel>
             </StatCard>
             <StatCard>
-              <StatLabel>Rejected Matches</StatLabel>
               <StatValue>{statistics.rejected_count}</StatValue>
+              <StatLabel>Rejected Matches</StatLabel>
             </StatCard>
             <StatCard>
-              <StatLabel>Expired Matches</StatLabel>
               <StatValue>{statistics.expired_count}</StatValue>
+              <StatLabel>Expired Matches</StatLabel>
             </StatCard>
             <StatCard>
-              <StatLabel>Dangling proposals</StatLabel>
               <StatValue>{danglingCount}</StatValue>
+              <StatLabel>Dangling proposals</StatLabel>
             </StatCard>
           </StatsGrid>
         </Section>
@@ -931,11 +931,10 @@ function RandomCallManagement() {
               <>
                 <StatsGrid>
                   <StatCard>
-                    <StatLabel>Total Tasks</StatLabel>
                     <StatValue>{tasksData.statistics.total}</StatValue>
+                    <StatLabel>Total Tasks</StatLabel>
                   </StatCard>
                   <StatCard>
-                    <StatLabel>Successful</StatLabel>
                     <StatValue>
                       <Tag
                         appearance={TagAppearance.success}
@@ -944,9 +943,9 @@ function RandomCallManagement() {
                         {tasksData.statistics.success}
                       </Tag>
                     </StatValue>
+                    <StatLabel>Successful</StatLabel>
                   </StatCard>
                   <StatCard>
-                    <StatLabel>Failed</StatLabel>
                     <StatValue>
                       <Tag
                         appearance={TagAppearance.error}
@@ -955,9 +954,9 @@ function RandomCallManagement() {
                         {tasksData.statistics.failure}
                       </Tag>
                     </StatValue>
+                    <StatLabel>Failed</StatLabel>
                   </StatCard>
                   <StatCard>
-                    <StatLabel>Pending</StatLabel>
                     <StatValue>
                       <Tag
                         appearance={TagAppearance.error}
@@ -966,6 +965,7 @@ function RandomCallManagement() {
                         {tasksData.statistics.pending}
                       </Tag>
                     </StatValue>
+                    <StatLabel>Pending</StatLabel>
                   </StatCard>
                 </StatsGrid>
                 <div style={{ marginTop: '1.5rem' }}>

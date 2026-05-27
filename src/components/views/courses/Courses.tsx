@@ -14,7 +14,10 @@ import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import useSWR from 'swr';
 
-import { AdminCourseListItem, fetchAdminCourses } from '../../../api/courses';
+import {
+  ADMIN_COURSES_ENDPOINT,
+  fetchAdminCourses,
+} from '../../../api/courses';
 import { getCourseEditRoute } from '../../../routes';
 import {
   Description,
@@ -34,6 +37,7 @@ import {
   TableRow,
 } from '../../atoms/Table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../atoms/Tabs';
+import { FiltersToolbar } from '../../blocks/FiltersToolbar';
 import CourseStats from './CourseStats';
 
 const AUDIENCE_LABELS: Record<string, string> = {
@@ -44,11 +48,13 @@ const AUDIENCE_LABELS: Record<string, string> = {
 
 function ManageCourses() {
   const navigate = useNavigate();
-  const { data, error, isLoading } = useSWR<AdminCourseListItem[]>(
-    '/api/admin/courses/',
-    fetchAdminCourses,
+  const [searchParams] = useSearchParams({ page_size: '50' });
+  const { data, error, isLoading } = useSWR(
+    [ADMIN_COURSES_ENDPOINT, searchParams.toString()] as const,
+    ([, queryString]) => fetchAdminCourses(queryString),
     { revalidateOnFocus: true, revalidateOnMount: true },
   );
+  const courses = data?.results ?? [];
 
   return (
     <PageContainer>
@@ -74,6 +80,14 @@ function ManageCourses() {
         </StatusMessage>
       )}
 
+      {courses?.length > 10 && (
+        <FiltersToolbar
+          paginationList={data}
+          isLoading={isLoading}
+          loadingText="Loading courses..."
+        />
+      )}
+
       <ListPanel>
         <ListScroll>
           {isLoading ? (
@@ -94,7 +108,7 @@ function ManageCourses() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {(data ?? []).map(course => (
+                {courses.map(course => (
                   <TableRow key={course.id}>
                     <TableCell>{course.title}</TableCell>
                     <TableCell>
@@ -118,7 +132,9 @@ function ManageCourses() {
                         {course.is_active ? 'Active' : 'Inactive'}
                       </Tag>
                     </TableCell>
-                    <TableCell style={{ fontSize: '0.8125rem', whiteSpace: 'nowrap' }}>
+                    <TableCell
+                      style={{ fontSize: '0.8125rem', whiteSpace: 'nowrap' }}
+                    >
                       {format(new Date(course.created_at), 'd MMM yyyy')}
                     </TableCell>
                     <TableCell className="text-center">
@@ -134,7 +150,7 @@ function ManageCourses() {
                     </TableCell>
                   </TableRow>
                 ))}
-                {!isLoading && (data ?? []).length === 0 && (
+                {!isLoading && courses.length === 0 && (
                   <TableRow>
                     <TableCell
                       colSpan={7}

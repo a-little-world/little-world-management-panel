@@ -12,6 +12,7 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   BANNERS_ROUTE,
   COMMUNICATIONS_ROUTE,
+  COURSES_ROUTE,
   DOCUMENTATION_ROUTE,
   DYNAMIC_USER_LISTS_ROUTE,
   MATCHES_LIST_ROUTE,
@@ -150,6 +151,12 @@ const Menu = () => {
             active={location.pathname === RANDOM_CALLS_ROUTE}
           >
             Random Calls
+          </NavigationMenuContentItem>
+          <NavigationMenuContentItem
+            to={COURSES_ROUTE}
+            active={location.pathname === COURSES_ROUTE}
+          >
+            Courses
           </NavigationMenuContentItem>
         </NavigationMenuContent>
       </NavigationMenuItem>
