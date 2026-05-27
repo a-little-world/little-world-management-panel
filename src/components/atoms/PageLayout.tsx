@@ -1,6 +1,6 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
-export const Container = styled.div`
+export const PageContainer = styled.div`
   padding: ${({ theme }) => theme.spacing.medium};
   width: 100%;
   max-height: calc(100dvh - 5rem);
@@ -10,11 +10,60 @@ export const Container = styled.div`
   box-sizing: border-box;
 `;
 
-export const Header = styled.div`
+/**
+ * PageHeader — unified header for list and edit pages.
+ *
+ * variant="stack" (default) — column flex with bottom margin, used on list pages
+ *                             (title + description + actions stacked vertically).
+ * variant="grid"            — 3-col grid (left | centre | right), sticky to the top
+ *                             of the page, used on edit/create pages.
+ */
+export const PageHeader = styled.div<{ variant?: 'stack' | 'grid' }>`
+  flex-shrink: 0;
+
+  ${({ variant, theme }) =>
+    variant === 'grid'
+      ? css`
+          display: grid;
+          grid-template-columns: 1fr auto 1fr;
+          align-items: center;
+          gap: ${theme.spacing.small};
+          padding: ${theme.spacing.medium};
+          border-bottom: 1px solid ${theme.color.border.subtle};
+          background: ${theme.color.surface.primary};
+        `
+      : css`
+          display: flex;
+          flex-direction: column;
+          align-items: stretch;
+          margin-bottom: ${theme.spacing.small};
+
+          ${({ theme }) => css`
+            @media (min-width: ${theme.breakpoints.medium}) {
+              margin-bottom: ${theme.spacing.medium};
+            }
+          `}
+        `}
+`;
+
+/** Left slot — aligns content to the start (used inside PageHeader variant="grid"). */
+export const HeaderLeft = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+/** Right slot — aligns content to the end (used inside PageHeader variant="grid"). */
+export const HeaderRight = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: ${({ theme }) => theme.spacing.small};
+`;
+
+export const HeaderText = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: stretch;
-  margin-bottom: ${({ theme }) => theme.spacing.medium};
+  gap: ${({ theme }) => theme.spacing.xsmall};
 `;
 
 export const TitleRow = styled.div`
@@ -39,12 +88,6 @@ export const Description = styled.p`
   margin-bottom: 0;
 `;
 
-export const HeaderText = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xsmall};
-`;
-
 export const ListPanel = styled.div`
   flex: 1;
   min-height: 0;
@@ -61,6 +104,19 @@ export const ListScroll = styled.div`
   min-height: 0;
   display: flex;
   flex-direction: column;
+`;
+
+export const PageContentContainer = styled.div`
+  padding: ${({ theme }) => `${theme.spacing.small} 0`};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => `${theme.spacing.small} 0`};
+
+  ${({ theme }) => css`
+    @media (min-width: ${theme.breakpoints.small}) {
+      padding: ${theme.spacing.medium} 0;
+    }
+  `}
 `;
 
 export const NoResultsContainer = styled.div`

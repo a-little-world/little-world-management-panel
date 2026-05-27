@@ -1,12 +1,12 @@
 import {
-  Button,
-  ButtonAppearance,
-  ButtonSizes,
-  Link,
-  Logo,
-  Tag,
-  TagSizes,
-  Text,
+    Button,
+    ButtonAppearance,
+    ButtonSizes,
+    Link,
+    Logo,
+    Tag,
+    TagSizes,
+    Text,
 } from '@a-little-world/little-world-design-system';
 import React from 'react';
 import styled, { css } from 'styled-components';
@@ -15,7 +15,7 @@ import { LANGUAGES, MATCH_STATUS } from '../../../constants';
 import { formatDate, formatTimeDistance } from '../../../helpers/date';
 import DataField from '../../atoms/DataField';
 import MatchReport, { getMatchReportProps } from '../../atoms/MatchReport';
-import Stat from '../../atoms/Stats/Stat';
+import Stat from '../../atoms/stats/Stat';
 import UserImage from '../../atoms/UserImage';
 import ConfirmUnmatchModal from './ConfirmUnmatchModal';
 

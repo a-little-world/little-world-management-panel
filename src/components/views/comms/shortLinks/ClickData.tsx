@@ -19,12 +19,12 @@ import {
 } from '../../../../api/shortLinks';
 import { DatePicker } from '../../../atoms/DatePicker';
 import {
-  Container,
-  Header,
   HeaderText,
   ListPanel,
   ListScroll,
   NoResultsContainer,
+  PageContainer,
+  PageHeader,
   Title,
   TitleRow,
 } from '../../../atoms/PageLayout';
@@ -92,14 +92,14 @@ function LinkClicks() {
   ];
 
   return (
-    <Container>
-      <Header>
+    <PageContainer>
+      <PageHeader>
         <HeaderText>
           <TitleRow>
             <Title>Short link clicks</Title>
           </TitleRow>
         </HeaderText>
-      </Header>
+      </PageHeader>
 
       <FiltersToolbar
         showSearchBar
@@ -175,7 +175,7 @@ function LinkClicks() {
           )}
         </ListScroll>
       </ListPanel>
-    </Container>
+    </PageContainer>
   );
 }
 
