@@ -17,8 +17,8 @@ import {
   Text,
   TextArea,
   TextInput,
-  Toast,
   TextTypes,
+  Toast,
 } from '@a-little-world/little-world-design-system';
 import { isValid, parseISO } from 'date-fns';
 import React, { RefObject, useEffect, useMemo, useRef, useState } from 'react';
@@ -83,7 +83,9 @@ function berlinParts(utcMs: number) {
     minute: '2-digit',
     second: '2-digit',
   });
-  const p = Object.fromEntries(dtf.formatToParts(new Date(utcMs)).map(x => [x.type, x.value]));
+  const p = Object.fromEntries(
+    dtf.formatToParts(new Date(utcMs)).map(x => [x.type, x.value]),
+  );
   return {
     y: Number(p.year),
     mo: Number(p.month) - 1,
@@ -120,15 +122,33 @@ function parseIsoToDate(value: string | null | undefined): Date | null {
 
 function toActivationIso(date: Date | null): string | null {
   if (!date) return null;
-  return berlinWallToIso(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
+  return berlinWallToIso(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    0,
+    0,
+    0,
+    0,
+  );
 }
 
 function toExpirationIso(date: Date | null): string | null {
   if (!date) return null;
-  return berlinWallToIso(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999);
+  return berlinWallToIso(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    23,
+    59,
+    59,
+    999,
+  );
 }
 
-function getSafePreviewBackground(value: string | null | undefined): string | undefined {
+function getSafePreviewBackground(
+  value: string | null | undefined,
+): string | undefined {
   const raw = value?.trim();
   if (!raw) return undefined;
   if (typeof window === 'undefined' || !window.CSS?.supports) return raw;
@@ -364,6 +384,7 @@ function EditBanner() {
                   checked={value}
                   onCheckedChange={onChange}
                   disabled={saving}
+                  cannotError
                 />
               )}
             />

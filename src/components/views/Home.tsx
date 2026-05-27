@@ -5,6 +5,7 @@ import {
   TextTypes,
 } from '@a-little-world/little-world-design-system';
 import {
+  AcademicCapIcon,
   CalendarDaysIcon,
   ChartBarIcon,
   ChatBubbleLeftRightIcon,
@@ -25,6 +26,7 @@ import {
 import type { MatchingPanelUser } from '../../api/index';
 import {
   COMMUNICATIONS_ROUTE,
+  COURSES_ROUTE,
   DOCUMENTATION_ROUTE,
   DYNAMIC_USER_LISTS_ROUTE,
   MATCHES_LIST_ROUTE,
@@ -100,6 +102,11 @@ const TABS: NavigationTile[] = [
     name: 'Random Calls',
     path: RANDOM_CALLS_ROUTE,
     icon: <HeadsetIcon className="h-16 w-16 text-white mb-2" />,
+  },
+  {
+    name: 'Courses',
+    path: COURSES_ROUTE,
+    icon: <AcademicCapIcon className="h-16 w-16 text-white mb-2" />,
   },
 ];
 

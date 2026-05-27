@@ -26,6 +26,11 @@ export const SHORT_LINKS_ROUTE = '/short-links/';
 export const BANNERS_ROUTE = '/banners/';
 export const BANNER_EDIT_ROUTE = '/banners/:bannerId/';
 export const COMMUNICATIONS_ROUTE = '/communications/';
+export const COURSES_ROUTE = '/courses/';
+export const COURSE_EDIT_ROUTE = '/courses/:courseSlug/';
+
+export const getCourseEditRoute = (slug: string | 'new') =>
+  `/courses/${slug}/`;
 
 export const getEditEmailRoute = (templateId: number) =>
   `/email/${templateId}/edit`;

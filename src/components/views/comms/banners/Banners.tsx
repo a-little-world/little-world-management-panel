@@ -16,6 +16,16 @@ import useSWR from 'swr';
 import { Banner, fetchAdminBanners } from '../../../../api/banners';
 import { BANNERS_ROUTE } from '../../../../routes';
 import {
+  Description,
+  HeaderText,
+  ListPanel,
+  ListScroll,
+  PageContainer,
+  PageHeader,
+  Title,
+  TitleRow,
+} from '../../../atoms/PageLayout';
+import {
   Table,
   TableBody,
   TableCell,
@@ -23,16 +33,6 @@ import {
   TableHeader,
   TableRow,
 } from '../../../atoms/Table';
-import {
-  Container,
-  Description,
-  Header,
-  HeaderText,
-  ListPanel,
-  ListScroll,
-  Title,
-  TitleRow,
-} from '../../../atoms/PageLayout';
 
 const buildBannerEditRoute = (id: number | 'new') => `${BANNERS_ROUTE}${id}/`;
 const formatDateTime = (value: string | null) =>
@@ -47,8 +47,8 @@ function Banners() {
   );
 
   return (
-    <Container>
-      <Header>
+    <PageContainer>
+      <PageHeader>
         <HeaderText>
           <TitleRow>
             <Title>Banners</Title>
@@ -64,7 +64,7 @@ function Banners() {
             Manage active and scheduled communication banners.
           </Description>
         </HeaderText>
-      </Header>
+      </PageHeader>
 
       {error && (
         <StatusMessage type={StatusTypes.Error} visible>
@@ -140,7 +140,7 @@ function Banners() {
           )}
         </ListScroll>
       </ListPanel>
-    </Container>
+    </PageContainer>
   );
 }
 

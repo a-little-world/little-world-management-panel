@@ -1,0 +1,1077 @@
+import {
+  Button,
+  ButtonAppearance,
+  ButtonSizes,
+  Dropdown,
+  InputWidth,
+  Loading,
+  LoadingSizes,
+  StatusMessage,
+  StatusTypes,
+  Switch,
+  TextArea,
+  TextInput,
+  Toast,
+} from '@a-little-world/little-world-design-system';
+import {
+  ChevronDownIcon,
+  PlusIcon,
+  TrashIcon,
+} from '@heroicons/react/20/solid';
+import React, { useEffect, useState } from 'react';
+import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
+import { useNavigate, useParams } from 'react-router-dom';
+import useSWR, { mutate } from 'swr';
+
+import {
+  ADMIN_COURSES_ENDPOINT,
+  AdminCourse,
+  CourseChapter,
+  CoursePayload,
+  UserTypeAvailability,
+  createAdminCourse,
+  fetchAdminCourse,
+  removeCourseImage,
+  resolveCourseImageUrl,
+  updateAdminCourse,
+  uploadCourseImage,
+} from '../../../api/courses';
+import { COURSES_ROUTE } from '../../../routes';
+import { registerInput } from '../../../store';
+import Breadcrumbs from '../../atoms/Breadcrumbs';
+import { ImageUploadField } from '../../atoms/ImageUploadField';
+import StructureRail from '../../atoms/StructureRail';
+import {
+  AnswerInstructionHint,
+  AnswerList,
+  AnswerListHeader,
+  AnswerRadio,
+  AnswerRowHighlight,
+  ChapterEditorMeta,
+  ChapterEditorMetaLabel,
+  ChapterEditorRoot,
+  ChapterNumGradient,
+  CompletionCollapseBtn,
+  CompletionIconBadge,
+  CompletionOptionalBadge,
+  CompletionPanel,
+  CompletionPanelBody,
+  CompletionPanelHeader,
+  CompletionPanelHint,
+  CompletionPanelTitle,
+  CompletionToggle,
+  CompletionToggleHint,
+  CompletionToggleLabel,
+  CorrectAnswerBadge,
+  CourseDetailsHeading,
+  CourseDetailsHint,
+  CourseDetailsRoot,
+  DeleteChapterBtn,
+  Divider,
+  EditorRoot,
+  EmptyChaptersBody,
+  EmptyChaptersCallout,
+  EmptyChaptersText,
+  EmptyChaptersTitle,
+  FormStack,
+  IconButton,
+  InlineTitleInput,
+  MainPane,
+  QuizSectionTitle,
+  QuizStepCollapsedMeta,
+  QuizStepCollapsedNum,
+  QuizStepCollapsedQuestion,
+  QuizStepCollapsedRow,
+  QuizStepItem,
+  QuizStepItemBody,
+  QuizStepItemHeaderBtn,
+  QuizStepItemTitle,
+  QuizStepList,
+  QuizStepsCount,
+  QuizStepsHeader,
+  QuizStepsTitle,
+  TopBarDivider,
+  TopBarRight,
+  TopBarRoot,
+  TwoCol,
+  TwoPaneLayout,
+} from './EditCourse.styles';
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+type AnswerFormValue = { text: string };
+
+type QuizStepFormValues = {
+  order: number;
+  question: string;
+  answers: AnswerFormValue[];
+  correct_answer_index: number;
+};
+
+type ChapterFormValues = {
+  chapter_id: string;
+  order: number;
+  available_to: UserTypeAvailability;
+  title: string;
+  description: string;
+  video_url: string;
+  video_title: string;
+  completed_title: string;
+  completed_description: string;
+  completed_additional_text: string;
+  completed_cta_label: string;
+  quiz_steps: QuizStepFormValues[];
+};
+
+type CourseFormValues = {
+  title: string;
+  slug: string;
+  description: string;
+  is_active: boolean;
+  is_listed: boolean;
+  available_to: UserTypeAvailability;
+  chapters: ChapterFormValues[];
+};
+
+// ---------------------------------------------------------------------------
+// Constants + helpers
+// ---------------------------------------------------------------------------
+
+const AUDIENCE_OPTIONS = [
+  { label: 'Everyone', value: 'all' },
+  { label: 'Learners only', value: 'learner' },
+  { label: 'Volunteers only', value: 'volunteer' },
+];
+
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-');
+}
+
+function chapterToFormValues(chapter: CourseChapter): ChapterFormValues {
+  return {
+    ...chapter,
+    quiz_steps: chapter.quiz_steps.map(s => ({
+      order: s.order,
+      question: s.question,
+      answers: s.answers.map(text => ({ text })),
+      correct_answer_index: Math.max(0, s.answers.indexOf(s.correct_answer)),
+    })),
+  };
+}
+
+function formValuesToPayload(values: CourseFormValues): CoursePayload {
+  return {
+    ...values,
+    chapters: values.chapters.map((ch, idx) => ({
+      ...ch,
+      order: idx + 1,
+      quiz_steps: ch.quiz_steps.map((s, si) => ({
+        order: si + 1,
+        question: s.question,
+        answers: s.answers.map(a => a.text),
+        correct_answer: s.answers[s.correct_answer_index]?.text ?? '',
+      })),
+    })),
+  };
+}
+
+const defaultChapter = (order: number): ChapterFormValues => ({
+  chapter_id: `chapter-${order}-${Date.now()}`,
+  order,
+  available_to: 'all',
+  title: '',
+  description: '',
+  video_url: '',
+  video_title: '',
+  completed_title: '',
+  completed_description: '',
+  completed_additional_text: '',
+  completed_cta_label: '',
+  quiz_steps: [],
+});
+
+const defaultQuizStep = (): QuizStepFormValues => ({
+  order: 0,
+  question: '',
+  answers: [{ text: '' }, { text: '' }],
+  correct_answer_index: 0,
+});
+
+const defaultFormValues: CourseFormValues = {
+  title: '',
+  slug: '',
+  description: '',
+  is_active: true,
+  is_listed: true,
+  available_to: 'all',
+  chapters: [],
+};
+
+// ---------------------------------------------------------------------------
+// QuizStepCard — single quiz step, collapsed or expanded
+// ---------------------------------------------------------------------------
+
+function QuizStepCard({
+  nestIndex,
+  stepIdx,
+  control,
+  register,
+  onRemove,
+  defaultExpanded = false,
+}: {
+  nestIndex: number;
+  stepIdx: number;
+  control: any;
+  register: any;
+  onRemove: () => void;
+  defaultExpanded?: boolean;
+}) {
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+
+  const {
+    fields: answerFields,
+    append: appendAnswer,
+    remove: removeAnswer,
+  } = useFieldArray({
+    control,
+    name: `chapters.${nestIndex}.quiz_steps.${stepIdx}.answers`,
+  });
+
+  const question = useWatch({
+    control,
+    name: `chapters.${nestIndex}.quiz_steps.${stepIdx}.question`,
+  });
+
+  const correctIdx = useWatch({
+    control,
+    name: `chapters.${nestIndex}.quiz_steps.${stepIdx}.correct_answer_index`,
+  });
+
+  if (!isExpanded) {
+    return (
+      <QuizStepCollapsedRow type="button" onClick={() => setIsExpanded(true)}>
+        <QuizStepCollapsedNum>Q{stepIdx + 1}</QuizStepCollapsedNum>
+        <QuizStepCollapsedQuestion>
+          {question || (
+            <span style={{ opacity: 0.4, fontStyle: 'italic' }}>
+              Untitled question
+            </span>
+          )}
+        </QuizStepCollapsedQuestion>
+        <QuizStepCollapsedMeta>
+          {answerFields.length} answers · 1 correct
+        </QuizStepCollapsedMeta>
+        <IconButton
+          type="button"
+          title="Remove step"
+          onClick={e => {
+            e.stopPropagation();
+            onRemove();
+          }}
+        >
+          <TrashIcon style={{ width: 14, height: 14 }} />
+        </IconButton>
+      </QuizStepCollapsedRow>
+    );
+  }
+
+  return (
+    <QuizStepItem>
+      <QuizStepItemHeaderBtn type="button" onClick={() => setIsExpanded(false)}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <QuizStepCollapsedNum>Q{stepIdx + 1}</QuizStepCollapsedNum>
+          <QuizStepItemTitle>Question {stepIdx + 1}</QuizStepItemTitle>
+        </span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <IconButton
+            type="button"
+            title="Remove step"
+            onClick={e => {
+              e.stopPropagation();
+              onRemove();
+            }}
+          >
+            <TrashIcon style={{ width: 14, height: 14 }} />
+          </IconButton>
+          <ChevronDownIcon
+            style={{
+              width: 14,
+              height: 14,
+              transform: 'rotate(180deg)',
+              color: '#a6a6a6',
+            }}
+          />
+        </span>
+      </QuizStepItemHeaderBtn>
+
+      <QuizStepItemBody>
+        <TextInput
+          label="Question"
+          placeholder="What is…?"
+          width={InputWidth.Large}
+          {...registerInput({
+            register,
+            name: `chapters.${nestIndex}.quiz_steps.${stepIdx}.question`,
+            options: { required: true },
+          })}
+        />
+
+        <AnswerList>
+          <AnswerListHeader>
+            <QuizSectionTitle>Answers</QuizSectionTitle>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <AnswerInstructionHint>
+                ● Select the correct one
+              </AnswerInstructionHint>
+              <Button
+                appearance={ButtonAppearance.Secondary}
+                size={ButtonSizes.Small}
+                onClick={() => appendAnswer({ text: '' })}
+              >
+                <PlusIcon style={{ width: 12, height: 12, marginRight: 4 }} />
+                Add answer
+              </Button>
+            </span>
+          </AnswerListHeader>
+
+          {answerFields.map((field, answerIdx) => {
+            const isCorrect = Number(correctIdx) === answerIdx;
+            return (
+              <AnswerRowHighlight key={field.id} $correct={isCorrect}>
+                <Controller
+                  name={`chapters.${nestIndex}.quiz_steps.${stepIdx}.correct_answer_index`}
+                  control={control}
+                  render={({ field: { value, onChange } }) => (
+                    <AnswerRadio
+                      type="radio"
+                      title="Mark as correct answer"
+                      checked={Number(value) === answerIdx}
+                      onChange={() => onChange(answerIdx)}
+                    />
+                  )}
+                />
+                <TextInput
+                  label=""
+                  placeholder={`Answer ${answerIdx + 1}`}
+                  width={InputWidth.Large}
+                  cannotError
+                  {...registerInput({
+                    register,
+                    name: `chapters.${nestIndex}.quiz_steps.${stepIdx}.answers.${answerIdx}.text`,
+                  })}
+                />
+                {isCorrect && <CorrectAnswerBadge>correct</CorrectAnswerBadge>}
+                <IconButton
+                  type="button"
+                  title="Remove answer"
+                  onClick={() => removeAnswer(answerIdx)}
+                  disabled={answerFields.length <= 2}
+                >
+                  <TrashIcon style={{ width: 14, height: 14 }} />
+                </IconButton>
+              </AnswerRowHighlight>
+            );
+          })}
+        </AnswerList>
+      </QuizStepItemBody>
+    </QuizStepItem>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// ChapterQuizSteps — list of quiz steps with add button
+// ---------------------------------------------------------------------------
+
+function ChapterQuizSteps({
+  nestIndex,
+  control,
+  register,
+  errors: _errors,
+}: {
+  nestIndex: number;
+  control: any;
+  register: any;
+  errors: any;
+}) {
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: `chapters.${nestIndex}.quiz_steps`,
+  });
+
+  return (
+    <div>
+      <QuizStepsHeader>
+        <QuizStepsTitle>
+          Quiz steps{' '}
+          {fields.length > 0 && (
+            <QuizStepsCount>· {fields.length}</QuizStepsCount>
+          )}
+        </QuizStepsTitle>
+        <Button
+          appearance={ButtonAppearance.Secondary}
+          size={ButtonSizes.Small}
+          onClick={() => append(defaultQuizStep())}
+        >
+          <PlusIcon style={{ width: 12, height: 12, marginRight: 4 }} />
+          Add step
+        </Button>
+      </QuizStepsHeader>
+
+      {fields.length > 0 && (
+        <QuizStepList style={{ marginTop: 12 }}>
+          {fields.map((field, stepIdx) => (
+            <QuizStepCard
+              key={field.id}
+              nestIndex={nestIndex}
+              stepIdx={stepIdx}
+              control={control}
+              register={register}
+              onRemove={() => remove(stepIdx)}
+              defaultExpanded={stepIdx === 0}
+            />
+          ))}
+        </QuizStepList>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// CompletionMessagingSection — collapsible at the bottom of the chapter editor
+// ---------------------------------------------------------------------------
+
+function CompletionMessagingSection({
+  chapterIndex,
+  register,
+  open,
+  onToggle,
+}: {
+  chapterIndex: number;
+  register: any;
+  open: boolean;
+  onToggle: () => void;
+}) {
+  if (!open) {
+    return (
+      <CompletionToggle type="button" onClick={onToggle}>
+        <CompletionToggleLabel>Completion messaging</CompletionToggleLabel>
+        <CompletionOptionalBadge>optional</CompletionOptionalBadge>
+        <CompletionToggleHint>
+          What learners see when they finish this chapter.
+        </CompletionToggleHint>
+        <ChevronDownIcon style={{ width: 12, height: 12, color: '#a6a6a6' }} />
+      </CompletionToggle>
+    );
+  }
+
+  return (
+    <CompletionPanel>
+      <CompletionPanelHeader>
+        <CompletionIconBadge>✓</CompletionIconBadge>
+        <CompletionPanelTitle>Completion messaging</CompletionPanelTitle>
+        <CompletionOptionalBadge>optional</CompletionOptionalBadge>
+        <CompletionPanelHint>
+          Shown to learners after they finish this chapter
+        </CompletionPanelHint>
+        <CompletionCollapseBtn type="button" onClick={onToggle}>
+          <ChevronDownIcon
+            style={{ width: 12, height: 12, transform: 'rotate(180deg)' }}
+          />
+        </CompletionCollapseBtn>
+      </CompletionPanelHeader>
+
+      <CompletionPanelBody>
+        <TextInput
+          label="Completion title"
+          placeholder="Great work!"
+          width={InputWidth.Large}
+          {...registerInput({
+            register,
+            name: `chapters.${chapterIndex}.completed_title`,
+          })}
+        />
+        <TextInput
+          label="CTA button label"
+          placeholder="Continue"
+          width={InputWidth.Large}
+          {...registerInput({
+            register,
+            name: `chapters.${chapterIndex}.completed_cta_label`,
+          })}
+        />
+        <div style={{ gridColumn: '1 / -1' }}>
+          <TextArea
+            label="Completion description"
+            rows={2}
+            {...registerInput({
+              register,
+              name: `chapters.${chapterIndex}.completed_description`,
+            })}
+          />
+        </div>
+        <div style={{ gridColumn: '1 / -1' }}>
+          <TextArea
+            label="Additional text"
+            rows={2}
+            {...registerInput({
+              register,
+              name: `chapters.${chapterIndex}.completed_additional_text`,
+            })}
+          />
+        </div>
+      </CompletionPanelBody>
+    </CompletionPanel>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// ChapterEditorPane — right pane when a chapter is selected
+// ---------------------------------------------------------------------------
+
+function ChapterEditorPane({
+  chapterIndex,
+  totalChapters,
+  control,
+  register,
+  errors,
+  onRemove,
+}: {
+  chapterIndex: number;
+  totalChapters: number;
+  control: any;
+  register: any;
+  errors: any;
+  onRemove: () => void;
+}) {
+  const [showCompletion, setShowCompletion] = useState(false);
+
+  return (
+    <ChapterEditorRoot>
+      {/* ── Meta row ── */}
+      <ChapterEditorMeta>
+        <ChapterEditorMetaLabel>Chapter</ChapterEditorMetaLabel>
+        <ChapterNumGradient>
+          {String(chapterIndex + 1).padStart(2, '0')}
+        </ChapterNumGradient>
+        <ChapterEditorMetaLabel>
+          · position {chapterIndex + 1} of {totalChapters}
+        </ChapterEditorMetaLabel>
+        <DeleteChapterBtn type="button" onClick={onRemove}>
+          <TrashIcon style={{ width: 12, height: 12 }} />
+          Delete chapter
+        </DeleteChapterBtn>
+      </ChapterEditorMeta>
+
+      {/* ── Inline title ── */}
+      <InlineTitleInput
+        placeholder="Chapter title…"
+        {...register(`chapters.${chapterIndex}.title`, {
+          required: 'Required',
+        })}
+      />
+
+      {/* ── Core fields ── */}
+      <TwoCol>
+        <TextInput
+          label="Chapter ID"
+          required
+          placeholder="intro-to-grammar"
+          width={InputWidth.Large}
+          error={errors?.chapters?.[chapterIndex]?.chapter_id?.message}
+          {...registerInput({
+            register,
+            name: `chapters.${chapterIndex}.chapter_id`,
+            options: { required: 'Required' },
+          })}
+        />
+        <TextInput
+          label="Video URL"
+          required
+          placeholder="https://vimeo.com/…"
+          width={InputWidth.Large}
+          error={errors?.chapters?.[chapterIndex]?.video_url?.message}
+          {...registerInput({
+            register,
+            name: `chapters.${chapterIndex}.video_url`,
+            options: { required: 'Required' },
+          })}
+        />
+      </TwoCol>
+
+      <TwoCol>
+        <TextInput
+          label="Video title"
+          placeholder="Intro video"
+          width={InputWidth.Large}
+          {...registerInput({
+            register,
+            name: `chapters.${chapterIndex}.video_title`,
+          })}
+        />
+        <Controller
+          name={`chapters.${chapterIndex}.available_to`}
+          control={control}
+          render={({ field: { value, onChange } }) => (
+            <Dropdown
+              id={`chapter_audience_${chapterIndex}`}
+              label="Visible to"
+              labelTooltip="Limit this chapter to a specific user type. Other chapters in the same course are still shown to all."
+              placeholder="Select audience"
+              value={value}
+              options={AUDIENCE_OPTIONS}
+              onValueChange={v => onChange(v as UserTypeAvailability)}
+              cannotError
+            />
+          )}
+        />
+      </TwoCol>
+
+      <TextArea
+        label="Description"
+        rows={3}
+        {...registerInput({
+          register,
+          name: `chapters.${chapterIndex}.description`,
+        })}
+      />
+
+      <Divider />
+
+      {/* ── Quiz steps ── */}
+      <ChapterQuizSteps
+        nestIndex={chapterIndex}
+        control={control}
+        register={register}
+        errors={errors}
+      />
+
+      <Divider />
+
+      {/* ── Completion messaging ── */}
+      <CompletionMessagingSection
+        chapterIndex={chapterIndex}
+        register={register}
+        open={showCompletion}
+        onToggle={() => setShowCompletion(v => !v)}
+      />
+    </ChapterEditorRoot>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// CourseDetailsPane — right pane when "Course details" is selected
+// ---------------------------------------------------------------------------
+
+function CourseDetailsPane({
+  chapterCount,
+  register,
+  control,
+  errors,
+  onAddChapter,
+  existingImageUrl,
+  pendingImageFile,
+  onImageFileChange,
+}: {
+  chapterCount: number;
+  register: any;
+  control: any;
+  errors: any;
+  onAddChapter: () => void;
+  existingImageUrl: string | null;
+  pendingImageFile: File | null;
+  onImageFileChange: (file: File | null) => void;
+}) {
+  return (
+    <CourseDetailsRoot>
+      <div>
+        <CourseDetailsHeading>Course details</CourseDetailsHeading>
+        <CourseDetailsHint>
+          Title, slug, and audience apply to the whole course. Chapters inherit
+          unless overridden.
+        </CourseDetailsHint>
+      </div>
+
+      <FormStack>
+        <TwoCol>
+          <TextInput
+            label="Course title"
+            required
+            placeholder="e.g. Welcome Workshop"
+            width={InputWidth.Large}
+            error={errors.title?.message}
+            {...registerInput({
+              register,
+              name: 'title',
+              options: { required: 'Required' },
+            })}
+          />
+          <TextInput
+            label="Slug"
+            required
+            placeholder="auto-from-title"
+            labelTooltip="URL-safe identifier. Auto-generated from title when creating."
+            width={InputWidth.Large}
+            error={errors.slug?.message}
+            {...registerInput({
+              register,
+              name: 'slug',
+              options: { required: 'Required' },
+            })}
+          />
+        </TwoCol>
+
+        <TextArea
+          label="Description"
+          rows={3}
+          {...registerInput({ register, name: 'description' })}
+        />
+
+        <Controller
+          name="available_to"
+          control={control}
+          render={({ field: { value, onChange } }) => (
+            <Dropdown
+              id="course_audience"
+              label="Audience"
+              labelTooltip="Which user types can see this course."
+              placeholder="Select audience"
+              value={value}
+              options={AUDIENCE_OPTIONS}
+              onValueChange={v => onChange(v as UserTypeAvailability)}
+              cannotError
+              maxWidth="220px"
+            />
+          )}
+        />
+      </FormStack>
+
+      <ImageUploadField
+        label="Course image"
+        existingImageUrl={existingImageUrl}
+        file={pendingImageFile}
+        onFileChange={onImageFileChange}
+        helperText="JPEG, PNG, WebP, or GIF"
+      />
+
+      <Divider />
+
+      {chapterCount === 0 && (
+        <EmptyChaptersCallout>
+          <EmptyChaptersText>
+            <EmptyChaptersTitle>No chapters yet</EmptyChaptersTitle>
+            <EmptyChaptersBody>
+              A course needs at least one chapter. Add chapters from the
+              sidebar, or get started below.
+            </EmptyChaptersBody>
+          </EmptyChaptersText>
+          <Button
+            appearance={ButtonAppearance.Primary}
+            size={ButtonSizes.Small}
+            onClick={onAddChapter}
+          >
+            <PlusIcon style={{ width: 12, height: 12, marginRight: 4 }} />
+            Add first chapter
+          </Button>
+        </EmptyChaptersCallout>
+      )}
+    </CourseDetailsRoot>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// EditCourse — main page
+// ---------------------------------------------------------------------------
+
+function EditCourse() {
+  const { courseSlug } = useParams<{ courseSlug: string }>();
+  const navigate = useNavigate();
+  const isNew = courseSlug === 'new';
+
+  const [selectedSection, setSelectedSection] = useState<'details' | number>(
+    'details',
+  );
+  const [saving, setSaving] = useState(false);
+  const [saveToast, setSaveToast] = useState<{
+    id: number;
+    headline: string;
+    title: string;
+  } | null>(null);
+  const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
+  const [clearImage, setClearImage] = useState(false);
+
+  const { data, isLoading, error } = useSWR<AdminCourse>(
+    !isNew ? `${ADMIN_COURSES_ENDPOINT}${courseSlug}/` : null,
+    () => fetchAdminCourse(courseSlug as string),
+  );
+
+  const {
+    register,
+    control,
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+    formState: { errors, isDirty },
+  } = useForm<CourseFormValues>({ defaultValues: defaultFormValues });
+
+  const {
+    fields: chapterFields,
+    append,
+    remove,
+    move,
+  } = useFieldArray({ control, name: 'chapters' });
+
+  useEffect(() => {
+    if (isNew || !data) return;
+    reset({
+      title: data.title,
+      slug: data.slug,
+      description: data.description,
+      is_active: data.is_active,
+      is_listed: data.is_listed,
+      available_to: data.available_to,
+      chapters: data.chapters.map(chapterToFormValues),
+    });
+  }, [isNew, data, reset]);
+
+  const watchedTitle = watch('title');
+  const watchedSlug = watch('slug');
+
+  useEffect(() => {
+    if (!isNew) return;
+    setValue('slug', slugify(watchedTitle), { shouldDirty: true });
+  }, [isNew, watchedTitle, setValue]);
+
+  // Keep chapter titles in sync for the rail — watch the full chapters array
+  const watchedChapters = watch('chapters') || [];
+  const chapterTitles = watchedChapters.map(c => c.title);
+
+  const addChapter = () => {
+    const newIdx = chapterFields.length;
+    append(defaultChapter(newIdx + 1));
+    setSelectedSection(newIdx);
+  };
+
+  const handleImageFileChange = (file: File | null) => {
+    if (file) {
+      setPendingImageFile(file);
+      setClearImage(false);
+    } else {
+      setPendingImageFile(null);
+      if (data?.image) setClearImage(true);
+    }
+  };
+
+  const onSave = async (values: CourseFormValues) => {
+    setSaving(true);
+    setSaveToast(null);
+    try {
+      const payload = formValuesToPayload(values);
+      if (isNew) {
+        const created = await createAdminCourse(payload);
+        // Upload image if one was selected before the course existed.
+        if (pendingImageFile) {
+          await uploadCourseImage(created.slug, pendingImageFile);
+          setPendingImageFile(null);
+        }
+        await mutate(ADMIN_COURSES_ENDPOINT);
+        setSaveToast({
+          id: Date.now(),
+          headline: 'Success',
+          title: 'Course created.',
+        });
+        navigate(`/courses/${created.slug}/`);
+        return;
+      }
+      const updated = await updateAdminCourse(courseSlug as string, payload);
+      // Handle image upload or removal separately (dedicated multipart endpoint).
+      if (pendingImageFile) {
+        await uploadCourseImage(courseSlug as string, pendingImageFile);
+        setPendingImageFile(null);
+      } else if (clearImage) {
+        await removeCourseImage(courseSlug as string);
+        setClearImage(false);
+      }
+      await mutate(ADMIN_COURSES_ENDPOINT);
+      await mutate(`${ADMIN_COURSES_ENDPOINT}${courseSlug}/`);
+      setSaveToast({
+        id: Date.now(),
+        headline: 'Success',
+        title: 'Course saved.',
+      });
+      reset({
+        title: updated.title,
+        slug: updated.slug,
+        description: updated.description,
+        is_active: updated.is_active,
+        is_listed: updated.is_listed,
+        available_to: updated.available_to,
+        chapters: updated.chapters.map(chapterToFormValues),
+      });
+    } catch (e: any) {
+      setSaveToast({
+        id: Date.now(),
+        headline: 'Error',
+        title: e?.message || 'Failed to save course.',
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const courseTitle = watchedTitle || data?.title;
+  const pageTitle = isNew ? 'New course' : courseTitle || '…';
+
+  return (
+    <EditorRoot>
+      {/* ── Top bar ── */}
+      <TopBarRoot>
+        <Breadcrumbs
+          items={[{ label: 'Courses', onClick: () => navigate(COURSES_ROUTE) }]}
+          current={pageTitle}
+        />
+
+        <TopBarRight>
+          <Controller
+            name="is_listed"
+            control={control}
+            render={({ field: { value, onChange } }) => (
+              <Switch
+                label={value ? 'Listed' : 'Unlisted'}
+                labelInline
+                cannotError
+                checked={value}
+                onCheckedChange={onChange}
+                disabled={saving}
+              />
+            )}
+          />
+          <Controller
+            name="is_active"
+            control={control}
+            render={({ field: { value, onChange } }) => (
+              <Switch
+                label={value ? 'Published' : 'Draft'}
+                labelInline
+                cannotError
+                checked={value}
+                onCheckedChange={onChange}
+                disabled={saving}
+              />
+            )}
+          />
+          <TopBarDivider />
+          {(() => {
+            const previewDisabled = isNew
+              ? 'Save the course first to preview'
+              : isDirty
+                ? 'Save your changes to preview'
+                : null;
+            return (
+              <span title={previewDisabled ?? undefined}>
+                <Button
+                  appearance={ButtonAppearance.Secondary}
+                  size={ButtonSizes.Small}
+                  disabled={!!previewDisabled}
+                  onClick={() =>
+                    window.open(
+                      `${window.location.origin}/app/resources/trainings/${watchedSlug}?preview=1`,
+                      '_blank',
+                      'noopener,noreferrer',
+                    )
+                  }
+                >
+                  Preview
+                </Button>
+              </span>
+            );
+          })()}
+          <Button
+            appearance={ButtonAppearance.Primary}
+            size={ButtonSizes.Small}
+            onClick={handleSubmit(onSave)}
+            disabled={saving}
+            loading={saving}
+          >
+            Save changes
+          </Button>
+        </TopBarRight>
+      </TopBarRoot>
+
+      {error && (
+        <StatusMessage type={StatusTypes.Error} visible>
+          Failed to load course.
+        </StatusMessage>
+      )}
+
+      {isLoading && !isNew ? (
+        <div
+          style={{ padding: '2rem', display: 'flex', justifyContent: 'center' }}
+        >
+          <Loading size={LoadingSizes.Medium} />
+        </div>
+      ) : (
+        <TwoPaneLayout>
+          <StructureRail
+            chapterTitles={chapterTitles}
+            chapterCount={chapterFields.length}
+            selectedSection={selectedSection}
+            onSelectDetails={() => setSelectedSection('details')}
+            onSelectChapter={(idx: number) => setSelectedSection(idx)}
+            onAddChapter={addChapter}
+            onMoveUp={(idx: number) => move(idx, idx - 1)}
+            onMoveDown={(idx: number) => move(idx, idx + 1)}
+            saving={saving}
+          />
+
+
+          <MainPane>
+            {selectedSection === 'details' ? (
+              <CourseDetailsPane
+                register={register}
+                control={control}
+                errors={errors}
+                onAddChapter={addChapter}
+                chapterCount={chapterFields.length}
+                existingImageUrl={clearImage ? null : resolveCourseImageUrl(data?.image)}
+                pendingImageFile={pendingImageFile}
+                onImageFileChange={handleImageFileChange}
+              />
+            ) : (
+              <ChapterEditorPane
+                key={selectedSection}
+                chapterIndex={selectedSection as number}
+                totalChapters={chapterFields.length}
+                control={control}
+                register={register}
+                errors={errors}
+                onRemove={() => {
+                  remove(selectedSection as number);
+                  setSelectedSection('details');
+                }}
+              />
+            )}
+          </MainPane>
+        </TwoPaneLayout>
+      )}
+
+      {saveToast && (
+        <Toast
+          key={saveToast.id}
+          headline={saveToast.headline}
+          title={saveToast.title}
+          onClose={() => setSaveToast(null)}
+        />
+      )}
+    </EditorRoot>
+  );
+}
+
+export default EditCourse;

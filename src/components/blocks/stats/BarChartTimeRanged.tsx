@@ -1,7 +1,7 @@
 import {
-  Dropdown,
-  Text as DSText,
-  TextTypes,
+    Dropdown,
+    Text as DSText,
+    TextTypes,
 } from '@a-little-world/little-world-design-system';
 import React from 'react';
 import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
@@ -12,12 +12,12 @@ import { modifyData, type FunnelMergeGroup } from '../../../helpers/stats';
 import { cratePostFetcher } from '../../../store';
 import { Card, CardContent, CardHeader } from '../../atoms/Card';
 import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
+    ChartContainer,
+    ChartTooltip,
+    ChartTooltipContent,
 } from '../../atoms/Chart';
 import { DatePicker } from '../../atoms/DatePicker';
-import HorizontalBarChart from '../../atoms/Stats/HorizontalBarChart';
+import HorizontalBarChart from '../../atoms/stats/HorizontalBarChart';
 
 const matchJourneyChartCategories = [
   {

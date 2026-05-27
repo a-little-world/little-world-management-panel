@@ -6,6 +6,9 @@ import {
   FormField as BaseFormField,
   FormLabel as BaseFormLabel,
 } from '../../atoms/FormLayout';
+import { StatCards } from '../../atoms/stats/StatCard';
+
+export { StatCard, StatLabel, StatValue } from '../../atoms/stats/StatCard';
 
 // Shared layout
 export const Container = styled.div`
@@ -87,24 +90,11 @@ export const SectionTitleClickable = styled(SectionTitle)`
   }
 `;
 
-// Stats (shared)
-export const StatsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: ${({ theme }) => theme.spacing.small};
-  margin-bottom: ${({ theme }) => theme.spacing.large};
-`;
+// Stats — layout variants specific to RandomCalls
+export const StatsGrid = StatCards;
 
-export const StatsGridTight = styled(StatsGrid)`
+export const StatsGridTight = styled(StatCards)`
   margin-bottom: ${({ theme }) => theme.spacing.small};
-`;
-
-export const StatCard = styled.div`
-  background: ${({ theme }) => theme.color.surface.primary};
-  border: 1px solid ${({ theme }) => theme.color.border.subtle};
-  border-radius: 8px;
-  padding: ${({ theme }) => theme.spacing.medium};
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
 export const StatCardSecondary = styled.div`
@@ -112,18 +102,6 @@ export const StatCardSecondary = styled.div`
   background: ${({ theme }) => theme.color.surface.secondary};
   border-radius: 8px;
   border: 1px solid ${({ theme }) => theme.color.border.subtle};
-`;
-
-export const StatLabel = styled.div`
-  font-size: 0.875rem;
-  color: ${({ theme }) => theme.color.text.secondary};
-  margin-bottom: ${({ theme }) => theme.spacing.small};
-`;
-
-export const StatValue = styled.div`
-  font-size: 2rem;
-  font-weight: bold;
-  color: ${({ theme }) => theme.color.text.primary};
 `;
 
 export const StatValueSmall = styled.div`
