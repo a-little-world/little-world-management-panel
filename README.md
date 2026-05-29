@@ -5,7 +5,7 @@ This components is part of the Little World Matching Platform, find additional c
 
 ## License
 
-Copyright (C) 2025 A Little World gUG
+Copyright (C) 2026 A Little World gUG
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License version 3 as published by the Free Software Foundation.
 
