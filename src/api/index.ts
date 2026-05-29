@@ -38,16 +38,23 @@ export const addUserByUuid = async (
 
 export const getUserListExport = async ({
   searchParams,
+  exportColumnsOnly = false,
   onError,
   onSuccess,
 }: {
   searchParams: string;
+  exportColumnsOnly?: boolean;
   onError: (error: any) => void;
   onSuccess: (result: any) => void;
 }) => {
   try {
+    const params = new URLSearchParams(searchParams);
+    if (exportColumnsOnly) {
+      params.set('export_columns_only', 'true');
+    }
+
     const result = await apiFetch(
-      `/api/matching/users_export/?${searchParams}`,
+      `/api/matching/users_export/?${params.toString()}`,
       {
         method: 'GET',
         headers: {

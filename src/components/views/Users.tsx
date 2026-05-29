@@ -406,6 +406,7 @@ export function Users() {
     }
     getUserListExport({
       searchParams: createSearchParams(searchParams).toString(),
+      exportColumnsOnly: true,
       onSuccess: (response: Record<string, any>[]) => {
         const headers = extractHeaders(response);
         setAvailableHeaders(headers);
