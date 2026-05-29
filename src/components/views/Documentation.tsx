@@ -3,9 +3,22 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { ALGORITHM_ROUTE } from '../../routes';
+import {
+  ALGORITHM_ROUTE,
+  DOCUMENTATION_ROUTE,
+  MATCH_JOURNEY_DOCUMENTATION_ROUTE,
+  USER_JOURNEY_DOCUMENTATION_ROUTE,
+} from '../../routes';
+import { useFilterOptions, useMatchesFilterOptions } from '../../store';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '../atoms/Table';
 
-// Types
 interface DocumentationLink {
   id: string;
   title: string;
@@ -13,15 +26,27 @@ interface DocumentationLink {
   route: string;
 }
 
-// Styled Components
+interface JourneyListDocumentationRow {
+  name: string;
+  description: string | null;
+  source_file: string | null;
+  source_line: number | null;
+  source_url: string | null;
+}
+
 const DocumentationContainer = styled.div`
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
   padding: ${({ theme }) => theme.spacing.large};
-  max-width: 800px;
+  max-width: 1200px;
   margin: 0 auto;
 `;
 
 const DocumentationHeader = styled.div`
-  margin-bottom: ${({ theme }) => theme.spacing.small};
+  margin-bottom: ${({ theme }) => theme.spacing.large};
   text-align: center;
 `;
 
@@ -76,6 +101,40 @@ const CardDescription = styled(Text)`
   line-height: 1.6;
 `;
 
+const DocumentationPageContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.medium};
+`;
+
+const TablePanel = styled.div`
+  overflow-x: auto;
+`;
+
+const ListReferenceCell = styled.div`
+  display: flex;
+  min-width: 280px;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xxxsmall};
+`;
+
+const InlineLink = styled.a`
+  color: ${({ theme }) => theme.color.text.primary};
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: ${({ theme }) => theme.spacing.xxxsmall};
+
+  &:hover {
+    color: ${({ theme }) => theme.color.text.secondary};
+  }
+`;
+
+const SourceLink = styled(InlineLink)`
+  color: ${({ theme }) => theme.color.text.secondary};
+  font-size: 0.75rem;
+  font-weight: 500;
+`;
+
 const RouteBadge = styled.span`
   background: ${({ theme }) => theme.color.surface.secondary};
   color: ${({ theme }) => theme.color.text.secondary};
@@ -88,7 +147,6 @@ const RouteBadge = styled.span`
   letter-spacing: 0.5px;
 `;
 
-// Documentation data
 const documentationLinks: DocumentationLink[] = [
   {
     id: 'algorithm',
@@ -97,7 +155,129 @@ const documentationLinks: DocumentationLink[] = [
       'Comprehensive guide to our custom matching algorithm that pairs learners with volunteers. Learn about scoring elements including gender preferences, time slot overlap, language levels, interests, and distance calculations. Understand how we achieve maximum cardinality matching to optimize successful pairings.',
     route: ALGORITHM_ROUTE,
   },
+  {
+    id: 'user-journey',
+    title: 'User Journey Documentation',
+    description:
+      'All user list filters from the backend registry, including descriptions, source references, and direct links into the matching users page.',
+    route: USER_JOURNEY_DOCUMENTATION_ROUTE,
+  },
+  {
+    id: 'match-journey',
+    title: 'Match Journey Documentation',
+    description:
+      'All match list filters from the backend registry, including descriptions, source references, and direct links into the matching matches page.',
+    route: MATCH_JOURNEY_DOCUMENTATION_ROUTE,
+  },
 ];
+
+const getListUrl = (target: 'users' | 'matches', listId: string) => {
+  const params = new URLSearchParams({
+    order_by: target === 'users' ? '-date_joined' : '-created_at',
+    page_size: '50',
+    list: listId,
+  });
+  const origin = typeof window === 'undefined' ? '' : window.location.origin;
+  return `${origin}/matching/${target}/?${params.toString()}`;
+};
+
+function JourneyListDocumentationTable({
+  rows,
+  target,
+}: {
+  rows: JourneyListDocumentationRow[];
+  target: 'users' | 'matches';
+}) {
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>list_id / Code reference</TableHead>
+          <TableHead>List description</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {rows.length ? (
+          rows.map(row => (
+            <TableRow key={row.name}>
+              <TableCell>
+                <ListReferenceCell>
+                  <InlineLink href={getListUrl(target, row.name)}>
+                    {row.name}
+                  </InlineLink>
+                  {row.source_url ? (
+                    <SourceLink
+                      href={row.source_url}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {row.source_file}:L{row.source_line}
+                    </SourceLink>
+                  ) : (
+                    <Text type={TextTypes.Body7} tag="span">
+                      No source reference
+                    </Text>
+                  )}
+                </ListReferenceCell>
+              </TableCell>
+              <TableCell>
+                <Text type={TextTypes.Body6} tag="span">
+                  {row.description || 'No description available'}
+                </Text>
+              </TableCell>
+            </TableRow>
+          ))
+        ) : (
+          <TableRow>
+            <TableCell colSpan={2}>No lists found.</TableCell>
+          </TableRow>
+        )}
+      </TableBody>
+    </Table>
+  );
+}
+
+function JourneyListDocumentationPage({
+  title,
+  description,
+  rows,
+  target,
+  isLoading,
+  error,
+}: {
+  title: string;
+  description: string;
+  rows: JourneyListDocumentationRow[];
+  target: 'users' | 'matches';
+  isLoading: boolean;
+  error: unknown;
+}) {
+  return (
+    <DocumentationContainer>
+      <DocumentationPageContent>
+        <Link to={DOCUMENTATION_ROUTE}>Back to Documentation</Link>
+        <DocumentationHeader>
+          <Text type={TextTypes.Heading3} tag="h1">
+            {title}
+          </Text>
+          <Text type={TextTypes.Body4}>{description}</Text>
+        </DocumentationHeader>
+
+        {isLoading && <Text type={TextTypes.Body5}>Loading documentation...</Text>}
+        {Boolean(error) && (
+          <Text type={TextTypes.Body5}>
+            Could not load documentation from the backend.
+          </Text>
+        )}
+        {!isLoading && !error && (
+          <TablePanel>
+            <JourneyListDocumentationTable rows={rows} target={target} />
+          </TablePanel>
+        )}
+      </DocumentationPageContent>
+    </DocumentationContainer>
+  );
+}
 
 export const Documentation: React.FC = () => {
   return (
@@ -128,6 +308,36 @@ export const Documentation: React.FC = () => {
         ))}
       </DocumentationList>
     </DocumentationContainer>
+  );
+};
+
+export const UserJourneyDocumentation: React.FC = () => {
+  const { filterOptions, isLoading, error } = useFilterOptions();
+
+  return (
+    <JourneyListDocumentationPage
+      title="User Journey Documentation"
+      description="Registered user lists from the backend matching panel filter registry. Click a list_id to open that list in the users table."
+      rows={filterOptions?.lists || []}
+      target="users"
+      isLoading={isLoading}
+      error={error}
+    />
+  );
+};
+
+export const MatchJourneyDocumentation: React.FC = () => {
+  const { filterOptions, isLoading, error } = useMatchesFilterOptions();
+
+  return (
+    <JourneyListDocumentationPage
+      title="Match Journey Documentation"
+      description="Registered match lists from the backend match journey registry. Click a list_id to open that list in the matches table."
+      rows={filterOptions?.lists || []}
+      target="matches"
+      isLoading={isLoading}
+      error={error}
+    />
   );
 };
 

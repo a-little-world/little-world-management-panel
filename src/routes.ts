@@ -3,6 +3,9 @@ export const BASE_ROUTE = '/matching/';
 export const CREATE_NEW_EMAIL_ROUTE = '/email/new';
 export const DEVKIT_ROUTE = '/devkit/';
 export const DOCUMENTATION_ROUTE = '/documentation/';
+export const MATCH_JOURNEY_DOCUMENTATION_ROUTE =
+  '/documentation/match-journey/';
+export const USER_JOURNEY_DOCUMENTATION_ROUTE = '/documentation/user-journey/';
 export const DYNAMIC_USER_LISTS_ROUTE = '/dynamicuserlists/';
 export const EDIT_EMAIL_ROUTE = '/email/:templateId/edit';
 export const EMAIL_HTML_ROUTE = '/emails/:emailTemplateName/rendered';

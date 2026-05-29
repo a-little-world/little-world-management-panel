@@ -14,7 +14,10 @@ import {
 import Layout from './components/blocks/Layout';
 import UserPanel from './components/blocks/user/UserPanel';
 import Algorithm from './components/views/Algorithm';
-import Documentation from './components/views/Documentation';
+import Documentation, {
+  MatchJourneyDocumentation,
+  UserJourneyDocumentation,
+} from './components/views/Documentation';
 import { DynamicUserListView } from './components/views/DynamicUserListView';
 import Home from './components/views/Home';
 import MatchPanel from './components/views/MatchPanel';
@@ -59,6 +62,7 @@ import {
   EMAIL_ROUTE,
   EVENTS_ROUTE,
   MATCHES_LIST_ROUTE,
+  MATCH_JOURNEY_DOCUMENTATION_ROUTE,
   MATCHING_ROUTE,
   MATCHING_USERS_ROUTE,
   MATCH_ROUTE,
@@ -72,6 +76,7 @@ import {
   SUPPORT_TASK_DETAIL_ROUTE,
   USERS_ROUTE,
   USER_DETAILS_ROUTE,
+  USER_JOURNEY_DOCUMENTATION_ROUTE,
   VIDEO_CALLS_ROUTE,
 } from './routes';
 import { GlobalStateProvider } from './store';
@@ -181,6 +186,14 @@ const router = createBrowserRouter(
         {
           path: DOCUMENTATION_ROUTE,
           element: <Documentation />,
+        },
+        {
+          path: USER_JOURNEY_DOCUMENTATION_ROUTE,
+          element: <UserJourneyDocumentation />,
+        },
+        {
+          path: MATCH_JOURNEY_DOCUMENTATION_ROUTE,
+          element: <MatchJourneyDocumentation />,
         },
         {
           path: RANDOM_CALLS_ROUTE,
