@@ -14,16 +14,13 @@ import { useNavigate } from 'react-router-dom';
 import useSWR from 'swr';
 
 import { Banner, fetchAdminBanners } from '../../../../api/banners';
-import { BANNERS_ROUTE } from '../../../../routes';
+import { BANNERS_ROUTE } from '../../../../router/routes';
 import {
   Description,
-  HeaderText,
   ListPanel,
   ListScroll,
   PageContainer,
   PageHeader,
-  Title,
-  TitleRow,
 } from '../../../atoms/PageLayout';
 import {
   Table,
@@ -33,6 +30,7 @@ import {
   TableHeader,
   TableRow,
 } from '../../../atoms/Table';
+import { usePageHeader } from '../../../blocks/LayoutHeaderContext';
 
 const buildBannerEditRoute = (id: number | 'new') => `${BANNERS_ROUTE}${id}/`;
 const formatDateTime = (value: string | null) =>
@@ -46,24 +44,24 @@ function Banners() {
     { revalidateOnFocus: true, revalidateOnMount: true },
   );
 
+  usePageHeader({
+    actions: (
+      <Button
+        appearance={ButtonAppearance.Primary}
+        size={ButtonSizes.Small}
+        onClick={() => navigate(buildBannerEditRoute('new'))}
+      >
+        Create banner
+      </Button>
+    ),
+  });
+
   return (
     <PageContainer>
       <PageHeader>
-        <HeaderText>
-          <TitleRow>
-            <Title>Banners</Title>
-            <Button
-              appearance={ButtonAppearance.Primary}
-              size={ButtonSizes.Small}
-              onClick={() => navigate(buildBannerEditRoute('new'))}
-            >
-              Create banner
-            </Button>
-          </TitleRow>
-          <Description>
-            Manage active and scheduled communication banners.
-          </Description>
-        </HeaderText>
+        <Description>
+          Manage active and scheduled communication banners.
+        </Description>
       </PageHeader>
 
       {error && (

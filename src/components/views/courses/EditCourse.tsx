@@ -36,11 +36,11 @@ import {
   updateAdminCourse,
   uploadCourseImage,
 } from '../../../api/courses';
-import { COURSES_ROUTE } from '../../../routes';
+import { COURSES_ROUTE } from '../../../router/routes';
 import { registerInput } from '../../../store';
-import Breadcrumbs from '../../atoms/Breadcrumbs';
 import { ImageUploadField } from '../../atoms/ImageUploadField';
 import StructureRail from '../../atoms/StructureRail';
+import { usePageHeader } from '../../blocks/LayoutHeaderContext';
 import {
   AnswerInstructionHint,
   AnswerList,
@@ -91,8 +91,6 @@ import {
   QuizStepsHeader,
   QuizStepsTitle,
   TopBarDivider,
-  TopBarRight,
-  TopBarRoot,
   TwoCol,
   TwoPaneLayout,
 } from './EditCourse.styles';
@@ -929,82 +927,82 @@ function EditCourse() {
   const courseTitle = watchedTitle || data?.title;
   const pageTitle = isNew ? 'New course' : courseTitle || '…';
 
+  usePageHeader({
+    breadcrumbs: {
+      items: [{ label: 'Courses', to: COURSES_ROUTE }],
+      current: pageTitle,
+    },
+    actions: (
+      <>
+        <Controller
+          name="is_listed"
+          control={control}
+          render={({ field: { value, onChange } }) => (
+            <Switch
+              label={value ? 'Listed' : 'Unlisted'}
+              labelInline
+              cannotError
+              checked={value}
+              onCheckedChange={onChange}
+              disabled={saving}
+            />
+          )}
+        />
+        <Controller
+          name="is_active"
+          control={control}
+          render={({ field: { value, onChange } }) => (
+            <Switch
+              label={value ? 'Published' : 'Draft'}
+              labelInline
+              cannotError
+              checked={value}
+              onCheckedChange={onChange}
+              disabled={saving}
+            />
+          )}
+        />
+        <TopBarDivider />
+        {(() => {
+          const previewDisabled = isNew
+            ? 'Save the course first to preview'
+            : isDirty
+              ? 'Save your changes to preview'
+              : null;
+          return (
+            <span title={previewDisabled ?? undefined}>
+              <Button
+                appearance={ButtonAppearance.Secondary}
+                size={ButtonSizes.Small}
+                disabled={!!previewDisabled}
+                onClick={() =>
+                  window.open(
+                    `${window.location.origin}/app/resources/trainings/${watchedSlug}?preview=1`,
+                    '_blank',
+                    'noopener,noreferrer',
+                  )
+                }
+              >
+                Preview
+              </Button>
+            </span>
+          );
+        })()}
+        <Button
+          appearance={ButtonAppearance.Primary}
+          size={ButtonSizes.Small}
+          onClick={handleSubmit(onSave)}
+          disabled={saving}
+          loading={saving}
+        >
+          Save changes
+        </Button>
+      </>
+    ),
+  });
+
   return (
     <EditorRoot>
-      {/* ── Top bar ── */}
-      <TopBarRoot>
-        <Breadcrumbs
-          items={[{ label: 'Courses', onClick: () => navigate(COURSES_ROUTE) }]}
-          current={pageTitle}
-        />
-
-        <TopBarRight>
-          <Controller
-            name="is_listed"
-            control={control}
-            render={({ field: { value, onChange } }) => (
-              <Switch
-                label={value ? 'Listed' : 'Unlisted'}
-                labelInline
-                cannotError
-                checked={value}
-                onCheckedChange={onChange}
-                disabled={saving}
-              />
-            )}
-          />
-          <Controller
-            name="is_active"
-            control={control}
-            render={({ field: { value, onChange } }) => (
-              <Switch
-                label={value ? 'Published' : 'Draft'}
-                labelInline
-                cannotError
-                checked={value}
-                onCheckedChange={onChange}
-                disabled={saving}
-              />
-            )}
-          />
-          <TopBarDivider />
-          {(() => {
-            const previewDisabled = isNew
-              ? 'Save the course first to preview'
-              : isDirty
-                ? 'Save your changes to preview'
-                : null;
-            return (
-              <span title={previewDisabled ?? undefined}>
-                <Button
-                  appearance={ButtonAppearance.Secondary}
-                  size={ButtonSizes.Small}
-                  disabled={!!previewDisabled}
-                  onClick={() =>
-                    window.open(
-                      `${window.location.origin}/app/resources/trainings/${watchedSlug}?preview=1`,
-                      '_blank',
-                      'noopener,noreferrer',
-                    )
-                  }
-                >
-                  Preview
-                </Button>
-              </span>
-            );
-          })()}
-          <Button
-            appearance={ButtonAppearance.Primary}
-            size={ButtonSizes.Small}
-            onClick={handleSubmit(onSave)}
-            disabled={saving}
-            loading={saving}
-          >
-            Save changes
-          </Button>
-        </TopBarRight>
-      </TopBarRoot>
-
       {error && (
         <StatusMessage type={StatusTypes.Error} visible>
           Failed to load course.
@@ -1031,7 +1029,6 @@ function EditCourse() {
             saving={saving}
           />
 
-
           <MainPane>
             {selectedSection === 'details' ? (
               <CourseDetailsPane
@@ -1040,7 +1037,9 @@ function EditCourse() {
                 errors={errors}
                 onAddChapter={addChapter}
                 chapterCount={chapterFields.length}
-                existingImageUrl={clearImage ? null : resolveCourseImageUrl(data?.image)}
+                existingImageUrl={
+                  clearImage ? null : resolveCourseImageUrl(data?.image)
+                }
                 pendingImageFile={pendingImageFile}
                 onImageFileChange={handleImageFileChange}
               />

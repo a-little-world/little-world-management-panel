@@ -9,7 +9,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTheme } from 'styled-components';
 import useSWR from 'swr';
 
-import { MATCHING_ROUTE } from '../../../routes';
+import { MATCHING_ROUTE } from '../../../router/routes';
 import { dataFetcher, useGlobalState } from '../../../store';
 import {
   Section,

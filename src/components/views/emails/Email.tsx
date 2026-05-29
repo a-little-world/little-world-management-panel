@@ -29,7 +29,6 @@ import {
   Container,
   Content,
   OptionsContainer,
-  PageHeading,
   TemplateWrapper,
   Toolbar,
 } from './styles';
@@ -119,9 +118,6 @@ const Email = () => {
 
   return (
     <Container>
-      <PageHeading type={TextTypes.Heading4} center>
-        {emailTemplateName} Template
-      </PageHeading>
       {email ? (
         <Content>
           <OptionsContainer>

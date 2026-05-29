@@ -19,14 +19,10 @@ import {
 } from '../../../../api/shortLinks';
 import { DatePicker } from '../../../atoms/DatePicker';
 import {
-  HeaderText,
   ListPanel,
   ListScroll,
   NoResultsContainer,
   PageContainer,
-  PageHeader,
-  Title,
-  TitleRow,
 } from '../../../atoms/PageLayout';
 import {
   Table,
@@ -75,14 +71,6 @@ function LinkClicks() {
     updateSearchParam(key, value ? format(value, 'yyyy-MM-dd') : '');
   };
 
-  const clearDateRange = () => {
-    const nextParams = new URLSearchParams(searchParams);
-    nextParams.delete('page');
-    nextParams.delete('start_date');
-    nextParams.delete('end_date');
-    setSearchParams(nextParams);
-  };
-
   const formatDateTime = (value: string) =>
     new Date(value).toLocaleString('en-GB');
 
@@ -93,14 +81,6 @@ function LinkClicks() {
 
   return (
     <PageContainer>
-      <PageHeader>
-        <HeaderText>
-          <TitleRow>
-            <Title>Short link clicks</Title>
-          </TitleRow>
-        </HeaderText>
-      </PageHeader>
-
       <FiltersToolbar
         showSearchBar
         searchPlaceholder="Search by tag"

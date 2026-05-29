@@ -34,15 +34,18 @@ import {
 } from '../../../emails/shared/constants';
 import { EmailThemeContext } from '../../../emails/shared/theme';
 import useAutosave from '../../../hooks/useAutoSave';
-import { CREATE_NEW_EMAIL_ROUTE, getEditEmailRoute } from '../../../routes';
+import {
+  CREATE_NEW_EMAIL_ROUTE,
+  getEditEmailRoute,
+} from '../../../router/routes';
 import { dataFetcher, registerInput } from '../../../store';
 import LoadingSpinner from '../../atoms/LoadingSpinner';
+import { usePageHeader } from '../../blocks/LayoutHeaderContext';
 import SendEmailSheet from '../../blocks/SendEmailSheet';
 import {
   Container,
   Content,
   OptionsContainer,
-  PageHeading,
   TemplateWrapper,
 } from './styles';
 
@@ -88,14 +91,6 @@ const NothingSelected = styled.div`
   max-width: 400px;
   margin: 0 auto;
   text-align: center;
-`;
-
-const ButtonsContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.small};
-  flex: 1;
-  margin-bottom: 14px;
 `;
 
 const swapArrayElements = ({
@@ -369,6 +364,41 @@ const CreateNewEmail = () => {
     setTemplateSaved(true);
   };
 
+  usePageHeader({
+    actions: (
+      <>
+        <Button
+          appearance={ButtonAppearance.Secondary}
+          size={ButtonSizes.Small}
+          type="submit"
+          disabled={!shouldSave}
+          {...(templateSaved ? { color: theme.color.text.success } : {})}
+        >
+          {saving ? <LoadingSpinner /> : 'Save Template'}
+        </Button>
+        <SendEmailSheet
+          emailTemplateName={templateName}
+          subject={subject}
+          cannotOpen={!templateSaved}
+        />
+
+        <Tooltip
+          trigger={
+            <Button
+              variation={ButtonVariations.Circle}
+              appearance={ButtonAppearance.Secondary}
+              size={ButtonSizes.Large}
+            >
+              <InfoIcon width="20" height="20" label="infoIcon" />
+            </Button>
+          }
+          text={`Available dynamic variables:
+        ${map(BackendVars, variable => variable).join('\n')}`}
+        />
+      </>
+    ),
+  });
+
   const handleTemplateSelect = value => {
     const dynamicTemplate = dynamicTemplates?.results.find(
       template => template.uuid === value,
@@ -466,7 +496,6 @@ const CreateNewEmail = () => {
 
   return (
     <Container>
-      <PageHeading type={TextTypes.Heading4}>New Email Creator</PageHeading>
       <SaveTemplateForm
         onSubmit={submitTemplate(async () => {
           await onSaveDynamicTemplate();
@@ -569,36 +598,6 @@ const CreateNewEmail = () => {
           error={errorsTemplate.subject?.message}
           width={InputWidth.Medium}
         />
-        <ButtonsContainer>
-          <Button
-            appearance={ButtonAppearance.Secondary}
-            size={ButtonSizes.Small}
-            type="submit"
-            disabled={!shouldSave}
-            {...(templateSaved ? { color: theme.color.text.success } : {})}
-          >
-            {saving ? <LoadingSpinner /> : 'Save Template'}
-          </Button>
-          <SendEmailSheet
-            emailTemplateName={templateName}
-            subject={subject}
-            cannotOpen={!templateSaved}
-          />
-
-          <Tooltip
-            trigger={
-              <Button
-                variation={ButtonVariations.Circle}
-                appearance={ButtonAppearance.Secondary}
-                size={ButtonSizes.Large}
-              >
-                <InfoIcon width="20" height="20" label="infoIcon" />
-              </Button>
-            }
-            text={`Available dynamic variables:
-            ${map(BackendVars, variable => variable).join('\n')}`}
-          />
-        </ButtonsContainer>
       </SaveTemplateForm>
 
       <Content>

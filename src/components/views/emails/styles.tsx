@@ -1,4 +1,3 @@
-import { Text } from '@a-little-world/little-world-design-system';
 import styled from 'styled-components';
 
 export const Container = styled.div`
@@ -55,8 +54,4 @@ export const TemplateWrapper = styled.div`
   width: 100%;
   min-height: 0;
   height: 100%;
-`;
-
-export const PageHeading = styled(Text)`
-  text-transform: capitalize;
 `;

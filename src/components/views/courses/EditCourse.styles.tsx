@@ -9,34 +9,12 @@ const BRAND_ORANGE_LIGHT = '#f39224';
 const BRAND_ORANGE_TINT = '#fde5cf';
 const BRAND_BLUE = '#0063af';
 
-/* ── Top-level chrome ── */
-
 export const EditorRoot = styled.div`
   display: flex;
   flex-direction: column;
-  height: 100dvh;
+  height: 100%;
   overflow: hidden;
   background: ${({ theme }) => theme.color.surface.primary};
-`;
-
-export const TopBarRoot = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: ${({ theme }) =>
-    `${theme.spacing.xxxsmall} ${theme.spacing.medium}`};
-  flex-shrink: 0;
-  background: ${({ theme }) => theme.color.surface.primary};
-  border-bottom: 1px solid ${({ theme }) => theme.color.border.subtle};
-  gap: ${({ theme }) => theme.spacing.medium};
-  z-index: 10;
-`;
-
-export const TopBarRight = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.small};
-  flex-shrink: 0;
 `;
 
 export const TopBarDivider = styled.span`

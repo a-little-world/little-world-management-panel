@@ -1,3 +1,4 @@
+import { Text } from '@a-little-world/little-world-design-system';
 import styled, { css } from 'styled-components';
 
 export const PageContainer = styled.div`
@@ -82,10 +83,8 @@ export const Title = styled.h1`
   margin: 0;
 `;
 
-export const Description = styled.p`
+export const Description = styled(Text)`
   color: ${({ theme }) => theme.color.text.secondary};
-  margin-top: ${({ theme }) => theme.spacing.xsmall};
-  margin-bottom: 0;
 `;
 
 export const ListPanel = styled.div`

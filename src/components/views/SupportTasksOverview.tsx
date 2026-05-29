@@ -46,7 +46,7 @@ import {
   PriorityConfig,
   useTaskPriorities,
 } from '../../hooks/useTaskPriorities';
-import { getSupportTaskDetailRoute } from '../../routes';
+import { getSupportTaskDetailRoute } from '../../router/routes';
 import { useCurrentUserId } from '../../store';
 import { Button } from '../atoms/Button';
 import UserImage from '../atoms/UserImage';

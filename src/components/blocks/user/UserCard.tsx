@@ -21,7 +21,7 @@ import { useNavigate } from 'react-router-dom';
 import useSWR from 'swr';
 
 import { formatDate, formatTimeDistance } from '../../../helpers/date';
-import { MATCHING_ROUTE } from '../../../routes';
+import { MATCHING_ROUTE } from '../../../router/routes';
 import { dataFetcher, useGlobalState } from '../../../store';
 import MatchesIcons from '../../atoms/MatchesIcons';
 import UserImage from '../../atoms/UserImage';
@@ -35,8 +35,8 @@ import {
   ImageContainer,
   InfoRow,
   InfoRowWrap,
-  MetaFieldGroup,
   MatchesContainer,
+  MetaFieldGroup,
   StatusContainer,
   StyledCard,
   UnresponsiveWarning,

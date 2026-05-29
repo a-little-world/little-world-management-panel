@@ -6,7 +6,6 @@ import {
 } from '@a-little-world/little-world-design-system';
 import {
   AcademicCapIcon,
-  CalendarDaysIcon,
   ChartBarIcon,
   ChatBubbleLeftRightIcon,
   DocumentTextIcon,
@@ -17,7 +16,6 @@ import {
 import React from 'react';
 
 import {
-  Calculator,
   ClipboardCheckIcon,
   HeadsetIcon,
   HeartHandshake,
@@ -29,23 +27,21 @@ import {
   COURSES_ROUTE,
   DOCUMENTATION_ROUTE,
   DYNAMIC_USER_LISTS_ROUTE,
-  MATCHES_LIST_ROUTE,
+  MATCHING_HUB_ROUTE,
   MATCHING_USERS_ROUTE,
-  PREMATCH_APPOINTMENTS_ROUTE,
   RANDOM_CALLS_ROUTE,
-  SCORES_ROUTE,
   STATS_ROUTE,
   SUPPORT_TASKS_ROUTE,
   USERS_ROUTE,
   VIDEO_CALLS_ROUTE,
-} from '../../routes';
+} from '../../router/routes';
 import { useGlobalState } from '../../store';
 import NavigationTiles, { NavigationTile } from '../blocks/NavigationTiles';
 
 const TABS: NavigationTile[] = [
   {
     name: 'Matching',
-    path: MATCHES_LIST_ROUTE,
+    path: MATCHING_HUB_ROUTE,
     icon: <HeartHandshake className="h-16 w-16 text-white mb-2" />,
   },
   {
@@ -74,11 +70,6 @@ const TABS: NavigationTile[] = [
     icon: <ChartBarIcon className="h-16 w-16 text-white mb-2" />,
   },
   {
-    name: 'Scores',
-    path: SCORES_ROUTE,
-    icon: <Calculator className="h-16 w-16 text-white mb-2" />,
-  },
-  {
     name: 'Dynamic User Lists',
     path: DYNAMIC_USER_LISTS_ROUTE,
     icon: <RectangleStackIcon className="h-16 w-16 text-white mb-2" />,
@@ -87,11 +78,6 @@ const TABS: NavigationTile[] = [
     name: 'Video Calls',
     path: VIDEO_CALLS_ROUTE,
     icon: <VideoCameraIcon className="h-16 w-16 text-white mb-2" />,
-  },
-  {
-    name: 'Onboarding Appointments',
-    path: PREMATCH_APPOINTMENTS_ROUTE,
-    icon: <CalendarDaysIcon className="h-16 w-16 text-white mb-2" />,
   },
   {
     name: 'Documentation',

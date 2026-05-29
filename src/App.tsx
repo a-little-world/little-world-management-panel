@@ -43,8 +43,10 @@ import Email from './components/views/emails/Email';
 import EmailHtml from './components/views/emails/EmailHtml';
 import Emails from './components/views/emails/Emails';
 import { SendDynamicTemplateView } from './components/views/emails/SendDynamicTemplate';
+import MatchingHub from './components/views/matching/MatchingHub';
 import RandomCalls from './components/views/randomCalls/RandomCalls';
 import { EmailThemeProvider } from './emails/shared/theme';
+import { routeTitle } from './router/routeHandle';
 import {
   ALGORITHM_ROUTE,
   BANNERS_ROUTE,
@@ -62,9 +64,10 @@ import {
   EMAIL_ROUTE,
   EVENTS_ROUTE,
   MATCHES_LIST_ROUTE,
-  MATCH_JOURNEY_DOCUMENTATION_ROUTE,
+  MATCHING_HUB_ROUTE,
   MATCHING_ROUTE,
   MATCHING_USERS_ROUTE,
+  MATCH_JOURNEY_DOCUMENTATION_ROUTE,
   MATCH_ROUTE,
   PREMATCH_APPOINTMENTS_ROUTE,
   RANDOM_CALLS_ROUTE,
@@ -78,7 +81,7 @@ import {
   USER_DETAILS_ROUTE,
   USER_JOURNEY_DOCUMENTATION_ROUTE,
   VIDEO_CALLS_ROUTE,
-} from './routes';
+} from './router/routes';
 import { GlobalStateProvider } from './store';
 
 export const Root = ({
@@ -110,82 +113,107 @@ const router = createBrowserRouter(
         {
           path: '',
           element: <Home />,
+          ...routeTitle('Management Portal'),
         },
         {
           path: COMMUNICATIONS_ROUTE,
           element: <Communications />,
+          ...routeTitle('Communications'),
+        },
+        {
+          path: MATCHING_HUB_ROUTE,
+          element: <MatchingHub />,
+          ...routeTitle('Matching'),
         },
         {
           path: USERS_ROUTE,
           element: <Users />,
+          ...routeTitle('Users'),
         },
         {
           path: MATCHING_USERS_ROUTE,
           element: <MatchingUsers />,
+          ...routeTitle('Matching users'),
         },
         {
           path: USER_DETAILS_ROUTE,
           element: <UserPanel />,
+          ...routeTitle('User details'),
         },
         {
           path: MATCHING_ROUTE,
           element: <Matching />,
+          ...routeTitle('Match info'),
         },
         {
           path: STATS_ROUTE,
           element: <Stats />,
+          ...routeTitle('Stats'),
         },
         {
           path: DYNAMIC_USER_LISTS_ROUTE,
           element: <DynamicUserListView />,
+          ...routeTitle('Dynamic User Lists'),
         },
         {
           path: MATCHES_LIST_ROUTE,
           element: <Matches />,
+          ...routeTitle('Matches'),
         },
         {
           path: MATCH_ROUTE,
           element: <MatchPanel />,
+          ...routeTitle('Match details'),
         },
         {
           path: PREMATCH_APPOINTMENTS_ROUTE,
           element: <PrematchingAppointments />,
+          ...routeTitle('Onboarding Appointments'),
         },
         {
           path: VIDEO_CALLS_ROUTE,
           element: <VideoCalls />,
+          ...routeTitle('Video Calls'),
         },
         {
           path: SCORES_ROUTE,
           element: <Scores />,
+          ...routeTitle('Scores'),
         },
         {
           path: EMAILS_ROUTE,
           element: <Emails />,
+          ...routeTitle('Emails'),
         },
         {
           path: CREATE_NEW_EMAIL_ROUTE,
           element: <CreateNewEmail />,
+          ...routeTitle('New email'),
         },
         {
           path: EDIT_EMAIL_ROUTE,
           element: <CreateNewEmail />,
+          ...routeTitle('Edit email'),
         },
         {
           path: SEND_DYNAMIC_EMAIL_ROUTE,
           element: <SendDynamicTemplateView />,
+          ...routeTitle('Send dynamic email'),
         },
         {
           path: EMAIL_ROUTE,
           element: <Email />,
+          ...routeTitle('Email'),
         },
         {
           path: ALGORITHM_ROUTE,
           element: <Algorithm />,
+          ...routeTitle('Algorithm'),
         },
         {
           path: DOCUMENTATION_ROUTE,
           element: <Documentation />,
+          ...routeTitle('Documentation'),
         },
         {
           path: USER_JOURNEY_DOCUMENTATION_ROUTE,
@@ -198,38 +226,51 @@ const router = createBrowserRouter(
         {
           path: RANDOM_CALLS_ROUTE,
           element: <RandomCalls />,
+          ...routeTitle('Random Calls'),
         },
         {
           path: EVENTS_ROUTE,
           element: <Events />,
+          ...routeTitle('Events'),
         },
         {
           path: SHORT_LINKS_ROUTE,
           element: <ShortLinks />,
+          ...routeTitle('Short Links'),
         },
         {
           path: BANNERS_ROUTE,
           element: <Banners />,
+          ...routeTitle('Banners'),
         },
         {
           path: BANNER_EDIT_ROUTE,
           element: <EditBanner />,
+          ...routeTitle(({ bannerId }) =>
+            bannerId === 'new' ? 'Create Banner' : 'Edit Banner',
+          ),
         },
         {
           path: SUPPORT_TASKS_ROUTE,
           element: <SupportTasksOverview />,
+          ...routeTitle('Support Tasks'),
         },
         {
           path: SUPPORT_TASK_DETAIL_ROUTE,
           element: <SupportTaskDetail />,
+          ...routeTitle('Support Task'),
         },
         {
           path: COURSES_ROUTE,
           element: <Courses />,
+          ...routeTitle('Courses'),
         },
         {
           path: COURSE_EDIT_ROUTE,
           element: <EditCourse />,
+          ...routeTitle(({ courseSlug }) =>
+            courseSlug === 'new' ? 'New course' : 'Edit course',
+          ),
         },
       ],
     },

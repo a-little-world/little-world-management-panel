@@ -8,7 +8,7 @@ import {
   DOCUMENTATION_ROUTE,
   MATCH_JOURNEY_DOCUMENTATION_ROUTE,
   USER_JOURNEY_DOCUMENTATION_ROUTE,
-} from '../../routes';
+} from '../../router/routes';
 import { useFilterOptions, useMatchesFilterOptions } from '../../store';
 import {
   Table,
@@ -263,7 +263,9 @@ function JourneyListDocumentationPage({
           <Text type={TextTypes.Body4}>{description}</Text>
         </DocumentationHeader>
 
-        {isLoading && <Text type={TextTypes.Body5}>Loading documentation...</Text>}
+        {isLoading && (
+          <Text type={TextTypes.Body5}>Loading documentation...</Text>
+        )}
         {Boolean(error) && (
           <Text type={TextTypes.Body5}>
             Could not load documentation from the backend.
@@ -283,9 +285,6 @@ export const Documentation: React.FC = () => {
   return (
     <DocumentationContainer>
       <DocumentationHeader>
-        <Text type={TextTypes.Heading3} tag="h1">
-          Documentation
-        </Text>
         <Text type={TextTypes.Body4}>
           Explore our comprehensive documentation to understand how our system
           works
