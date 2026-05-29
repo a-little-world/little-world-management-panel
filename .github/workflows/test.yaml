@@ -22,12 +22,12 @@ jobs:
     name: Build & Run tests
     steps:
       - uses: actions/checkout@master
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 14
-      - name: Npm Install
-        run: npm install
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        # omit version, uses version of packageManager in package.json
+      - name: Install
+        run: pnpm install
       - name: Run Tests
-        run: npm test --watch=all
+        run: pnpm run test --watch=all
         env: # We should set CI=true so the app doesn't ask for user input
           CI: true
