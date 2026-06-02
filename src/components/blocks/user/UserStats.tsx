@@ -8,7 +8,7 @@ import {
   Link,
 } from '@a-little-world/little-world-design-system';
 import { formatVideoTimeHours } from '../../../helpers/date';
-import { VIDEO_CALLS_ROUTE } from '../../../routes';
+import { VIDEO_CALLS_ROUTE } from '../../../router/routes';
 import { dataFetcher } from '../../../store';
 
 const Wrapper = styled.div`

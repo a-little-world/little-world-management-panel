@@ -16,6 +16,7 @@ import {
   DOCUMENTATION_ROUTE,
   DYNAMIC_USER_LISTS_ROUTE,
   MATCHES_LIST_ROUTE,
+  MATCHING_HUB_ROUTE,
   MATCHING_USERS_ROUTE,
   PREMATCH_APPOINTMENTS_ROUTE,
   RANDOM_CALLS_ROUTE,
@@ -24,7 +25,7 @@ import {
   SUPPORT_TASKS_ROUTE,
   USERS_ROUTE,
   VIDEO_CALLS_ROUTE,
-} from '../../routes';
+} from '../../router/routes';
 import SearchBar from './SearchBar';
 
 const Menu = () => {
@@ -60,6 +61,13 @@ const Menu = () => {
     location.pathname.startsWith(BANNERS_ROUTE) ||
     location.pathname.startsWith('/events/') ||
     location.pathname.startsWith('/short-links/');
+
+  const isMatchingRoute =
+    location.pathname === MATCHING_HUB_ROUTE ||
+    location.pathname === MATCHES_LIST_ROUTE ||
+    location.pathname.startsWith('/match/') ||
+    location.pathname === SCORES_ROUTE ||
+    location.pathname === PREMATCH_APPOINTMENTS_ROUTE;
   return (
     <NavigationMenu withShadow>
       <SearchBar
@@ -85,8 +93,8 @@ const Menu = () => {
             Support Tasks
           </NavigationMenuContentItem>
           <NavigationMenuContentItem
-            to={MATCHES_LIST_ROUTE}
-            active={location.pathname === MATCHES_LIST_ROUTE}
+            to={MATCHING_HUB_ROUTE}
+            active={isMatchingRoute}
           >
             Matching
           </NavigationMenuContentItem>
@@ -117,12 +125,6 @@ const Menu = () => {
             </NavigationMenuContentItem>
           }
           <NavigationMenuContentItem
-            to={SCORES_ROUTE}
-            active={location.pathname === SCORES_ROUTE}
-          >
-            Scores
-          </NavigationMenuContentItem>
-          <NavigationMenuContentItem
             to={DYNAMIC_USER_LISTS_ROUTE}
             active={location.pathname === DYNAMIC_USER_LISTS_ROUTE}
           >
@@ -133,12 +135,6 @@ const Menu = () => {
             active={location.pathname === VIDEO_CALLS_ROUTE}
           >
             Video Calls
-          </NavigationMenuContentItem>
-          <NavigationMenuContentItem
-            to={PREMATCH_APPOINTMENTS_ROUTE}
-            active={location.pathname === PREMATCH_APPOINTMENTS_ROUTE}
-          >
-            Onboarding Appointments
           </NavigationMenuContentItem>
           <NavigationMenuContentItem
             to={DOCUMENTATION_ROUTE}

@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@a-little-world/little-world-design-system':
-        specifier: ^2.15.1
-        version: 2.15.1(@date-fns/tz@1.5.0)(@types/react-dom@19.2.3(@types/react@19.2.15))(@types/react@19.2.15)(date-fns@3.6.0)(react-dom@19.2.6(react@19.2.6))(react-router-dom@6.30.3(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(styled-components@6.4.2(react-dom@19.2.6(react@19.2.6))(react@19.2.6))
+        specifier: ^2.16.0
+        version: 2.16.0(@date-fns/tz@1.5.0)(@types/react-dom@19.2.3(@types/react@19.2.15))(@types/react@19.2.15)(date-fns@3.6.0)(react-dom@19.2.6(react@19.2.6))(react-router-dom@6.30.3(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(styled-components@6.4.2(react-dom@19.2.6(react@19.2.6))(react@19.2.6))
       '@heroicons/react':
         specifier: ^2.0.18
         version: 2.2.0(react@19.2.6)
@@ -228,14 +228,14 @@ importers:
 
 packages:
 
-  '@a-little-world/little-world-design-system-core@1.11.0':
-    resolution: {integrity: sha512-A1LBsxZ/Go5Clj2VQSc+tRvmuHy8o157MLFxGpOYE1FkODWiJNbgD7fEzj5c4r1ntAy+e0463bm4VKYaKJ/yoA==}
+  '@a-little-world/little-world-design-system-core@1.12.0':
+    resolution: {integrity: sha512-MJU1axJkNMOE+6MRd26WydXzjhxoHzEgkYIr7WC/7N/5cnLHoJXKK/iB0bNWAtjLNIzhjJYXGN61zlRg31nP/g==}
     peerDependencies:
       react: ^19.0.0
       react-dom: ^19.0.0
 
-  '@a-little-world/little-world-design-system@2.15.1':
-    resolution: {integrity: sha512-0k1r4RjKdN4aBN9e0R2w8D9XNKFY+nALRXrzcHyj3V3x1WwDQ3K/aX+GE6buVxliZVqI/A0a6KPwkp3Qx9zHqw==}
+  '@a-little-world/little-world-design-system@2.16.0':
+    resolution: {integrity: sha512-uQCnnzDCErz5yC68C2dvuYr8fTpTlV/DSWc2AkCy/bd7rZ7iLN+ZBtj92/TIZSPKdvP0vGwqnbeJjIDDP6wH+Q==}
     peerDependencies:
       react: ^19.0.0
       react-dom: ^19.0.0
@@ -4351,7 +4351,7 @@ packages:
 
 snapshots:
 
-  '@a-little-world/little-world-design-system-core@1.11.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)':
+  '@a-little-world/little-world-design-system-core@1.12.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)':
     dependencies:
       '@babel/runtime': 7.29.7
       csstype: 3.2.3
@@ -4360,9 +4360,9 @@ snapshots:
       react-dom: 19.2.6(react@19.2.6)
       svgson: 5.3.1
 
-  '@a-little-world/little-world-design-system@2.15.1(@date-fns/tz@1.5.0)(@types/react-dom@19.2.3(@types/react@19.2.15))(@types/react@19.2.15)(date-fns@3.6.0)(react-dom@19.2.6(react@19.2.6))(react-router-dom@6.30.3(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(styled-components@6.4.2(react-dom@19.2.6(react@19.2.6))(react@19.2.6))':
+  '@a-little-world/little-world-design-system@2.16.0(@date-fns/tz@1.5.0)(@types/react-dom@19.2.3(@types/react@19.2.15))(@types/react@19.2.15)(date-fns@3.6.0)(react-dom@19.2.6(react@19.2.6))(react-router-dom@6.30.3(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(styled-components@6.4.2(react-dom@19.2.6(react@19.2.6))(react@19.2.6))':
     dependencies:
-      '@a-little-world/little-world-design-system-core': 1.11.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      '@a-little-world/little-world-design-system-core': 1.12.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       '@base-ui/react': 1.5.0(@date-fns/tz@1.5.0)(@types/react@19.2.15)(date-fns@3.6.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       '@radix-ui/react-accordion': 1.2.12(@types/react-dom@19.2.3(@types/react@19.2.15))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       '@radix-ui/react-checkbox': 1.3.3(@types/react-dom@19.2.3(@types/react@19.2.15))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)

@@ -27,13 +27,9 @@ import { COMMUNITY_EVENT_FREQUENCIES, LANGUAGES } from '../../../../constants';
 import { formatDate, formatEventTime } from '../../../../helpers/date';
 import { calculateNextOccurrence } from '../../../../helpers/events';
 import {
-  HeaderText,
   ListPanel,
   ListScroll,
   PageContainer,
-  PageHeader,
-  Title,
-  TitleRow,
 } from '../../../atoms/PageLayout';
 import {
   Table,
@@ -44,6 +40,7 @@ import {
   TableRow,
 } from '../../../atoms/Table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../atoms/Tabs';
+import { usePageHeader } from '../../../blocks/LayoutHeaderContext';
 import EventForm, { EventFormValues } from './EventForm';
 import {
   ColDate,
@@ -311,25 +308,22 @@ function Events() {
     }
   };
 
+  usePageHeader({
+    actions: (
+      <Button
+        appearance={ButtonAppearance.Primary}
+        size={ButtonSizes.Small}
+        onClick={openCreateModal}
+      >
+        Create event
+      </Button>
+    ),
+  });
+
   const currentList = tab === 'upcoming' ? sortedUpcoming : sortedPast;
 
   return (
     <PageContainer>
-      <PageHeader>
-        <HeaderText>
-          <TitleRow>
-            <Title>Events</Title>
-            <Button
-              appearance={ButtonAppearance.Primary}
-              size={ButtonSizes.Small}
-              onClick={openCreateModal}
-            >
-              Create event
-            </Button>
-          </TitleRow>
-        </HeaderText>
-      </PageHeader>
-
       {statusMessage && (
         <StatusMessage type={StatusTypes.Success} visible>
           {statusMessage}

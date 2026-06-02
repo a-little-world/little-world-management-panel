@@ -1,5 +1,4 @@
 import {
-  ArrowLeftIcon,
   BannerTypes,
   Button,
   ButtonAppearance,
@@ -14,10 +13,8 @@ import {
   StatusMessage,
   StatusTypes,
   Switch,
-  Text,
   TextArea,
   TextInput,
-  TextTypes,
   Toast,
 } from '@a-little-world/little-world-design-system';
 import { isValid, parseISO } from 'date-fns';
@@ -36,12 +33,13 @@ import {
   resolveBannerImageUrl,
   updateBanner,
 } from '../../../../api/banners';
+import { BANNERS_ROUTE } from '../../../../router/routes';
 import { registerInput } from '../../../../store';
 import { DatePicker } from '../../../atoms/DatePicker';
 import { ImageUploadField } from '../../../atoms/ImageUploadField';
+import { usePageHeader } from '../../../blocks/LayoutHeaderContext';
 import {
   AddBackgroundImageButton,
-  BackButton,
   BackgroundInputRow,
   Container,
   CtaGrid,
@@ -49,9 +47,6 @@ import {
   DatesRow,
   EditableFields,
   FormStack,
-  Header,
-  HeaderActions,
-  HeaderTopRow,
   HiddenFileInput,
   ImagesRow,
   LeftStack,
@@ -356,51 +351,43 @@ function EditBanner() {
     }
   };
 
+  usePageHeader({
+    breadcrumbs: {
+      items: [{ label: 'Banners', to: BANNERS_ROUTE }],
+      current: pageTitle,
+    },
+    actions: (
+      <>
+        <Controller
+          name="active"
+          control={control}
+          render={({ field: { value, onChange } }) => (
+            <Switch
+              inputRef={activeSwitchRef as RefObject<HTMLButtonElement>}
+              label="Active"
+              labelInline
+              checked={value}
+              onCheckedChange={onChange}
+              disabled={saving}
+              cannotError
+            />
+          )}
+        />
+        <Button
+          appearance={ButtonAppearance.Primary}
+          size={ButtonSizes.Small}
+          onClick={handleSubmit(onSave)}
+          disabled={saving}
+          loading={saving}
+        >
+          Save
+        </Button>
+      </>
+    ),
+  });
+
   return (
     <Container>
-      <Header>
-        <HeaderTopRow>
-          <BackButton
-            variation={ButtonVariations.Icon}
-            size={ButtonSizes.Small}
-            onClick={() => navigate('/banners/')}
-            disabled={saving}
-          >
-            <ArrowLeftIcon height={12} width={12} label="back icon" />
-            View all banners
-          </BackButton>
-          <Text tag="h1" type={TextTypes.Heading4}>
-            {pageTitle}
-          </Text>
-          <HeaderActions>
-            <Controller
-              name="active"
-              control={control}
-              render={({ field: { value, onChange } }) => (
-                <Switch
-                  inputRef={activeSwitchRef as RefObject<HTMLButtonElement>}
-                  label="Active"
-                  labelInline
-                  checked={value}
-                  onCheckedChange={onChange}
-                  disabled={saving}
-                  cannotError
-                />
-              )}
-            />
-            <Button
-              appearance={ButtonAppearance.Primary}
-              size={ButtonSizes.Small}
-              onClick={handleSubmit(onSave)}
-              disabled={saving}
-              loading={saving}
-            >
-              Save
-            </Button>
-          </HeaderActions>
-        </HeaderTopRow>
-      </Header>
-
       {error && (
         <StatusMessage type={StatusTypes.Error} visible>
           Failed to load banner.

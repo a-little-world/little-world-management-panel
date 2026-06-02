@@ -6,7 +6,7 @@ import {
   EMAILS_ROUTE,
   EVENTS_ROUTE,
   SHORT_LINKS_ROUTE,
-} from '../../../routes';
+} from '../../../router/routes';
 
 import NavigationTiles, { NavigationTile } from '../../blocks/NavigationTiles';
 

@@ -22,10 +22,10 @@ import {
   getActionTypeConfig,
   patchSupportTask,
 } from '../../api/supportTasks';
-import { useTaskPriorityList } from '../../hooks/useTaskPriorities';
 import { BLUE_10, BLUE_40, ORANGE_40 } from '../../constants';
 import { formatTimeDistance } from '../../helpers/date';
-import { SUPPORT_TASKS_ROUTE } from '../../routes';
+import { useTaskPriorityList } from '../../hooks/useTaskPriorities';
+import { SUPPORT_TASKS_ROUTE } from '../../router/routes';
 import { dataFetcher } from '../../store';
 import { Card, CardContent, CardHeader, CardTitle } from '../atoms/Card';
 import UserImage from '../atoms/UserImage';
@@ -201,7 +201,10 @@ const ProfileLink = styled(Link)`
 
 export default function SupportTaskDetail() {
   const priorityList = useTaskPriorityList();
-  const priorityOptions = priorityList.map(({ priority, label }) => ({ value: priority, label }));
+  const priorityOptions = priorityList.map(({ priority, label }) => ({
+    value: priority,
+    label,
+  }));
 
   const { taskId } = useParams<{ taskId: string }>();
   const id = Number(taskId);

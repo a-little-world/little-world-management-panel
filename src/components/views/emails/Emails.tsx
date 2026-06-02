@@ -26,7 +26,7 @@ import { getCookiesAsObject } from '../../../lib/utils';
 import {
   CREATE_NEW_EMAIL_ROUTE,
   SEND_DYNAMIC_EMAIL_ROUTE,
-} from '../../../routes';
+} from '../../../router/routes';
 import { dataFetcher } from '../../../store';
 import LoadingSpinner from '../../atoms/LoadingSpinner';
 

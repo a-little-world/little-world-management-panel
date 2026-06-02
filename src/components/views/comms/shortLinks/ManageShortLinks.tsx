@@ -36,13 +36,10 @@ import {
 } from '../../../../api/shortLinks';
 import {
   Description,
-  HeaderText,
   ListPanel,
   ListScroll,
   PageContainer,
   PageHeader,
-  Title,
-  TitleRow,
 } from '../../../atoms/PageLayout';
 import {
   Table,
@@ -52,6 +49,7 @@ import {
   TableHeader,
   TableRow,
 } from '../../../atoms/Table';
+import { usePageHeader } from '../../../blocks/LayoutHeaderContext';
 import LinkForm, { LinkFormValues } from './EditShortLink';
 
 const getDefaultFormValues = (): LinkFormValues => ({
@@ -220,34 +218,34 @@ function Links() {
     }
   };
 
+  usePageHeader({
+    actions: (
+      <Button
+        appearance={ButtonAppearance.Primary}
+        size={ButtonSizes.Small}
+        onClick={openCreateModal}
+      >
+        Create short link
+      </Button>
+    ),
+  });
+
   const formatDateTime = (value: string) =>
     new Date(value).toLocaleString('en-GB');
 
   return (
     <PageContainer>
       <PageHeader>
-        <HeaderText>
-          <TitleRow>
-            <Title>Short links</Title>
-            <Button
-              appearance={ButtonAppearance.Primary}
-              size={ButtonSizes.Small}
-              onClick={openCreateModal}
-            >
-              Create short link
-            </Button>
-          </TitleRow>
-          <Description>
-            Short links redirect visitors from <code>/links/&lt;tag&gt;/</code>{' '}
-            on this site to the destination URL. Enable “home app root” when the
-            link must work from <strong>home.little-world.com</strong>. Query
-            parameters on the incoming request are merged onto the destination
-            URL when the key is not already present (for example campaign{' '}
-            <code>source</code> / <code>s</code>, and optional{' '}
-            <code>user_hash</code> / <code>u</code> / <code>h</code>). Archived
-            links stop redirecting but remain in the database for reporting.
-          </Description>
-        </HeaderText>
+        <Description>
+          Short links redirect visitors from <code>/links/&lt;tag&gt;/</code> on
+          this site to the destination URL. Enable “home app root” when the link
+          must work from <strong>home.little-world.com</strong>. Query
+          parameters on the incoming request are merged onto the destination URL
+          when the key is not already present (for example campaign{' '}
+          <code>source</code> / <code>s</code>, and optional{' '}
+          <code>user_hash</code> / <code>u</code> / <code>h</code>). Archived
+          links stop redirecting but remain in the database for reporting.
+        </Description>
       </PageHeader>
 
       {error && (

@@ -18,15 +18,13 @@ import {
   ADMIN_COURSES_ENDPOINT,
   fetchAdminCourses,
 } from '../../../api/courses';
-import { getCourseEditRoute } from '../../../routes';
+import { getCourseEditRoute } from '../../../router/routes';
 import {
   Description,
   ListPanel,
   ListScroll,
   PageContainer,
   PageHeader,
-  Title,
-  TitleRow,
 } from '../../atoms/PageLayout';
 import {
   Table,
@@ -38,6 +36,7 @@ import {
 } from '../../atoms/Table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../atoms/Tabs';
 import { FiltersToolbar } from '../../blocks/FiltersToolbar';
+import { usePageHeader } from '../../blocks/LayoutHeaderContext';
 import CourseStats from './CourseStats';
 
 const AUDIENCE_LABELS: Record<string, string> = {
@@ -56,19 +55,21 @@ function ManageCourses() {
   );
   const courses = data?.results ?? [];
 
+  usePageHeader({
+    actions: (
+      <Button
+        appearance={ButtonAppearance.Primary}
+        size={ButtonSizes.Small}
+        onClick={() => navigate(getCourseEditRoute('new'))}
+      >
+        Create course
+      </Button>
+    ),
+  });
+
   return (
     <PageContainer>
       <PageHeader>
-        <TitleRow>
-          <Title>Courses</Title>
-          <Button
-            appearance={ButtonAppearance.Primary}
-            size={ButtonSizes.Small}
-            onClick={() => navigate(getCourseEditRoute('new'))}
-          >
-            Create course
-          </Button>
-        </TitleRow>
         <Description>
           Manage courses, workshops, and walkthroughs available to users.
         </Description>

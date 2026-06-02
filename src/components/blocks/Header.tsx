@@ -7,10 +7,13 @@ import {
 import React from 'react';
 import styled from 'styled-components';
 
+import Breadcrumbs from '../atoms/Breadcrumbs';
+import { HeaderToolbarActions } from './HeaderToolbarActions';
+import { useLayoutHeader } from './LayoutHeaderContext';
 import Menu from './Menu';
 
 const HeaderTitle = styled(Text)`
-  color: #074367;
+  color: ${({ theme }) => theme.color.text.info};
   display: none;
 
   @media (min-width: ${({ theme }) => theme.breakpoints.medium}) {
@@ -19,24 +22,31 @@ const HeaderTitle = styled(Text)`
   }
 `;
 
+const TitleGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.small};
+  min-width: 0;
+`;
+
 const Header = () => {
+  const { title, breadcrumbs, actions } = useLayoutHeader();
+
   return (
     <div className="container bg-sky-50 max-w-full flex h-20 justify-between p-4 items-center border-solid border-b-2 border-slate-100">
-      <div className="flex gap-4 items-center">
+      <TitleGroup>
         <Link to="/" textDecoration={false}>
           <Logo label="Little World" width={48} height={48} />
         </Link>
-        <HeaderTitle
-          className="max-md:hidden max-md:text-xl text-xl"
-          tag="h1"
-          type={TextTypes.Heading4}
-        >
-          Management Portal
-        </HeaderTitle>
-      </div>
-      <div className="flex gap-4 items-center justify-center">
-        <Menu />
-      </div>
+        {breadcrumbs ? (
+          <Breadcrumbs {...breadcrumbs} />
+        ) : (
+          <HeaderTitle tag="h1" type={TextTypes.Heading4}>
+            {title}
+          </HeaderTitle>
+        )}
+      </TitleGroup>
+      <HeaderToolbarActions>{actions ?? <Menu />}</HeaderToolbarActions>
     </div>
   );
 };
