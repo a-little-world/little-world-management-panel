@@ -5,7 +5,7 @@
   "prettier": "@a-little-world/little-world-prettier-config",
   "packageManager": "pnpm@10.22.0",
   "dependencies": {
-    "@a-little-world/little-world-design-system": "^2.16.0",
+    "@a-little-world/little-world-design-system": "^2.17.1",
     "@heroicons/react": "^2.0.18",
     "@radix-ui/react-dialog": "^1.1.14",
     "@radix-ui/react-hover-card": "^1.1.14",
