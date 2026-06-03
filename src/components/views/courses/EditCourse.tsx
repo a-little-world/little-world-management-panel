@@ -977,7 +977,7 @@ function EditCourse() {
                 disabled={!!previewDisabled}
                 onClick={() =>
                   window.open(
-                    `${window.location.origin}/app/resources/trainings/${watchedSlug}?preview=1`,
+                    `${window.location.origin}/app/courses/preview/${watchedSlug}`,
                     '_blank',
                     'noopener,noreferrer',
                   )
