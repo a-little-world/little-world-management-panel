@@ -103,6 +103,7 @@ function ManageCourses() {
                   <TableHead>Slug</TableHead>
                   <TableHead className="w-24 text-center">Chapters</TableHead>
                   <TableHead className="w-28 text-center">Audience</TableHead>
+                  <TableHead className="w-28 text-center">Is Listed</TableHead>
                   <TableHead className="w-28 text-center">Status</TableHead>
                   <TableHead className="w-32">Created</TableHead>
                   <TableHead className="w-[5.5rem] text-center">Edit</TableHead>
@@ -121,6 +122,9 @@ function ManageCourses() {
                     <TableCell className="text-center">
                       {AUDIENCE_LABELS[course.available_to] ??
                         course.available_to}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {course.is_listed ? 'Yes' : 'No'}
                     </TableCell>
                     <TableCell className="text-center">
                       <Tag

@@ -171,6 +171,7 @@ function resolveCorrectAnswerIndex(answers: string[], correctAnswer: string): nu
 function chapterToFormValues(chapter: CourseChapter): ChapterFormValues {
   return {
     ...chapter,
+    available_to: chapter.available_to ?? 'all',
     quiz_steps: chapter.quiz_steps.map(s => ({
       order: s.order,
       question: s.question,
@@ -663,11 +664,12 @@ function ChapterEditorPane({
           control={control}
           render={({ field: { value, onChange } }) => (
             <Dropdown
+              key={`chapter_audience_${chapterIndex}_${String(value ?? 'all')}`}
               id={`chapter_audience_${chapterIndex}`}
               label="Visible to"
               labelTooltip="Limit this chapter to a specific user type. Other chapters in the same course are still shown to all."
               placeholder="Select audience"
-              value={value}
+              value={value ?? 'all'}
               options={AUDIENCE_OPTIONS}
               onValueChange={v => onChange(v as UserTypeAvailability)}
               cannotError
@@ -783,11 +785,12 @@ function CourseDetailsPane({
           control={control}
           render={({ field: { value, onChange } }) => (
             <Dropdown
+              key={`course_audience_${String(value ?? 'all')}`}
               id="course_audience"
               label="Audience"
               labelTooltip="Which user types can see this course."
               placeholder="Select audience"
-              value={value}
+              value={value ?? 'all'}
               options={AUDIENCE_OPTIONS}
               onValueChange={v => onChange(v as UserTypeAvailability)}
               cannotError
