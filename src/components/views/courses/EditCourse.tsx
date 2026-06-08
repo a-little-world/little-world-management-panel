@@ -18,8 +18,15 @@ import {
   PlusIcon,
   TrashIcon,
 } from '@heroicons/react/20/solid';
-import React, { useEffect, useState } from 'react';
-import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  Controller,
+  useFieldArray,
+  useForm,
+  UseFormGetValues,
+  UseFormSetValue,
+  useWatch,
+} from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
 import useSWR, { mutate } from 'swr';
 
@@ -151,6 +158,16 @@ function slugify(value: string) {
     .replace(/\s+/g, '-');
 }
 
+function resolveCorrectAnswerIndex(answers: string[], correctAnswer: string): number {
+  if (answers.length === 0) return 0;
+  const exactIdx = answers.indexOf(correctAnswer);
+  if (exactIdx >= 0) return exactIdx;
+  const normalized = correctAnswer.trim();
+  const trimmedIdx = answers.findIndex(a => a.trim() === normalized);
+  if (trimmedIdx >= 0) return trimmedIdx;
+  return 0;
+}
+
 function chapterToFormValues(chapter: CourseChapter): ChapterFormValues {
   return {
     ...chapter,
@@ -158,7 +175,7 @@ function chapterToFormValues(chapter: CourseChapter): ChapterFormValues {
       order: s.order,
       question: s.question,
       answers: s.answers.map(text => ({ text })),
-      correct_answer_index: Math.max(0, s.answers.indexOf(s.correct_answer)),
+      correct_answer_index: resolveCorrectAnswerIndex(s.answers, s.correct_answer),
     })),
   };
 }
@@ -220,6 +237,8 @@ function QuizStepCard({
   stepIdx,
   control,
   register,
+  setValue,
+  getValues,
   onRemove,
   defaultExpanded = false,
 }: {
@@ -227,6 +246,8 @@ function QuizStepCard({
   stepIdx: number;
   control: any;
   register: any;
+  setValue: UseFormSetValue<CourseFormValues>;
+  getValues: UseFormGetValues<CourseFormValues>;
   onRemove: () => void;
   defaultExpanded?: boolean;
 }) {
@@ -246,10 +267,21 @@ function QuizStepCard({
     name: `chapters.${nestIndex}.quiz_steps.${stepIdx}.question`,
   });
 
-  const correctIdx = useWatch({
-    control,
-    name: `chapters.${nestIndex}.quiz_steps.${stepIdx}.correct_answer_index`,
-  });
+  const correctIndexPath =
+    `chapters.${nestIndex}.quiz_steps.${stepIdx}.correct_answer_index` as const;
+
+  const handleRemoveAnswer = (answerIdx: number) => {
+    const currentCorrect = Number(getValues(correctIndexPath));
+    const newLength = answerFields.length - 1;
+    removeAnswer(answerIdx);
+    let nextCorrect = currentCorrect;
+    if (answerIdx < currentCorrect) {
+      nextCorrect = currentCorrect - 1;
+    } else if (answerIdx === currentCorrect) {
+      nextCorrect = Math.min(currentCorrect, Math.max(0, newLength - 1));
+    }
+    setValue(correctIndexPath, Math.max(0, nextCorrect), { shouldDirty: true });
+  };
 
   if (!isExpanded) {
     return (
@@ -338,44 +370,48 @@ function QuizStepCard({
             </span>
           </AnswerListHeader>
 
-          {answerFields.map((field, answerIdx) => {
-            const isCorrect = Number(correctIdx) === answerIdx;
-            return (
-              <AnswerRowHighlight key={field.id} $correct={isCorrect}>
-                <Controller
-                  name={`chapters.${nestIndex}.quiz_steps.${stepIdx}.correct_answer_index`}
-                  control={control}
-                  render={({ field: { value, onChange } }) => (
-                    <AnswerRadio
-                      type="radio"
-                      title="Mark as correct answer"
-                      checked={Number(value) === answerIdx}
-                      onChange={() => onChange(answerIdx)}
-                    />
-                  )}
-                />
-                <TextInput
-                  label=""
-                  placeholder={`Answer ${answerIdx + 1}`}
-                  width={InputWidth.Large}
-                  cannotError
-                  {...registerInput({
-                    register,
-                    name: `chapters.${nestIndex}.quiz_steps.${stepIdx}.answers.${answerIdx}.text`,
-                  })}
-                />
-                {isCorrect && <CorrectAnswerBadge>correct</CorrectAnswerBadge>}
-                <IconButton
-                  type="button"
-                  title="Remove answer"
-                  onClick={() => removeAnswer(answerIdx)}
-                  disabled={answerFields.length <= 2}
-                >
-                  <TrashIcon style={{ width: 14, height: 14 }} />
-                </IconButton>
-              </AnswerRowHighlight>
-            );
-          })}
+          <Controller
+            name={correctIndexPath}
+            control={control}
+            render={({ field: { value, onChange } }) => (
+              <>
+                {answerFields.map((field, answerIdx) => {
+                  const isCorrect = Number(value) === answerIdx;
+                  return (
+                    <AnswerRowHighlight key={field.id} $correct={isCorrect}>
+                      <AnswerRadio
+                        type="radio"
+                        title="Mark as correct answer"
+                        checked={isCorrect}
+                        onChange={() => onChange(answerIdx)}
+                      />
+                      <TextInput
+                        label=""
+                        placeholder={`Answer ${answerIdx + 1}`}
+                        width={InputWidth.Large}
+                        cannotError
+                        {...registerInput({
+                          register,
+                          name: `chapters.${nestIndex}.quiz_steps.${stepIdx}.answers.${answerIdx}.text`,
+                        })}
+                      />
+                      {isCorrect && (
+                        <CorrectAnswerBadge>correct</CorrectAnswerBadge>
+                      )}
+                      <IconButton
+                        type="button"
+                        title="Remove answer"
+                        onClick={() => handleRemoveAnswer(answerIdx)}
+                        disabled={answerFields.length <= 2}
+                      >
+                        <TrashIcon style={{ width: 14, height: 14 }} />
+                      </IconButton>
+                    </AnswerRowHighlight>
+                  );
+                })}
+              </>
+            )}
+          />
         </AnswerList>
       </QuizStepItemBody>
     </QuizStepItem>
@@ -390,11 +426,15 @@ function ChapterQuizSteps({
   nestIndex,
   control,
   register,
+  setValue,
+  getValues,
   errors: _errors,
 }: {
   nestIndex: number;
   control: any;
   register: any;
+  setValue: UseFormSetValue<CourseFormValues>;
+  getValues: UseFormGetValues<CourseFormValues>;
   errors: any;
 }) {
   const { fields, append, remove } = useFieldArray({
@@ -430,6 +470,8 @@ function ChapterQuizSteps({
               stepIdx={stepIdx}
               control={control}
               register={register}
+              setValue={setValue}
+              getValues={getValues}
               onRemove={() => remove(stepIdx)}
               defaultExpanded={stepIdx === 0}
             />
@@ -537,6 +579,8 @@ function ChapterEditorPane({
   totalChapters,
   control,
   register,
+  setValue,
+  getValues,
   errors,
   onRemove,
 }: {
@@ -544,6 +588,8 @@ function ChapterEditorPane({
   totalChapters: number;
   control: any;
   register: any;
+  setValue: UseFormSetValue<CourseFormValues>;
+  getValues: UseFormGetValues<CourseFormValues>;
   errors: any;
   onRemove: () => void;
 }) {
@@ -646,6 +692,8 @@ function ChapterEditorPane({
         nestIndex={chapterIndex}
         control={control}
         register={register}
+        setValue={setValue}
+        getValues={getValues}
         errors={errors}
       />
 
@@ -815,6 +863,7 @@ function EditCourse() {
     handleSubmit,
     reset,
     setValue,
+    getValues,
     watch,
     formState: { errors, isDirty },
   } = useForm<CourseFormValues>({ defaultValues: defaultFormValues });
@@ -826,8 +875,13 @@ function EditCourse() {
     move,
   } = useFieldArray({ control, name: 'chapters' });
 
+  const hydratedSlugRef = useRef<string | null>(null);
+
   useEffect(() => {
     if (isNew || !data) return;
+    // Hydrate once per course load — avoid SWR revalidation wiping in-progress edits.
+    if (hydratedSlugRef.current === courseSlug) return;
+    hydratedSlugRef.current = courseSlug ?? null;
     reset({
       title: data.title,
       slug: data.slug,
@@ -837,7 +891,7 @@ function EditCourse() {
       available_to: data.available_to,
       chapters: data.chapters.map(chapterToFormValues),
     });
-  }, [isNew, data, reset]);
+  }, [isNew, data, reset, courseSlug]);
 
   const watchedTitle = watch('title');
   const watchedSlug = watch('slug');
@@ -1050,6 +1104,8 @@ function EditCourse() {
                 totalChapters={chapterFields.length}
                 control={control}
                 register={register}
+                setValue={setValue}
+                getValues={getValues}
                 errors={errors}
                 onRemove={() => {
                   remove(selectedSection as number);
