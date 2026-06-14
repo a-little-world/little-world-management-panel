@@ -22,6 +22,8 @@ import {
 } from 'lucide-react';
 
 import type { MatchingPanelUser } from '../../api/index';
+import { MANAGEMENT_PERMISSION_OPEN_CHAT_ACCESS } from '../../constants/managementPermissions';
+import { hasManagementPermission } from '../../helpers/managementPermissions';
 import {
   COMMUNICATIONS_ROUTE,
   COURSES_ROUTE,
@@ -29,6 +31,7 @@ import {
   DYNAMIC_USER_LISTS_ROUTE,
   MATCHING_HUB_ROUTE,
   MATCHING_USERS_ROUTE,
+  OPEN_CHAT_ACCESS_ROUTE,
   RANDOM_CALLS_ROUTE,
   STATS_ROUTE,
   SUPPORT_TASKS_ROUTE,
@@ -38,7 +41,11 @@ import {
 import { useGlobalState } from '../../store';
 import NavigationTiles, { NavigationTile } from '../blocks/NavigationTiles';
 
-const TABS: NavigationTile[] = [
+type HomeNavigationTile = NavigationTile & {
+  requiredPermission?: string;
+};
+
+const TABS: HomeNavigationTile[] = [
   {
     name: 'Matching',
     path: MATCHING_HUB_ROUTE,
@@ -94,6 +101,12 @@ const TABS: NavigationTile[] = [
     path: COURSES_ROUTE,
     icon: <AcademicCapIcon className="h-16 w-16 text-white mb-2" />,
   },
+  {
+    name: 'Open Chat Access',
+    path: OPEN_CHAT_ACCESS_ROUTE,
+    icon: <ChatBubbleLeftRightIcon className="h-16 w-16 text-white mb-2" />,
+    requiredPermission: MANAGEMENT_PERMISSION_OPEN_CHAT_ACCESS,
+  },
 ];
 
 function PanelUserPermissionsOverview({ user }: { user: MatchingPanelUser }) {
@@ -132,6 +145,11 @@ const Home = () => {
   const hasName = Boolean(user?.first_name || user?.last_name);
   const hasPermissions =
     user?.is_staff || (user?.permissions ?? []).some(row => row.enabled);
+  const visibleTabs = TABS.filter(
+    tab =>
+      !tab.requiredPermission ||
+      hasManagementPermission(user, tab.requiredPermission),
+  );
 
   return (
     <div className="flex flex-col flex-1 min-h-0 overflow-auto">
@@ -145,7 +163,7 @@ const Home = () => {
           {hasPermissions && <PanelUserPermissionsOverview user={user} />}
         </section>
       )}
-      <NavigationTiles items={TABS} />
+      <NavigationTiles items={visibleTabs} />
     </div>
   );
 };

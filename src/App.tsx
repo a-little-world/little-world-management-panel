@@ -44,6 +44,7 @@ import EmailHtml from './components/views/emails/EmailHtml';
 import Emails from './components/views/emails/Emails';
 import { SendDynamicTemplateView } from './components/views/emails/SendDynamicTemplate';
 import MatchingHub from './components/views/matching/MatchingHub';
+import OpenChatAccess from './components/views/OpenChatAccess';
 import RandomCalls from './components/views/randomCalls/RandomCalls';
 import { EmailThemeProvider } from './emails/shared/theme';
 import { routeTitle } from './router/routeHandle';
@@ -69,6 +70,7 @@ import {
   MATCHING_USERS_ROUTE,
   MATCH_JOURNEY_DOCUMENTATION_ROUTE,
   MATCH_ROUTE,
+  OPEN_CHAT_ACCESS_ROUTE,
   PREMATCH_APPOINTMENTS_ROUTE,
   RANDOM_CALLS_ROUTE,
   SCORES_ROUTE,
@@ -227,6 +229,11 @@ const router = createBrowserRouter(
           path: RANDOM_CALLS_ROUTE,
           element: <RandomCalls />,
           ...routeTitle('Random Calls'),
+        },
+        {
+          path: OPEN_CHAT_ACCESS_ROUTE,
+          element: <OpenChatAccess />,
+          ...routeTitle('Open Chat Access'),
         },
         {
           path: EVENTS_ROUTE,
