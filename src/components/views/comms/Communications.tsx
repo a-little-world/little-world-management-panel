@@ -1,10 +1,11 @@
 import React from 'react';
 
-import { CalendarCog, Link, Mail, Megaphone } from 'lucide-react';
+import { CalendarCog, Link, Mail, Megaphone, MessagesSquare } from 'lucide-react';
 import {
   BANNERS_ROUTE,
   EMAILS_ROUTE,
   EVENTS_ROUTE,
+  QUESTION_CARDS_ROUTE,
   SHORT_LINKS_ROUTE,
 } from '../../../router/routes';
 
@@ -30,6 +31,11 @@ const COMMUNICATIONS_ITEMS: NavigationTile[] = [
     name: 'Short Links',
     path: SHORT_LINKS_ROUTE,
     icon: <Link className="h-16 w-16 text-white mb-2" />,
+  },
+  {
+    name: 'Question Cards',
+    path: QUESTION_CARDS_ROUTE,
+    icon: <MessagesSquare className="h-16 w-16 text-white mb-2" />,
   },
 ];
 

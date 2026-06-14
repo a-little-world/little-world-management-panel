@@ -35,6 +35,7 @@ import Communications from './components/views/comms/Communications';
 import Banners from './components/views/comms/banners/Banners';
 import EditBanner from './components/views/comms/banners/EditBanner';
 import Events from './components/views/comms/events/Events';
+import QuestionCards from './components/views/comms/questionCards/QuestionCards';
 import ShortLinks from './components/views/comms/shortLinks/ShortLinks';
 import Courses from './components/views/courses/Courses';
 import EditCourse from './components/views/courses/EditCourse';
@@ -70,6 +71,7 @@ import {
   MATCH_JOURNEY_DOCUMENTATION_ROUTE,
   MATCH_ROUTE,
   PREMATCH_APPOINTMENTS_ROUTE,
+  QUESTION_CARDS_ROUTE,
   RANDOM_CALLS_ROUTE,
   SCORES_ROUTE,
   SEND_DYNAMIC_EMAIL_ROUTE,
@@ -237,6 +239,11 @@ const router = createBrowserRouter(
           path: SHORT_LINKS_ROUTE,
           element: <ShortLinks />,
           ...routeTitle('Short Links'),
+        },
+        {
+          path: QUESTION_CARDS_ROUTE,
+          element: <QuestionCards />,
+          ...routeTitle('Question Cards'),
         },
         {
           path: BANNERS_ROUTE,
