@@ -36,6 +36,7 @@ const Container = styled.div`
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.small};
   overflow: scroll;
+  height: 100%;
 `;
 
 const TopBar = styled.div`
