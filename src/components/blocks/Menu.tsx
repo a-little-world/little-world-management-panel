@@ -19,6 +19,7 @@ import {
   MATCHING_HUB_ROUTE,
   MATCHING_USERS_ROUTE,
   PREMATCH_APPOINTMENTS_ROUTE,
+  QUESTION_CARDS_ROUTE,
   RANDOM_CALLS_ROUTE,
   SCORES_ROUTE,
   STATS_ROUTE,
@@ -60,7 +61,8 @@ const Menu = () => {
     location.pathname.startsWith('/send-dynamic-email/') ||
     location.pathname.startsWith(BANNERS_ROUTE) ||
     location.pathname.startsWith('/events/') ||
-    location.pathname.startsWith('/short-links/');
+    location.pathname.startsWith('/short-links/') ||
+    location.pathname.startsWith(QUESTION_CARDS_ROUTE);
 
   const isMatchingRoute =
     location.pathname === MATCHING_HUB_ROUTE ||

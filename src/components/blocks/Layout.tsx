@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import Header from './Header.tsx';
+import Header from './Header';
 import { LayoutHeaderProvider } from './LayoutHeaderContext';
 
 const LayoutShell = styled.div`
@@ -26,7 +26,7 @@ const HeaderSlot = styled.div`
 const Layout = ({ children }) => {
   return (
     <LayoutHeaderProvider>
-      <LayoutShell className="font-medium">
+      <LayoutShell>
         <Main>{children}</Main>
         <HeaderSlot>
           <Header />

@@ -1,5 +1,8 @@
 import { apiFetch } from './helpers';
 
+/** Must match `Course.SELF_ONBOARDING_SLUG` on the backend. */
+export const SELF_ONBOARDING_COURSE_SLUG = 'self-onboarding';
+
 export type UserTypeAvailability = 'all' | 'learner' | 'volunteer';
 
 export interface QuizStep {
