@@ -17,6 +17,7 @@ import styled from 'styled-components';
 import useSWR, { mutate } from 'swr';
 
 import {
+  DEFAULT_OPEN_CHAT_HOST,
   OPEN_CHAT_CONFIGURATION_ENDPOINT,
   createOpenChatConfiguration,
   fetchOpenChatConfiguration,
@@ -86,6 +87,7 @@ function OpenChatConfigurationPanel({ canEdit }: { canEdit: boolean }) {
   const isCreate = data === null;
   const [isEditing, setIsEditing] = useState(false);
   const [openChatUser, setOpenChatUser] = useState('');
+  const [openChatHost, setOpenChatHost] = useState('');
   const [apiKeyInput, setApiKeyInput] = useState('');
   const [storedApiKey, setStoredApiKey] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
@@ -95,6 +97,7 @@ function OpenChatConfigurationPanel({ canEdit }: { canEdit: boolean }) {
   useEffect(() => {
     if (!data) {
       setOpenChatUser('');
+      setOpenChatHost(DEFAULT_OPEN_CHAT_HOST);
       setApiKeyInput('');
       setStoredApiKey('');
       setIsEditing(false);
@@ -102,6 +105,7 @@ function OpenChatConfigurationPanel({ canEdit }: { canEdit: boolean }) {
     }
 
     setOpenChatUser(data.open_chat_user);
+    setOpenChatHost(data.open_chat_host);
     setStoredApiKey(data.open_chat_api_key);
     setApiKeyInput('');
     setIsEditing(false);
@@ -117,10 +121,16 @@ function OpenChatConfigurationPanel({ canEdit }: { canEdit: boolean }) {
     resetMessages();
 
     const trimmedUser = openChatUser.trim();
+    const trimmedHost = openChatHost.trim();
     const resolvedApiKey = (apiKeyInput || storedApiKey).trim();
 
     if (!trimmedUser) {
       setFormError('Open chat user is required.');
+      return;
+    }
+
+    if (!trimmedHost) {
+      setFormError('Open chat host is required.');
       return;
     }
 
@@ -134,6 +144,7 @@ function OpenChatConfigurationPanel({ canEdit }: { canEdit: boolean }) {
     try {
       const payload = {
         open_chat_user: trimmedUser,
+        open_chat_host: trimmedHost,
         open_chat_api_key: resolvedApiKey,
       };
 
@@ -227,6 +238,17 @@ function OpenChatConfigurationPanel({ canEdit }: { canEdit: boolean }) {
                         autoComplete="off"
                       />
                       <TextInput
+                        id="open_chat_host"
+                        label="Open chat host"
+                        placeholder={DEFAULT_OPEN_CHAT_HOST}
+                        width={InputWidth.Large}
+                        value={openChatHost}
+                        onChange={(
+                          event: React.ChangeEvent<HTMLInputElement>,
+                        ) => setOpenChatHost(event.target.value)}
+                        autoComplete="off"
+                      />
+                      <TextInput
                         id="open_chat_api_key"
                         label="API key"
                         placeholder={
@@ -267,6 +289,7 @@ function OpenChatConfigurationPanel({ canEdit }: { canEdit: boolean }) {
                             onClick={() => {
                               resetMessages();
                               setOpenChatUser(data?.open_chat_user ?? '');
+                              setOpenChatHost(data?.open_chat_host ?? '');
                               setApiKeyInput('');
                               setIsEditing(false);
                             }}
@@ -286,6 +309,10 @@ function OpenChatConfigurationPanel({ canEdit }: { canEdit: boolean }) {
                       <FieldGroup>
                         <FieldLabel>Open chat user</FieldLabel>
                         <FieldValue>{data?.open_chat_user}</FieldValue>
+                      </FieldGroup>
+                      <FieldGroup>
+                        <FieldLabel>Open chat host</FieldLabel>
+                        <FieldValue>{data?.open_chat_host}</FieldValue>
                       </FieldGroup>
                       <FieldGroup>
                         <FieldLabel>API key</FieldLabel>

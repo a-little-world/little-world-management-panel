@@ -3,9 +3,12 @@ import { apiFetch } from './helpers';
 export const OPEN_CHAT_CONFIGURATION_ENDPOINT =
   '/api/matching/open-chat-configuration/';
 
+export const DEFAULT_OPEN_CHAT_HOST = 'http://host.docker.internal:1984';
+
 export type OpenChatConfiguration = {
   open_chat_api_key: string;
   open_chat_user: string;
+  open_chat_host: string;
 };
 
 export type OpenChatConfigurationPayload = OpenChatConfiguration;
