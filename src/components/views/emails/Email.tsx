@@ -13,7 +13,7 @@ import {
 } from '@a-little-world/little-world-design-system';
 import { render as renderEmail } from '@react-email/render';
 import { some } from 'lodash';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
@@ -44,6 +44,45 @@ const DynamicVariables = styled.ul`
   margin-top: ${({ theme }) => theme.spacing.xxsmall};
 `;
 
+const EmailBuilderPreview = ({
+  content,
+  preview,
+  theme,
+  unsubscribeLink,
+}: Pick<
+  React.ComponentProps<typeof EmailBuilder>,
+  'content' | 'preview' | 'theme' | 'unsubscribeLink'
+>) => {
+  const [previewHTML, setPreviewHTML] = useState('');
+
+  useEffect(() => {
+    let cancelled = false;
+
+    renderEmail(
+      <EmailBuilder
+        content={content}
+        preview={preview}
+        theme={theme}
+        unsubscribeLink={unsubscribeLink}
+      />,
+    ).then(html => {
+      if (!cancelled) {
+        setPreviewHTML(html);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [content, preview, theme, unsubscribeLink]);
+
+  if (!previewHTML) {
+    return <Loading />;
+  }
+
+  return <div dangerouslySetInnerHTML={{ __html: previewHTML }} />;
+};
+
 const Email = () => {
   const { emailTemplateName } = useParams();
   const [showBackendPreview, setShowBackendPreview] = React.useState(false);
@@ -61,6 +100,10 @@ const Email = () => {
     defaultValues: {},
   });
   const emailVariables = watch();
+  const emailVariableKey = useMemo(
+    () => JSON.stringify(emailVariables),
+    [emailVariables],
+  );
 
   const { data: backendTemplateInfo, isLoading: templateLoading } = useSWR(
     `/api/matching/emails/templates/${emailTemplateName}/info/`,
@@ -70,7 +113,7 @@ const Email = () => {
 
   useEffect(() => {
     setEmailSent(false);
-  }, [emailVariables]);
+  }, [emailVariableKey]);
 
   const fetchBackendPreview = async (data: any) => {
     const search = new URLSearchParams(emailVariables).toString();
@@ -266,7 +309,7 @@ const Email = () => {
               <div dangerouslySetInnerHTML={{ __html: backendPreviewHTML }} />
             )}
             {!showBackendPreview && (
-              <EmailBuilder
+              <EmailBuilderPreview
                 content={email.content}
                 preview={email.preview}
                 unsubscribeLink={getUnsubscribeUrl(email.category_id)}

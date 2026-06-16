@@ -1,4 +1,4 @@
-import { Text } from '@a-little-world/little-world-design-system';
+import { Text, TextTypes } from '@a-little-world/little-world-design-system';
 import * as React from 'react';
 import styled, { css } from 'styled-components';
 
@@ -22,8 +22,6 @@ const StyledSectionHeader = styled.div`
 `;
 
 const StyledSectionTitle = styled(Text)<{ $inactive?: boolean }>`
-  font-size: 1.5rem;
-  font-weight: 600;
   line-height: 1;
   ${({ $inactive, theme }) =>
     $inactive &&
@@ -81,6 +79,7 @@ const SectionTitle = React.forwardRef<
   <StyledSectionTitle
     ref={ref}
     className={className}
+    type={TextTypes.Heading5}
     $inactive={inactive}
     {...props}
   />
