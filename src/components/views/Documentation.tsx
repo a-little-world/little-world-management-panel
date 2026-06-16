@@ -38,6 +38,7 @@ const DocumentationContainer = styled.div`
   flex: 1;
   min-height: 0;
   width: 100%;
+  height: 100%;
   overflow-y: auto;
   box-sizing: border-box;
   padding: ${({ theme }) => theme.spacing.large};

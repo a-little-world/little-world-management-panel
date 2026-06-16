@@ -30,6 +30,7 @@ export const SHORT_LINKS_ROUTE = '/short-links/';
 export const BANNERS_ROUTE = '/banners/';
 export const BANNER_EDIT_ROUTE = '/banners/:bannerId/';
 export const COMMUNICATIONS_ROUTE = '/communications/';
+export const QUESTION_CARDS_ROUTE = '/question-cards/';
 export const MATCHING_HUB_ROUTE = '/matchmaking/';
 export const COURSES_ROUTE = '/courses/';
 export const COURSE_EDIT_ROUTE = '/courses/:courseSlug/';
