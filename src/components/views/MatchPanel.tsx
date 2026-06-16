@@ -21,11 +21,13 @@ import {
 } from '../atoms/Section';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../atoms/Tabs';
 import { SelectedUsersSheet } from '../blocks/SelectedUsersSheet';
+import MatchCalls from '../blocks/match/MatchCalls';
 import MatchCard from '../blocks/match/MatchCard';
 import UserNotes from '../blocks/user/UserNotes';
 
 const MATCH_TABS = [
   { key: 'overview', label: 'Overview' },
+  { key: 'calls', label: 'Calls' },
   { key: 'stats', label: 'Stats' },
   { key: 'notes', label: 'Notes' },
   { key: 'actions', label: 'Actions' },
@@ -126,6 +128,9 @@ const MatchPanelContent = ({
   if (tab === 'overview')
     return <MatchCard match={match} onMatchUpdate={onUpdate} />;
 
+  if (tab === 'calls')
+    return <MatchCalls match={match} />;
+
   if (tab === 'stats') return 'More detailed stats coming soon';
 
   if (tab === 'notes')
@@ -162,7 +167,7 @@ const MatchPanel = () => {
 
   return (
     <Tabs defaultValue={searchParams.get('tab') ?? MATCH_TABS[0].key}>
-      <TabsList className="grid w-full grid-cols-6">
+      <TabsList className="grid w-full grid-cols-5">
         {MATCH_TABS.map(tab => (
           <TabsTrigger
             key={'header' + tab.key}
@@ -195,7 +200,7 @@ const MatchPanel = () => {
           </Section>
         </TabsContent>
       ))}
-      {searchParams.get('tab') !== MATCH_TABS[1].key && <SelectedUsersSheet />}
+      {searchParams.get('tab') !== 'stats' && <SelectedUsersSheet />}
     </Tabs>
   );
 };

@@ -22,6 +22,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../atoms/Tabs';
 import { SelectedUsersSheet } from '../SelectedUsersSheet';
 import UserActions from './UserActions';
 import UserDetailsCard from './UserCard';
+import UserCalls from './UserCalls';
 import UserChat from './UserChat';
 import UserEmails from './UserEmails';
 import UserMatches from './UserMatches';
@@ -32,6 +33,7 @@ const USER_TABS = [
   { key: 'profile', label: 'Profile' },
   { key: 'chat', label: 'Chat', title: 'User Support Chat' },
   { key: 'emails', label: 'Emails' },
+  { key: 'calls', label: 'Calls' },
   { key: 'matches', label: 'Matches' },
   { key: 'stats', label: 'Stats' },
   { key: 'notes', label: 'Notes' },
@@ -57,6 +59,8 @@ const UserPanelContent = ({
   if (tab === 'chat') return <UserChat user={user} />;
 
   if (tab === 'emails') return <UserEmails user={user} />;
+
+  if (tab === 'calls') return <UserCalls user={user} />;
 
   if (tab === 'matches')
     return <UserMatches user={user} appointment={appointment} />;
@@ -118,7 +122,7 @@ const UserPanel = () => {
 
   return (
     <Tabs defaultValue={searchParams.get('tab') ?? USER_TABS[0].key}>
-      <TabsList className="grid w-full grid-cols-7">
+      <TabsList className="grid w-full grid-cols-8">
         {USER_TABS.map(tab => (
           <TabsTrigger
             key={'header' + tab.key}
