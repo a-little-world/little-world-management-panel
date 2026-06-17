@@ -19,20 +19,24 @@ import { useTaskPriorityList } from '../../hooks/useTaskPriorities';
 // ─── Filter keys ──────────────────────────────────────────────────────────────
 
 export enum TaskFilterKeys {
-  Priority   = 'priority',
+  Priority = 'priority',
   ActionType = 'action_type',
   AssignedTo = 'assigned_to',
 }
 
 export const containsTaskFilterKey = (filters: Record<string, any>): boolean =>
-  Object.keys(filters).some(k => Object.values(TaskFilterKeys).includes(k as TaskFilterKeys));
+  Object.keys(filters).some(k =>
+    Object.values(TaskFilterKeys).includes(k as TaskFilterKeys),
+  );
 
 // ─── Options ──────────────────────────────────────────────────────────────────
 
-const ACTION_TYPE_OPTIONS = Object.entries(ACTION_TYPE_CONFIG).map(([value, cfg]) => ({
-  value,
-  label: cfg.label,
-}));
+const ACTION_TYPE_OPTIONS = Object.entries(ACTION_TYPE_CONFIG).map(
+  ([value, cfg]) => ({
+    value,
+    label: cfg.label,
+  }),
+);
 
 // ─── Styled ───────────────────────────────────────────────────────────────────
 
@@ -72,7 +76,10 @@ const SupportTaskFilters: React.FC<SupportTaskFiltersProps> = ({
   staffUsers,
 }) => {
   const priorityList = useTaskPriorityList();
-  const priorityOptions = priorityList.map(({ priority, label }) => ({ value: priority, label }));
+  const priorityOptions = priorityList.map(({ priority, label }) => ({
+    value: priority,
+    label,
+  }));
 
   const [filters, setFilters] = useState<Record<string, any>>({});
 
@@ -86,7 +93,10 @@ const SupportTaskFilters: React.FC<SupportTaskFiltersProps> = ({
 
   const assignedToOptions = [
     { value: 'unassigned', label: '— Unassigned' },
-    ...staffUsers.map(u => ({ value: String(u.id), label: `${u.first_name} ${u.last_name}` })),
+    ...staffUsers.map(u => ({
+      value: String(u.id),
+      label: `${u.first_name} ${u.last_name}`,
+    })),
   ];
 
   return (
@@ -94,7 +104,6 @@ const SupportTaskFilters: React.FC<SupportTaskFiltersProps> = ({
       <Card width={CardSizes.Large}>
         <CardHeader>Task Filters</CardHeader>
         <CardContent align="flex-start">
-
           <MultiCheckbox
             key={filters[TaskFilterKeys.Priority]}
             name={TaskFilterKeys.Priority}
@@ -136,7 +145,11 @@ const SupportTaskFilters: React.FC<SupportTaskFiltersProps> = ({
           <DropdownRow>
             <DropdownItem>
               <Dropdown
-                key={TaskFilterKeys.AssignedTo + (filters[TaskFilterKeys.AssignedTo] ?? '')}
+                id="assigned_to"
+                key={
+                  TaskFilterKeys.AssignedTo +
+                  (filters[TaskFilterKeys.AssignedTo] ?? '')
+                }
                 label="Assigned to"
                 value={filters[TaskFilterKeys.AssignedTo]}
                 options={assignedToOptions}
@@ -148,10 +161,10 @@ const SupportTaskFilters: React.FC<SupportTaskFiltersProps> = ({
                   }
                 }}
                 placeholder="Any assignee"
+                inModal
               />
             </DropdownItem>
           </DropdownRow>
-
         </CardContent>
         <CardFooter align="space-between">
           <Button variation={ButtonVariations.Inline} onClick={handleReset}>

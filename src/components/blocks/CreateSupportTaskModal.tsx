@@ -140,6 +140,7 @@ export default function CreateSupportTaskModal({
                     onValueChange={field.onChange}
                     placeholder="Priority"
                     cannotError
+                    inModal
                   />
                 )}
               />

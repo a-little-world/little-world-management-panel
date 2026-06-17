@@ -224,6 +224,7 @@ function EventForm({
                       onChange(nextValue as CommunityEvent['frequency'])
                     }
                     cannotError
+                    inModal
                   />
                 )}
               />
@@ -232,13 +233,14 @@ function EventForm({
                 control={control}
                 render={({ field: { value, onChange } }) => (
                   <Dropdown
-                    id="custon_filter"
+                    id="custom_filter"
                     label="Custom filter"
                     placeholder="Select custom filter"
                     value={value}
                     options={customFilterOptions}
                     onValueChange={onChange}
                     cannotError
+                    inModal
                   />
                 )}
               />
