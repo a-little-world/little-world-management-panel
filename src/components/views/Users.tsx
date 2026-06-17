@@ -362,6 +362,7 @@ export function Users() {
   const handleDownload = () => {
     getUserListExport({
       searchParams: createSearchParams(searchParams).toString(),
+      exportAll: true,
       onSuccess: (response: Record<string, any>[]) => {
         const exportedHeaders = extractHeaders(response);
         if (!availableHeaders.length && exportedHeaders.length) {

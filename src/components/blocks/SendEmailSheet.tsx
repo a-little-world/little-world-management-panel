@@ -114,16 +114,14 @@ export function SendEmailSheet({
                     control={control}
                     rules={{ required: 'Required' }}
                     render={({
-                      field: { onChange, onBlur, value, name, ref },
+                      field: { onChange, onBlur, value },
                       fieldState: { error },
                     }) => (
                       <Dropdown
-                        name={name}
-                        inputRef={ref}
+                        id="user_list"
                         onValueChange={val =>
                           onChange({ target: { value: val } })
                         }
-                        onBlur={onBlur}
                         value={value}
                         error={error?.message}
                         label={'User List'}
@@ -134,6 +132,7 @@ export function SendEmailSheet({
                             label: description,
                           }),
                         )}
+                        inModal
                       />
                     )}
                   />

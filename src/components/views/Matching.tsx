@@ -187,7 +187,7 @@ const Matching = ({
   };
 
   return (
-    <main className="overflow-y-scroll">
+    <div className="overflow-y-scroll h-full">
       <Card className={'border-none shadow-none'}>
         <CardHeader>
           <CardTitle>Matching Dashboard</CardTitle>
@@ -325,7 +325,7 @@ const Matching = ({
       </Card>
 
       <SelectedUsersSheet />
-    </main>
+    </div>
   );
 };
 

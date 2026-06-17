@@ -270,6 +270,7 @@ const Filters: React.FC<FiltersProps> = ({
           <DropdownRow>
             <DropdownItem>
               <Dropdown
+                id={FilterKeys.UserList}
                 key={FilterKeys.UserList + filters[FilterKeys.UserList]}
                 label={'User List'}
                 value={filters[FilterKeys.UserList]}
@@ -281,10 +282,12 @@ const Filters: React.FC<FiltersProps> = ({
                 }
                 onValueChange={val => onUpdateFilters(FilterKeys.UserList, val)}
                 placeholder="Select a user list..."
+                inModal
               />
             </DropdownItem>
             <DropdownItem>
               <Dropdown
+                id={FilterKeys.UserType}
                 key={FilterKeys.UserType + filters[FilterKeys.UserType]}
                 onValueChange={val => {
                   onUpdateFilters(FilterKeys.UserType, val);
@@ -296,6 +299,7 @@ const Filters: React.FC<FiltersProps> = ({
                   { label: 'Learner', value: 'learner' },
                   { label: 'Volunteer', value: 'volunteer' },
                 ]}
+                inModal
               />
             </DropdownItem>
           </DropdownRow>
@@ -303,6 +307,7 @@ const Filters: React.FC<FiltersProps> = ({
           <DropdownRow>
             <DropdownItem>
               <Dropdown
+                id={FilterKeys.Company}
                 key={FilterKeys.Company + filters[FilterKeys.Company]}
                 onValueChange={val => {
                   onUpdateFilters(FilterKeys.Company, val);
@@ -321,11 +326,13 @@ const Filters: React.FC<FiltersProps> = ({
                         }),
                       )
                 }
+                inModal
               />
             </DropdownItem>
 
             <DropdownItem>
               <Dropdown
+                id={FilterKeys.CountryOfResidence}
                 key={
                   FilterKeys.CountryOfResidence +
                   filters[FilterKeys.CountryOfResidence]
@@ -347,6 +354,7 @@ const Filters: React.FC<FiltersProps> = ({
                         }),
                       )
                 }
+                inModal
               />
             </DropdownItem>
           </DropdownRow>
