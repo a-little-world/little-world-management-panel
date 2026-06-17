@@ -39,11 +39,13 @@ export const addUserByUuid = async (
 export const getUserListExport = async ({
   searchParams,
   exportColumnsOnly = false,
+  exportAll = false,
   onError,
   onSuccess,
 }: {
   searchParams: string;
   exportColumnsOnly?: boolean;
+  exportAll?: boolean;
   onError: (error: any) => void;
   onSuccess: (result: any) => void;
 }) => {
@@ -51,6 +53,10 @@ export const getUserListExport = async ({
     const params = new URLSearchParams(searchParams);
     if (exportColumnsOnly) {
       params.set('export_columns_only', 'true');
+    }
+    if (exportAll) {
+      params.delete('page');
+      params.delete('page_size');
     }
 
     const result = await apiFetch(
