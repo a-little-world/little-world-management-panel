@@ -283,7 +283,7 @@ const SheetTitle = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof SheetPrimitive.Title> & {
     type?: keyof typeof TextTypes;
   }
->(({ type = TextTypes.Heading3, children, ...props }, ref) => (
+>(({ type = TextTypes.Heading4, children, ...props }, ref) => (
   <SheetPrimitive.Title asChild ref={ref} {...props}>
     <StyledSheetTitle tag="h2" type={type}>
       {children}

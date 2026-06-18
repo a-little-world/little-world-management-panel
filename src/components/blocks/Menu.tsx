@@ -27,12 +27,14 @@ import {
   USERS_ROUTE,
   VIDEO_CALLS_ROUTE,
 } from '../../router/routes';
+import useSelectUser from '../../hooks/useSelectUser';
 import SearchBar from './SearchBar';
 
 const Menu = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { selectExactUser } = useSelectUser();
 
   const onUserSearch = ({ search }: { search: string }) => {
     const params =
@@ -49,6 +51,10 @@ const Menu = () => {
       params.delete('search');
     } else {
       params.set('search', search);
+    }
+
+    if (search) {
+      void selectExactUser(search);
     }
 
     navigate({ pathname: USERS_ROUTE, search: params.toString() });

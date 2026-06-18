@@ -31,6 +31,7 @@ import {
 } from '../../../api/randomCalls';
 import { formatDate, formatEventTime } from '../../../helpers/date';
 import { dataFetcher } from '../../../store';
+import { PageContainer } from '../../atoms/PageLayout';
 import {
   Table,
   TableBody,
@@ -43,7 +44,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../atoms/Tabs';
 import MatchProposalsTable from '../../blocks/randomCalls/MatchProposalsTable';
 import {
   CollapsibleContent,
-  Container,
   Header,
   ScheduleDate,
   ScheduleItem,
@@ -611,17 +611,17 @@ function RandomCallManagement() {
 
   if (error) {
     return (
-      <Container>
+      <PageContainer>
         <Text>Error loading lobby data: {error.message}</Text>
-      </Container>
+      </PageContainer>
     );
   }
 
   if (!data) {
     return (
-      <Container>
+      <PageContainer>
         <Text>Loading lobby data...</Text>
-      </Container>
+      </PageContainer>
     );
   }
 
@@ -636,7 +636,7 @@ function RandomCallManagement() {
 
   return (
     <>
-      <Container>
+      <PageContainer>
         <Header>
           <Title>
             Current Lobby
@@ -977,7 +977,7 @@ function RandomCallManagement() {
             )}
           </CollapsibleContent>
         </Section>
-      </Container>
+      </PageContainer>
       {clearMatchesToast && (
         <Toast
           key={clearMatchesToast.id}

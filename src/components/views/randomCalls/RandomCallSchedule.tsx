@@ -26,8 +26,8 @@ import {
 import { formatDate, formatEventTime } from '../../../helpers/date';
 import { dataFetcher } from '../../../store';
 import { DatePicker } from '../../atoms/DatePicker';
+import { PageContainer } from '../../atoms/PageLayout';
 import {
-  Container,
   DatePickerContainer,
   FormField,
   FormLabel,
@@ -172,18 +172,10 @@ function RandomCallSchedule() {
     });
   };
 
-  if (error) {
-    return (
-      <Container>
-        <Text>Error loading schedule: {error.message}</Text>
-      </Container>
-    );
-  }
-
   const schedule = upcomingLobbies ?? [];
 
   return (
-    <Container>
+    <PageContainer>
       <Header>
         <Title>Schedule</Title>
         <Button
@@ -271,9 +263,10 @@ function RandomCallSchedule() {
         </Card>
       </Modal>
 
-      {/* Schedule */}
       <Section>
-        {isEmpty(schedule) ? (
+        {error ? (
+          <Text color="secondary">No upcoming lobbies scheduled</Text>
+        ) : isEmpty(schedule) ? (
           <Text color="secondary">No upcoming lobbies scheduled</Text>
         ) : (
           <ScheduleList>
@@ -312,7 +305,7 @@ function RandomCallSchedule() {
           </ScheduleList>
         )}
       </Section>
-    </Container>
+    </PageContainer>
   );
 }
 
