@@ -644,8 +644,7 @@ export const updateDynamicTemplate = async ({
 }) => {
   try {
     const result = await apiFetch(
-      `/api/matching/emails/dynamic_templates/${
-        existingTemplate ? `${templateName}/` : ''
+      `/api/matching/emails/dynamic_templates/${existingTemplate ? `${templateName}/` : ''
       }`,
       {
         method: existingTemplate ? 'PATCH' : 'POST',

@@ -123,10 +123,9 @@ const userColumns = [
       );
     },
     cell: ({ row }) =>
-      `${
-        isNumber(row.original.waiting_time?.number_of_days)
-          ? row.original.waiting_time?.number_of_days
-          : row.original.waiting_time?.waiting_time_string
+      `${isNumber(row.original.waiting_time?.number_of_days)
+        ? row.original.waiting_time?.number_of_days
+        : row.original.waiting_time?.waiting_time_string
       }`,
   }),
   columnHelper.accessor('state.company', {
