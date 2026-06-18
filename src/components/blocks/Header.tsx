@@ -12,6 +12,19 @@ import { HeaderToolbarActions } from './HeaderToolbarActions';
 import { useLayoutHeader } from './LayoutHeaderContext';
 import Menu from './Menu';
 
+const HeaderContainer = styled.header`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 100%;
+  height: 80px;
+  padding: ${({ theme }) => theme.spacing.small};
+  gap: ${({ theme }) => theme.spacing.xxxsmall};
+  background: ${({ theme }) => theme.color.surface.info};
+  border-bottom: 2px solid ${({ theme }) => theme.color.border.subtle};
+`;
+
 const HeaderTitle = styled(Text)`
   color: ${({ theme }) => theme.color.text.info};
   display: none;
@@ -30,10 +43,10 @@ const TitleGroup = styled.div`
 `;
 
 const Header = () => {
-  const { title, breadcrumbs, actions } = useLayoutHeader();
+  const { title, breadcrumbs, actions, showMenu } = useLayoutHeader();
 
   return (
-    <div className="container bg-sky-50 max-w-full flex h-20 justify-between p-4 items-center border-solid border-b-2 border-slate-100">
+    <HeaderContainer>
       <TitleGroup>
         <Link to="/" textDecoration={false}>
           <Logo label="Little World" width={48} height={48} />
@@ -46,8 +59,11 @@ const Header = () => {
           </HeaderTitle>
         )}
       </TitleGroup>
-      <HeaderToolbarActions>{actions ?? <Menu />}</HeaderToolbarActions>
-    </div>
+      <HeaderToolbarActions>
+        {actions}
+        {(showMenu || !actions) && <Menu />}
+      </HeaderToolbarActions>
+    </HeaderContainer>
   );
 };
 

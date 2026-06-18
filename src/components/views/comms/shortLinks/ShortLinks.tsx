@@ -22,24 +22,22 @@ function ShortLinks() {
   };
 
   return (
-    <div className="flex flex-col min-h-0 w-full relative">
-      <Tabs value={tab} onValueChange={onTabChange}>
-        <TabsList>
-          <TabsTrigger value="manage">Manage</TabsTrigger>
-          <TabsTrigger value="clicks">Clicks</TabsTrigger>
-        </TabsList>
-        {tab === 'manage' && (
-          <TabsContent value="manage">
-            <Links />
-          </TabsContent>
-        )}
-        {tab === 'clicks' && (
-          <TabsContent value="clicks">
-            <LinkClicks />
-          </TabsContent>
-        )}
-      </Tabs>
-    </div>
+    <Tabs value={tab} onValueChange={onTabChange}>
+      <TabsList>
+        <TabsTrigger value="manage">Manage</TabsTrigger>
+        <TabsTrigger value="clicks">Clicks</TabsTrigger>
+      </TabsList>
+      {tab === 'manage' && (
+        <TabsContent value="manage">
+          <Links />
+        </TabsContent>
+      )}
+      {tab === 'clicks' && (
+        <TabsContent value="clicks">
+          <LinkClicks />
+        </TabsContent>
+      )}
+    </Tabs>
   );
 }
 

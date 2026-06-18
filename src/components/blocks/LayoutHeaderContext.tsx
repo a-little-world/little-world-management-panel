@@ -18,6 +18,7 @@ export type LayoutHeaderOverride = {
   title?: ReactNode;
   breadcrumbs?: BreadcrumbsProps;
   actions?: ReactNode;
+  showMenu?: boolean;
 };
 
 type LayoutHeaderContextValue = {
@@ -118,5 +119,6 @@ export function useLayoutHeader() {
     title: override?.breadcrumbs?.current ?? override?.title ?? routeTitle,
     breadcrumbs: override?.breadcrumbs,
     actions: override?.actions,
+    showMenu: override?.showMenu,
   };
 }

@@ -7,13 +7,13 @@ export type TranslationContent = {
 
 export type AdminQuestionCard = {
   uuid: string;
-  ref_id: number;
+  sort_order: number;
   content: TranslationContent;
 };
 
 export type AdminQuestionCategory = {
   uuid: string;
-  ref_id: number;
+  sort_order: number;
   content: TranslationContent;
   cards: AdminQuestionCard[];
 };

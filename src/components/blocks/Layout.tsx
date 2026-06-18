@@ -16,6 +16,8 @@ const Main = styled.main`
   order: 2;
   flex: 1;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
 `;
 
 const HeaderSlot = styled.div`

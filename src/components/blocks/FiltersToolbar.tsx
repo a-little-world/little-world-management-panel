@@ -15,34 +15,36 @@ import Pagination from '../atoms/Pagination';
 import SearchBar from './SearchBar';
 
 interface FiltersToolbarProps {
-  showSearchBar?: boolean;
-  searchPlaceholder?: string;
-  searchDefaultValue?: string;
-  onSearchSubmit?: (search: string) => void;
-  showFiltersButton?: boolean;
-  filtersActive?: boolean;
-  onFiltersClick?: () => void;
-  showDownloadButton?: boolean;
-  downloadDisabled?: boolean;
-  onDownloadClick?: () => void;
-  showSettingsButton?: boolean;
-  settingsDisabled?: boolean;
-  onSettingsClick?: () => void;
-  showPageSizeDropdown?: boolean;
-  showPagination?: boolean;
-  paginationList?: any;
-  className?: string;
   children?: React.ReactNode;
+  className?: string;
+  downloadDisabled?: boolean;
+  filtersActive?: boolean;
   isLoading?: boolean;
   loadingText?: string;
+  onDownloadClick?: () => void;
+  onFiltersClick?: () => void;
+  onSearchSubmit?: (search: string) => void;
+  onSettingsClick?: () => void;
+  paginationList?: any;
+  searchDefaultValue?: string;
+  searchPlaceholder?: string;
+  settingsDisabled?: boolean;
+  showDownloadButton?: boolean;
+  showFiltersButton?: boolean;
+  showPageSizeDropdown?: boolean;
+  showPagination?: boolean;
+  showSearchBar?: boolean;
+  showSettingsButton?: boolean;
+  withoutPadding?: boolean;
 }
 
-const FiltersContainer = styled.div`
+const FiltersContainer = styled.div<{ $withoutPadding?: boolean }>`
   width: 100%;
   display: flex;
   align-items: flex-end;
   gap: ${({ theme }) => theme.spacing.medium};
-  padding: ${({ theme }) => theme.spacing.small};
+  padding: ${({ theme, $withoutPadding }) =>
+    $withoutPadding ? 0 : theme.spacing.small};
   justify-content: space-between;
   flex-wrap: wrap;
 `;
@@ -122,10 +124,11 @@ export const FiltersToolbar: React.FC<FiltersToolbarProps> = ({
   className,
   children,
   isLoading = false,
+  withoutPadding = false,
   loadingText = 'Loading filters...',
 }) => {
   return (
-    <FiltersContainer className={className}>
+    <FiltersContainer className={className} $withoutPadding={withoutPadding}>
       {(showSearchBar || showFiltersButton || showDownloadButton) && (
         <LeftSection>
           {showSearchBar && onSearchSubmit && (
@@ -158,7 +161,6 @@ export const FiltersToolbar: React.FC<FiltersToolbarProps> = ({
               variation={ButtonVariations.Circle}
               appearance={ButtonAppearance.Secondary}
               color={'black'}
-              className="shrink-0"
             >
               <DownloadIcon width={16} height={16} label="download icon" />
             </DSButton>
@@ -171,7 +173,6 @@ export const FiltersToolbar: React.FC<FiltersToolbarProps> = ({
               variation={ButtonVariations.Circle}
               appearance={ButtonAppearance.Secondary}
               color={'black'}
-              className="shrink-0"
             >
               <Settings size={16} />
             </DSButton>

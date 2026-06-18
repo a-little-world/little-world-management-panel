@@ -14,6 +14,7 @@ import { formatDate, formatTimeDistance } from '../../helpers/date';
 import { useGlobalState, useUserListData } from '../../store';
 import { Button } from '../atoms/Button';
 import MatchesIcons from '../atoms/MatchesIcons';
+import { ListPanel, ListScroll } from '../atoms/PageLayout';
 import SelectBox from '../atoms/SelectBox';
 import UserImage from '../atoms/UserImage';
 import { DataTable } from '../blocks/DataTable';
@@ -449,11 +450,19 @@ export function Users() {
         />
       </FiltersToolbar>
 
-      {usersLoading && (
-        <div className="p-4 text-center">Loading users list '${list}'...</div>
-      )}
-      {error && <div className="p-4 text-center">Error: {error.message}</div>}
-      {!usersLoading && !error && <UsersTable userList={userList} />}
+      <ListPanel $fullWidth>
+        <ListScroll>
+          {usersLoading && (
+            <div className="p-4 text-center">
+              Loading users list '${list}'...
+            </div>
+          )}
+          {error && (
+            <div className="p-4 text-center">Error: {error.message}</div>
+          )}
+          {!usersLoading && !error && <UsersTable userList={userList} />}
+        </ListScroll>
+      </ListPanel>
       <Filters
         defaultValues={filters}
         open={filtersOpen}

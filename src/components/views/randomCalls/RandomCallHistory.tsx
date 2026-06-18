@@ -14,12 +14,12 @@ import {
   LobbyOverviewData,
   TasksData,
 } from '../../../api/randomCalls';
-import MatchProposalsTable from '../../blocks/randomCalls/MatchProposalsTable';
 import { formatDate, formatEventTime } from '../../../helpers/date';
 import { dataFetcher } from '../../../store';
+import { PageContainer } from '../../atoms/PageLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../atoms/Tabs';
+import MatchProposalsTable from '../../blocks/randomCalls/MatchProposalsTable';
 import {
-  Container,
   Description,
   DropdownContainer,
   Section,
@@ -90,13 +90,13 @@ function RandomCallHistory() {
 
   if (isEmpty(allLobbies)) {
     return (
-      <Container>
+      <PageContainer>
         <Title>Random Call History</Title>
         <Description>
           View historical data and statistics for previous random call lobbies.
         </Description>
         <Text>Loading lobbies...</Text>
-      </Container>
+      </PageContainer>
     );
   }
 
@@ -120,7 +120,7 @@ function RandomCallHistory() {
   });
 
   return (
-    <Container>
+    <PageContainer>
       <Title>Random Call History</Title>
       <Description>
         View historical data and statistics for previous random call lobbies.
@@ -258,7 +258,7 @@ function RandomCallHistory() {
           )}
         </>
       )}
-    </Container>
+    </PageContainer>
   );
 }
 
