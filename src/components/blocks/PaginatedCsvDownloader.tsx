@@ -64,6 +64,26 @@ const StatusHeader = styled.div`
   flex-wrap: wrap;
 `;
 
+const HeaderRight = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xsmall};
+`;
+
+const CloseButton = styled.button`
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: ${({ theme }) => theme.color.text.tertiary};
+  padding: 0 ${({ theme }) => theme.spacing.xxxsmall};
+  line-height: 1;
+  font-size: 18px;
+
+  &:hover {
+    color: ${({ theme }) => theme.color.text.primary};
+  }
+`;
+
 const LabelText = styled(Text).attrs({
   type: TextTypes.Body7,
   tag: 'span' as const,
@@ -276,11 +296,20 @@ export const PaginatedCsvDownloader = forwardRef(
         <StatusCard>
           <StatusHeader>
             <Text type={TextTypes.Body6}>{statusTitles[status]}</Text>
-            <LabelText>
-              {currentPage > 0 && totalPages > 0
-                ? `Page ${currentPage}/${totalPages}`
-                : 'Page 0/0'}
-            </LabelText>
+            <HeaderRight>
+              <LabelText>
+                {currentPage > 0 && totalPages > 0
+                  ? `Page ${currentPage}/${totalPages}`
+                  : 'Page 0/0'}
+              </LabelText>
+              <CloseButton
+                type="button"
+                aria-label="Close export status"
+                onClick={resetState}
+              >
+                ×
+              </CloseButton>
+            </HeaderRight>
           </StatusHeader>
 
           {status === 'loading' && (
