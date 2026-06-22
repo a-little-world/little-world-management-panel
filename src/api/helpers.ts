@@ -24,12 +24,28 @@ export const formatApiError = (responseBody: any, response: Response) => {
 
   if (typeof responseBody === 'string') {
     apiError.message = responseBody;
+  } else if (responseBody && typeof responseBody === 'object') {
+    const detail =
+      typeof responseBody.detail === 'string' ? responseBody.detail : undefined;
+    const message =
+      typeof responseBody.message === 'string' ? responseBody.message : undefined;
+
+    if (detail) {
+      apiError.message = detail;
+    } else if (message) {
+      apiError.message = message;
+    } else {
+      const errorTypeApi = Object.keys(responseBody)?.[0];
+      const errorTags = Object.values(responseBody)?.[0];
+      const errorTag = Array.isArray(errorTags) ? errorTags[0] : errorTags;
+      apiError.cause = errorTypeApi ?? null;
+      apiError.message =
+        typeof errorTag === 'string' && errorTag
+          ? errorTag
+          : apiError.statusText;
+    }
   } else {
-    const errorTypeApi = Object.keys(responseBody)?.[0];
-    const errorTags = Object.values(responseBody)?.[0];
-    const errorTag = Array.isArray(errorTags) ? errorTags[0] : errorTags;
-    apiError.cause = errorTypeApi ?? null;
-    apiError.message = errorTag || apiError.statusText;
+    apiError.message = apiError.statusText;
   }
 
   return apiError;

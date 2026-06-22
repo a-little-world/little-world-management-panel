@@ -486,6 +486,7 @@ function OpenChatActionsPanel({
   const [isTesting, setIsTesting] = useState(false);
   const [testError, setTestError] = useState<string | null>(null);
   const [testSuccess, setTestSuccess] = useState<string | null>(null);
+  const [loginError, setLoginError] = useState<string | null>(null);
 
   const handleTestConnection = async () => {
     setTestError(null);
@@ -500,8 +501,11 @@ function OpenChatActionsPanel({
         setTestError(result.detail ?? 'Connection test failed.');
       }
     } catch (error) {
+      const apiError = error as { message?: string; data?: { detail?: string } };
       const message =
-        error instanceof Error ? error.message : 'Connection test failed.';
+        apiError.data?.detail ||
+        apiError.message ||
+        'Connection test failed.';
       setTestError(message);
     } finally {
       setIsTesting(false);
@@ -513,11 +517,28 @@ function OpenChatActionsPanel({
       return;
     }
 
-    window.open(
-      buildOpenChatLoginUrl(configuration),
-      '_blank',
-      'noopener,noreferrer',
-    );
+    setLoginError(null);
+
+    try {
+      const loginUrl = buildOpenChatLoginUrl(configuration);
+      const newWindow = window.open(
+        loginUrl,
+        '_blank',
+        'noopener,noreferrer',
+      );
+
+      if (!newWindow) {
+        setLoginError(
+          'Popup blocked. Allow popups for this site and try again.',
+        );
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Could not open Open Chat login.';
+      setLoginError(message);
+    }
   };
 
   return (
@@ -573,6 +594,11 @@ function OpenChatActionsPanel({
                 <Text type={TextTypes.Body4} tag="p">
                   Save an open chat configuration before logging in.
                 </Text>
+              )}
+              {loginError && (
+                <StatusMessage type={StatusTypes.Error} visible>
+                  {loginError}
+                </StatusMessage>
               )}
               <Actions>
                 <Button

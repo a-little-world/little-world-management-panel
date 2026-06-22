@@ -17,13 +17,24 @@ export type OpenChatConfiguration = {
   open_chat_host: string;
 };
 
+const DOCKER_DEV_HOSTS = new Set([
+  'host.docker.internal',
+  'frontend',
+  'backend',
+]);
+
 export function normalizeOpenChatBrowserHost(host: string): string {
   const trimmed = host.trim();
   const normalized = trimmed.includes('://') ? trimmed : `http://${trimmed}`;
   const url = new URL(normalized);
 
-  if (url.hostname === 'host.docker.internal') {
+  if (DOCKER_DEV_HOSTS.has(url.hostname)) {
     url.hostname = 'localhost';
+  }
+
+  // In local dev the API is served by the backend on 1984; port 3000 is frontend-only.
+  if (url.port === '3000') {
+    url.port = '1984';
   }
 
   return url.origin;
@@ -32,7 +43,7 @@ export function normalizeOpenChatBrowserHost(host: string): string {
 export function buildOpenChatLoginUrl(configuration: OpenChatConfiguration): string {
   const origin = normalizeOpenChatBrowserHost(configuration.open_chat_host);
   const params = new URLSearchParams({
-    username: configuration.open_chat_user,
+    email: configuration.open_chat_user,
     password: configuration.open_chat_api_key,
     auto_login: 'true',
   });
