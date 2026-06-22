@@ -181,6 +181,7 @@ const OpenChatChat = () => {
     () => users?.find(user => user.uuid === openChatUserUuid),
     [users, openChatUserUuid],
   );
+  const targetUserId = selectedUser?.id ?? configuration?.matching_user_id ?? null;
 
   const {
     data: chatsData,
@@ -225,7 +226,7 @@ const OpenChatChat = () => {
   }, [chats, selectedChatUuid]);
 
   const handleCreateChat = async () => {
-    if (!selectedUser) {
+    if (!targetUserId) {
       return;
     }
 
@@ -233,7 +234,7 @@ const OpenChatChat = () => {
     setIsCreatingChat(true);
 
     try {
-      const result = await createOpenChatChat(selectedUser.id);
+      const result = await createOpenChatChat(targetUserId);
       await refreshChats();
       setSelectedChatUuid(result.chat_uuid);
     } catch (error) {
@@ -360,9 +361,7 @@ const OpenChatChat = () => {
               type="button"
               appearance={ButtonAppearance.Primary}
               size={ButtonSizes.Small}
-              disabled={
-                !selectedUser || isCreatingChat || !canManageOpenChatAccess
-              }
+              disabled={!targetUserId || isCreatingChat}
               onClick={handleCreateChat}
             >
               {isCreatingChat ? 'Creating...' : 'Create chat'}

@@ -18,6 +18,7 @@ export type OpenChatConfiguration = {
   open_chat_host: string;
   matching_exists?: boolean;
   matching_user_uuid?: string | null;
+  matching_user_id?: number | null;
 };
 
 const DOCKER_DEV_HOSTS = new Set([
