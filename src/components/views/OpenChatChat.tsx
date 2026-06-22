@@ -168,9 +168,13 @@ function fullName(user?: OpenChatAccessUser): string {
 
 type OpenChatInteractionPayload = {
   type: 'open_chat_interaction';
+  title?: string;
   interaction_id: string;
   shared_interaction_url?: string | null;
 };
+
+const DEFAULT_OPEN_CHAT_INTERACTION_TITLE =
+  'Tim: This is highly experimental; the model runs at home on my pc and might wake me up at night; but maybe it can help you with something.';
 
 function parseOpenChatInteractionPayload(
   value: string,
@@ -185,6 +189,7 @@ function parseOpenChatInteractionPayload(
     }
     return {
       type: 'open_chat_interaction',
+      title: typeof parsed.title === 'string' ? parsed.title : undefined,
       interaction_id: parsed.interaction_id,
       shared_interaction_url:
         typeof parsed.shared_interaction_url === 'string'
@@ -498,8 +503,9 @@ const OpenChatChat = () => {
                     <MessageBubble key={message.uuid} $self={isSelf}>
                       {interactionPayload ? (
                         <InteractionWidget>
-                          <Text type={TextTypes.Body6} tag="span">
-                            Open Chat interaction
+                          <Text type={TextTypes.Body7} tag="span">
+                            {interactionPayload.title ??
+                              DEFAULT_OPEN_CHAT_INTERACTION_TITLE}
                           </Text>
                           <Text type={TextTypes.Body7} tag="span">
                             Interaction ID: {interactionPayload.interaction_id}
