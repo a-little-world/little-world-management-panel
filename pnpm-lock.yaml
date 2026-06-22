@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@a-little-world/little-world-design-system':
-        specifier: ^2.18.1
-        version: 2.18.1(@date-fns/tz@1.5.0)(@types/react-dom@19.2.3(@types/react@19.2.15))(@types/react@19.2.15)(date-fns@3.6.0)(react-dom@19.2.6(react@19.2.6))(react-router-dom@6.30.3(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(styled-components@6.4.2(react-dom@19.2.6(react@19.2.6))(react@19.2.6))
+        specifier: ^2.18.2
+        version: 2.18.2(@date-fns/tz@1.5.0)(@types/react-dom@19.2.3(@types/react@19.2.15))(@types/react@19.2.15)(date-fns@3.6.0)(react-dom@19.2.6(react@19.2.6))(react-router-dom@6.30.3(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(styled-components@6.4.2(react-dom@19.2.6(react@19.2.6))(react@19.2.6))
       '@heroicons/react':
         specifier: ^2.0.18
         version: 2.2.0(react@19.2.6)
@@ -234,8 +234,8 @@ packages:
       react: ^19.0.0
       react-dom: ^19.0.0
 
-  '@a-little-world/little-world-design-system@2.18.1':
-    resolution: {integrity: sha512-UicLUnnP2ZbGKA1u+aOkMH4lnoPj97oi0F48Ts5qdUsAhHTVMJtaQVejMpfozUR3CXWGZ8mXSwbY50z29yY6bA==}
+  '@a-little-world/little-world-design-system@2.18.2':
+    resolution: {integrity: sha512-yPZdIZtJhjY4mHxK4yl6bcUWqVb+Gl67jr6Gk1zDR3AKlNEyANFsTEY7LblfjvRQo8uMygzMD9Kf8vfoz9/4TA==}
     peerDependencies:
       react: ^19.0.0
       react-dom: ^19.0.0
@@ -4360,7 +4360,7 @@ snapshots:
       react-dom: 19.2.6(react@19.2.6)
       svgson: 5.3.1
 
-  '@a-little-world/little-world-design-system@2.18.1(@date-fns/tz@1.5.0)(@types/react-dom@19.2.3(@types/react@19.2.15))(@types/react@19.2.15)(date-fns@3.6.0)(react-dom@19.2.6(react@19.2.6))(react-router-dom@6.30.3(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(styled-components@6.4.2(react-dom@19.2.6(react@19.2.6))(react@19.2.6))':
+  '@a-little-world/little-world-design-system@2.18.2(@date-fns/tz@1.5.0)(@types/react-dom@19.2.3(@types/react@19.2.15))(@types/react@19.2.15)(date-fns@3.6.0)(react-dom@19.2.6(react@19.2.6))(react-router-dom@6.30.3(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(styled-components@6.4.2(react-dom@19.2.6(react@19.2.6))(react@19.2.6))':
     dependencies:
       '@a-little-world/little-world-design-system-core': 1.14.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       '@base-ui/react': 1.5.0(@date-fns/tz@1.5.0)(@types/react@19.2.15)(date-fns@3.6.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)

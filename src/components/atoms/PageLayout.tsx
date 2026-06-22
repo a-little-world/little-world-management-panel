@@ -2,9 +2,10 @@ import { Text } from '@a-little-world/little-world-design-system';
 import styled, { css } from 'styled-components';
 
 export const PageContainer = styled.div`
+  flex: 1;
+  min-height: 0;
   padding: ${({ theme }) => theme.spacing.medium};
   width: 100%;
-  max-height: calc(100dvh - 5rem);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -87,15 +88,21 @@ export const Description = styled(Text)`
   color: ${({ theme }) => theme.color.text.secondary};
 `;
 
-export const ListPanel = styled.div`
+export const ListPanel = styled.div<{ $fullWidth?: boolean }>`
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
   border: 1px solid ${({ theme }) => theme.color.border.subtle};
-  border-radius: ${({ theme }) => theme.radius.medium};
+  border-radius: ${({ theme, $fullWidth }) =>
+    $fullWidth ? 0 : theme.radius.medium};
   background: ${({ theme }) => theme.color.surface.primary};
   overflow: hidden;
+  ${({ $fullWidth }) =>
+    $fullWidth &&
+    css`
+      width: 100%;
+    `}
 `;
 
 export const ListScroll = styled.div`

@@ -11,14 +11,6 @@ import { StatCards } from '../../atoms/stats/StatCard';
 export { StatCard, StatLabel, StatValue } from '../../atoms/stats/StatCard';
 
 // Shared layout
-export const Container = styled.div`
-  padding: ${({ theme }) => theme.spacing.medium};
-  width: 100%;
-  max-height: calc(100vh - ${({ theme }) => theme.spacing.large});
-  overflow-y: auto;
-  box-sizing: border-box;
-`;
-
 export const Header = styled.div`
   display: flex;
   align-items: center;

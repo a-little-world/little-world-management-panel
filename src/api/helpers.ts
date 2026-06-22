@@ -97,6 +97,10 @@ export async function apiFetch<T = any>(
       throw formatApiError(errorData, response);
     }
 
+    if (response.status === 204) {
+      return undefined as T;
+    }
+
     return (await response.json()) as T;
   } catch (error) {
     console.error(`API Fetch Error (${endpoint}):`, error);

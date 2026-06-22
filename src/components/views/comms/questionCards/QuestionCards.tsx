@@ -82,6 +82,7 @@ type CategoryEditorPaneProps = {
   control: ReturnType<typeof useForm<QuestionCardsFormValues>>['control'];
   saving: boolean;
   categoryTitle: string;
+  canDeleteCategory: boolean;
   onDeleteCategory: () => void;
   onDeleteCard: (cardIndex: number) => Promise<void>;
 };
@@ -92,6 +93,7 @@ function CategoryEditorPane({
   control,
   saving,
   categoryTitle,
+  canDeleteCategory,
   onDeleteCategory,
   onDeleteCard,
 }: CategoryEditorPaneProps) {
@@ -119,7 +121,12 @@ function CategoryEditorPane({
       <DeleteCategoryBtn
         type="button"
         onClick={onDeleteCategory}
-        disabled={saving}
+        disabled={saving || !canDeleteCategory}
+        title={
+          canDeleteCategory
+            ? 'Delete this category'
+            : 'Remove all cards from this category before deleting it'
+        }
       >
         <TrashIcon style={{ width: 12, height: 12 }} />
         Delete category
@@ -287,6 +294,15 @@ function QuestionCards() {
     if (selectedIndex === null) return;
     const category = watchedCategories[selectedIndex];
     if (!category) return;
+
+    if ((category.cards?.length ?? 0) > 0) {
+      setSaveToast({
+        id: Date.now(),
+        headline: 'Cannot delete category',
+        title: 'Remove all cards from this category before deleting it.',
+      });
+      return;
+    }
 
     if (category.uuid) {
       try {
@@ -462,6 +478,9 @@ function QuestionCards() {
                 categoryTitle={
                   watchedCategories[selectedIndex]?.content?.en?.trim() ||
                   `Category ${selectedIndex + 1}`
+                }
+                canDeleteCategory={
+                  (watchedCategories[selectedIndex]?.cards?.length ?? 0) === 0
                 }
                 onDeleteCategory={handleDeleteCategory}
                 onDeleteCard={async cardIndex => {

@@ -114,7 +114,7 @@ export function SendEmailSheet({
                     control={control}
                     rules={{ required: 'Required' }}
                     render={({
-                      field: { onChange, onBlur, value },
+                      field: { onChange, value },
                       fieldState: { error },
                     }) => (
                       <Dropdown

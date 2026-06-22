@@ -1,11 +1,15 @@
-import { Text } from '@a-little-world/little-world-design-system';
+import {
+  Checkbox,
+  Dropdown,
+  Text,
+} from '@a-little-world/little-world-design-system';
 import { isEmpty } from 'lodash';
 import React from 'react';
-import { createSearchParams, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
+import styled from 'styled-components';
 import useSWR from 'swr';
 
 import { dataFetcher } from '../../../store';
-import Pagination from '../../atoms/Pagination';
 import {
   Table,
   TableBody,
@@ -21,8 +25,8 @@ import {
   VideoCallParticipant,
   formatCallType,
   formatDateTime,
-  participantName,
 } from '../videoCalls/videoCallTableShared';
+import FiltersToolbar from '../FiltersToolbar';
 
 type MatchCallsProps = {
   match: {
@@ -31,22 +35,53 @@ type MatchCallsProps = {
   };
 };
 
+const CALL_TYPE_OPTIONS = [
+  { value: 'all', label: 'All types' },
+  { value: 'standard', label: 'Standard' },
+  { value: 'random', label: 'Random call' },
+];
+
+const BothActiveCheckbox = styled(Checkbox)`
+  margin-bottom: ${({ theme }) => theme.spacing.xxsmall};
+`;
+
 function getUserWasActive(call: VideoCall, userId: number) {
   return call.u1.id === userId ? call.u1_was_active : call.u2_was_active;
 }
 
 const MatchCalls = ({ match }: MatchCallsProps) => {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const callType = searchParams.get('call_type') ?? 'all';
+  const bothUsersActive = searchParams.get('both_have_been_active') === 'true';
+
+  const apiSearchParams = new URLSearchParams(searchParams);
+  apiSearchParams.delete('tab');
+  apiSearchParams.set(
+    'match_participants',
+    `${match.user1.id},${match.user2.id}`,
+  );
+
   const {
     data: calls,
     error,
     isLoading,
   } = useSWR<PaginatedVideoCalls>(
-    match
-      ? `/api/matching/video_calls/?match_participants=${match.user1.id},${match.user2.id}&${createSearchParams(searchParams)}`
-      : null,
+    match ? `/api/matching/video_calls/?${apiSearchParams.toString()}` : null,
     dataFetcher,
   );
+
+  const updateSearchParam = (key: string, value?: string) => {
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('page');
+
+    if (!value || value === 'all') {
+      nextParams.delete(key);
+    } else {
+      nextParams.set(key, value);
+    }
+
+    setSearchParams(nextParams);
+  };
 
   const fields = [
     { key: 'type', label: 'Type' },
@@ -64,61 +99,92 @@ const MatchCalls = ({ match }: MatchCallsProps) => {
     { key: 'both_have_been_active', label: 'Both active' },
   ] as const;
 
-  if (error) {
-    return (
-      <Text className="p-4 w-full" center>
-        Error loading video calls
-      </Text>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <Text className="p-4 w-full" center>
-        Loading...
-      </Text>
-    );
-  }
-
   return (
     <div className="w-full flex flex-col gap-4">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            {fields.map(({ key, label }) => (
-              <TableHead key={key} className="w-[100px]">
-                {label}
-              </TableHead>
-            ))}
-          </TableRow>
-        </TableHeader>
-        {isEmpty(calls?.results) ? (
-          <Text className="p-4 w-full" center>
-            No results.
-          </Text>
-        ) : (
-          <TableBody>
-            {calls?.results.map(call => (
-              <TableRow key={call.uuid}>
-                <TableCell>{formatCallType(call)}</TableCell>
-                <TableCell>{call.duration ?? '—'}</TableCell>
-                <TableCell>{formatDateTime(call.created_at)}</TableCell>
-                <TableCell>{formatDateTime(call.end_time)}</TableCell>
-                <TableCell>
-                  <ActiveTag active={getUserWasActive(call, match.user1.id)} />
-                </TableCell>
-                <TableCell>
-                  <ActiveTag active={getUserWasActive(call, match.user2.id)} />
-                </TableCell>
-                <TableCell>
-                  <ActiveTag active={call.both_have_been_active} />
+      <FiltersToolbar
+        paginationList={calls}
+        isLoading={isLoading}
+        loadingText="Loading calls..."
+        withoutPadding
+      >
+        <Dropdown
+          id="match_calls_call_type_dropdown"
+          label="Type"
+          value={callType}
+          options={CALL_TYPE_OPTIONS}
+          onValueChange={value => updateSearchParam('call_type', value)}
+          placeholder="Filter by type..."
+          cannotError
+          maxWidth="160px"
+        />
+        <BothActiveCheckbox
+          id="match_calls_both_users_active"
+          label="Both users active"
+          checked={bothUsersActive}
+          onCheckedChange={(checked: boolean) =>
+            updateSearchParam(
+              'both_have_been_active',
+              checked ? 'true' : undefined,
+            )
+          }
+          required={false}
+        />
+      </FiltersToolbar>
+
+      {error ? (
+        <Text className="p-4 w-full" center>
+          Error loading video calls
+        </Text>
+      ) : isLoading ? (
+        <Text className="p-4 w-full" center>
+          Loading...
+        </Text>
+      ) : (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              {fields.map(({ key, label }) => (
+                <TableHead key={key} className="w-[100px]">
+                  {label}
+                </TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+          {isEmpty(calls?.results) ? (
+            <TableBody>
+              <TableRow>
+                <TableCell colSpan={fields.length}>
+                  <Text center>No results.</Text>
                 </TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        )}
-      </Table>
-      <Pagination list={calls} />
+            </TableBody>
+          ) : (
+            <TableBody>
+              {calls?.results.map(call => (
+                <TableRow key={call.uuid}>
+                  <TableCell>{formatCallType(call)}</TableCell>
+                  <TableCell>{call.duration ?? '—'}</TableCell>
+                  <TableCell>{formatDateTime(call.created_at)}</TableCell>
+                  <TableCell>{formatDateTime(call.end_time)}</TableCell>
+                  <TableCell>
+                    <ActiveTag
+                      active={getUserWasActive(call, match.user1.id)}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <ActiveTag
+                      active={getUserWasActive(call, match.user2.id)}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <ActiveTag active={call.both_have_been_active} />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          )}
+        </Table>
+      )}
     </div>
   );
 };

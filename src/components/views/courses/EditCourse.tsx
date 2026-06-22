@@ -929,12 +929,7 @@ function EditCourse() {
     !isNew &&
     (courseSlug === SELF_ONBOARDING_COURSE_SLUG ||
       data?.slug === SELF_ONBOARDING_COURSE_SLUG);
-  console.log({
-    courseSlug,
-    dataSlug: data?.slug,
-    SELF_ONBOARDING_COURSE_SLUG,
-    isSelfOnboardingCourse,
-  });
+
   // Keep chapter titles in sync for the rail — watch the full chapters array
   const watchedChapters = watch('chapters') || [];
   const chapterTitles = watchedChapters.map(c => c.title);

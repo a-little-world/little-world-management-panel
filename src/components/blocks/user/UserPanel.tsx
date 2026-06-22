@@ -1,28 +1,23 @@
 import {
   Button,
+  ButtonAppearance,
   ButtonSizes,
-  ButtonVariations,
   PlusIcon,
 } from '@a-little-world/little-world-design-system';
 import React, { useEffect } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { useTheme } from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 import useSWR from 'swr';
 
 import { MATCHING_ROUTE } from '../../../router/routes';
 import { dataFetcher, useGlobalState } from '../../../store';
-import {
-  Section,
-  SectionContent,
-  SectionDescription,
-  SectionHeader,
-  SectionTitle,
-} from '../../atoms/Section';
+import { Section, SectionContent } from '../../atoms/Section';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../atoms/Tabs';
+import { usePageHeader } from '../LayoutHeaderContext';
 import { SelectedUsersSheet } from '../SelectedUsersSheet';
 import UserActions from './UserActions';
-import UserDetailsCard from './UserCard';
 import UserCalls from './UserCalls';
+import UserDetailsCard from './UserCard';
 import UserChat from './UserChat';
 import UserEmails from './UserEmails';
 import UserMatches from './UserMatches';
@@ -39,6 +34,11 @@ const USER_TABS = [
   { key: 'notes', label: 'Notes' },
   { key: 'actions', label: 'Actions' },
 ];
+
+const HeaderActionButton = styled(Button)`
+  flex-grow: 0;
+  gap: ${({ theme }) => theme.spacing.xxsmall};
+`;
 
 const UserPanelContent = ({
   tab,
@@ -107,6 +107,29 @@ const UserPanel = () => {
     navigate(MATCHING_ROUTE);
   };
 
+  const selectedTabKey = searchParams.get('tab') ?? USER_TABS[0].key;
+  const selectedTab =
+    USER_TABS.find(tab => tab.key === selectedTabKey) ?? USER_TABS[0];
+  const userName = user
+    ? `${user.profile.first_name} ${user.profile.second_name}`
+    : 'User';
+
+  usePageHeader({
+    title: `${userName} - ${selectedTab.title ?? selectedTab.label}`,
+    showMenu: true,
+    actions: user ? (
+      <HeaderActionButton
+        backgroundColor={theme.color.gradient.blue10}
+        size={ButtonSizes.Medium}
+        appearance={ButtonAppearance.Secondary}
+        onClick={onAddToMatching}
+      >
+        <PlusIcon label="select user" width={16} height={16} />
+        Add to matching
+      </HeaderActionButton>
+    ) : undefined,
+  });
+
   useEffect(() => {
     setUpdateCurrentUser(() => mutate);
   }, [userId, mutate]);
@@ -121,7 +144,7 @@ const UserPanel = () => {
     );
 
   return (
-    <Tabs defaultValue={searchParams.get('tab') ?? USER_TABS[0].key}>
+    <Tabs defaultValue={selectedTabKey}>
       <TabsList className="grid w-full grid-cols-8">
         {USER_TABS.map(tab => (
           <TabsTrigger
@@ -138,25 +161,6 @@ const UserPanel = () => {
       {USER_TABS.map(tab => (
         <TabsContent key={'content' + tab.key} value={tab.key}>
           <Section fullHeight={tab.key === 'chat'}>
-            <SectionHeader>
-              <div>
-                <SectionTitle>{`${
-                  user.profile.first_name + ' ' + user.profile.second_name
-                } - ${tab.title ?? tab.label}`}</SectionTitle>
-                {tab.description && (
-                  <SectionDescription>{tab.description}</SectionDescription>
-                )}
-              </div>
-              <Button
-                backgroundColor={theme.color.gradient.blue10}
-                size={ButtonSizes.Medium}
-                variation={ButtonVariations.Circle}
-                onClick={onAddToMatching}
-                style={{ flexGrow: 0 }}
-              >
-                <PlusIcon label="select user" width={16} height={16} />
-              </Button>
-            </SectionHeader>
             <SectionContent>
               <UserPanelContent
                 tab={tab.key}

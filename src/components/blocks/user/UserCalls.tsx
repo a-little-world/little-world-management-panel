@@ -1,11 +1,15 @@
-import { Text } from '@a-little-world/little-world-design-system';
+import {
+  Checkbox,
+  Dropdown,
+  Text,
+} from '@a-little-world/little-world-design-system';
 import { isEmpty } from 'lodash';
 import React from 'react';
-import { Link, createSearchParams, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import useSWR from 'swr';
 
+import styled from 'styled-components';
 import { dataFetcher } from '../../../store';
-import Pagination from '../../atoms/Pagination';
 import {
   Table,
   TableBody,
@@ -14,6 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from '../../atoms/Table';
+import FiltersToolbar from '../FiltersToolbar';
 import {
   ActiveTag,
   PaginatedVideoCalls,
@@ -34,6 +39,16 @@ const fields = [
   { key: 'both_have_been_active', label: 'Both active' },
 ] as const;
 
+const CALL_TYPE_OPTIONS = [
+  { value: 'all', label: 'All types' },
+  { value: 'standard', label: 'Standard' },
+  { value: 'random', label: 'Random call' },
+];
+
+const BothActiveCheckbox = styled(Checkbox)`
+  margin-bottom: ${({ theme }) => theme.spacing.xxsmall};
+`;
+
 function getOtherParticipant(call: VideoCall, userId: number) {
   return call.u1.id === userId ? call.u2 : call.u1;
 }
@@ -47,84 +62,129 @@ function getParticipantWasActive(call: VideoCall, userId: number) {
 }
 
 const UserCalls = ({ user }: { user: { id: number } }) => {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const callType = searchParams.get('call_type') ?? 'all';
+  const bothUsersActive = searchParams.get('both_have_been_active') === 'true';
+
+  const apiSearchParams = new URLSearchParams(searchParams);
+  apiSearchParams.delete('tab');
+  apiSearchParams.set('user_id', String(user.id));
+
   const {
     data: calls,
     error,
     isLoading,
   } = useSWR<PaginatedVideoCalls>(
-    user
-      ? `/api/matching/video_calls/?user_id=${user.id}&${createSearchParams(searchParams)}`
-      : null,
+    user ? `/api/matching/video_calls/?${apiSearchParams.toString()}` : null,
     dataFetcher,
   );
 
-  if (error) {
-    return (
-      <Text className="p-4 w-full" center>
-        Error loading video calls
-      </Text>
-    );
-  }
+  const updateSearchParam = (key: string, value?: string) => {
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('page');
 
-  if (isLoading) {
-    return (
-      <Text className="p-4 w-full" center>
-        Loading...
-      </Text>
-    );
-  }
+    if (!value || value === 'all') {
+      nextParams.delete(key);
+    } else {
+      nextParams.set(key, value);
+    }
+
+    setSearchParams(nextParams);
+  };
 
   return (
     <div className="w-full flex flex-col gap-4">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            {fields.map(({ key, label }) => (
-              <TableHead key={key} className="w-[100px]">
-                {label}
-              </TableHead>
-            ))}
-          </TableRow>
-        </TableHeader>
-        {isEmpty(calls?.results) ? (
-          <Text className="p-4 w-full" center>
-            No results.
-          </Text>
-        ) : (
-          <TableBody>
-            {calls?.results.map(call => {
-              const participant = getOtherParticipant(call, user.id);
+      <FiltersToolbar
+        paginationList={calls}
+        isLoading={isLoading}
+        loadingText="Loading calls..."
+        withoutPadding
+      >
+        <Dropdown
+          id="user_calls_call_type_dropdown"
+          label="Type"
+          value={callType}
+          options={CALL_TYPE_OPTIONS}
+          onValueChange={value => updateSearchParam('call_type', value)}
+          placeholder="Filter by type..."
+          cannotError
+          maxWidth="160px"
+        />
+        <BothActiveCheckbox
+          id="user_calls_both_users_active"
+          label="Both users active"
+          checked={bothUsersActive}
+          onCheckedChange={(checked: boolean) =>
+            updateSearchParam(
+              'both_have_been_active',
+              checked ? 'true' : undefined,
+            )
+          }
+          required={false}
+        />
+      </FiltersToolbar>
 
-              return (
-                <TableRow key={call.uuid}>
-                  <TableCell>
-                    <Link to={`/user/${participant.id}`}>
-                      {participantName(participant)}
-                    </Link>
-                  </TableCell>
-                  <TableCell>{formatCallType(call)}</TableCell>
-                  <TableCell>{call.duration ?? '—'}</TableCell>
-                  <TableCell>{formatDateTime(call.created_at)}</TableCell>
-                  <TableCell>{formatDateTime(call.end_time)}</TableCell>
-                  <TableCell>
-                    <ActiveTag active={getUserWasActive(call, user.id)} />
-                  </TableCell>
-                  <TableCell>
-                    <ActiveTag
-                      active={getParticipantWasActive(call, user.id)}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <ActiveTag active={call.both_have_been_active} />
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        )}
-      </Table>
-      <Pagination list={calls} />
+      {error ? (
+        <Text className="p-4 w-full" center>
+          Error loading video calls
+        </Text>
+      ) : isLoading ? (
+        <Text className="p-4 w-full" center>
+          Loading...
+        </Text>
+      ) : (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              {fields.map(({ key, label }) => (
+                <TableHead key={key} className="w-[100px]">
+                  {label}
+                </TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+          {isEmpty(calls?.results) ? (
+            <TableBody>
+              <TableRow>
+                <TableCell colSpan={fields.length}>
+                  <Text center>No results.</Text>
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          ) : (
+            <TableBody>
+              {calls?.results.map(call => {
+                const participant = getOtherParticipant(call, user.id);
+
+                return (
+                  <TableRow key={call.uuid}>
+                    <TableCell>
+                      <Link to={`/user/${participant.id}`}>
+                        {participantName(participant)}
+                      </Link>
+                    </TableCell>
+                    <TableCell>{formatCallType(call)}</TableCell>
+                    <TableCell>{call.duration ?? '—'}</TableCell>
+                    <TableCell>{formatDateTime(call.created_at)}</TableCell>
+                    <TableCell>{formatDateTime(call.end_time)}</TableCell>
+                    <TableCell>
+                      <ActiveTag active={getUserWasActive(call, user.id)} />
+                    </TableCell>
+                    <TableCell>
+                      <ActiveTag
+                        active={getParticipantWasActive(call, user.id)}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <ActiveTag active={call.both_have_been_active} />
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          )}
+        </Table>
+      )}
     </div>
   );
 };
