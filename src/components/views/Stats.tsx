@@ -4,9 +4,9 @@ import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../atoms/Tabs';
 import AvailabilityOverview from '../blocks/stats/AvailabilityOverview';
 import { BarChartTimeRanged } from '../blocks/stats/BarChartTimeRanged';
+import Highlights from '../blocks/stats/Highlights';
 import KPIsDashboard from '../blocks/stats/KPIsDashboard';
 import { MatchJourneyOverview } from '../blocks/stats/MatchJourneyBuckets';
-import { MatchQuality } from '../blocks/stats/MatchQualityStatistic';
 import {
   Container,
   MatchUserJourneyOverview,
@@ -30,13 +30,11 @@ function Stats() {
     <Tabs value={tab} onValueChange={onTabChange}>
       <TabsList>
         <TabsTrigger value="kpis">KPIs</TabsTrigger>
+        <TabsTrigger value="highlights">Highlights</TabsTrigger>
         <TabsTrigger value="overview">User & Match Journey</TabsTrigger>
         <TabsTrigger value="graphs">Graphs</TabsTrigger>
         <TabsTrigger value="signup-funnel">User Sign-up Funnel</TabsTrigger>
         <TabsTrigger value="simple-journey">Basic Buckets</TabsTrigger>
-        <TabsTrigger value="signup-funnel-evolution">
-          User Sign-up Funnel Evolution
-        </TabsTrigger>
         <TabsTrigger value="reports">Reports</TabsTrigger>
         <TabsTrigger value="availability">Availability</TabsTrigger>
       </TabsList>
@@ -48,6 +46,11 @@ function Stats() {
       {tab === 'overview' && (
         <TabsContent value="overview">
           <MatchUserJourneyOverview />
+        </TabsContent>
+      )}
+      {tab === 'highlights' && (
+        <TabsContent value="highlights">
+          <Highlights />
         </TabsContent>
       )}
       {tab === 'graphs' && (
@@ -64,7 +67,6 @@ function Stats() {
           className="flex flex-col content-center justify-center items-center flex-grow"
         >
           <BarChartTimeRanged />
-          <MatchQuality />
         </TabsContent>
       )}
       {tab === 'simple-journey' && (

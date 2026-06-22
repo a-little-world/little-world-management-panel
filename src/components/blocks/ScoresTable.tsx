@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom';
 
 import { formatDate, formatTime } from '../../helpers/date';
 import { useGlobalState } from '../../store';
+import { ListPanel, ListScroll } from '../atoms/PageLayout';
 import {
   Table,
   TableBody,
@@ -43,103 +44,107 @@ export function ScoresTable({
   const [fields, setFields] = useState(SCORES_FIELDS);
 
   return (
-    <>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            {fields.map(({ key, label }) => (
-              <TableHead key={key + label} className="w-[100px]">
-                {label}
-              </TableHead>
-            ))}
-          </TableRow>
-        </TableHeader>
-        {isEmpty(scoresList) ? (
-          <Text className="p-4 w-full" center>
-            {loading ? 'Loading...' : 'No results.'}
-          </Text>
-        ) : (
-          <TableBody>
-            {scoresList?.map(score => (
-              <TableRow key={score.id}>
-                {fields.map(({ key }) => {
-                  if (key === 'user1' || key === 'user2') {
-                    const user = isObject(score[key])
-                      ? score[key]
-                      : key === 'user1'
-                        ? score['from_usr']
-                        : score['to_usr'];
+    <ListScroll>
+      <ListPanel $fullWidth>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              {fields.map(({ key, label }) => (
+                <TableHead key={key + label} className="w-[100px]">
+                  {label}
+                </TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+          {isEmpty(scoresList) ? (
+            <Text className="p-4 w-full" center>
+              {loading ? 'Loading...' : 'No results.'}
+            </Text>
+          ) : (
+            <TableBody>
+              {scoresList?.map(score => (
+                <TableRow key={score.id}>
+                  {fields.map(({ key }) => {
+                    if (key === 'user1' || key === 'user2') {
+                      const user = isObject(score[key])
+                        ? score[key]
+                        : key === 'user1'
+                          ? score['from_usr']
+                          : score['to_usr'];
 
-                    return (
-                      <TableCell key={score.id + key}>
-                        <Link to={`/user/${user.id}`}>
-                          <UserImage
-                            hasPriority={user.state.has_match_priority}
-                            alt={
-                              user.profile.first_name +
-                              ' ' +
-                              user.profile.second_name
-                            }
-                            user={user.profile}
-                            dimensions={{
-                              height: 32,
-                              width: 32,
+                      return (
+                        <TableCell key={score.id + key}>
+                          <Link to={`/user/${user.id}`}>
+                            <UserImage
+                              hasPriority={user.state.has_match_priority}
+                              alt={
+                                user.profile.first_name +
+                                ' ' +
+                                user.profile.second_name
+                              }
+                              user={user.profile}
+                              dimensions={{
+                                height: 32,
+                                width: 32,
+                              }}
+                            />
+                          </Link>
+                        </TableCell>
+                      );
+                    }
+
+                    if (key === 'make_match')
+                      return (
+                        <TableCell key={score.id + key}>
+                          <button
+                            onClick={() => {
+                              addUserToMatching(score.user1);
+                              addUserToMatching(score.user2);
+                              onMatchClick(score);
                             }}
-                          />
-                        </Link>
-                      </TableCell>
-                    );
-                  }
+                            className="text-blue-500"
+                          >
+                            View
+                          </button>
+                        </TableCell>
+                      );
 
-                  if (key === 'make_match')
+                    if (key === 'matchable')
+                      return (
+                        <TableCell key={score.id + key}>
+                          <Tag
+                            appearance={
+                              TagAppearance[
+                                score.matchable ? 'success' : 'error'
+                              ]
+                            }
+                            size={TagSizes.small}
+                          >
+                            {score.matchable ? 'Matchable' : 'Not valid'}
+                          </Tag>
+                        </TableCell>
+                      );
+
+                    if (key === 'latest_update')
+                      return (
+                        <TableCell key={score.id + key}>
+                          {formatDate(new Date(score.latest_update))}
+                          {formatTime(new Date(score.latest_update))}
+                        </TableCell>
+                      );
+
                     return (
                       <TableCell key={score.id + key}>
-                        <button
-                          onClick={() => {
-                            addUserToMatching(score.user1);
-                            addUserToMatching(score.user2);
-                            onMatchClick(score);
-                          }}
-                          className="text-blue-500"
-                        >
-                          View
-                        </button>
+                        {get(score, key)}
                       </TableCell>
                     );
-
-                  if (key === 'matchable')
-                    return (
-                      <TableCell key={score.id + key}>
-                        <Tag
-                          appearance={
-                            TagAppearance[score.matchable ? 'success' : 'error']
-                          }
-                          size={TagSizes.small}
-                        >
-                          {score.matchable ? 'Matchable' : 'Not valid'}
-                        </Tag>
-                      </TableCell>
-                    );
-
-                  if (key === 'latest_update')
-                    return (
-                      <TableCell key={score.id + key}>
-                        {formatDate(new Date(score.latest_update))}
-                        {formatTime(new Date(score.latest_update))}
-                      </TableCell>
-                    );
-
-                  return (
-                    <TableCell key={score.id + key}>
-                      {get(score, key)}
-                    </TableCell>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableBody>
-        )}
-      </Table>
-    </>
+                  })}
+                </TableRow>
+              ))}
+            </TableBody>
+          )}
+        </Table>
+      </ListPanel>
+    </ListScroll>
   );
 }
