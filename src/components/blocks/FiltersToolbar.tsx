@@ -15,6 +15,7 @@ import Pagination from '../atoms/Pagination';
 import SearchBar from './SearchBar';
 
 interface FiltersToolbarProps {
+  bundleDownloadAndSettings?: boolean;
   children?: React.ReactNode;
   className?: string;
   downloadDisabled?: boolean;
@@ -84,6 +85,16 @@ const LoadingSection = styled.div`
   width: 100%;
 `;
 
+const DownloadControlsGroup = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xxxsmall};
+  padding: ${({ theme }) => theme.spacing.xxxsmall};
+  border: 1px solid ${({ theme }) => theme.color.border.subtle};
+  border-radius: ${({ theme }) => theme.radius.xxsmall};
+  background: ${({ theme }) => theme.color.surface.subtle};
+`;
+
 const FilterButton = styled(DSButton)<{ $active: boolean }>`
   ${({ $active, theme }) =>
     $active &&
@@ -105,6 +116,7 @@ const FilterButton = styled(DSButton)<{ $active: boolean }>`
 `;
 
 export const FiltersToolbar: React.FC<FiltersToolbarProps> = ({
+  bundleDownloadAndSettings = false,
   showSearchBar = false,
   searchPlaceholder = 'Search...',
   searchDefaultValue,
@@ -127,6 +139,9 @@ export const FiltersToolbar: React.FC<FiltersToolbarProps> = ({
   withoutPadding = false,
   loadingText = 'Loading filters...',
 }) => {
+  const showBundledDownloadControls =
+    bundleDownloadAndSettings && showDownloadButton && showSettingsButton;
+
   return (
     <FiltersContainer className={className} $withoutPadding={withoutPadding}>
       {(showSearchBar || showFiltersButton || showDownloadButton) && (
@@ -154,28 +169,53 @@ export const FiltersToolbar: React.FC<FiltersToolbarProps> = ({
             </FilterButton>
           )}
 
-          {showDownloadButton && onDownloadClick && (
-            <DSButton
-              onClick={onDownloadClick}
-              disabled={downloadDisabled}
-              variation={ButtonVariations.Circle}
-              appearance={ButtonAppearance.Secondary}
-              color={'black'}
-            >
-              <DownloadIcon width={16} height={16} label="download icon" />
-            </DSButton>
-          )}
+          {showBundledDownloadControls ? (
+            <DownloadControlsGroup>
+              <DSButton
+                onClick={onDownloadClick}
+                disabled={downloadDisabled}
+                variation={ButtonVariations.Circle}
+                appearance={ButtonAppearance.Secondary}
+                color={'black'}
+              >
+                <DownloadIcon width={16} height={16} label="download icon" />
+              </DSButton>
+              <DSButton
+                onClick={onSettingsClick}
+                disabled={settingsDisabled}
+                variation={ButtonVariations.Circle}
+                appearance={ButtonAppearance.Secondary}
+                color={'black'}
+              >
+                <Settings size={16} />
+              </DSButton>
+            </DownloadControlsGroup>
+          ) : (
+            <>
+              {showDownloadButton && onDownloadClick && (
+                <DSButton
+                  onClick={onDownloadClick}
+                  disabled={downloadDisabled}
+                  variation={ButtonVariations.Circle}
+                  appearance={ButtonAppearance.Secondary}
+                  color={'black'}
+                >
+                  <DownloadIcon width={16} height={16} label="download icon" />
+                </DSButton>
+              )}
 
-          {showSettingsButton && onSettingsClick && (
-            <DSButton
-              onClick={onSettingsClick}
-              disabled={settingsDisabled}
-              variation={ButtonVariations.Circle}
-              appearance={ButtonAppearance.Secondary}
-              color={'black'}
-            >
-              <Settings size={16} />
-            </DSButton>
+              {showSettingsButton && onSettingsClick && (
+                <DSButton
+                  onClick={onSettingsClick}
+                  disabled={settingsDisabled}
+                  variation={ButtonVariations.Circle}
+                  appearance={ButtonAppearance.Secondary}
+                  color={'black'}
+                >
+                  <Settings size={16} />
+                </DSButton>
+              )}
+            </>
           )}
         </LeftSection>
       )}

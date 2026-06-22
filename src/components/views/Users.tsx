@@ -6,10 +6,14 @@ import {
 import { ArrowsUpDownIcon } from '@heroicons/react/20/solid';
 import { createColumnHelper } from '@tanstack/react-table';
 import { capitalize, isNumber } from 'lodash';
-import React, { useEffect, useState } from 'react';
+import React, { useMemo, useRef, useEffect, useState } from 'react';
 import { Link, createSearchParams, useSearchParams } from 'react-router-dom';
 
-import { getUserListExport } from '../../api/index';
+import {
+  getUsersExportColumns,
+  getUsersExportPage,
+  getUsersListPaginationMeta,
+} from '../../api/index';
 import { formatDate, formatTimeDistance } from '../../helpers/date';
 import { useGlobalState, useUserListData } from '../../store';
 import { Button } from '../atoms/Button';
@@ -18,9 +22,16 @@ import { ListPanel, ListScroll } from '../atoms/PageLayout';
 import SelectBox from '../atoms/SelectBox';
 import UserImage from '../atoms/UserImage';
 import { DataTable } from '../blocks/DataTable';
-import { DownloadSettingsModal } from '../blocks/DownloadSettingsModal';
+import {
+  DownloadSettingsModal,
+  ExportDownloadFormat,
+} from '../blocks/DownloadSettingsModal';
 import Filters, { containsFilterKey } from '../blocks/Filters';
 import FiltersToolbar from '../blocks/FiltersToolbar';
+import {
+  PaginatedCsvDownloader,
+  PaginatedCsvDownloaderHandle,
+} from '../blocks/PaginatedCsvDownloader';
 import { SelectedUsersSheet } from '../blocks/SelectedUsersSheet';
 
 const columnHelper = createColumnHelper();
@@ -276,14 +287,21 @@ export function Users() {
   const [filters, setFilters] = useState<Filters>({});
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [downloadSettingsOpen, setDownloadSettingsOpen] = useState(false);
+  const [downloadFormat, setDownloadFormat] =
+    useState<ExportDownloadFormat>('csv');
   const [selectedHeaders, setSelectedHeaders] = useState<string[]>([]);
   const [availableHeaders, setAvailableHeaders] = useState<string[]>([]);
+  const paginatedDownloaderRef = useRef<PaginatedCsvDownloaderHandle>(null);
+  const searchParamsString = useMemo(
+    () => createSearchParams(searchParams).toString(),
+    [searchParams],
+  );
 
   const {
     userList,
     isLoading: usersLoading,
     error,
-  } = useUserListData(createSearchParams(searchParams).toString());
+  } = useUserListData(searchParamsString);
 
   // Sync searchParams with filters state
   useEffect(() => {
@@ -346,54 +364,19 @@ export function Users() {
     return Object.keys(response[0]);
   };
 
-  const resolveValueByHeader = (row: Record<string, any>, header: string) => {
-    return header.split('.').reduce((value, key) => value?.[key], row);
-  };
-
-  const toCsvValue = (value: unknown) => {
-    if (value === null || value === undefined) {
-      return '';
-    }
-    const normalizedValue =
-      typeof value === 'object' ? JSON.stringify(value) : String(value);
-    return `"${normalizedValue.replace(/"/g, '""')}"`;
-  };
+  const exportPageSize = useMemo(() => {
+    const parsedPageSize = Number(searchParams.get('page_size') || '50');
+    return Number.isFinite(parsedPageSize) && parsedPageSize > 0
+      ? parsedPageSize
+      : 50;
+  }, [searchParams]);
 
   const handleDownload = () => {
-    getUserListExport({
-      searchParams: createSearchParams(searchParams).toString(),
-      exportAll: true,
-      onSuccess: (response: Record<string, any>[]) => {
-        const exportedHeaders = extractHeaders(response);
-        if (!availableHeaders.length && exportedHeaders.length) {
-          setAvailableHeaders(exportedHeaders);
-        }
-
-        const headersToUse =
-          selectedHeaders.length > 0 ? selectedHeaders : exportedHeaders;
-        const headers = headersToUse.join(',');
-        const csvRows = response.map(row =>
-          headersToUse
-            .map(header => {
-              const value = resolveValueByHeader(row, header);
-              return toCsvValue(value);
-            })
-            .join(','),
-        );
-
-        const csvContent = [headers, ...csvRows].join('\n');
-
-        const blob = new Blob([csvContent], {
-          type: 'text/csv;charset=utf-8;',
-        });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${list} ${new Date().toLocaleDateString('de')}.csv`;
-        a.click();
-      },
-      onError: error => console.log({ error }),
-    });
+    if (selectedHeaders.length === 0) {
+      handleSettingsOpen();
+      return;
+    }
+    paginatedDownloaderRef.current?.startPreparation();
   };
 
   const handleSettingsSave = (headers: string[]) => {
@@ -405,21 +388,20 @@ export function Users() {
     if (availableHeaders.length > 0) {
       return;
     }
-    getUserListExport({
-      searchParams: createSearchParams(searchParams).toString(),
-      exportColumnsOnly: true,
-      onSuccess: (response: Record<string, any>[]) => {
+    getUsersExportColumns({
+      searchParams: searchParamsString,
+    })
+      .then((response: Record<string, any>[]) => {
         const headers = extractHeaders(response);
         setAvailableHeaders(headers);
-        setSelectedHeaders(headers);
-      },
-      onError: error => console.log({ error }),
-    });
+      })
+      .catch(error => console.log({ error }));
   };
 
   return (
     <>
       <FiltersToolbar
+        bundleDownloadAndSettings
         showSearchBar
         searchPlaceholder="Search by name or email"
         searchDefaultValue={filters?.search as string}
@@ -428,10 +410,10 @@ export function Users() {
         filtersActive={containsFilterKey(filters)}
         onFiltersClick={() => setFiltersOpen(true)}
         showDownloadButton
-        downloadDisabled={!list || usersLoading}
+        downloadDisabled={!list || usersLoading || selectedHeaders.length === 0}
         onDownloadClick={handleDownload}
         showSettingsButton
-        settingsDisabled={!list || usersLoading}
+        settingsDisabled={false}
         onSettingsClick={handleSettingsOpen}
         paginationList={userList}
         isLoading={usersLoading}
@@ -448,6 +430,27 @@ export function Users() {
           maxWidth="160px"
         />
       </FiltersToolbar>
+      <PaginatedCsvDownloader
+        ref={paginatedDownloaderRef}
+        downloadFormat={downloadFormat}
+        selectedHeaders={selectedHeaders}
+        fileName={`${list} ${new Date().toLocaleDateString('de')}.csv`}
+        resetToken={`${searchParamsString}:${selectedHeaders.join(',')}`}
+        fetchMeta={() =>
+          getUsersListPaginationMeta({
+            searchParams: searchParamsString,
+            pageSize: exportPageSize,
+          })
+        }
+        fetchPage={({ page, pageSize }) =>
+          getUsersExportPage({
+            searchParams: searchParamsString,
+            page,
+            pageSize,
+          })
+        }
+        onError={error => console.log({ error })}
+      />
 
       <ListPanel $fullWidth>
         <ListScroll>
@@ -470,8 +473,10 @@ export function Users() {
         onRemoveFilter={removeSearchParam}
       />
       <DownloadSettingsModal
+        selectedFormat={downloadFormat}
         availableHeaders={availableHeaders}
         selectedHeaders={selectedHeaders}
+        setSelectedFormat={setDownloadFormat}
         setSelectedHeaders={setSelectedHeaders}
         open={downloadSettingsOpen}
         onClose={() => setDownloadSettingsOpen(false)}

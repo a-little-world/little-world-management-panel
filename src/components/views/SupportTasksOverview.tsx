@@ -52,7 +52,10 @@ import { Button } from '../atoms/Button';
 import UserImage from '../atoms/UserImage';
 import CreateSupportTaskModal from '../blocks/CreateSupportTaskModal';
 import { DataTable } from '../blocks/DataTable';
-import { DownloadSettingsModal } from '../blocks/DownloadSettingsModal';
+import {
+  DownloadSettingsModal,
+  ExportDownloadFormat,
+} from '../blocks/DownloadSettingsModal';
 import FiltersToolbar from '../blocks/FiltersToolbar';
 import SupportTaskFilters, {
   TaskFilterKeys,
@@ -440,6 +443,8 @@ export default function SupportTasksOverview() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [downloadSettingsOpen, setDownloadSettingsOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
+  const [downloadFormat, setDownloadFormat] =
+    useState<ExportDownloadFormat>('csv');
   const [selectedHeaders, setSelectedHeaders] = useState<string[]>(
     DEFAULT_EXPORT_HEADERS,
   );
@@ -573,23 +578,38 @@ export default function SupportTasksOverview() {
     const headers = selectedHeaders.length
       ? selectedHeaders
       : TASK_EXPORT_HEADERS;
-    const rows = tasks.map(task =>
-      headers
-        .map(h => {
-          const val = (task as any)[h];
-          const str = val === null || val === undefined ? '' : String(val);
-          return str.includes(',') || str.includes('"')
-            ? `"${str.replace(/"/g, '""')}"`
-            : str;
-        })
-        .join(','),
-    );
-    const csv = [headers.join(','), ...rows].join('\n');
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(
-      new Blob([csv], { type: 'text/csv;charset=utf-8;' }),
-    );
-    a.download = `support-tasks-${new Date().toLocaleDateString('de')}.csv`;
+    if (downloadFormat === 'json') {
+      const jsonRows = tasks.map(task =>
+        headers.reduce<Record<string, unknown>>((acc, header) => {
+          acc[header] = (task as any)[header];
+          return acc;
+        }, {}),
+      );
+      a.href = URL.createObjectURL(
+        new Blob([JSON.stringify(jsonRows, null, 2)], {
+          type: 'application/json;charset=utf-8;',
+        }),
+      );
+      a.download = `support-tasks-${new Date().toLocaleDateString('de')}.json`;
+    } else {
+      const rows = tasks.map(task =>
+        headers
+          .map(h => {
+            const val = (task as any)[h];
+            const str = val === null || val === undefined ? '' : String(val);
+            return str.includes(',') || str.includes('"')
+              ? `"${str.replace(/"/g, '""')}"`
+              : str;
+          })
+          .join(','),
+      );
+      const csv = [headers.join(','), ...rows].join('\n');
+      a.href = URL.createObjectURL(
+        new Blob([csv], { type: 'text/csv;charset=utf-8;' }),
+      );
+      a.download = `support-tasks-${new Date().toLocaleDateString('de')}.csv`;
+    }
     a.click();
   };
 
@@ -692,7 +712,9 @@ export default function SupportTasksOverview() {
       />
 
       <DownloadSettingsModal
+        selectedFormat={downloadFormat}
         selectedHeaders={selectedHeaders}
+        setSelectedFormat={setDownloadFormat}
         setSelectedHeaders={setSelectedHeaders}
         open={downloadSettingsOpen}
         onClose={() => setDownloadSettingsOpen(false)}

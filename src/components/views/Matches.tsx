@@ -1,13 +1,20 @@
 import { Dropdown, Text } from '@a-little-world/little-world-design-system';
-import React from 'react';
+import React, { useMemo, useRef } from 'react';
 import { createSearchParams, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { getMatchListExport } from '../../api/index';
+import { getMatchesExportPage, getMatchesListPaginationMeta } from '../../api/index';
 import { useMatchListData, useMatchesFilterOptions } from '../../store';
-import { DownloadSettingsModal } from '../blocks/DownloadSettingsModal';
+import {
+  DownloadSettingsModal,
+  ExportDownloadFormat,
+} from '../blocks/DownloadSettingsModal';
 import FiltersToolbar from '../blocks/FiltersToolbar';
 import { MatchesTable } from '../blocks/MatchesTable';
+import {
+  PaginatedCsvDownloader,
+  PaginatedCsvDownloaderHandle,
+} from '../blocks/PaginatedCsvDownloader';
 import { SelectedMatchesSheet } from '../blocks/SelectedMatchesSheet';
 import { SelectedUsersSheet } from '../blocks/SelectedUsersSheet';
 
@@ -62,45 +69,21 @@ const MATCH_EXPORT_HEADERS = [
   'user2.profile.user_type',
 ];
 
-const DEFAULT_MATCH_EXPORT_HEADERS = [
-  'uuid',
-  'status',
-  'match_type',
-  'bucket',
-  'created_at',
-  'user1.email',
-  'user2.email',
-];
-
-const resolveHeaderValue = (row: any, header: string) =>
-  header.split('.').reduce((acc, key) => acc?.[key], row);
-
-const escapeCsvValue = (value: unknown) => {
-  if (value === null || value === undefined) {
-    return '';
-  }
-
-  const stringValue = Array.isArray(value) ? value.join(', ') : String(value);
-
-  if (
-    stringValue.includes(',') ||
-    stringValue.includes('"') ||
-    stringValue.includes('\n')
-  ) {
-    return `"${stringValue.replace(/"/g, '""')}"`;
-  }
-
-  return stringValue;
-};
-
 export function Matches() {
   let [searchParams, setSearchParams] = useSearchParams();
   const orderBy = searchParams.get('order_by') || '-created_at';
   const matchType = searchParams.get('match_type') ?? '';
   const list = searchParams.get('list') || 'all';
   const [downloadSettingsOpen, setDownloadSettingsOpen] = React.useState(false);
+  const [downloadFormat, setDownloadFormat] =
+    React.useState<ExportDownloadFormat>('csv');
   const [selectedHeaders, setSelectedHeaders] = React.useState<string[]>(
-    DEFAULT_MATCH_EXPORT_HEADERS,
+    [],
+  );
+  const paginatedDownloaderRef = useRef<PaginatedCsvDownloaderHandle>(null);
+  const searchParamsString = useMemo(
+    () => createSearchParams(searchParams).toString(),
+    [searchParams],
   );
   const { filterOptions, isLoading: filtersLoading } =
     useMatchesFilterOptions();
@@ -123,32 +106,19 @@ export function Matches() {
     setSearchParams(searchParams);
   };
 
+  const exportPageSize = useMemo(() => {
+    const parsedPageSize = Number(searchParams.get('page_size') || '50');
+    return Number.isFinite(parsedPageSize) && parsedPageSize > 0
+      ? parsedPageSize
+      : 50;
+  }, [searchParams]);
+
   const handleDownload = () => {
-    getMatchListExport({
-      searchParams: createSearchParams(searchParams).toString(),
-      onSuccess: response => {
-        const headers = selectedHeaders.join(',');
-        const csvRows = response.map((row: Record<string, any>) =>
-          selectedHeaders
-            .map((header: string) =>
-              escapeCsvValue(resolveHeaderValue(row, header)),
-            )
-            .join(','),
-        );
-
-        const csvContent = [headers, ...csvRows].join('\n');
-
-        const blob = new Blob([csvContent], {
-          type: 'text/csv;charset=utf-8;',
-        });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${list}-matches-${new Date().toLocaleDateString('de')}.csv`;
-        a.click();
-      },
-      onError: error => console.log({ error }),
-    });
+    if (selectedHeaders.length === 0) {
+      setDownloadSettingsOpen(true);
+      return;
+    }
+    paginatedDownloaderRef.current?.startPreparation();
   };
 
   const handleSettingsSave = (headers: string[]) => {
@@ -158,11 +128,12 @@ export function Matches() {
   return (
     <>
       <FiltersToolbar
+        bundleDownloadAndSettings
         showDownloadButton
         downloadDisabled={!list || selectedHeaders.length === 0}
         onDownloadClick={handleDownload}
         showSettingsButton
-        settingsDisabled={!list || matchesLoading}
+        settingsDisabled={false}
         onSettingsClick={() => setDownloadSettingsOpen(true)}
         showPagination
         paginationList={matchList}
@@ -201,6 +172,27 @@ export function Matches() {
           maxWidth="160px"
         />
       </FiltersToolbar>
+      <PaginatedCsvDownloader
+        ref={paginatedDownloaderRef}
+        downloadFormat={downloadFormat}
+        selectedHeaders={selectedHeaders}
+        fileName={`${list}-matches-${new Date().toLocaleDateString('de')}.csv`}
+        resetToken={`${searchParamsString}:${selectedHeaders.join(',')}`}
+        fetchMeta={() =>
+          getMatchesListPaginationMeta({
+            searchParams: searchParamsString,
+            pageSize: exportPageSize,
+          })
+        }
+        fetchPage={({ page, pageSize }) =>
+          getMatchesExportPage({
+            searchParams: searchParamsString,
+            page,
+            pageSize,
+          })
+        }
+        onError={error => console.log({ error })}
+      />
       {matchesLoading ? (
         <Text center>Loading matches list '{list}' ...</Text>
       ) : (
@@ -209,7 +201,9 @@ export function Matches() {
       <SelectedUsersSheet />
       <SelectedMatchesSheet />
       <DownloadSettingsModal
+        selectedFormat={downloadFormat}
         selectedHeaders={selectedHeaders}
+        setSelectedFormat={setDownloadFormat}
         setSelectedHeaders={setSelectedHeaders}
         open={downloadSettingsOpen}
         onClose={() => setDownloadSettingsOpen(false)}

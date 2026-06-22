@@ -75,6 +75,88 @@ export const getUserListExport = async ({
   }
 };
 
+export interface PaginatedListMeta {
+  page_size?: number;
+  pages_total?: number;
+  last_page?: number;
+  count?: number;
+  items_total?: number;
+}
+
+export const getUsersListPaginationMeta = async ({
+  searchParams,
+  pageSize,
+}: {
+  searchParams: string;
+  pageSize: number;
+}) => {
+  const params = new URLSearchParams(searchParams);
+  params.set('page', '1');
+  params.set('page_size', String(pageSize));
+
+  const result = await apiFetch<PaginatedListMeta>(
+    `/api/matching/users/?${params.toString()}`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookiesAsObject().csrftoken,
+      },
+    },
+  );
+
+  return {
+    pageSize,
+    totalPages: Number(result.pages_total ?? result.last_page ?? 1),
+    totalItems: Number(result.count ?? result.items_total ?? 0),
+  };
+};
+
+export const getUsersExportPage = async ({
+  searchParams,
+  page,
+  pageSize,
+}: {
+  searchParams: string;
+  page: number;
+  pageSize: number;
+}) => {
+  const params = new URLSearchParams(searchParams);
+  params.set('page', String(page));
+  params.set('page_size', String(pageSize));
+
+  return apiFetch<Record<string, any>[]>(
+    `/api/matching/users_export/?${params.toString()}`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookiesAsObject().csrftoken,
+      },
+    },
+  );
+};
+
+export const getUsersExportColumns = async ({
+  searchParams,
+}: {
+  searchParams: string;
+}) => {
+  const params = new URLSearchParams(searchParams);
+  params.set('export_columns_only', 'true');
+
+  return apiFetch<Record<string, any>[]>(
+    `/api/matching/users_export/?${params.toString()}`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookiesAsObject().csrftoken,
+      },
+    },
+  );
+};
+
 export const getMatchListExport = async ({
   searchParams,
   onError,
@@ -99,6 +181,60 @@ export const getMatchListExport = async ({
   } catch (error) {
     onError(error);
   }
+};
+
+export const getMatchesListPaginationMeta = async ({
+  searchParams,
+  pageSize,
+}: {
+  searchParams: string;
+  pageSize: number;
+}) => {
+  const params = new URLSearchParams(searchParams);
+  params.set('page', '1');
+  params.set('page_size', String(pageSize));
+
+  const result = await apiFetch<PaginatedListMeta>(
+    `/api/matching/matches/?${params.toString()}`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookiesAsObject().csrftoken,
+      },
+    },
+  );
+
+  return {
+    pageSize,
+    totalPages: Number(result.pages_total ?? result.last_page ?? 1),
+    totalItems: Number(result.count ?? result.items_total ?? 0),
+  };
+};
+
+export const getMatchesExportPage = async ({
+  searchParams,
+  page,
+  pageSize,
+}: {
+  searchParams: string;
+  page: number;
+  pageSize: number;
+}) => {
+  const params = new URLSearchParams(searchParams);
+  params.set('page', String(page));
+  params.set('page_size', String(pageSize));
+
+  return apiFetch<Record<string, any>[]>(
+    `/api/matching/matches_export/?${params.toString()}`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookiesAsObject().csrftoken,
+      },
+    },
+  );
 };
 
 export const sendFileAttachmentMessage = async ({
