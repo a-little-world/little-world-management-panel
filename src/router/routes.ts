@@ -25,6 +25,7 @@ export const MATCHING_USERS_ROUTE = '/matching-users/';
 export const VIDEO_CALLS_ROUTE = '/video-calls/';
 export const RANDOM_CALLS_ROUTE = '/random-calls/';
 export const OPEN_CHAT_ACCESS_ROUTE = '/open-chat/';
+export const OPEN_CHAT_CHAT_ROUTE = '/open-chat/chat';
 export const EVENTS_ROUTE = '/events/';
 export const SHORT_LINKS_ROUTE = '/short-links/';
 export const BANNERS_ROUTE = '/banners/';

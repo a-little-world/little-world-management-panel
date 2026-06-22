@@ -44,6 +44,7 @@ import {
 } from '../../constants/managementPermissions';
 import { hasManagementPermission } from '../../helpers/managementPermissions';
 import { censorSecret } from '../../helpers/secrets';
+import { OPEN_CHAT_CHAT_ROUTE } from '../../router/routes';
 import { useGlobalState } from '../../store';
 import UserImage from '../atoms/UserImage';
 import { DataTable } from '../blocks/DataTable';
@@ -170,6 +171,11 @@ function OpenChatMatchingCell({
   return (
     <div className="flex flex-col gap-2 min-w-[10rem]">
       <MatchingStatusTag matchingExists={user.matching_exists} />
+      {user.matching_exists && (
+        <Link to={`${OPEN_CHAT_CHAT_ROUTE}?user_uuid=${user.uuid}`}>
+          Open chat
+        </Link>
+      )}
       {!user.matching_exists && (
         <>
           {actionError && (

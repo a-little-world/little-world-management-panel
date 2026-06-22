@@ -8,6 +8,7 @@ export const OPEN_CHAT_TEST_CONNECTION_ENDPOINT =
 
 export const OPEN_CHAT_ACCESS_USERS_ENDPOINT =
   '/api/matching/open-chat-access-users/';
+export const OPEN_CHAT_CHATS_ENDPOINT = '/api/chats/';
 
 export const DEFAULT_OPEN_CHAT_HOST = 'http://host.docker.internal:1984';
 
@@ -15,6 +16,8 @@ export type OpenChatConfiguration = {
   open_chat_api_key: string;
   open_chat_user: string;
   open_chat_host: string;
+  matching_exists?: boolean;
+  matching_user_uuid?: string | null;
 };
 
 const DOCKER_DEV_HOSTS = new Set([
@@ -72,6 +75,44 @@ export type OpenChatAccessUser = {
   matching_exists: boolean | null;
 };
 
+export type OpenChatPartner = {
+  id: string;
+  first_name?: string;
+  second_name?: string;
+  image?: string | null;
+  censored?: boolean;
+};
+
+export type OpenChatListItem = {
+  uuid: string;
+  created: string;
+  unread_count: number;
+  newest_message: {
+    uuid: string;
+    sender: string;
+    created: string;
+    text: string;
+    read: boolean;
+  } | null;
+  partner: OpenChatPartner;
+};
+
+type OpenChatListResponse = {
+  results: OpenChatListItem[];
+};
+
+export type OpenChatMessage = {
+  uuid: string;
+  sender: string;
+  created: string;
+  text: string;
+  read: boolean;
+};
+
+type OpenChatMessagesResponse = {
+  results: OpenChatMessage[];
+};
+
 export async function fetchOpenChatConfiguration(): Promise<OpenChatConfiguration | null> {
   try {
     return await apiFetch<OpenChatConfiguration>(
@@ -112,6 +153,34 @@ export function testOpenChatConnection() {
 
 export function fetchOpenChatAccessUsers() {
   return apiFetch<OpenChatAccessUser[]>(OPEN_CHAT_ACCESS_USERS_ENDPOINT);
+}
+
+export function fetchOpenChatsForUser(userUuid: string) {
+  const query = new URLSearchParams({
+    user_uuid: userUuid,
+    page: '1',
+    page_size: '20',
+  });
+  return apiFetch<OpenChatListResponse>(
+    `${OPEN_CHAT_CHATS_ENDPOINT}?${query.toString()}`,
+  );
+}
+
+export function fetchOpenChatMessages(chatUuid: string) {
+  const query = new URLSearchParams({
+    page: '1',
+    page_size: '100',
+  });
+  return apiFetch<OpenChatMessagesResponse>(
+    `/api/messages/${chatUuid}/?${query.toString()}`,
+  );
+}
+
+export function sendOpenChatMessage(chatUuid: string, text: string) {
+  return apiFetch<OpenChatMessage>(`/api/messages/${chatUuid}/send/`, {
+    method: 'POST',
+    body: { text },
+  });
 }
 
 export function openChatUserConfigurationEndpoint(userId: number) {
@@ -159,4 +228,21 @@ export function createOpenChatMatching(userId: number) {
     openChatCreateMatchingEndpoint(userId),
     { method: 'POST', body: {} },
   );
+}
+
+export type OpenChatCreateChatResult = {
+  chat_uuid: string;
+  chat_created: boolean;
+  detail: string;
+};
+
+export function openChatCreateChatEndpoint(userId: number) {
+  return `/api/matching/open-chat-access-users/${userId}/create-chat/`;
+}
+
+export function createOpenChatChat(userId: number) {
+  return apiFetch<OpenChatCreateChatResult>(openChatCreateChatEndpoint(userId), {
+    method: 'POST',
+    body: {},
+  });
 }
