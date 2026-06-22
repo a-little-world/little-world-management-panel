@@ -244,7 +244,7 @@ function BurstUpdateDialog({
                 setIsSubmitting(false);
                 setError(
                   err?.message ??
-                  'Failed to start score calculation. Please try again.',
+                    'Failed to start score calculation. Please try again.',
                 );
               },
             });
@@ -358,8 +358,6 @@ export function Scores() {
       : searchParams.get('matchable') === 'true'
         ? 'matchable_scores'
         : 'all_scores';
-
-  console.log({ burstMatchingState });
 
   return (
     <>

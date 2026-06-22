@@ -10,6 +10,7 @@ const Tabs = styled(TabsPrimitive.Root)`
   height: 100%;
   width: 100%;
   min-height: 0;
+  gap: ${({ theme }) => theme.spacing.xxsmall};
 `;
 
 const TabsList = React.forwardRef<
