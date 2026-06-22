@@ -44,6 +44,17 @@ export function normalizeOpenChatBrowserHost(host: string): string {
   return url.origin;
 }
 
+export function normalizeOpenChatBrowserUrl(rawUrl: string): string {
+  const parsed = new URL(rawUrl);
+  const normalizedOrigin = normalizeOpenChatBrowserHost(parsed.origin);
+  const normalized = new URL(rawUrl);
+  const normalizedOriginUrl = new URL(normalizedOrigin);
+  normalized.protocol = normalizedOriginUrl.protocol;
+  normalized.hostname = normalizedOriginUrl.hostname;
+  normalized.port = normalizedOriginUrl.port;
+  return normalized.toString();
+}
+
 export function buildOpenChatLoginUrl(configuration: OpenChatConfiguration): string {
   const origin = normalizeOpenChatBrowserHost(configuration.open_chat_host);
   const params = new URLSearchParams({

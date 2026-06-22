@@ -23,6 +23,7 @@ import {
   fetchOpenChatConfiguration,
   fetchOpenChatMessages,
   fetchOpenChatsForUser,
+  normalizeOpenChatBrowserUrl,
   sendOpenChatMessage,
   type OpenChatAccessUser,
 } from '../../api/openChat';
@@ -111,6 +112,22 @@ const MessageBubble = styled.div<{ $self: boolean }>`
   gap: ${({ theme }) => theme.spacing.xxxsmall};
 `;
 
+const InteractionWidget = styled.div`
+  border: 1px solid ${({ theme }) => theme.color.border.selected};
+  border-radius: ${({ theme }) => theme.radius.xxsmall};
+  padding: ${({ theme }) => theme.spacing.xsmall};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xxxsmall};
+  background: ${({ theme }) => theme.color.surface.primary};
+`;
+
+const InteractionLink = styled.a`
+  color: ${({ theme }) => theme.color.text.link};
+  text-decoration: underline;
+  word-break: break-all;
+`;
+
 const Composer = styled.form`
   border-top: 1px solid ${({ theme }) => theme.color.border.subtle};
   padding: ${({ theme }) => theme.spacing.small};
@@ -137,6 +154,36 @@ function fullName(user?: OpenChatAccessUser): string {
   const firstName = user.profile?.first_name?.trim() ?? '';
   const secondName = user.profile?.second_name?.trim() ?? '';
   return [firstName, secondName].filter(Boolean).join(' ') || user.email;
+}
+
+type OpenChatInteractionPayload = {
+  type: 'open_chat_interaction';
+  interaction_id: string;
+  shared_interaction_url?: string | null;
+};
+
+function parseOpenChatInteractionPayload(
+  value: string,
+): OpenChatInteractionPayload | null {
+  try {
+    const parsed = JSON.parse(value) as Partial<OpenChatInteractionPayload>;
+    if (
+      parsed?.type !== 'open_chat_interaction' ||
+      typeof parsed?.interaction_id !== 'string'
+    ) {
+      return null;
+    }
+    return {
+      type: 'open_chat_interaction',
+      interaction_id: parsed.interaction_id,
+      shared_interaction_url:
+        typeof parsed.shared_interaction_url === 'string'
+          ? parsed.shared_interaction_url
+          : null,
+    };
+  } catch {
+    return null;
+  }
 }
 
 const OpenChatChat = () => {
@@ -430,11 +477,40 @@ const OpenChatChat = () => {
               ) : (
                 orderedMessages.map(message => {
                   const isSelf = message.sender === currentUser.uuid;
+                  const interactionPayload = parseOpenChatInteractionPayload(
+                    message.text,
+                  );
                   return (
                     <MessageBubble key={message.uuid} $self={isSelf}>
-                      <Text type={TextTypes.Body6} tag="span">
-                        {message.text}
-                      </Text>
+                      {interactionPayload ? (
+                        <InteractionWidget>
+                          <Text type={TextTypes.Body6} tag="span">
+                            Open Chat interaction
+                          </Text>
+                          <Text type={TextTypes.Body7} tag="span">
+                            Interaction ID: {interactionPayload.interaction_id}
+                          </Text>
+                          {interactionPayload.shared_interaction_url ? (
+                            <InteractionLink
+                              href={normalizeOpenChatBrowserUrl(
+                                interactionPayload.shared_interaction_url,
+                              )}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              Open interaction
+                            </InteractionLink>
+                          ) : (
+                            <Text type={TextTypes.Body7} tag="span">
+                              Shared interaction URL unavailable.
+                            </Text>
+                          )}
+                        </InteractionWidget>
+                      ) : (
+                        <Text type={TextTypes.Body6} tag="span">
+                          {message.text}
+                        </Text>
+                      )}
                       <Text type={TextTypes.Body7} tag="span">
                         {new Date(message.created).toLocaleString()}
                       </Text>
