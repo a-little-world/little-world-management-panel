@@ -14,6 +14,7 @@ import {
   TextInput,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
+import { Cog6ToothIcon } from '@heroicons/react/20/solid';
 import { createColumnHelper, type ColumnDef } from '@tanstack/react-table';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -44,7 +45,7 @@ import {
 } from '../../constants/managementPermissions';
 import { hasManagementPermission } from '../../helpers/managementPermissions';
 import { censorSecret } from '../../helpers/secrets';
-import { OPEN_CHAT_CHAT_ROUTE } from '../../router/routes';
+import { OPEN_CHAT_ROUTE } from '../../router/routes';
 import { useGlobalState } from '../../store';
 import UserImage from '../atoms/UserImage';
 import { DataTable } from '../blocks/DataTable';
@@ -92,6 +93,25 @@ const ViewSection = styled.div`
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.medium};
   max-width: 32rem;
+`;
+
+const HeaderActions = styled.div`
+  display: flex;
+  justify-content: flex-end;
+`;
+
+const GearLink = styled(Link)`
+  color: ${({ theme }) => theme.color.text.secondary};
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: ${({ theme }) => theme.spacing.xxxsmall};
+  border-radius: ${({ theme }) => theme.radius.xxsmall};
+
+  &:hover {
+    color: ${({ theme }) => theme.color.text.primary};
+    background: ${({ theme }) => theme.color.surface.secondary};
+  }
 `;
 
 const columnHelper = createColumnHelper<OpenChatAccessUser>();
@@ -172,7 +192,7 @@ function OpenChatMatchingCell({
     <div className="flex flex-col gap-2 min-w-[10rem]">
       <MatchingStatusTag matchingExists={user.matching_exists} />
       {user.matching_exists && (
-        <Link to={`${OPEN_CHAT_CHAT_ROUTE}?user_uuid=${user.uuid}`}>
+        <Link to={OPEN_CHAT_ROUTE}>
           Open chat
         </Link>
       )}
@@ -887,6 +907,13 @@ function OpenChatConfigurationPanel({
   return (
     <PageContainer>
       <PageHeader>
+        {canEdit && (
+          <HeaderActions>
+            <GearLink to={OPEN_CHAT_ROUTE} aria-label="Go to Open Chat">
+              <Cog6ToothIcon className="h-5 w-5" />
+            </GearLink>
+          </HeaderActions>
+        )}
         <Title>Open Chat Access</Title>
         <Description>
           Connect your Open Chat account. Your API key is stored securely and

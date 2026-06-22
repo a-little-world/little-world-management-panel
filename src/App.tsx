@@ -72,7 +72,8 @@ import {
   MATCHING_USERS_ROUTE,
   MATCH_JOURNEY_DOCUMENTATION_ROUTE,
   MATCH_ROUTE,
-  OPEN_CHAT_ACCESS_ROUTE,
+  OPEN_CHAT_CONFIGURATION_ROUTE,
+  OPEN_CHAT_ROUTE,
   OPEN_CHAT_CHAT_ROUTE,
   PREMATCH_APPOINTMENTS_ROUTE,
   QUESTION_CARDS_ROUTE,
@@ -235,9 +236,14 @@ const router = createBrowserRouter(
           ...routeTitle('Random Calls'),
         },
         {
-          path: OPEN_CHAT_ACCESS_ROUTE,
+          path: OPEN_CHAT_ROUTE,
+          element: <OpenChatChat />,
+          ...routeTitle('Open Chat'),
+        },
+        {
+          path: OPEN_CHAT_CONFIGURATION_ROUTE,
           element: <OpenChatAccess />,
-          ...routeTitle('Open Chat Access'),
+          ...routeTitle('Open Chat Configuration'),
         },
         {
           path: OPEN_CHAT_CHAT_ROUTE,

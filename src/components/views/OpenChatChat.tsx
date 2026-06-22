@@ -10,7 +10,7 @@ import {
   TextTypes,
 } from '@a-little-world/little-world-design-system';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import useSWR from 'swr';
 
@@ -33,12 +33,13 @@ import {
 } from '../../constants/managementPermissions';
 import { hasManagementPermission } from '../../helpers/managementPermissions';
 import { useGlobalState } from '../../store';
-import { OPEN_CHAT_ACCESS_ROUTE } from '../../router/routes';
+import {
+  OPEN_CHAT_CONFIGURATION_ROUTE,
+  getOpenChatChatRoute,
+} from '../../router/routes';
 import {
   Description,
   PageContainer,
-  PageHeader,
-  Title,
 } from '../atoms/PageLayout';
 
 const Workspace = styled.div`
@@ -128,6 +129,15 @@ const InteractionLink = styled.a`
   word-break: break-all;
 `;
 
+const PoweredBy = styled(Text).attrs({ type: TextTypes.Body7, tag: 'p' as const })`
+  color: ${({ theme }) => theme.color.text.secondary};
+`;
+
+const PoweredByLink = styled.a`
+  color: ${({ theme }) => theme.color.text.link};
+  text-decoration: underline;
+`;
+
 const Composer = styled.form`
   border-top: 1px solid ${({ theme }) => theme.color.border.subtle};
   padding: ${({ theme }) => theme.spacing.small};
@@ -189,6 +199,8 @@ function parseOpenChatInteractionPayload(
 const OpenChatChat = () => {
   const { panelUser } = useGlobalState();
   const currentUser = panelUser as MatchingPanelUser;
+  const navigate = useNavigate();
+  const { chatUuid: routeChatUuid } = useParams<{ chatUuid?: string }>();
   const [searchParams] = useSearchParams();
   const requestedOpenChatUserUuid = searchParams.get('user_uuid')?.trim() ?? '';
 
@@ -242,7 +254,7 @@ const OpenChatChat = () => {
   );
 
   const chats = chatsData?.results ?? [];
-  const [selectedChatUuid, setSelectedChatUuid] = useState<string | null>(null);
+  const selectedChatUuid = routeChatUuid ?? null;
   const [createChatError, setCreateChatError] = useState<string | null>(null);
   const [isCreatingChat, setIsCreatingChat] = useState(false);
 
@@ -263,14 +275,16 @@ const OpenChatChat = () => {
 
   useEffect(() => {
     if (!chats.length) {
-      setSelectedChatUuid(null);
       return;
     }
 
-    if (!selectedChatUuid || !chats.some(chat => chat.uuid === selectedChatUuid)) {
-      setSelectedChatUuid(chats[0].uuid);
+    const routeChatExists = selectedChatUuid
+      ? chats.some(chat => chat.uuid === selectedChatUuid)
+      : false;
+    if (!selectedChatUuid || !routeChatExists) {
+      navigate(getOpenChatChatRoute(chats[0].uuid), { replace: true });
     }
-  }, [chats, selectedChatUuid]);
+  }, [chats, selectedChatUuid, navigate]);
 
   const handleCreateChat = async () => {
     if (!targetUserId) {
@@ -283,7 +297,7 @@ const OpenChatChat = () => {
     try {
       const result = await createOpenChatChat(targetUserId);
       await refreshChats();
-      setSelectedChatUuid(result.chat_uuid);
+      navigate(getOpenChatChatRoute(result.chat_uuid));
     } catch (error) {
       setCreateChatError(
         error instanceof Error ? error.message : 'Could not create chat.',
@@ -351,13 +365,10 @@ const OpenChatChat = () => {
   if (!openChatUserUuid) {
     return (
       <PageContainer>
-        <PageHeader>
-          <Title>Open Chat</Title>
-          <Description type={TextTypes.Body4} tag="p">
-            No matching partner was found for your user. Create or verify a matching
-            first on <Link to={OPEN_CHAT_ACCESS_ROUTE}>Open Chat Access</Link>.
-          </Description>
-        </PageHeader>
+        <Description type={TextTypes.Body4} tag="p">
+          No matching partner was found for your user. Create or verify a matching
+          first on <Link to={OPEN_CHAT_CONFIGURATION_ROUTE}>Open Chat configuration</Link>.
+        </Description>
         <Text type={TextTypes.Body4} tag="p">
           Missing chat target user UUID.
         </Text>
@@ -369,13 +380,16 @@ const OpenChatChat = () => {
 
   return (
     <PageContainer>
-      <PageHeader>
-        <Title>Open Chat</Title>
-        <Description type={TextTypes.Body4} tag="p">
-          Basic chat view for open-chat users. Manage users on{' '}
-          <Link to={OPEN_CHAT_ACCESS_ROUTE}>Open Chat Access</Link>.
-        </Description>
-      </PageHeader>
+      <PoweredBy>
+        powered by{' '}
+        <PoweredByLink
+          href="https://github.com/msgmate-io/open-chat-go"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          open-chat
+        </PoweredByLink>
+      </PoweredBy>
 
       {((canManageOpenChatAccess && usersError) || chatsError) && (
         <StatusMessage type={StatusTypes.Error} visible>
@@ -423,7 +437,7 @@ const OpenChatChat = () => {
                   key={chat.uuid}
                   type="button"
                   $active={selectedChatUuid === chat.uuid}
-                  onClick={() => setSelectedChatUuid(chat.uuid)}
+                  onClick={() => navigate(getOpenChatChatRoute(chat.uuid))}
                 >
                   <Text type={TextTypes.Body6} tag="span">
                     {chat.partner?.censored
