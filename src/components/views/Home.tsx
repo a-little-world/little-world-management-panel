@@ -22,7 +22,6 @@ import {
 } from 'lucide-react';
 
 import type { MatchingPanelUser } from '../../api/index';
-import { MANAGEMENT_PERMISSION_OPEN_CHAT_ACCESS } from '../../constants/managementPermissions';
 import { hasManagementPermission } from '../../helpers/managementPermissions';
 import {
   COMMUNICATIONS_ROUTE,
@@ -31,12 +30,11 @@ import {
   DYNAMIC_USER_LISTS_ROUTE,
   MATCHING_HUB_ROUTE,
   MATCHING_USERS_ROUTE,
-  OPEN_CHAT_ACCESS_ROUTE,
   RANDOM_CALLS_ROUTE,
   STATS_ROUTE,
   SUPPORT_TASKS_ROUTE,
   USERS_ROUTE,
-  VIDEO_CALLS_ROUTE,
+  VIDEO_CALLS_ROUTE
 } from '../../router/routes';
 import { useGlobalState } from '../../store';
 import NavigationTiles, { NavigationTile } from '../blocks/NavigationTiles';
@@ -101,12 +99,12 @@ const TABS: HomeNavigationTile[] = [
     path: COURSES_ROUTE,
     icon: <AcademicCapIcon className="h-16 w-16 text-white mb-2" />,
   },
-  {
+  /* { Clickable link will be revaled when fully available
     name: 'Open Chat Access',
     path: OPEN_CHAT_ACCESS_ROUTE,
     icon: <ChatBubbleLeftRightIcon className="h-16 w-16 text-white mb-2" />,
     requiredPermission: MANAGEMENT_PERMISSION_OPEN_CHAT_ACCESS,
-  },
+  }, */
 ];
 
 function PanelUserPermissionsOverview({ user }: { user: MatchingPanelUser }) {
