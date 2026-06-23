@@ -18,6 +18,7 @@ import {
   MATCHES_LIST_ROUTE,
   MATCHING_HUB_ROUTE,
   MATCHING_USERS_ROUTE,
+  OPEN_CHAT_ROUTE,
   PREMATCH_APPOINTMENTS_ROUTE,
   QUESTION_CARDS_ROUTE,
   RANDOM_CALLS_ROUTE,
@@ -155,6 +156,12 @@ const Menu = () => {
             active={location.pathname === RANDOM_CALLS_ROUTE}
           >
             Random Calls
+          </NavigationMenuContentItem>
+          <NavigationMenuContentItem
+            to={OPEN_CHAT_ROUTE}
+            active={location.pathname.startsWith(OPEN_CHAT_ROUTE)}
+          >
+            Open Chat
           </NavigationMenuContentItem>
           <NavigationMenuContentItem
             to={COURSES_ROUTE}

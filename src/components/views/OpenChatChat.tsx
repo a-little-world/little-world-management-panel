@@ -402,10 +402,12 @@ const OpenChatChat = () => {
   const selectedTab: OpenChatTab =
     requestedTab === OPEN_CHAT_TAB_CHAT
       ? OPEN_CHAT_TAB_CHAT
-      : requestedTab === OPEN_CHAT_TAB_HOME ||
+      : requestedTab === OPEN_CHAT_TAB_INTERACTIONS
+        ? OPEN_CHAT_TAB_INTERACTIONS
+        : requestedTab === OPEN_CHAT_TAB_HOME ||
           requestedTab === LEGACY_OPEN_CHAT_TAB_CONFIGURATION
         ? OPEN_CHAT_TAB_HOME
-        : OPEN_CHAT_TAB_INTERACTIONS;
+        : OPEN_CHAT_TAB_HOME;
 
   const canAccess = hasManagementPermission(
     currentUser,
@@ -455,7 +457,9 @@ const OpenChatChat = () => {
     isLoading: isChatsLoading,
     mutate: refreshChats,
   } = useSWR(
-    openChatUserUuid ? `/open-chat/chats/${openChatUserUuid}` : null,
+    selectedTab === OPEN_CHAT_TAB_CHAT && openChatUserUuid
+      ? `/open-chat/chats/${openChatUserUuid}`
+      : null,
     () => fetchOpenChatsForUser(openChatUserUuid),
     { revalidateOnFocus: true },
   );
@@ -474,7 +478,9 @@ const OpenChatChat = () => {
     error: interactionsError,
     isLoading: isInteractionsLoading,
   } = useSWR(
-    openChatUserUuid ? `/open-chat/interactions/${openChatUserUuid}` : null,
+    selectedTab === OPEN_CHAT_TAB_INTERACTIONS && openChatUserUuid
+      ? `/open-chat/interactions/${openChatUserUuid}`
+      : null,
     () => fetchOpenChatInteractions(openChatUserUuid),
     { revalidateOnFocus: true },
   );
@@ -528,7 +534,7 @@ const OpenChatChat = () => {
       return;
     }
     const nextSearchParams = new URLSearchParams(searchParams);
-    nextSearchParams.set(OPEN_CHAT_QUERY_PARAM_TAB, OPEN_CHAT_TAB_INTERACTIONS);
+    nextSearchParams.set(OPEN_CHAT_QUERY_PARAM_TAB, OPEN_CHAT_TAB_HOME);
     setSearchParams(nextSearchParams, { replace: true });
   }, [requestedTab, searchParams, setSearchParams]);
 
@@ -779,48 +785,20 @@ const OpenChatChat = () => {
     );
   }
 
-  if (isConfigurationLoading && !requestedOpenChatUserUuid) {
-    return (
-      <PageContainer>
-        <Loading size={LoadingSizes.Small} />
-      </PageContainer>
-    );
-  }
-
-  if (configurationError) {
-    return (
-      <PageContainer>
-        <StatusMessage type={StatusTypes.Error} visible>
-          Could not load Open Chat configuration.
-        </StatusMessage>
-      </PageContainer>
-    );
-  }
-
-  if (!openChatUserUuid) {
-    return (
-      <PageContainer>
-        <Description type={TextTypes.Body4} tag="p">
-          No matching partner was found for your user. Create or verify a matching
-          first on <Link to={OPEN_CHAT_CONFIGURATION_ROUTE}>Open Chat configuration</Link>.
-        </Description>
-        <Text type={TextTypes.Body4} tag="p">
-          Missing chat target user UUID.
-        </Text>
-      </PageContainer>
-    );
-  }
-
   const orderedMessages = [...(messagesData?.results ?? [])].reverse();
+  const showMissingTargetUserUuid = !openChatUserUuid;
 
   return (
     <PageContainer>
-      {((canManageOpenChatAccess && usersError) ||
+      {(configurationError ||
+        (canManageOpenChatAccess && usersError) ||
         chatsError ||
         interactionsError ||
         interactionDetailError) && (
         <StatusMessage type={StatusTypes.Error} visible>
-          {usersError
+          {configurationError
+            ? 'Could not load Open Chat configuration.'
+            : usersError
             ? 'Could not load open chat users.'
             : chatsError
               ? 'Could not load chats for this user.'
@@ -835,7 +813,7 @@ const OpenChatChat = () => {
           <PanelHeader>
             <TargetUserBadge>
               <TargetUserLabel>UUID</TargetUserLabel>
-              <TargetUserValue>{openChatUserUuid}</TargetUserValue>
+              <TargetUserValue>{openChatUserUuid || 'Not resolved'}</TargetUserValue>
             </TargetUserBadge>
             <ListTabs>
               <ListTabButton
@@ -875,7 +853,7 @@ const OpenChatChat = () => {
                 type="button"
                 appearance={ButtonAppearance.Primary}
                 size={ButtonSizes.Small}
-                disabled={!targetUserId || isCreatingChat}
+                disabled={!targetUserId || isCreatingChat || showMissingTargetUserUuid}
                 onClick={handleCreateChat}
               >
                 {isCreatingChat ? 'Creating...' : '+ chat'}
@@ -883,6 +861,15 @@ const OpenChatChat = () => {
             )}
           </PanelHeader>
           <PanelContent>
+            {showMissingTargetUserUuid && (
+              <Description type={TextTypes.Body4} tag="p">
+                No matching partner was found for your user. Create or verify a matching
+                first on <Link to={OPEN_CHAT_CONFIGURATION_ROUTE}>Open Chat configuration</Link>.
+              </Description>
+            )}
+            {isConfigurationLoading && !requestedOpenChatUserUuid && (
+              <Loading size={LoadingSizes.Small} />
+            )}
             {(canManageOpenChatAccess && isUsersLoading) ||
             (selectedTab === OPEN_CHAT_TAB_CHAT
               ? isChatsLoading
@@ -890,6 +877,11 @@ const OpenChatChat = () => {
                 ? isInteractionsLoading
                 : false) ? (
               <Loading size={LoadingSizes.Small} />
+            ) : showMissingTargetUserUuid &&
+              selectedTab !== OPEN_CHAT_TAB_HOME ? (
+              <Text type={TextTypes.Body6} tag="p">
+                Missing chat target user UUID.
+              </Text>
             ) : selectedTab === OPEN_CHAT_TAB_CHAT ? (
               chats.length ? (
               chats.map(chat => (
@@ -1014,7 +1006,11 @@ const OpenChatChat = () => {
           {selectedTab === OPEN_CHAT_TAB_CHAT ? (
             <PanelContent>
               <MessageList>
-                {isMessagesLoading ? (
+                {showMissingTargetUserUuid ? (
+                  <Text type={TextTypes.Body6} tag="p">
+                    Missing chat target user UUID.
+                  </Text>
+                ) : isMessagesLoading ? (
                   <Loading size={LoadingSizes.Small} />
                 ) : messagesError ? (
                   <StatusMessage type={StatusTypes.Error} visible>
@@ -1087,7 +1083,11 @@ const OpenChatChat = () => {
             </PanelContent>
           ) : selectedTab === OPEN_CHAT_TAB_INTERACTIONS ? (
             <InteractionPanelContent>
-              {isInteractionDetailLoading ? (
+              {showMissingTargetUserUuid ? (
+                <Text type={TextTypes.Body6} tag="p">
+                  Missing chat target user UUID.
+                </Text>
+              ) : isInteractionDetailLoading ? (
                 <Loading size={LoadingSizes.Small} />
               ) : selectedInteractionDetail ? (
                 interactionFrameUrl ? (
@@ -1112,7 +1112,7 @@ const OpenChatChat = () => {
                 canEdit={canEditOpenChatConfiguration}
                 canManage={canManageOpenChatAccess}
                 embedded
-                automationTargetUserUuid={openChatUserUuid}
+                automationTargetUserUuid={openChatUserUuid || ''}
               />
             </PanelContent>
           )}

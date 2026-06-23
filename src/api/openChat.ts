@@ -11,6 +11,8 @@ export const OPEN_CHAT_ACCESS_USERS_ENDPOINT =
 export const OPEN_CHAT_CHATS_ENDPOINT = '/api/chats/';
 export const OPEN_CHAT_INTERACTIONS_ENDPOINT =
   '/api/matching/open-chat/interactions/';
+export const OPEN_CHAT_IDEMPOTENT_ACTIONS_ENDPOINT =
+  '/api/matching/open-chat/idempotent-actions/';
 export const OPEN_CHAT_AUTOMATION_GENERATE_MESSAGE_REPLIES_ENDPOINT =
   '/api/matching/open-chat/automation-triggers/generate-message-replies/';
 
@@ -150,6 +152,27 @@ export type OpenChatAutomationTriggerResult = {
   target_user_uuid: string;
   detail: string;
 };
+export type OpenChatIdempotentActionSupportTaskRelation = {
+  action_types: string[];
+  open_statuses: string[];
+  open_count: number;
+  suggested_filters: Record<string, string[]>;
+};
+export type OpenChatIdempotentAction = {
+  idempotent_action: string;
+  title: string;
+  description: string;
+  trigger_endpoint: string;
+  trigger_method: string;
+  clear_endpoint: string;
+  clear_method: string;
+  support_task_relation: OpenChatIdempotentActionSupportTaskRelation;
+};
+
+type OpenChatIdempotentActionsResponse = {
+  target_user_uuid: string;
+  results: OpenChatIdempotentAction[];
+};
 
 export async function fetchOpenChatConfiguration(): Promise<OpenChatConfiguration | null> {
   try {
@@ -244,6 +267,54 @@ export function triggerOpenChatGenerateMessageReplies(userUuid: string) {
     {
       method: 'POST',
       body: {},
+    },
+  );
+}
+
+export function fetchOpenChatIdempotentActions(userUuid: string) {
+  const query = new URLSearchParams({
+    user_uuid: userUuid,
+  });
+  return apiFetch<OpenChatIdempotentActionsResponse>(
+    `${OPEN_CHAT_IDEMPOTENT_ACTIONS_ENDPOINT}?${query.toString()}`,
+  );
+}
+
+export function triggerOpenChatIdempotentAction(
+  triggerEndpoint: string,
+  userUuid: string,
+) {
+  const query = new URLSearchParams({
+    user_uuid: userUuid,
+  });
+  return apiFetch<OpenChatAutomationTriggerResult>(
+    `${triggerEndpoint}?${query.toString()}`,
+    {
+      method: 'POST',
+      body: {},
+    },
+  );
+}
+
+export type OpenChatAutomationClearResult = {
+  trigger: string;
+  target_user_uuid: string;
+  deleted_support_tasks_count: number;
+  deleted_support_task_actions_count: number;
+  detail: string;
+};
+
+export function clearOpenChatIdempotentAction(
+  clearEndpoint: string,
+  userUuid: string,
+) {
+  const query = new URLSearchParams({
+    user_uuid: userUuid,
+  });
+  return apiFetch<OpenChatAutomationClearResult>(
+    `${clearEndpoint}?${query.toString()}`,
+    {
+      method: 'DELETE',
     },
   );
 }

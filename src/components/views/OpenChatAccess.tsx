@@ -17,7 +17,7 @@ import {
 import { Cog6ToothIcon } from '@heroicons/react/20/solid';
 import { createColumnHelper, type ColumnDef } from '@tanstack/react-table';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import useSWR, { mutate } from 'swr';
 
@@ -30,13 +30,16 @@ import {
   createOpenChatUserConfiguration,
   fetchOpenChatAccessUsers,
   fetchOpenChatConfiguration,
+  fetchOpenChatIdempotentActions,
+  clearOpenChatIdempotentAction,
   testOpenChatConnection,
-  triggerOpenChatGenerateMessageReplies,
+  triggerOpenChatIdempotentAction,
   updateOpenChatConfiguration,
   updateOpenChatUserConfiguration,
   buildOpenChatLoginUrl,
   type OpenChatAccessUser,
   type OpenChatConfiguration,
+  type OpenChatIdempotentAction,
 } from '../../api/openChat';
 import type { MatchingPanelUser } from '../../api/index';
 import {
@@ -44,9 +47,10 @@ import {
   MANAGEMENT_PERMISSION_MANAGE_OPEN_CHAT_ACCESS,
   MANAGEMENT_PERMISSION_OPEN_CHAT_ACCESS,
 } from '../../constants/managementPermissions';
+import { BLUE_40 } from '../../constants';
 import { hasManagementPermission } from '../../helpers/managementPermissions';
 import { censorSecret } from '../../helpers/secrets';
-import { OPEN_CHAT_ROUTE } from '../../router/routes';
+import { OPEN_CHAT_ROUTE, SUPPORT_TASKS_ROUTE } from '../../router/routes';
 import { useGlobalState } from '../../store';
 import UserImage from '../atoms/UserImage';
 import { DataTable } from '../blocks/DataTable';
@@ -99,6 +103,28 @@ const ViewSection = styled.div`
 const HeaderActions = styled.div`
   display: flex;
   justify-content: flex-end;
+`;
+
+const ActionCard = styled.div`
+  border: 1px solid ${({ theme }) => theme.color.border.subtle};
+  border-radius: ${({ theme }) => theme.radius.xxsmall};
+  padding: ${({ theme }) => theme.spacing.small};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xsmall};
+`;
+
+const ActionCardTop = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: ${({ theme }) => theme.spacing.xsmall};
+`;
+
+const ActionMeta = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xxxsmall};
 `;
 
 const GearLink = styled(Link)`
@@ -511,15 +537,32 @@ function OpenChatActionsPanel({
   configuration: OpenChatConfiguration | null;
   automationTargetUserUuid: string;
 }) {
+  const navigate = useNavigate();
   const hasConfiguration = configuration !== null;
   const hasAutomationTarget = automationTargetUserUuid.trim().length > 0;
   const [isTesting, setIsTesting] = useState(false);
   const [testError, setTestError] = useState<string | null>(null);
   const [testSuccess, setTestSuccess] = useState<string | null>(null);
   const [loginError, setLoginError] = useState<string | null>(null);
-  const [isTriggeringAutomation, setIsTriggeringAutomation] = useState(false);
-  const [automationError, setAutomationError] = useState<string | null>(null);
-  const [automationSuccess, setAutomationSuccess] = useState<string | null>(null);
+  const [triggeringActionId, setTriggeringActionId] = useState<string | null>(null);
+  const [clearingActionId, setClearingActionId] = useState<string | null>(null);
+  const [actionErrors, setActionErrors] = useState<Record<string, string>>({});
+  const [actionSuccess, setActionSuccess] = useState<Record<string, string>>({});
+  const {
+    data: idempotentActionsData,
+    error: idempotentActionsError,
+    isLoading: isIdempotentActionsLoading,
+    mutate: refreshIdempotentActions,
+  } = useSWR(
+    hasAutomationTarget
+      ? ['/open-chat/idempotent-actions', automationTargetUserUuid]
+      : null,
+    ([, userUuid]) => fetchOpenChatIdempotentActions(userUuid),
+    {
+      revalidateOnFocus: true,
+    },
+  );
+  const idempotentActions = idempotentActionsData?.results ?? [];
 
   const handleTestConnection = async () => {
     setTestError(null);
@@ -574,30 +617,76 @@ function OpenChatActionsPanel({
     }
   };
 
-  const handleTriggerGenerateMessageReplies = async () => {
-    if (!hasAutomationTarget || isTriggeringAutomation) {
+  const handleOpenFilteredSupportTasks = (action: OpenChatIdempotentAction) => {
+    const query = new URLSearchParams();
+    const suggestedFilters = action.support_task_relation.suggested_filters;
+    for (const status of suggestedFilters.status ?? []) {
+      query.append('status', status);
+    }
+    for (const actionType of suggestedFilters.action_type ?? []) {
+      query.append('action_type', actionType);
+    }
+    navigate(
+      `${SUPPORT_TASKS_ROUTE}${query.toString() ? `?${query.toString()}` : ''}`,
+    );
+  };
+
+  const handleTriggerIdempotentAction = async (action: OpenChatIdempotentAction) => {
+    if (!hasAutomationTarget || triggeringActionId || clearingActionId) {
       return;
     }
 
-    setAutomationError(null);
-    setAutomationSuccess(null);
-    setIsTriggeringAutomation(true);
+    setActionErrors(prev => ({ ...prev, [action.idempotent_action]: '' }));
+    setActionSuccess(prev => ({ ...prev, [action.idempotent_action]: '' }));
+    setTriggeringActionId(action.idempotent_action);
 
     try {
-      const result = await triggerOpenChatGenerateMessageReplies(
+      const result = await triggerOpenChatIdempotentAction(
+        action.trigger_endpoint,
         automationTargetUserUuid,
       );
-      setAutomationSuccess(
-        `Triggered: ${result.trigger} (task ${result.task_id}).`,
-      );
+      setActionSuccess(prev => ({
+        ...prev,
+        [action.idempotent_action]: `Triggered: ${result.trigger} (task ${result.task_id}).`,
+      }));
+      await refreshIdempotentActions();
     } catch (error) {
       const message =
         error instanceof Error
           ? error.message
           : 'Could not trigger automation task.';
-      setAutomationError(message);
+      setActionErrors(prev => ({ ...prev, [action.idempotent_action]: message }));
     } finally {
-      setIsTriggeringAutomation(false);
+      setTriggeringActionId(null);
+    }
+  };
+
+  const handleClearIdempotentActionTasks = async (action: OpenChatIdempotentAction) => {
+    if (!hasAutomationTarget || triggeringActionId || clearingActionId) {
+      return;
+    }
+    setActionErrors(prev => ({ ...prev, [action.idempotent_action]: '' }));
+    setActionSuccess(prev => ({ ...prev, [action.idempotent_action]: '' }));
+    setClearingActionId(action.idempotent_action);
+
+    try {
+      const result = await clearOpenChatIdempotentAction(
+        action.clear_endpoint,
+        automationTargetUserUuid,
+      );
+      setActionSuccess(prev => ({
+        ...prev,
+        [action.idempotent_action]: `Cleared ${result.deleted_support_tasks_count} support tasks.`,
+      }));
+      await refreshIdempotentActions();
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Could not clear related support tasks.';
+      setActionErrors(prev => ({ ...prev, [action.idempotent_action]: message }));
+    } finally {
+      setClearingActionId(null);
     }
   };
 
@@ -617,29 +706,89 @@ function OpenChatActionsPanel({
                   No target user UUID found for automation triggers.
                 </Text>
               )}
-              {automationError && (
+              {isIdempotentActionsLoading ? (
+                <Loading size={LoadingSizes.Small} />
+              ) : idempotentActionsError ? (
                 <StatusMessage type={StatusTypes.Error} visible>
-                  {automationError}
+                  Could not load idempotent actions.
                 </StatusMessage>
+              ) : !idempotentActions.length ? (
+                <Text type={TextTypes.Body4} tag="p">
+                  No idempotent actions available.
+                </Text>
+              ) : (
+                idempotentActions.map(action => (
+                  <ActionCard key={action.idempotent_action}>
+                    <ActionCardTop>
+                      <ActionMeta>
+                        <Text type={TextTypes.Body5} tag="h4">
+                          {action.title}
+                        </Text>
+                        <Text type={TextTypes.Body6} tag="p">
+                          {action.description}
+                        </Text>
+                      </ActionMeta>
+                      <Tag size={TagSizes.small} color={BLUE_40}>
+                        Open tasks: {action.support_task_relation.open_count}
+                      </Tag>
+                    </ActionCardTop>
+                    {actionErrors[action.idempotent_action] && (
+                      <StatusMessage type={StatusTypes.Error} visible>
+                        {actionErrors[action.idempotent_action]}
+                      </StatusMessage>
+                    )}
+                    {actionSuccess[action.idempotent_action] && (
+                      <StatusMessage type={StatusTypes.Success} visible>
+                        {actionSuccess[action.idempotent_action]}
+                      </StatusMessage>
+                    )}
+                    <Actions>
+                      <Button
+                        type="button"
+                        appearance={ButtonAppearance.Primary}
+                        size={ButtonSizes.Small}
+                        disabled={
+                          !hasAutomationTarget ||
+                          Boolean(triggeringActionId || clearingActionId) ||
+                          action.trigger_method !== 'POST'
+                        }
+                        onClick={() => {
+                          void handleTriggerIdempotentAction(action);
+                        }}
+                      >
+                        {triggeringActionId === action.idempotent_action
+                          ? 'Triggering…'
+                          : 'Trigger'}
+                      </Button>
+                      <Button
+                        type="button"
+                        appearance={ButtonAppearance.Secondary}
+                        size={ButtonSizes.Small}
+                        disabled={
+                          !hasAutomationTarget ||
+                          Boolean(triggeringActionId || clearingActionId) ||
+                          action.clear_method !== 'DELETE'
+                        }
+                        onClick={() => {
+                          void handleClearIdempotentActionTasks(action);
+                        }}
+                      >
+                        {clearingActionId === action.idempotent_action
+                          ? 'Clearing…'
+                          : 'Clear tasks'}
+                      </Button>
+                      <Button
+                        type="button"
+                        appearance={ButtonAppearance.Secondary}
+                        size={ButtonSizes.Small}
+                        onClick={() => handleOpenFilteredSupportTasks(action)}
+                      >
+                        Open support tasks
+                      </Button>
+                    </Actions>
+                  </ActionCard>
+                ))
               )}
-              {automationSuccess && (
-                <StatusMessage type={StatusTypes.Success} visible>
-                  {automationSuccess}
-                </StatusMessage>
-              )}
-              <Actions>
-                <Button
-                  type="button"
-                  appearance={ButtonAppearance.Primary}
-                  size={ButtonSizes.Medium}
-                  disabled={!hasAutomationTarget || isTriggeringAutomation}
-                  onClick={handleTriggerGenerateMessageReplies}
-                >
-                  {isTriggeringAutomation
-                    ? 'Triggering…'
-                    : 'Generate message replies'}
-                </Button>
-              </Actions>
             </div>
           ),
         },
