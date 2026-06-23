@@ -31,6 +31,7 @@ import {
   fetchOpenChatAccessUsers,
   fetchOpenChatConfiguration,
   testOpenChatConnection,
+  triggerOpenChatGenerateMessageReplies,
   updateOpenChatConfiguration,
   updateOpenChatUserConfiguration,
   buildOpenChatLoginUrl,
@@ -505,14 +506,20 @@ function OpenChatAccessUsersPanel() {
 
 function OpenChatActionsPanel({
   configuration,
+  automationTargetUserUuid,
 }: {
   configuration: OpenChatConfiguration | null;
+  automationTargetUserUuid: string;
 }) {
   const hasConfiguration = configuration !== null;
+  const hasAutomationTarget = automationTargetUserUuid.trim().length > 0;
   const [isTesting, setIsTesting] = useState(false);
   const [testError, setTestError] = useState<string | null>(null);
   const [testSuccess, setTestSuccess] = useState<string | null>(null);
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [isTriggeringAutomation, setIsTriggeringAutomation] = useState(false);
+  const [automationError, setAutomationError] = useState<string | null>(null);
+  const [automationSuccess, setAutomationSuccess] = useState<string | null>(null);
 
   const handleTestConnection = async () => {
     setTestError(null);
@@ -567,9 +574,75 @@ function OpenChatActionsPanel({
     }
   };
 
+  const handleTriggerGenerateMessageReplies = async () => {
+    if (!hasAutomationTarget || isTriggeringAutomation) {
+      return;
+    }
+
+    setAutomationError(null);
+    setAutomationSuccess(null);
+    setIsTriggeringAutomation(true);
+
+    try {
+      const result = await triggerOpenChatGenerateMessageReplies(
+        automationTargetUserUuid,
+      );
+      setAutomationSuccess(
+        `Triggered: ${result.trigger} (task ${result.task_id}).`,
+      );
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Could not trigger automation task.';
+      setAutomationError(message);
+    } finally {
+      setIsTriggeringAutomation(false);
+    }
+  };
+
   return (
     <Accordion
+      defaultValue="Open-Chat Automation Triggers"
       items={[
+        {
+          header: 'Open-Chat Automation Triggers',
+          content: (
+            <div className="pt-2 flex flex-col gap-4 max-w-lg">
+              <Text type={TextTypes.Body4} tag="p">
+                Trigger Open Chat automation workflows manually.
+              </Text>
+              {!hasAutomationTarget && (
+                <Text type={TextTypes.Body4} tag="p">
+                  No target user UUID found for automation triggers.
+                </Text>
+              )}
+              {automationError && (
+                <StatusMessage type={StatusTypes.Error} visible>
+                  {automationError}
+                </StatusMessage>
+              )}
+              {automationSuccess && (
+                <StatusMessage type={StatusTypes.Success} visible>
+                  {automationSuccess}
+                </StatusMessage>
+              )}
+              <Actions>
+                <Button
+                  type="button"
+                  appearance={ButtonAppearance.Primary}
+                  size={ButtonSizes.Medium}
+                  disabled={!hasAutomationTarget || isTriggeringAutomation}
+                  onClick={handleTriggerGenerateMessageReplies}
+                >
+                  {isTriggeringAutomation
+                    ? 'Triggering…'
+                    : 'Generate message replies'}
+                </Button>
+              </Actions>
+            </div>
+          ),
+        },
         {
           header: 'Test Connection',
           content: (
@@ -645,12 +718,16 @@ function OpenChatActionsPanel({
   );
 }
 
-function OpenChatConfigurationPanel({
+export function OpenChatConfigurationPanel({
   canEdit,
   canManage,
+  embedded = false,
+  automationTargetUserUuid,
 }: {
   canEdit: boolean;
   canManage: boolean;
+  embedded?: boolean;
+  automationTargetUserUuid?: string;
 }) {
   const { data, error, isLoading } = useSWR(
     OPEN_CHAT_CONFIGURATION_ENDPOINT,
@@ -748,11 +825,66 @@ function OpenChatConfigurationPanel({
   const showCreateForm = isCreate && canEdit;
   const showEditForm = !isCreate && isEditing && canEdit;
 
-  const accordionItems = [
-    {
-      header: 'Open chat configuration',
-      content: (
-        <div className="pt-2">
+  const resolvedAutomationTargetUserUuid =
+    automationTargetUserUuid?.trim() ?? data?.matching_user_uuid?.trim() ?? '';
+
+  if (isLoading) {
+    return embedded ? (
+      <Loading size={LoadingSizes.Medium} />
+    ) : (
+      <PageContainer>
+        <Loading size={LoadingSizes.Medium} />
+      </PageContainer>
+    );
+  }
+
+  if (error) {
+    return embedded ? (
+      <StatusMessage type={StatusTypes.Error} visible>
+        Failed to load open chat configuration.
+      </StatusMessage>
+    ) : (
+      <PageContainer>
+        <StatusMessage type={StatusTypes.Error} visible>
+          Failed to load open chat configuration.
+        </StatusMessage>
+      </PageContainer>
+    );
+  }
+
+  const configurationContent = (
+    <>
+      {!embedded && (
+        <PageHeader>
+          {canEdit && (
+            <HeaderActions>
+              <GearLink to={OPEN_CHAT_ROUTE} aria-label="Go to Open Chat">
+                <Cog6ToothIcon className="h-5 w-5" />
+              </GearLink>
+            </HeaderActions>
+          )}
+          <Title>Open Chat Home</Title>
+          <Description>
+            Connect your Open Chat account. Your API key is stored securely and
+            only shown in censored form after saving.
+          </Description>
+        </PageHeader>
+      )}
+
+      {formError && (
+        <StatusMessage type={StatusTypes.Error} visible>
+          {formError}
+        </StatusMessage>
+      )}
+
+      {successMessage && (
+        <StatusMessage type={StatusTypes.Success} visible>
+          {successMessage}
+        </StatusMessage>
+      )}
+
+      <div className="w-full flex flex-col gap-4">
+        <div>
           {showCreateForm || showEditForm ? (
             <Form onSubmit={handleSubmit}>
               <TextInput
@@ -867,82 +999,36 @@ function OpenChatConfigurationPanel({
             </ViewSection>
           )}
         </div>
-      ),
-    },
-    {
-      header: 'Open-chat Actions',
-      content: (
-        <div className="pt-2">
-          <OpenChatActionsPanel configuration={data ?? null} />
+
+        <div>
+          <Text type={TextTypes.Body5} tag="h3">
+            Open-Chat Actions
+          </Text>
+          <OpenChatActionsPanel
+            configuration={data ?? null}
+            automationTargetUserUuid={resolvedAutomationTargetUserUuid}
+          />
         </div>
-      ),
-    },
-  ];
 
-  if (canManage) {
-    accordionItems.push({
-      header: 'Manage Open Chat Access',
-      content: <OpenChatAccessUsersPanel />,
-    });
-  }
-
-  if (isLoading) {
-    return (
-      <PageContainer>
-        <Loading size={LoadingSizes.Medium} />
-      </PageContainer>
-    );
-  }
-
-  if (error) {
-    return (
-      <PageContainer>
-        <StatusMessage type={StatusTypes.Error} visible>
-          Failed to load open chat configuration.
-        </StatusMessage>
-      </PageContainer>
-    );
-  }
-
-  return (
-    <PageContainer>
-      <PageHeader>
-        {canEdit && (
-          <HeaderActions>
-            <GearLink to={OPEN_CHAT_ROUTE} aria-label="Go to Open Chat">
-              <Cog6ToothIcon className="h-5 w-5" />
-            </GearLink>
-          </HeaderActions>
+        {canManage && (
+          <Accordion
+            items={[
+              {
+                header: 'Manage Open Chat Access',
+                content: <OpenChatAccessUsersPanel />,
+              },
+            ]}
+          />
         )}
-        <Title>Open Chat Access</Title>
-        <Description>
-          Connect your Open Chat account. Your API key is stored securely and
-          only shown in censored form after saving.
-        </Description>
-      </PageHeader>
-
-      {formError && (
-        <StatusMessage type={StatusTypes.Error} visible>
-          {formError}
-        </StatusMessage>
-      )}
-
-      {successMessage && (
-        <StatusMessage type={StatusTypes.Success} visible>
-          {successMessage}
-        </StatusMessage>
-      )}
-
-      <div className="w-full flex flex-col gap-4">
-        <Accordion
-          defaultValue={
-            showCreateForm ? 'Open chat configuration' : undefined
-          }
-          items={accordionItems}
-        />
       </div>
-    </PageContainer>
+    </>
   );
+
+  if (embedded) {
+    return configurationContent;
+  }
+
+  return <PageContainer>{configurationContent}</PageContainer>;
 }
 
 const OpenChatAccess = () => {

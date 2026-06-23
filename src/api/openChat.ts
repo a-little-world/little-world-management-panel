@@ -11,6 +11,8 @@ export const OPEN_CHAT_ACCESS_USERS_ENDPOINT =
 export const OPEN_CHAT_CHATS_ENDPOINT = '/api/chats/';
 export const OPEN_CHAT_INTERACTIONS_ENDPOINT =
   '/api/matching/open-chat/interactions/';
+export const OPEN_CHAT_AUTOMATION_GENERATE_MESSAGE_REPLIES_ENDPOINT =
+  '/api/matching/open-chat/automation-triggers/generate-message-replies/';
 
 export const DEFAULT_OPEN_CHAT_HOST = 'http://host.docker.internal:1984';
 
@@ -142,6 +144,12 @@ type OpenChatInteractionsResponse = {
 };
 
 export type OpenChatInteractionDetail = OpenChatInteraction;
+export type OpenChatAutomationTriggerResult = {
+  trigger: string;
+  task_id: string;
+  target_user_uuid: string;
+  detail: string;
+};
 
 export async function fetchOpenChatConfiguration(): Promise<OpenChatConfiguration | null> {
   try {
@@ -224,6 +232,19 @@ export function fetchOpenChatInteractionDetail(
   });
   return apiFetch<OpenChatInteractionDetail>(
     `${OPEN_CHAT_INTERACTIONS_ENDPOINT}${interactionUuid}/?${query.toString()}`,
+  );
+}
+
+export function triggerOpenChatGenerateMessageReplies(userUuid: string) {
+  const query = new URLSearchParams({
+    user_uuid: userUuid,
+  });
+  return apiFetch<OpenChatAutomationTriggerResult>(
+    `${OPEN_CHAT_AUTOMATION_GENERATE_MESSAGE_REPLIES_ENDPOINT}?${query.toString()}`,
+    {
+      method: 'POST',
+      body: {},
+    },
   );
 }
 

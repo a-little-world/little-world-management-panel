@@ -35,6 +35,7 @@ import {
   type OpenChatInteraction,
 } from '../../api/openChat';
 import {
+  MANAGEMENT_PERMISSION_EDIT_OPEN_CHAT_CONFIGURATION,
   MANAGEMENT_PERMISSION_MANAGE_OPEN_CHAT_ACCESS,
   MANAGEMENT_PERMISSION_OPEN_CHAT_ACCESS,
 } from '../../constants/managementPermissions';
@@ -49,6 +50,7 @@ import {
   Description,
   PageContainer,
 } from '../atoms/PageLayout';
+import { OpenChatConfigurationPanel } from './OpenChatAccess';
 
 const Workspace = styled.div`
   display: grid;
@@ -307,8 +309,13 @@ const OPEN_CHAT_MESSAGES_REFRESH_INTERVAL_MS = 1500;
 const OPEN_CHAT_QUERY_PARAM_TAB = 'tab';
 const OPEN_CHAT_TAB_CHAT = 'chat';
 const OPEN_CHAT_TAB_INTERACTIONS = 'interactions';
+const OPEN_CHAT_TAB_HOME = 'home';
+const LEGACY_OPEN_CHAT_TAB_CONFIGURATION = 'configuration';
 
-type OpenChatTab = typeof OPEN_CHAT_TAB_CHAT | typeof OPEN_CHAT_TAB_INTERACTIONS;
+type OpenChatTab =
+  | typeof OPEN_CHAT_TAB_CHAT
+  | typeof OPEN_CHAT_TAB_INTERACTIONS
+  | typeof OPEN_CHAT_TAB_HOME;
 
 function looksLikeUuid(value: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
@@ -395,7 +402,10 @@ const OpenChatChat = () => {
   const selectedTab: OpenChatTab =
     requestedTab === OPEN_CHAT_TAB_CHAT
       ? OPEN_CHAT_TAB_CHAT
-      : OPEN_CHAT_TAB_INTERACTIONS;
+      : requestedTab === OPEN_CHAT_TAB_HOME ||
+          requestedTab === LEGACY_OPEN_CHAT_TAB_CONFIGURATION
+        ? OPEN_CHAT_TAB_HOME
+        : OPEN_CHAT_TAB_INTERACTIONS;
 
   const canAccess = hasManagementPermission(
     currentUser,
@@ -404,6 +414,10 @@ const OpenChatChat = () => {
   const canManageOpenChatAccess = hasManagementPermission(
     currentUser,
     MANAGEMENT_PERMISSION_MANAGE_OPEN_CHAT_ACCESS,
+  );
+  const canEditOpenChatConfiguration = hasManagementPermission(
+    currentUser,
+    MANAGEMENT_PERMISSION_EDIT_OPEN_CHAT_CONFIGURATION,
   );
 
   const {
@@ -507,7 +521,9 @@ const OpenChatChat = () => {
   useEffect(() => {
     if (
       requestedTab === OPEN_CHAT_TAB_CHAT ||
-      requestedTab === OPEN_CHAT_TAB_INTERACTIONS
+      requestedTab === OPEN_CHAT_TAB_INTERACTIONS ||
+      requestedTab === OPEN_CHAT_TAB_HOME ||
+      requestedTab === LEGACY_OPEN_CHAT_TAB_CONFIGURATION
     ) {
       return;
     }
@@ -646,7 +662,10 @@ const OpenChatChat = () => {
     const nextSearchParams = new URLSearchParams(searchParams);
     nextSearchParams.set(OPEN_CHAT_QUERY_PARAM_TAB, tab);
     const serializedSearchParams = nextSearchParams.toString();
-    if (tab === OPEN_CHAT_TAB_INTERACTIONS) {
+    if (
+      tab === OPEN_CHAT_TAB_INTERACTIONS ||
+      tab === OPEN_CHAT_TAB_HOME
+    ) {
       navigate(
         `${OPEN_CHAT_ROUTE}${serializedSearchParams ? `?${serializedSearchParams}` : ''}`,
       );
@@ -821,6 +840,13 @@ const OpenChatChat = () => {
             <ListTabs>
               <ListTabButton
                 type="button"
+                $active={selectedTab === OPEN_CHAT_TAB_INTERACTIONS}
+                onClick={() => handleSelectTab(OPEN_CHAT_TAB_INTERACTIONS)}
+              >
+                interactions
+              </ListTabButton>
+              <ListTabButton
+                type="button"
                 $active={selectedTab === OPEN_CHAT_TAB_CHAT}
                 onClick={() => handleSelectTab(OPEN_CHAT_TAB_CHAT)}
               >
@@ -828,10 +854,10 @@ const OpenChatChat = () => {
               </ListTabButton>
               <ListTabButton
                 type="button"
-                $active={selectedTab === OPEN_CHAT_TAB_INTERACTIONS}
-                onClick={() => handleSelectTab(OPEN_CHAT_TAB_INTERACTIONS)}
+                $active={selectedTab === OPEN_CHAT_TAB_HOME}
+                onClick={() => handleSelectTab(OPEN_CHAT_TAB_HOME)}
               >
-                interactions
+                home
               </ListTabButton>
             </ListTabs>
             {createChatError && (
@@ -860,7 +886,9 @@ const OpenChatChat = () => {
             {(canManageOpenChatAccess && isUsersLoading) ||
             (selectedTab === OPEN_CHAT_TAB_CHAT
               ? isChatsLoading
-              : isInteractionsLoading) ? (
+              : selectedTab === OPEN_CHAT_TAB_INTERACTIONS
+                ? isInteractionsLoading
+                : false) ? (
               <Loading size={LoadingSizes.Small} />
             ) : selectedTab === OPEN_CHAT_TAB_CHAT ? (
               chats.length ? (
@@ -901,7 +929,7 @@ const OpenChatChat = () => {
                   No chats yet. Create one first.
                 </Text>
               )
-            ) : (
+            ) : selectedTab === OPEN_CHAT_TAB_INTERACTIONS ? (
               interactions.map(interaction => (
                 <ChatListButton
                   key={interaction.interaction_id}
@@ -919,7 +947,11 @@ const OpenChatChat = () => {
                   </ListSecondaryText>
                 </ChatListButton>
               ))
-            )}
+            ) : selectedTab === OPEN_CHAT_TAB_HOME ? (
+              <Text type={TextTypes.Body6} tag="p">
+                Home settings are shown on the right.
+              </Text>
+            ) : null}
             {selectedTab === OPEN_CHAT_TAB_INTERACTIONS && !interactions.length && (
               <Text type={TextTypes.Body6} tag="p">
                 No interactions found.
@@ -934,7 +966,7 @@ const OpenChatChat = () => {
               <Text type={TextTypes.Body5} tag="h2">
                 Messages
               </Text>
-            ) : (
+            ) : selectedTab === OPEN_CHAT_TAB_INTERACTIONS ? (
               <InteractionHeaderRow>
                 <InteractionHeaderMeta>
                   <Text type={TextTypes.Body5} tag="h2">
@@ -963,6 +995,10 @@ const OpenChatChat = () => {
                   </InteractionExternalLink>
                 )}
               </InteractionHeaderRow>
+            ) : (
+              <Text type={TextTypes.Body5} tag="h2">
+                Home
+              </Text>
             )}
             {selectedTab === OPEN_CHAT_TAB_CHAT &&
               (selectedChatUuid ? (
@@ -1049,7 +1085,7 @@ const OpenChatChat = () => {
                 )}
               </MessageList>
             </PanelContent>
-          ) : (
+          ) : selectedTab === OPEN_CHAT_TAB_INTERACTIONS ? (
             <InteractionPanelContent>
               {isInteractionDetailLoading ? (
                 <Loading size={LoadingSizes.Small} />
@@ -1070,6 +1106,15 @@ const OpenChatChat = () => {
                 </Text>
               )}
             </InteractionPanelContent>
+          ) : (
+            <PanelContent>
+              <OpenChatConfigurationPanel
+                canEdit={canEditOpenChatConfiguration}
+                canManage={canManageOpenChatAccess}
+                embedded
+                automationTargetUserUuid={openChatUserUuid}
+              />
+            </PanelContent>
           )}
           {selectedTab === OPEN_CHAT_TAB_CHAT && (
             <>
