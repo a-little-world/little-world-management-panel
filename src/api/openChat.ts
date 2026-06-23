@@ -9,6 +9,8 @@ export const OPEN_CHAT_TEST_CONNECTION_ENDPOINT =
 export const OPEN_CHAT_ACCESS_USERS_ENDPOINT =
   '/api/matching/open-chat-access-users/';
 export const OPEN_CHAT_CHATS_ENDPOINT = '/api/chats/';
+export const OPEN_CHAT_INTERACTIONS_ENDPOINT =
+  '/api/matching/open-chat/interactions/';
 
 export const DEFAULT_OPEN_CHAT_HOST = 'http://host.docker.internal:1984';
 
@@ -125,6 +127,20 @@ type OpenChatMessagesResponse = {
   results: OpenChatMessage[];
 };
 
+export type OpenChatInteraction = {
+  interaction_id: string;
+  title?: string | null;
+  created?: string | null;
+  updated?: string | null;
+  status?: string | null;
+  shared_interaction_url?: string | null;
+  raw?: unknown;
+};
+
+type OpenChatInteractionsResponse = {
+  results: OpenChatInteraction[];
+};
+
 export async function fetchOpenChatConfiguration(): Promise<OpenChatConfiguration | null> {
   try {
     return await apiFetch<OpenChatConfiguration>(
@@ -188,10 +204,34 @@ export function fetchOpenChatMessages(chatUuid: string) {
   );
 }
 
+export function fetchOpenChatInteractions(userUuid: string) {
+  const query = new URLSearchParams({
+    user_uuid: userUuid,
+  });
+  return apiFetch<OpenChatInteractionsResponse>(
+    `${OPEN_CHAT_INTERACTIONS_ENDPOINT}?${query.toString()}`,
+  );
+}
+
 export function sendOpenChatMessage(chatUuid: string, text: string) {
   return apiFetch<OpenChatMessage>(`/api/messages/${chatUuid}/send/`, {
     method: 'POST',
     body: { text },
+  });
+}
+
+export function openChatDeleteChatEndpoint(chatUuid: string) {
+  return `/api/matching/open-chat/chats/${chatUuid}/`;
+}
+
+export type OpenChatDeleteChatResult = {
+  chat_uuid: string;
+  detail: string;
+};
+
+export function deleteOpenChatChat(chatUuid: string) {
+  return apiFetch<OpenChatDeleteChatResult>(openChatDeleteChatEndpoint(chatUuid), {
+    method: 'DELETE',
   });
 }
 
