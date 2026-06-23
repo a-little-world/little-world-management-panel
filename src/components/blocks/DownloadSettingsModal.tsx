@@ -8,7 +8,6 @@ import {
   CardHeader,
   CardSizes,
   Checkbox,
-  Dropdown,
   Modal,
   Text,
   TextTypes,
@@ -95,6 +94,20 @@ const FormatRow = styled.div`
   margin-bottom: ${({ theme }) => theme.spacing.xxsmall};
 `;
 
+const FormatLabel = styled(Text).attrs({
+  type: TextTypes.Body7,
+  tag: 'div' as const,
+})`
+  color: ${({ theme }) => theme.color.text.secondary};
+  margin-bottom: ${({ theme }) => theme.spacing.xxxsmall};
+`;
+
+const FormatOptionsRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.medium};
+`;
+
 const formatHeaderLabel = (header: string) =>
   header
     .split('.')
@@ -137,21 +150,25 @@ export function DownloadSettingsModal({
         <CardHeader>{title}</CardHeader>
         <Description>{description}</Description>
         <FormatRow>
-          <Dropdown
-            id="download_settings_format"
-            label="Download format"
-            value={selectedFormat}
-            options={[
-              { value: 'csv', label: 'CSV' },
-              { value: 'json', label: 'JSON' },
-            ]}
-            onValueChange={(value: string) =>
-              setSelectedFormat(value as ExportDownloadFormat)
-            }
-            placeholder="Select format"
-            cannotError
-            maxWidth="180px"
-          />
+          <FormatLabel>Download format</FormatLabel>
+          <FormatOptionsRow>
+            <Checkbox
+              id="download-format-csv"
+              label="CSV"
+              checked={selectedFormat === 'csv'}
+              onCheckedChange={checked =>
+                setSelectedFormat(checked ? 'csv' : 'json')
+              }
+            />
+            <Checkbox
+              id="download-format-json"
+              label="JSON"
+              checked={selectedFormat === 'json'}
+              onCheckedChange={checked =>
+                setSelectedFormat(checked ? 'json' : 'csv')
+              }
+            />
+          </FormatOptionsRow>
         </FormatRow>
 
         <ControlsRow>

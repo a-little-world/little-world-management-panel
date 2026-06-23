@@ -53,7 +53,7 @@ const StatusCard = styled.div`
   border: 1px solid ${({ theme }) => theme.color.border.subtle};
   border-radius: ${({ theme }) => theme.radius.xxsmall};
   padding: ${({ theme }) => theme.spacing.small};
-  background: ${({ theme }) => theme.color.surface.minimal};
+  background: ${({ theme }) => theme.color.surface.subtle};
 `;
 
 const StatusHeader = styled.div`
@@ -126,7 +126,16 @@ const toCsvValue = (value: unknown) => {
 
   const normalizedValue =
     typeof value === 'object' ? JSON.stringify(value) : String(value);
-  return `"${normalizedValue.replace(/"/g, '""')}"`;
+
+  if (
+    normalizedValue.includes(',') ||
+    normalizedValue.includes('"') ||
+    normalizedValue.includes('\n')
+  ) {
+    return `"${normalizedValue.replace(/"/g, '""')}"`;
+  }
+
+  return normalizedValue;
 };
 
 const triggerBrowserDownload = (url: string, fileName: string) => {
