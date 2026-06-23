@@ -25,7 +25,7 @@ import {
 import { BLUE_10, BLUE_40, ORANGE_40 } from '../../constants';
 import { formatTimeDistance } from '../../helpers/date';
 import { useTaskPriorityList } from '../../hooks/useTaskPriorities';
-import { SUPPORT_TASKS_ROUTE } from '../../router/routes';
+import { SUPPORT_TASKS_ROUTE, getOpenChatChatRoute } from '../../router/routes';
 import { dataFetcher } from '../../store';
 import { Card, CardContent, CardHeader, CardTitle } from '../atoms/Card';
 import UserImage from '../atoms/UserImage';
@@ -197,6 +197,59 @@ const ProfileLink = styled(Link)`
   }
 `;
 
+const ContextGroup = styled(Card)`
+  border: 1px solid ${({ theme }) => theme.color.border.selected};
+`;
+
+const ContextGroupHeader = styled(CardHeader)`
+  border-bottom: 1px solid ${({ theme }) => theme.color.border.subtle};
+`;
+
+const ContextGroupBody = styled(CardContent)`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.small};
+`;
+
+const ContextLabel = styled(Text).attrs({
+  type: TextTypes.Body7,
+  tag: 'span' as const,
+})`
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: ${({ theme }) => theme.color.text.tertiary};
+  font-weight: 600;
+`;
+
+const InteractionLinkRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${({ theme }) => theme.spacing.xsmall};
+`;
+
+const InternalInteractionLink = styled(Link)`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid ${({ theme }) => theme.color.border.subtle};
+  border-radius: ${({ theme }) => theme.radius.xxsmall};
+  padding: ${({ theme }) => theme.spacing.xxsmall}
+    ${({ theme }) => theme.spacing.xsmall};
+  background: ${({ theme }) => theme.color.surface.secondary};
+  color: ${({ theme }) => theme.color.text.link};
+  text-decoration: none;
+
+  &:hover {
+    background: ${({ theme }) => theme.color.surface.primary};
+    text-decoration: underline;
+  }
+`;
+
+function getStaticString(staticParameters: Record<string, unknown>, key: string): string | null {
+  const value = staticParameters[key];
+  return typeof value === 'string' && value.trim() ? value.trim() : null;
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function SupportTaskDetail() {
@@ -282,6 +335,16 @@ export default function SupportTaskDetail() {
     : UNASSIGNED;
 
   const action = task.action;
+  const actionStaticParameters = action?.static_parameters ?? {};
+  const isSupportReplyAction = action?.action_type === 'support_reply';
+  const interactionId = getStaticString(actionStaticParameters, 'interaction_id');
+  const sharedInteractionUrl = getStaticString(
+    actionStaticParameters,
+    'shared_interaction_url',
+  );
+  const interactionInternalRoute = interactionId
+    ? `${getOpenChatChatRoute(interactionId)}?tab=interactions`
+    : null;
 
   const patch = async (
     data: Parameters<typeof patchSupportTask>[1],
@@ -447,29 +510,81 @@ export default function SupportTaskDetail() {
                 )}
               </Card>
             )}
-            {relatedUserDetail && (
-              <Card center={false}>
-                <CollapsibleHeader onClick={() => setChatOpen(o => !o)}>
-                  <CardTitle>Support Chat</CardTitle>
-                  {chatOpen ? (
-                    <ChevronUpIcon size={16} />
-                  ) : (
-                    <ChevronDownIcon size={16} />
+            {isSupportReplyAction ? (
+              <ContextGroup center={false}>
+                <ContextGroupHeader>
+                  <CardTitle>Support Reply Context</CardTitle>
+                </ContextGroupHeader>
+                <ContextGroupBody>
+                  {action && (
+                    <>
+                      <ContextLabel>Action</ContextLabel>
+                      <SupportTaskActionCard action={action} taskId={id} onResolved={mutate} />
+                    </>
                   )}
-                </CollapsibleHeader>
-                {chatOpen && (
-                  <ChatWrapper>
-                    <UserChat user={relatedUserDetail} />
-                  </ChatWrapper>
+                  {interactionInternalRoute && (
+                    <>
+                      <ContextLabel>Related Open Chat Interaction</ContextLabel>
+                      <Card center={false}>
+                        <CardContent>
+                          <InteractionLinkRow>
+                            <InternalInteractionLink to={interactionInternalRoute}>
+                              Open interaction in Open Chat
+                            </InternalInteractionLink>
+                          </InteractionLinkRow>
+                        </CardContent>
+                      </Card>
+                    </>
+                  )}
+                  {relatedUserDetail && (
+                    <>
+                      <ContextLabel>Support Chat Preview</ContextLabel>
+                      <Card center={false}>
+                        <CollapsibleHeader onClick={() => setChatOpen(o => !o)}>
+                          <CardTitle>Support Chat</CardTitle>
+                          {chatOpen ? (
+                            <ChevronUpIcon size={16} />
+                          ) : (
+                            <ChevronDownIcon size={16} />
+                          )}
+                        </CollapsibleHeader>
+                        {chatOpen && (
+                          <ChatWrapper>
+                            <UserChat user={relatedUserDetail} />
+                          </ChatWrapper>
+                        )}
+                      </Card>
+                    </>
+                  )}
+                </ContextGroupBody>
+              </ContextGroup>
+            ) : (
+              <>
+                {relatedUserDetail && (
+                  <Card center={false}>
+                    <CollapsibleHeader onClick={() => setChatOpen(o => !o)}>
+                      <CardTitle>Support Chat</CardTitle>
+                      {chatOpen ? (
+                        <ChevronUpIcon size={16} />
+                      ) : (
+                        <ChevronDownIcon size={16} />
+                      )}
+                    </CollapsibleHeader>
+                    {chatOpen && (
+                      <ChatWrapper>
+                        <UserChat user={relatedUserDetail} />
+                      </ChatWrapper>
+                    )}
+                  </Card>
                 )}
-              </Card>
-            )}
-            {action && (
-              <SupportTaskActionCard
-                action={action}
-                taskId={id}
-                onResolved={mutate}
-              />
+                {action && (
+                  <SupportTaskActionCard
+                    action={action}
+                    taskId={id}
+                    onResolved={mutate}
+                  />
+                )}
+              </>
             )}
           </MainColumn>
 

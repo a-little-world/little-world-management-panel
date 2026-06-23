@@ -1,7 +1,10 @@
 import {
   Button,
   ButtonAppearance,
+  ButtonSizes,
   Tag,
+  TagAppearance,
+  TagSizes,
   Text,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
@@ -14,32 +17,60 @@ import {
   SupportTaskAction,
   cancelAction,
   executeAction,
+  getActionTypeConfig,
 } from '../../api/supportTasks';
 import { ORANGE_40 } from '../../constants';
-import { Card, CardContent, CardFooter, CardHeader } from '../atoms/Card';
+import { Card, CardContent, CardHeader } from '../atoms/Card';
 import ChangeCountryOfResidenceAction from './supportTaskActions/ChangeCountryOfResidenceAction';
 
 // ─── Styled ───────────────────────────────────────────────────────────────────
 
+const ActionCard = styled(Card)`
+  border: 1px solid ${({ theme }) => theme.color.border.subtle};
+`;
+
+const HeaderRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.xsmall};
+`;
+
+const HeaderMeta = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xsmall};
+`;
+
+const HeaderActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xxxsmall};
+`;
+
 const HeaderTitle = styled.h3`
   font-family: 'Work Sans', system-ui, sans-serif;
   font-weight: 700;
-  font-size: 20px;
+  font-size: 18px;
   color: ${ORANGE_40};
-  margin: 0 0 2px;
+  margin: 0;
 `;
 
-const FooterActions = styled.div`
-  display: flex;
-  gap: ${({ theme }) => theme.spacing.xsmall};
-  flex-shrink: 0;
+const CompactHeader = styled(CardHeader)`
+  padding: ${({ theme }) => theme.spacing.small};
 `;
 
-const StyledFooter = styled(CardFooter)`
-  padding: ${({ theme }) => theme.spacing.medium};
+const CompactContent = styled(CardContent)`
+  padding: ${({ theme }) => theme.spacing.small};
   border-top: 1px solid ${({ theme }) => theme.color.border.subtle};
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.small};
+`;
+
+const ErrorText = styled(Text).attrs({
+  type: TextTypes.Body6,
+  tag: 'p' as const,
+})`
+  margin: 0;
+  color: ${({ theme }) => theme.color.text.error};
 `;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -66,6 +97,7 @@ export default function SupportTaskActionCard({
   const [loading, setLoading] = useState<'execute' | 'cancel' | null>(null);
   const [error, setError] = useState<string | null>(null);
   const isOpen = action.status === 'OPEN';
+  const actionTypeCfg = getActionTypeConfig(action.action_type);
 
   const handle = async (type: 'execute' | 'cancel') => {
     setLoading(type);
@@ -97,40 +129,51 @@ export default function SupportTaskActionCard({
         return null;
     }
   }
+  const customContent = renderContent();
 
   return (
-    <Card center={false}>
-      <CardHeader>
-        <HeaderTitle>Action - {action.action_type}</HeaderTitle>
-        <Tag>{STATUS_SUBTITLE[action.status]}</Tag>
-      </CardHeader>
-
-      <CardContent>{renderContent()}</CardContent>
-
-      <StyledFooter>
-        {error && (
-          <Text type={TextTypes.Body6} tag="span">
-            {error}
-          </Text>
-        )}
-        {isOpen && (
-          <FooterActions>
-            <Button
-              appearance={ButtonAppearance.Secondary}
-              disabled={loading !== null}
-              onClick={() => handle('cancel')}
+    <ActionCard center={false}>
+      <CompactHeader>
+        <HeaderRow>
+          <HeaderMeta>
+            <HeaderTitle>Action - {action.action_type}</HeaderTitle>
+            <Tag
+              size={TagSizes.small}
+              appearance={TagAppearance.outline}
+              color={actionTypeCfg.color}
             >
-              Cancel
-            </Button>
-            <Button
-              disabled={loading !== null}
-              onClick={() => handle('execute')}
-            >
-              Execute action <CheckIcon size={14} />
-            </Button>
-          </FooterActions>
-        )}
-      </StyledFooter>
-    </Card>
+              {actionTypeCfg.label}
+            </Tag>
+            <Tag size={TagSizes.small}>{STATUS_SUBTITLE[action.status]}</Tag>
+          </HeaderMeta>
+          {isOpen && (
+            <HeaderActions>
+              <Button
+                appearance={ButtonAppearance.Secondary}
+                size={ButtonSizes.Small}
+                disabled={loading !== null}
+                onClick={() => handle('cancel')}
+              >
+                Cancel
+              </Button>
+              <Button
+                size={ButtonSizes.Small}
+                disabled={loading !== null}
+                onClick={() => handle('execute')}
+              >
+                Execute <CheckIcon size={14} />
+              </Button>
+            </HeaderActions>
+          )}
+        </HeaderRow>
+      </CompactHeader>
+
+      {(error || customContent) && (
+        <CompactContent>
+          {error && <ErrorText>{error}</ErrorText>}
+          {customContent}
+        </CompactContent>
+      )}
+    </ActionCard>
   );
 }
