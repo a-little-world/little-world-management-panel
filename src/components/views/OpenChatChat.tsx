@@ -11,6 +11,7 @@ import {
   TrashIcon,
 } from '@a-little-world/little-world-design-system';
 import React, { useEffect, useMemo, useState } from 'react';
+import { ExternalLink } from 'lucide-react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import useSWR from 'swr';
@@ -30,7 +31,6 @@ import {
   normalizeOpenChatBrowserHost,
   normalizeOpenChatBrowserUrl,
   sendOpenChatMessage,
-  type OpenChatAccessUser,
   type OpenChatInteractionDetail,
   type OpenChatInteraction,
 } from '../../api/openChat';
@@ -84,6 +84,11 @@ const PanelContent = styled.div`
   min-height: 0;
 `;
 
+const InteractionPanelContent = styled(PanelContent)`
+  padding: 0;
+  overflow: hidden;
+`;
+
 const ListTabs = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.spacing.xxxsmall};
@@ -116,6 +121,9 @@ const ChatListButton = styled.button<{ $active: boolean }>`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.xxxsmall};
+  min-height: 5.5rem;
+  max-height: 5.5rem;
+  overflow: hidden;
 `;
 
 const ChatListItemRow = styled.div`
@@ -146,22 +154,84 @@ const MessageList = styled.div`
   gap: ${({ theme }) => theme.spacing.xsmall};
 `;
 
-const InteractionDetails = styled.div`
+const InteractionHeaderRow = styled.div`
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
   gap: ${({ theme }) => theme.spacing.xsmall};
 `;
 
+const InteractionHeaderMeta = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xxxsmall};
+`;
+
 const InteractionFrame = styled.iframe`
-  border: 1px solid ${({ theme }) => theme.color.border.subtle};
-  border-radius: ${({ theme }) => theme.radius.xxsmall};
+  border: 0;
+  border-radius: 0;
   width: 100%;
-  min-height: 28rem;
+  height: 100%;
+  min-height: 70vh;
   background: ${({ theme }) => theme.color.surface.primary};
 `;
 
-const MessageBubble = styled.div<{ $self: boolean }>`
-  max-width: 80%;
+const InteractionExternalLink = styled.a`
+  color: ${({ theme }) => theme.color.text.link};
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const TargetUserBadge = styled.div`
+  border: 1px solid ${({ theme }) => theme.color.border.subtle};
+  border-radius: ${({ theme }) => theme.radius.xxsmall};
+  padding: ${({ theme }) => theme.spacing.xxsmall};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xxxsmall};
+`;
+
+const TargetUserLabel = styled(Text).attrs({
+  type: TextTypes.Body7,
+  tag: 'span' as const,
+})`
+  color: ${({ theme }) => theme.color.text.secondary};
+`;
+
+const TargetUserValue = styled(Text).attrs({
+  type: TextTypes.Body7,
+  tag: 'span' as const,
+})`
+  color: ${({ theme }) => theme.color.text.primary};
+  word-break: break-all;
+`;
+
+const ListPrimaryText = styled(Text).attrs({
+  type: TextTypes.Body6,
+  tag: 'span' as const,
+})`
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const ListSecondaryText = styled(Text).attrs({
+  type: TextTypes.Body7,
+  tag: 'span' as const,
+})`
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+`;
+
+const MessageBubble = styled.div<{ $self: boolean; $interaction?: boolean }>`
+  width: ${({ $interaction }) => ($interaction ? 'calc(100% - 0.5rem)' : 'auto')};
+  max-width: ${({ $interaction }) =>
+    $interaction ? 'calc(100% - 0.5rem)' : '80%'};
   align-self: ${({ $self }) => ($self ? 'flex-end' : 'flex-start')};
   border: 1px solid ${({ theme }) => theme.color.border.subtle};
   border-radius: ${({ theme }) => theme.radius.xxsmall};
@@ -176,26 +246,35 @@ const MessageBubble = styled.div<{ $self: boolean }>`
 const InteractionWidget = styled.div`
   border: 1px solid ${({ theme }) => theme.color.border.selected};
   border-radius: ${({ theme }) => theme.radius.xxsmall};
-  padding: ${({ theme }) => theme.spacing.xsmall};
+  padding: ${({ theme }) => theme.spacing.xxxsmall};
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.xxxsmall};
   background: ${({ theme }) => theme.color.surface.primary};
 `;
 
-const InteractionLink = styled.a`
-  color: ${({ theme }) => theme.color.text.link};
-  text-decoration: underline;
-  word-break: break-all;
+const InteractionWidgetHeader = styled.div`
+  display: flex;
+  justify-content: flex-end;
 `;
 
-const PoweredBy = styled(Text).attrs({ type: TextTypes.Body7, tag: 'p' as const })`
-  color: ${({ theme }) => theme.color.text.secondary};
+const InteractionWidgetNavButton = styled.button`
+  border: 0;
+  background: transparent;
+  color: ${({ theme }) => theme.color.text.link};
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
 `;
 
-const PoweredByLink = styled.a`
-  color: ${({ theme }) => theme.color.text.link};
-  text-decoration: underline;
+const InteractionWidgetFrame = styled.iframe`
+  border: 0;
+  border-radius: ${({ theme }) => theme.radius.xxxsmall};
+  width: 100%;
+  height: 9rem;
+  background: ${({ theme }) => theme.color.surface.primary};
 `;
 
 const Composer = styled.form`
@@ -217,15 +296,6 @@ const ComposerInput = styled.textarea`
   background: ${({ theme }) => theme.color.surface.primary};
 `;
 
-function fullName(user?: OpenChatAccessUser): string {
-  if (!user) {
-    return 'Unknown user';
-  }
-  const firstName = user.profile?.first_name?.trim() ?? '';
-  const secondName = user.profile?.second_name?.trim() ?? '';
-  return [firstName, secondName].filter(Boolean).join(' ') || user.email;
-}
-
 type OpenChatInteractionPayload = {
   type: 'open_chat_interaction';
   title?: string;
@@ -233,14 +303,18 @@ type OpenChatInteractionPayload = {
   shared_interaction_url?: string | null;
 };
 
-const DEFAULT_OPEN_CHAT_INTERACTION_TITLE =
-  'Open Chat interaction';
 const OPEN_CHAT_MESSAGES_REFRESH_INTERVAL_MS = 1500;
 const OPEN_CHAT_QUERY_PARAM_TAB = 'tab';
 const OPEN_CHAT_TAB_CHAT = 'chat';
 const OPEN_CHAT_TAB_INTERACTIONS = 'interactions';
 
 type OpenChatTab = typeof OPEN_CHAT_TAB_CHAT | typeof OPEN_CHAT_TAB_INTERACTIONS;
+
+function looksLikeUuid(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    value,
+  );
+}
 
 function formatDateTime(value?: string | null): string | null {
   if (!value) {
@@ -251,6 +325,38 @@ function formatDateTime(value?: string | null): string | null {
     return value;
   }
   return parsed.toLocaleString();
+}
+
+function withOpenChatLightTheme(rawUrl: string): string {
+  const url = new URL(rawUrl);
+  url.searchParams.set('theme', 'light');
+  return url.toString();
+}
+
+function extractOpenChatInteractionUuid(rawUrl: string): string | null {
+  try {
+    const url = new URL(rawUrl);
+    const match = url.pathname.match(/\/interaction\/([^/]+)/);
+    return match?.[1] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function buildNewestResponseUrl(rawUrl: string): string | null {
+  try {
+    const normalized = normalizeOpenChatBrowserUrl(rawUrl);
+    const normalizedUrl = new URL(normalized);
+    const interactionUuid = extractOpenChatInteractionUuid(normalized);
+    if (!interactionUuid) {
+      return null;
+    }
+    return withOpenChatLightTheme(
+      `${normalizedUrl.origin}/interaction/${interactionUuid}/newest_response`,
+    );
+  } catch {
+    return null;
+  }
 }
 
 function parseOpenChatInteractionPayload(
@@ -341,7 +447,8 @@ const OpenChatChat = () => {
   );
 
   const chats = chatsData?.results ?? [];
-  const selectedChatUuid = routeChatUuid ?? null;
+  const selectedChatUuid =
+    selectedTab === OPEN_CHAT_TAB_CHAT ? routeChatUuid ?? null : null;
   const [createChatError, setCreateChatError] = useState<string | null>(null);
   const [deleteChatError, setDeleteChatError] = useState<string | null>(null);
   const [isCreatingChat, setIsCreatingChat] = useState(false);
@@ -358,22 +465,22 @@ const OpenChatChat = () => {
     { revalidateOnFocus: true },
   );
   const interactions = interactionsData?.results ?? [];
-  const [selectedInteractionId, setSelectedInteractionId] = useState<string | null>(
-    null,
-  );
+  const selectedInteractionUuid =
+    selectedTab === OPEN_CHAT_TAB_INTERACTIONS ? routeChatUuid ?? null : null;
   const {
     data: interactionDetailData,
     error: interactionDetailError,
     isLoading: isInteractionDetailLoading,
   } = useSWR(
     selectedTab === OPEN_CHAT_TAB_INTERACTIONS &&
-      selectedInteractionId &&
+      selectedInteractionUuid &&
+      looksLikeUuid(selectedInteractionUuid) &&
       openChatUserUuid
-      ? `/open-chat/interactions/detail/${openChatUserUuid}/${selectedInteractionId}`
+      ? `/open-chat/interactions/detail/${openChatUserUuid}/${selectedInteractionUuid}`
       : null,
     () =>
       fetchOpenChatInteractionDetail(
-        selectedInteractionId as string,
+        selectedInteractionUuid as string,
         openChatUserUuid,
       ),
     { revalidateOnFocus: true },
@@ -454,28 +561,25 @@ const OpenChatChat = () => {
   ]);
 
   useEffect(() => {
+    if (selectedTab !== OPEN_CHAT_TAB_INTERACTIONS) {
+      return;
+    }
     if (!interactions.length) {
-      setSelectedInteractionId(null);
       return;
     }
-
-    if (!selectedInteractionId) {
-      setSelectedInteractionId(interactions[0].interaction_id);
-      return;
+    const routeInteractionExists = selectedInteractionUuid
+      ? interactions.some(
+          interaction => interaction.interaction_id === selectedInteractionUuid,
+        )
+      : false;
+    if (!selectedInteractionUuid || !routeInteractionExists) {
+      navigateToInteraction(interactions[0].interaction_id, true);
     }
-
-    if (
-      !interactions.some(
-        interaction => interaction.interaction_id === selectedInteractionId,
-      )
-    ) {
-      setSelectedInteractionId(interactions[0].interaction_id);
-    }
-  }, [interactions, selectedInteractionId]);
+  }, [interactions, selectedInteractionUuid, selectedTab]);
 
   const selectedInteraction: OpenChatInteraction | null =
     interactions.find(
-      interaction => interaction.interaction_id === selectedInteractionId,
+      interaction => interaction.interaction_id === selectedInteractionUuid,
     ) ?? null;
   const selectedInteractionDetail: OpenChatInteractionDetail | null =
     interactionDetailData ?? selectedInteraction;
@@ -497,16 +601,19 @@ const OpenChatChat = () => {
     const sharedUrl = selectedInteractionDetail?.shared_interaction_url;
     if (sharedUrl) {
       try {
-        return normalizeOpenChatBrowserUrl(sharedUrl);
+        return withOpenChatLightTheme(normalizeOpenChatBrowserUrl(sharedUrl));
       } catch {
         // Fallback to interaction page URL below if shared URL parsing fails.
       }
     }
-    if (!interactionBrowserOrigin || !selectedInteractionId) {
+    if (!interactionBrowserOrigin || !selectedInteractionUuid) {
       return null;
     }
-    return `${interactionBrowserOrigin}/interaction/${selectedInteractionId}`;
-  }, [selectedInteractionDetail, interactionBrowserOrigin, selectedInteractionId]);
+    return withOpenChatLightTheme(
+      `${interactionBrowserOrigin}/interaction/${selectedInteractionUuid}`,
+    );
+  }, [selectedInteractionDetail, interactionBrowserOrigin, selectedInteractionUuid]);
+
 
   const navigateToChat = (chatUuid: string, replace = false) => {
     const nextSearchParams = new URLSearchParams(searchParams);
@@ -514,6 +621,21 @@ const OpenChatChat = () => {
     const serializedSearchParams = nextSearchParams.toString();
     navigate(
       `${getOpenChatChatRoute(chatUuid)}${
+        serializedSearchParams ? `?${serializedSearchParams}` : ''
+      }`,
+      { replace },
+    );
+  };
+
+  const navigateToInteraction = (
+    interactionUuid: string,
+    replace = false,
+  ) => {
+    const nextSearchParams = new URLSearchParams(searchParams);
+    nextSearchParams.set(OPEN_CHAT_QUERY_PARAM_TAB, OPEN_CHAT_TAB_INTERACTIONS);
+    const serializedSearchParams = nextSearchParams.toString();
+    navigate(
+      `${getOpenChatChatRoute(interactionUuid)}${
         serializedSearchParams ? `?${serializedSearchParams}` : ''
       }`,
       { replace },
@@ -612,6 +734,22 @@ const OpenChatChat = () => {
     }
   };
 
+  const handleComposerKeyDown = (
+    event: React.KeyboardEvent<HTMLTextAreaElement>,
+  ) => {
+    if (event.key !== 'Enter' || event.shiftKey) {
+      return;
+    }
+    event.preventDefault();
+    if (!selectedChatUuid || isSending || !draftMessage.trim()) {
+      return;
+    }
+    const form = event.currentTarget.form;
+    if (form) {
+      form.requestSubmit();
+    }
+  };
+
   if (!canAccess) {
     return (
       <PageContainer>
@@ -658,17 +796,6 @@ const OpenChatChat = () => {
 
   return (
     <PageContainer>
-      <PoweredBy>
-        powered by{' '}
-        <PoweredByLink
-          href="https://github.com/msgmate-io/open-chat-go"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          open-chat
-        </PoweredByLink>
-      </PoweredBy>
-
       {((canManageOpenChatAccess && usersError) ||
         chatsError ||
         interactionsError ||
@@ -687,12 +814,10 @@ const OpenChatChat = () => {
       <Workspace>
         <Panel>
           <PanelHeader>
-            <Text type={TextTypes.Body5} tag="h2">
-              Target user
-            </Text>
-            <Text type={TextTypes.Body6} tag="p">
-              {selectedUser ? fullName(selectedUser) : openChatUserUuid}
-            </Text>
+            <TargetUserBadge>
+              <TargetUserLabel>UUID</TargetUserLabel>
+              <TargetUserValue>{openChatUserUuid}</TargetUserValue>
+            </TargetUserBadge>
             <ListTabs>
               <ListTabButton
                 type="button"
@@ -709,11 +834,6 @@ const OpenChatChat = () => {
                 interactions
               </ListTabButton>
             </ListTabs>
-            {selectedUser && (
-              <Text type={TextTypes.Body7} tag="p">
-                {selectedUser.email}
-              </Text>
-            )}
             {createChatError && (
               <StatusMessage type={StatusTypes.Error} visible>
                 {createChatError}
@@ -724,15 +844,17 @@ const OpenChatChat = () => {
                 {deleteChatError}
               </StatusMessage>
             )}
-            <Button
-              type="button"
-              appearance={ButtonAppearance.Primary}
-              size={ButtonSizes.Small}
-              disabled={!targetUserId || isCreatingChat}
-              onClick={handleCreateChat}
-            >
-              {isCreatingChat ? 'Creating...' : 'Create chat'}
-            </Button>
+            {selectedTab === OPEN_CHAT_TAB_CHAT && (
+              <Button
+                type="button"
+                appearance={ButtonAppearance.Primary}
+                size={ButtonSizes.Small}
+                disabled={!targetUserId || isCreatingChat}
+                onClick={handleCreateChat}
+              >
+                {isCreatingChat ? 'Creating...' : '+ chat'}
+              </Button>
+            )}
           </PanelHeader>
           <PanelContent>
             {(canManageOpenChatAccess && isUsersLoading) ||
@@ -749,18 +871,18 @@ const OpenChatChat = () => {
                     $active={selectedChatUuid === chat.uuid}
                     onClick={() => navigateToChat(chat.uuid)}
                   >
-                    <Text type={TextTypes.Body6} tag="span">
+                    <ListPrimaryText>
                       {chat.partner?.censored
                         ? 'Censored partner'
                         : `${chat.partner.first_name ?? ''} ${
                             chat.partner.second_name ?? ''
                           }`.trim() || 'Partner'}
-                    </Text>
-                    <Text type={TextTypes.Body7} tag="span">
+                    </ListPrimaryText>
+                    <ListSecondaryText>
                       {chat.newest_message
                         ? `Last: ${chat.newest_message.text}`
                         : 'No messages yet'}
-                    </Text>
+                    </ListSecondaryText>
                   </ChatListButton>
                   <DeleteChatButton
                     type="button"
@@ -784,17 +906,17 @@ const OpenChatChat = () => {
                 <ChatListButton
                   key={interaction.interaction_id}
                   type="button"
-                  $active={selectedInteractionId === interaction.interaction_id}
-                  onClick={() => setSelectedInteractionId(interaction.interaction_id)}
+                  $active={selectedInteractionUuid === interaction.interaction_id}
+                  onClick={() => navigateToInteraction(interaction.interaction_id)}
                 >
-                  <Text type={TextTypes.Body6} tag="span">
+                  <ListPrimaryText>
                     {interaction.title || `Interaction ${interaction.interaction_id}`}
-                  </Text>
-                  <Text type={TextTypes.Body7} tag="span">
+                  </ListPrimaryText>
+                  <ListSecondaryText>
                     {interaction.created
                       ? `Created: ${formatDateTime(interaction.created)}`
                       : 'Created date unavailable'}
-                  </Text>
+                  </ListSecondaryText>
                 </ChatListButton>
               ))
             )}
@@ -808,33 +930,53 @@ const OpenChatChat = () => {
 
         <Panel>
           <PanelHeader>
-            <Text type={TextTypes.Body5} tag="h2">
-              {selectedTab === OPEN_CHAT_TAB_CHAT
-                ? 'Messages'
-                : 'Interaction details'}
-            </Text>
             {selectedTab === OPEN_CHAT_TAB_CHAT ? (
-              selectedChatUuid ? (
-              <Text type={TextTypes.Body7} tag="p">
-                Chat: {selectedChatUuid}
+              <Text type={TextTypes.Body5} tag="h2">
+                Messages
               </Text>
             ) : (
-              <Text type={TextTypes.Body7} tag="p">
-                Select or create a chat
-              </Text>
-              )
-            ) : selectedInteractionDetail ? (
-              <Text type={TextTypes.Body7} tag="p">
-                Interaction: {selectedInteractionDetail.interaction_id}
-              </Text>
-            ) : (
-              <Text type={TextTypes.Body7} tag="p">
-                Select an interaction
-              </Text>
+              <InteractionHeaderRow>
+                <InteractionHeaderMeta>
+                  <Text type={TextTypes.Body5} tag="h2">
+                    Interaction
+                  </Text>
+                  {selectedInteractionDetail ? (
+                    <Text type={TextTypes.Body7} tag="p">
+                      {selectedInteractionDetail.title ||
+                        selectedInteractionDetail.interaction_id}
+                    </Text>
+                  ) : (
+                    <Text type={TextTypes.Body7} tag="p">
+                      Select an interaction
+                    </Text>
+                  )}
+                </InteractionHeaderMeta>
+                {interactionFrameUrl && (
+                  <InteractionExternalLink
+                    href={interactionFrameUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Open interaction in new page"
+                    title="Open interaction in new page"
+                  >
+                    <ExternalLink size={16} />
+                  </InteractionExternalLink>
+                )}
+              </InteractionHeaderRow>
             )}
+            {selectedTab === OPEN_CHAT_TAB_CHAT &&
+              (selectedChatUuid ? (
+                <Text type={TextTypes.Body7} tag="p">
+                  Chat: {selectedChatUuid}
+                </Text>
+              ) : (
+                <Text type={TextTypes.Body7} tag="p">
+                  Select or create a chat
+                </Text>
+              ))}
           </PanelHeader>
-          <PanelContent>
-            {selectedTab === OPEN_CHAT_TAB_CHAT ? (
+          {selectedTab === OPEN_CHAT_TAB_CHAT ? (
+            <PanelContent>
               <MessageList>
                 {isMessagesLoading ? (
                   <Loading size={LoadingSizes.Small} />
@@ -852,30 +994,44 @@ const OpenChatChat = () => {
                     const interactionPayload = parseOpenChatInteractionPayload(
                       message.text,
                     );
+                    const interactionNewestResponseUrl =
+                      interactionPayload?.shared_interaction_url
+                        ? buildNewestResponseUrl(
+                            interactionPayload.shared_interaction_url,
+                          )
+                        : null;
                     return (
-                      <MessageBubble key={message.uuid} $self={isSelf}>
+                      <MessageBubble
+                        key={message.uuid}
+                        $self={isSelf}
+                        $interaction={Boolean(interactionPayload)}
+                      >
                         {interactionPayload ? (
                           <InteractionWidget>
-                            <Text type={TextTypes.Body7} tag="span">
-                              {interactionPayload.title ??
-                                DEFAULT_OPEN_CHAT_INTERACTION_TITLE}
-                            </Text>
-                            <Text type={TextTypes.Body7} tag="span">
-                              Interaction ID: {interactionPayload.interaction_id}
-                            </Text>
-                            {interactionPayload.shared_interaction_url ? (
-                              <InteractionLink
-                                href={normalizeOpenChatBrowserUrl(
-                                  interactionPayload.shared_interaction_url,
-                                )}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                Open interaction
-                              </InteractionLink>
+                            {interactionPayload.interaction_id && (
+                              <InteractionWidgetHeader>
+                                <InteractionWidgetNavButton
+                                  type="button"
+                                  onClick={() =>
+                                    navigateToInteraction(
+                                      interactionPayload.interaction_id,
+                                    )
+                                  }
+                                  aria-label="Open interaction page"
+                                  title="Open interaction page"
+                                >
+                                  <ExternalLink size={14} />
+                                </InteractionWidgetNavButton>
+                              </InteractionWidgetHeader>
+                            )}
+                            {interactionNewestResponseUrl ? (
+                              <InteractionWidgetFrame
+                                src={interactionNewestResponseUrl}
+                                title={`open-chat-interaction-widget-${interactionPayload.interaction_id}`}
+                              />
                             ) : (
                               <Text type={TextTypes.Body7} tag="span">
-                                Shared interaction URL unavailable.
+                                Interaction preview unavailable.
                               </Text>
                             )}
                           </InteractionWidget>
@@ -892,64 +1048,36 @@ const OpenChatChat = () => {
                   })
                 )}
               </MessageList>
-            ) : isInteractionDetailLoading ? (
-              <Loading size={LoadingSizes.Small} />
-            ) : selectedInteractionDetail ? (
-              <InteractionDetails>
-                <Text type={TextTypes.Body6} tag="p">
-                  {selectedInteractionDetail.title ||
-                    `Interaction ${selectedInteractionDetail.interaction_id}`}
-                </Text>
-                <Text type={TextTypes.Body7} tag="p">
-                  ID: {selectedInteractionDetail.interaction_id}
-                </Text>
-                {selectedInteractionDetail.status && (
-                  <Text type={TextTypes.Body7} tag="p">
-                    Status: {selectedInteractionDetail.status}
-                  </Text>
-                )}
-                {selectedInteractionDetail.created && (
-                  <Text type={TextTypes.Body7} tag="p">
-                    Created: {formatDateTime(selectedInteractionDetail.created)}
-                  </Text>
-                )}
-                {selectedInteractionDetail.updated && (
-                  <Text type={TextTypes.Body7} tag="p">
-                    Updated: {formatDateTime(selectedInteractionDetail.updated)}
-                  </Text>
-                )}
-                {interactionFrameUrl ? (
-                  <>
-                    <InteractionLink
-                      href={interactionFrameUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Open interaction
-                    </InteractionLink>
-                    <InteractionFrame
-                      src={interactionFrameUrl}
-                      title={`open-chat-interaction-${selectedInteractionDetail.interaction_id}`}
-                    />
-                  </>
+            </PanelContent>
+          ) : (
+            <InteractionPanelContent>
+              {isInteractionDetailLoading ? (
+                <Loading size={LoadingSizes.Small} />
+              ) : selectedInteractionDetail ? (
+                interactionFrameUrl ? (
+                  <InteractionFrame
+                    src={interactionFrameUrl}
+                    title={`open-chat-interaction-${selectedInteractionDetail.interaction_id}`}
+                  />
                 ) : (
-                  <Text type={TextTypes.Body7} tag="p">
+                  <Text type={TextTypes.Body6} tag="p">
                     Interaction page URL unavailable.
                   </Text>
-                )}
-              </InteractionDetails>
-            ) : (
-              <Text type={TextTypes.Body6} tag="p">
-                Select an interaction to view details.
-              </Text>
-            )}
-          </PanelContent>
+                )
+              ) : (
+                <Text type={TextTypes.Body6} tag="p">
+                  Select an interaction to view details.
+                </Text>
+              )}
+            </InteractionPanelContent>
+          )}
           {selectedTab === OPEN_CHAT_TAB_CHAT && (
             <>
               <Composer onSubmit={handleSendMessage}>
                 <ComposerInput
                   value={draftMessage}
                   onChange={event => setDraftMessage(event.target.value)}
+                  onKeyDown={handleComposerKeyDown}
                   placeholder="Write a message..."
                   disabled={!selectedChatUuid || isSending}
                 />
