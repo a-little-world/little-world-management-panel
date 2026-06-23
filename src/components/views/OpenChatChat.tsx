@@ -23,12 +23,15 @@ import {
   createOpenChatChat,
   fetchOpenChatAccessUsers,
   fetchOpenChatConfiguration,
+  fetchOpenChatInteractionDetail,
   fetchOpenChatInteractions,
   fetchOpenChatMessages,
   fetchOpenChatsForUser,
+  normalizeOpenChatBrowserHost,
   normalizeOpenChatBrowserUrl,
   sendOpenChatMessage,
   type OpenChatAccessUser,
+  type OpenChatInteractionDetail,
   type OpenChatInteraction,
 } from '../../api/openChat';
 import {
@@ -149,16 +152,12 @@ const InteractionDetails = styled.div`
   gap: ${({ theme }) => theme.spacing.xsmall};
 `;
 
-const InteractionRaw = styled.pre`
-  margin: 0;
-  white-space: pre-wrap;
-  word-break: break-word;
+const InteractionFrame = styled.iframe`
   border: 1px solid ${({ theme }) => theme.color.border.subtle};
   border-radius: ${({ theme }) => theme.radius.xxsmall};
-  padding: ${({ theme }) => theme.spacing.xsmall};
-  background: ${({ theme }) => theme.color.surface.secondary};
-  max-height: 22rem;
-  overflow: auto;
+  width: 100%;
+  min-height: 28rem;
+  background: ${({ theme }) => theme.color.surface.primary};
 `;
 
 const MessageBubble = styled.div<{ $self: boolean }>`
@@ -362,6 +361,23 @@ const OpenChatChat = () => {
   const [selectedInteractionId, setSelectedInteractionId] = useState<string | null>(
     null,
   );
+  const {
+    data: interactionDetailData,
+    error: interactionDetailError,
+    isLoading: isInteractionDetailLoading,
+  } = useSWR(
+    selectedTab === OPEN_CHAT_TAB_INTERACTIONS &&
+      selectedInteractionId &&
+      openChatUserUuid
+      ? `/open-chat/interactions/detail/${openChatUserUuid}/${selectedInteractionId}`
+      : null,
+    () =>
+      fetchOpenChatInteractionDetail(
+        selectedInteractionId as string,
+        openChatUserUuid,
+      ),
+    { revalidateOnFocus: true },
+  );
 
   const {
     data: messagesData,
@@ -461,6 +477,36 @@ const OpenChatChat = () => {
     interactions.find(
       interaction => interaction.interaction_id === selectedInteractionId,
     ) ?? null;
+  const selectedInteractionDetail: OpenChatInteractionDetail | null =
+    interactionDetailData ?? selectedInteraction;
+
+  const interactionBrowserOrigin = useMemo(() => {
+    const host =
+      selectedUser?.configuration?.open_chat_host ?? configuration?.open_chat_host;
+    if (!host) {
+      return null;
+    }
+    try {
+      return normalizeOpenChatBrowserHost(host);
+    } catch {
+      return null;
+    }
+  }, [selectedUser, configuration]);
+
+  const interactionFrameUrl = useMemo(() => {
+    const sharedUrl = selectedInteractionDetail?.shared_interaction_url;
+    if (sharedUrl) {
+      try {
+        return normalizeOpenChatBrowserUrl(sharedUrl);
+      } catch {
+        // Fallback to interaction page URL below if shared URL parsing fails.
+      }
+    }
+    if (!interactionBrowserOrigin || !selectedInteractionId) {
+      return null;
+    }
+    return `${interactionBrowserOrigin}/interaction/${selectedInteractionId}`;
+  }, [selectedInteractionDetail, interactionBrowserOrigin, selectedInteractionId]);
 
   const navigateToChat = (chatUuid: string, replace = false) => {
     const nextSearchParams = new URLSearchParams(searchParams);
@@ -625,13 +671,16 @@ const OpenChatChat = () => {
 
       {((canManageOpenChatAccess && usersError) ||
         chatsError ||
-        interactionsError) && (
+        interactionsError ||
+        interactionDetailError) && (
         <StatusMessage type={StatusTypes.Error} visible>
           {usersError
             ? 'Could not load open chat users.'
             : chatsError
               ? 'Could not load chats for this user.'
-              : 'Could not load interactions for this user.'}
+              : interactionsError
+                ? 'Could not load interactions for this user.'
+                : 'Could not load interaction details.'}
         </StatusMessage>
       )}
 
@@ -774,9 +823,9 @@ const OpenChatChat = () => {
                 Select or create a chat
               </Text>
               )
-            ) : selectedInteraction ? (
+            ) : selectedInteractionDetail ? (
               <Text type={TextTypes.Body7} tag="p">
-                Interaction: {selectedInteraction.interaction_id}
+                Interaction: {selectedInteractionDetail.interaction_id}
               </Text>
             ) : (
               <Text type={TextTypes.Body7} tag="p">
@@ -843,44 +892,51 @@ const OpenChatChat = () => {
                   })
                 )}
               </MessageList>
-            ) : selectedInteraction ? (
+            ) : isInteractionDetailLoading ? (
+              <Loading size={LoadingSizes.Small} />
+            ) : selectedInteractionDetail ? (
               <InteractionDetails>
                 <Text type={TextTypes.Body6} tag="p">
-                  {selectedInteraction.title ||
-                    `Interaction ${selectedInteraction.interaction_id}`}
+                  {selectedInteractionDetail.title ||
+                    `Interaction ${selectedInteractionDetail.interaction_id}`}
                 </Text>
                 <Text type={TextTypes.Body7} tag="p">
-                  ID: {selectedInteraction.interaction_id}
+                  ID: {selectedInteractionDetail.interaction_id}
                 </Text>
-                {selectedInteraction.status && (
+                {selectedInteractionDetail.status && (
                   <Text type={TextTypes.Body7} tag="p">
-                    Status: {selectedInteraction.status}
+                    Status: {selectedInteractionDetail.status}
                   </Text>
                 )}
-                {selectedInteraction.created && (
+                {selectedInteractionDetail.created && (
                   <Text type={TextTypes.Body7} tag="p">
-                    Created: {formatDateTime(selectedInteraction.created)}
+                    Created: {formatDateTime(selectedInteractionDetail.created)}
                   </Text>
                 )}
-                {selectedInteraction.updated && (
+                {selectedInteractionDetail.updated && (
                   <Text type={TextTypes.Body7} tag="p">
-                    Updated: {formatDateTime(selectedInteraction.updated)}
+                    Updated: {formatDateTime(selectedInteractionDetail.updated)}
                   </Text>
                 )}
-                {selectedInteraction.shared_interaction_url && (
-                  <InteractionLink
-                    href={normalizeOpenChatBrowserUrl(
-                      selectedInteraction.shared_interaction_url,
-                    )}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Open interaction
-                  </InteractionLink>
+                {interactionFrameUrl ? (
+                  <>
+                    <InteractionLink
+                      href={interactionFrameUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Open interaction
+                    </InteractionLink>
+                    <InteractionFrame
+                      src={interactionFrameUrl}
+                      title={`open-chat-interaction-${selectedInteractionDetail.interaction_id}`}
+                    />
+                  </>
+                ) : (
+                  <Text type={TextTypes.Body7} tag="p">
+                    Interaction page URL unavailable.
+                  </Text>
                 )}
-                <InteractionRaw>
-                  {JSON.stringify(selectedInteraction.raw ?? {}, null, 2)}
-                </InteractionRaw>
               </InteractionDetails>
             ) : (
               <Text type={TextTypes.Body6} tag="p">

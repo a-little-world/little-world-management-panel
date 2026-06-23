@@ -141,6 +141,8 @@ type OpenChatInteractionsResponse = {
   results: OpenChatInteraction[];
 };
 
+export type OpenChatInteractionDetail = OpenChatInteraction;
+
 export async function fetchOpenChatConfiguration(): Promise<OpenChatConfiguration | null> {
   try {
     return await apiFetch<OpenChatConfiguration>(
@@ -210,6 +212,18 @@ export function fetchOpenChatInteractions(userUuid: string) {
   });
   return apiFetch<OpenChatInteractionsResponse>(
     `${OPEN_CHAT_INTERACTIONS_ENDPOINT}?${query.toString()}`,
+  );
+}
+
+export function fetchOpenChatInteractionDetail(
+  interactionUuid: string,
+  userUuid: string,
+) {
+  const query = new URLSearchParams({
+    user_uuid: userUuid,
+  });
+  return apiFetch<OpenChatInteractionDetail>(
+    `${OPEN_CHAT_INTERACTIONS_ENDPOINT}${interactionUuid}/?${query.toString()}`,
   );
 }
 
