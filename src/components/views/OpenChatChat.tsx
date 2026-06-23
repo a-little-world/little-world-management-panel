@@ -175,6 +175,7 @@ type OpenChatInteractionPayload = {
 
 const DEFAULT_OPEN_CHAT_INTERACTION_TITLE =
   'Tim: This is highly experimental; the model runs at home on my pc and might wake me up at night; but maybe it can help you with something.';
+const OPEN_CHAT_MESSAGES_REFRESH_INTERVAL_MS = 1500;
 
 function parseOpenChatInteractionPayload(
   value: string,
@@ -262,6 +263,7 @@ const OpenChatChat = () => {
   const selectedChatUuid = routeChatUuid ?? null;
   const [createChatError, setCreateChatError] = useState<string | null>(null);
   const [isCreatingChat, setIsCreatingChat] = useState(false);
+  const [pendingCreatedChatUuid, setPendingCreatedChatUuid] = useState<string | null>(null);
 
   const {
     data: messagesData,
@@ -271,7 +273,10 @@ const OpenChatChat = () => {
   } = useSWR(
     selectedChatUuid ? `/open-chat/messages/${selectedChatUuid}` : null,
     () => fetchOpenChatMessages(selectedChatUuid as string),
-    { revalidateOnFocus: true },
+    {
+      revalidateOnFocus: true,
+      refreshInterval: OPEN_CHAT_MESSAGES_REFRESH_INTERVAL_MS,
+    },
   );
 
   const [draftMessage, setDraftMessage] = useState('');
@@ -283,13 +288,34 @@ const OpenChatChat = () => {
       return;
     }
 
+    if (
+      pendingCreatedChatUuid &&
+      chats.some(chat => chat.uuid === pendingCreatedChatUuid)
+    ) {
+      setPendingCreatedChatUuid(null);
+    }
+
     const routeChatExists = selectedChatUuid
       ? chats.some(chat => chat.uuid === selectedChatUuid)
       : false;
-    if (!selectedChatUuid || !routeChatExists) {
+    if (!selectedChatUuid) {
       navigate(getOpenChatChatRoute(chats[0].uuid), { replace: true });
+      return;
     }
-  }, [chats, selectedChatUuid, navigate]);
+
+    if (routeChatExists) {
+      return;
+    }
+
+    if (
+      pendingCreatedChatUuid &&
+      selectedChatUuid === pendingCreatedChatUuid
+    ) {
+      return;
+    }
+
+    navigate(getOpenChatChatRoute(chats[0].uuid), { replace: true });
+  }, [chats, selectedChatUuid, navigate, pendingCreatedChatUuid]);
 
   const handleCreateChat = async () => {
     if (!targetUserId) {
@@ -301,9 +327,11 @@ const OpenChatChat = () => {
 
     try {
       const result = await createOpenChatChat(targetUserId);
-      await refreshChats();
+      setPendingCreatedChatUuid(result.chat_uuid);
       navigate(getOpenChatChatRoute(result.chat_uuid));
+      void refreshChats();
     } catch (error) {
+      setPendingCreatedChatUuid(null);
       setCreateChatError(
         error instanceof Error ? error.message : 'Could not create chat.',
       );
