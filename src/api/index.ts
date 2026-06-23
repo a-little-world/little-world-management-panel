@@ -36,6 +36,15 @@ export const addUserByUuid = async (
     });
 };
 
+export const getUserDetails = async (userIdentifier: string) =>
+  apiFetch<Record<string, any>>(`/api/matching/users/${userIdentifier}/`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookiesAsObject().csrftoken,
+    },
+  });
+
 export const getUserListExport = async ({
   searchParams,
   exportColumnsOnly = false,
@@ -116,14 +125,19 @@ export const getUsersExportPage = async ({
   searchParams,
   page,
   pageSize,
+  selectedHeaders = [],
 }: {
   searchParams: string;
   page: number;
   pageSize: number;
+  selectedHeaders?: string[];
 }) => {
   const params = new URLSearchParams(searchParams);
   params.set('page', String(page));
   params.set('page_size', String(pageSize));
+  if (selectedHeaders.length > 0) {
+    params.set('fields', selectedHeaders.join(','));
+  }
 
   return apiFetch<Record<string, any>[]>(
     `/api/matching/users_export/?${params.toString()}`,
@@ -216,14 +230,19 @@ export const getMatchesExportPage = async ({
   searchParams,
   page,
   pageSize,
+  selectedHeaders = [],
 }: {
   searchParams: string;
   page: number;
   pageSize: number;
+  selectedHeaders?: string[];
 }) => {
   const params = new URLSearchParams(searchParams);
   params.set('page', String(page));
   params.set('page_size', String(pageSize));
+  if (selectedHeaders.length > 0) {
+    params.set('fields', selectedHeaders.join(','));
+  }
 
   return apiFetch<Record<string, any>[]>(
     `/api/matching/matches_export/?${params.toString()}`,

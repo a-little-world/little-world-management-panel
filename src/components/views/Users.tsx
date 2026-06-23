@@ -10,6 +10,7 @@ import React, { useMemo, useRef, useEffect, useState } from 'react';
 import { Link, createSearchParams, useSearchParams } from 'react-router-dom';
 
 import {
+  getUserDetails,
   getUsersExportColumns,
   getUsersExportPage,
   getUsersListPaginationMeta,
@@ -240,15 +241,21 @@ const userColumns = [
   }),
 ];
 
-export function UsersTable({ userList }) {
-  const { selectedUsers, selectUser, deselectUser } = useGlobalState();
+export function UsersTable({
+  userList,
+  onSelectUser,
+}: {
+  userList: any;
+  onSelectUser: (user: Record<string, any>) => Promise<void>;
+}) {
+  const { selectedUsers, deselectUser } = useGlobalState();
 
   return (
     <>
       <DataTable
         columns={userColumns}
         data={userList?.results}
-        tableMeta={{ selectedUsers, deselectUser, selectUser }}
+        tableMeta={{ selectedUsers, deselectUser, selectUser: onSelectUser }}
       />
       <SelectedUsersSheet />
     </>
@@ -277,6 +284,7 @@ const orderingOptions = [
 type Filters = { [key: string]: string | string[] };
 
 export function Users() {
+  const { selectUser } = useGlobalState();
   let [searchParams, setSearchParams] = useSearchParams({
     order_by: '-date_joined',
     page_size: '50',
@@ -447,6 +455,7 @@ export function Users() {
             searchParams: searchParamsString,
             page,
             pageSize,
+            selectedHeaders,
           })
         }
         onError={error => console.log({ error })}
@@ -462,7 +471,19 @@ export function Users() {
           {error && (
             <div className="p-4 text-center">Error: {error.message}</div>
           )}
-          {!usersLoading && !error && <UsersTable userList={userList} />}
+          {!usersLoading && !error && (
+            <UsersTable
+              userList={userList}
+              onSelectUser={async (user: Record<string, any>) => {
+                try {
+                  const fullUser = await getUserDetails(String(user.uuid ?? user.id));
+                  selectUser(fullUser);
+                } catch (error) {
+                  console.log({ error });
+                }
+              }}
+            />
+          )}
         </ListScroll>
       </ListPanel>
       <Filters

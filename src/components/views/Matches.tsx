@@ -189,6 +189,7 @@ export function Matches() {
             searchParams: searchParamsString,
             page,
             pageSize,
+            selectedHeaders,
           })
         }
         onError={error => console.log({ error })}
