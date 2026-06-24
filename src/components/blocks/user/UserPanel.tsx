@@ -4,12 +4,13 @@ import {
   ButtonSizes,
   PlusIcon,
 } from '@a-little-world/little-world-design-system';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import styled, { useTheme } from 'styled-components';
 import useSWR from 'swr';
 
 import { MATCHING_ROUTE } from '../../../router/routes';
+import { fetchSupportTasks } from '../../../api/supportTasks';
 import { dataFetcher, useGlobalState } from '../../../store';
 import { Section, SectionContent } from '../../atoms/Section';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../atoms/Tabs';
@@ -45,18 +46,30 @@ const UserPanelContent = ({
   user,
   appointment,
   onUpdate,
+  activeSupportReplyTask,
+  onSupportReplySent,
 }: {
   tab: string;
   user: any;
   appointment?: { start_time: string; end_time: string };
   onUpdate: () => void;
+  activeSupportReplyTask?: any;
+  onSupportReplySent?: (message: string) => void;
 }) => {
   if (tab === 'profile')
     return (
       <UserDetailsCard user={user} appointment={appointment} partial={false} />
     );
 
-  if (tab === 'chat') return <UserChat user={user} />;
+  if (tab === 'chat')
+    return (
+      <UserChat
+        user={user}
+        activeSupportReplyTask={activeSupportReplyTask}
+        sendViaSupportReplyApi={Boolean(activeSupportReplyTask)}
+        onSupportReplySent={onSupportReplySent}
+      />
+    );
 
   if (tab === 'emails') return <UserEmails user={user} />;
 
@@ -114,6 +127,52 @@ const UserPanel = () => {
     ? `${user.profile.first_name} ${user.profile.second_name}`
     : 'User';
 
+  const shouldLoadActiveReplyTask = selectedTabKey === 'chat' && Boolean(user?.id);
+  const { data: activeReplyTasksResponse } = useSWR(
+    shouldLoadActiveReplyTask
+      ? [
+          'active_support_reply_task',
+          user.id,
+        ]
+      : null,
+    () =>
+      fetchSupportTasks({
+        related_user: String(user.id),
+        action_type: ['support_reply'],
+        status: ['NEW', 'IN_PROGRESS'],
+        sort_by: 'updated_at',
+        sort_order: 'desc',
+        page_size: 1,
+      }),
+  );
+  const [activeSupportReplyTask, setActiveSupportReplyTask] = useState<any>(null);
+
+  useEffect(() => {
+    setActiveSupportReplyTask(activeReplyTasksResponse?.results?.[0] ?? null);
+  }, [activeReplyTasksResponse]);
+
+  useEffect(() => {
+    setActiveSupportReplyTask(null);
+  }, [user?.id]);
+
+  const onSupportReplySent = (message: string) => {
+    setActiveSupportReplyTask((current: any) => {
+      if (!current) return current;
+      return {
+        ...current,
+        status: 'COMPLETED',
+        action: {
+          ...current.action,
+          status: 'EXECUTED',
+          parameters: {
+            ...(current.action?.parameters ?? {}),
+            message,
+          },
+        },
+      };
+    });
+  };
+
   usePageHeader({
     title: `${userName} - ${selectedTab.title ?? selectedTab.label}`,
     showMenu: true,
@@ -167,6 +226,8 @@ const UserPanel = () => {
                 user={user}
                 appointment={appointment?.start_time ? appointment : undefined}
                 onUpdate={mutate}
+                activeSupportReplyTask={activeSupportReplyTask}
+                onSupportReplySent={onSupportReplySent}
               />
             </SectionContent>
           </Section>

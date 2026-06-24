@@ -145,6 +145,18 @@ const MessageQuote = styled.blockquote`
   margin: 0;
 `;
 
+const SentMessageQuote = styled.blockquote`
+  background: ${({ theme }) => theme.color.status.success + '22'};
+  border-left: 3px solid ${({ theme }) => theme.color.status.success};
+  padding: ${({ theme }) => theme.spacing.small};
+  border-radius: 0 ${({ theme }) => theme.radius.xsmall}
+    ${({ theme }) => theme.radius.xsmall} 0;
+  line-height: 1.55;
+  color: ${({ theme }) => theme.color.text.primary};
+  margin: 0;
+  font-weight: 600;
+`;
+
 const UserInfoRow = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.spacing.small};
@@ -271,7 +283,10 @@ export default function SupportTaskDetail() {
     error,
     mutate,
   } = useSWR(taskId ? ['support_task_detail', id] : null, () =>
-    fetchSupportTask(id),
+    fetchSupportTask(id), {
+      refreshInterval: 5000,
+      revalidateOnFocus: true,
+    }
   );
 
   const { data: staffUsers = [] } = useSWR('staff_users', fetchStaffUsers);
@@ -330,13 +345,27 @@ export default function SupportTaskDetail() {
     })),
   ];
 
+  if (
+    task.assigned_to_profile &&
+    !assigneeOptions.some(option => option.value === String(task.assigned_to_profile?.id))
+  ) {
+    assigneeOptions.push({
+      value: String(task.assigned_to_profile.id),
+      label: `${task.assigned_to_profile.first_name} ${task.assigned_to_profile.second_name}`,
+    });
+  }
+
   const currentAssignee = task.assigned_to_profile
     ? String(task.assigned_to_profile.id)
     : UNASSIGNED;
 
   const action = task.action;
   const actionStaticParameters = action?.static_parameters ?? {};
+  const actionParameters = action?.parameters ?? {};
   const isSupportReplyAction = action?.action_type === 'support_reply';
+  const isSupportReplyExecuted = action?.status === 'EXECUTED';
+  const supportReplyDraftMessage =
+    typeof actionParameters.message === 'string' ? actionParameters.message : '';
   const interactionId = getStaticString(actionStaticParameters, 'interaction_id');
   const sharedInteractionUrl = getStaticString(
     actionStaticParameters,
@@ -404,6 +433,7 @@ export default function SupportTaskDetail() {
           <MetaField>
             <MetaLabel>Status</MetaLabel>
             <Dropdown
+              key={`task-status-${task.status}`}
               value={task.status}
               options={STATUS_OPTIONS}
               onValueChange={v =>
@@ -435,6 +465,7 @@ export default function SupportTaskDetail() {
           <MetaField>
             <MetaLabel>Assigned to</MetaLabel>
             <Dropdown
+              key={`task-assignee-${currentAssignee}`}
               value={currentAssignee}
               options={assigneeOptions}
               onValueChange={v =>
@@ -550,7 +581,44 @@ export default function SupportTaskDetail() {
                         </CollapsibleHeader>
                         {chatOpen && (
                           <ChatWrapper>
-                            <UserChat user={relatedUserDetail} />
+                            {supportReplyDraftMessage && (
+                              <>
+                                <ContextLabel>
+                                  {isSupportReplyExecuted ? 'Sent message' : 'Draft message'}
+                                </ContextLabel>
+                                {isSupportReplyExecuted ? (
+                                  <SentMessageQuote>{supportReplyDraftMessage}</SentMessageQuote>
+                                ) : (
+                                  <MessageQuote>{supportReplyDraftMessage}</MessageQuote>
+                                )}
+                              </>
+                            )}
+                            <UserChat
+                              user={relatedUserDetail}
+                              initialDraftMessage={supportReplyDraftMessage}
+                              sendViaSupportReplyApi
+                              hideComposer={isSupportReplyExecuted}
+                              onSupportReplySent={(message: string) => {
+                                void mutate(
+                                  current =>
+                                    current
+                                      ? {
+                                          ...current,
+                                          status: 'COMPLETED',
+                                          action: {
+                                            ...current.action,
+                                            status: 'EXECUTED',
+                                            parameters: {
+                                              ...(current.action?.parameters ?? {}),
+                                              message,
+                                            },
+                                          },
+                                        }
+                                      : current,
+                                  { revalidate: true },
+                                );
+                              }}
+                            />
                           </ChatWrapper>
                         )}
                       </Card>

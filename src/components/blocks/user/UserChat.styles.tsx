@@ -4,6 +4,7 @@ import {
   Text,
   TextArea,
 } from '@a-little-world/little-world-design-system';
+import { Link } from 'react-router-dom';
 import styled, { css } from 'styled-components';
 
 export const ChatContainer = styled.div`
@@ -207,4 +208,56 @@ export const SendButton = styled(Button)`
 
 export const AttachmentButton = styled(Button)`
   ${TOOLBAR_BTN_CSS}
+`;
+
+export const SupportReplyTaskNotice = styled.div<{ $isCompleted?: boolean }>`
+  border: 1px solid ${({ theme }) => theme.color.border.subtle};
+  background: ${({ theme, $isCompleted }) =>
+    $isCompleted ? theme.color.status.success + '1a' : theme.color.surface.secondary};
+  border-radius: ${({ theme }) => theme.radius.xsmall};
+  padding: ${({ theme }) => theme.spacing.xsmall};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xxxsmall};
+`;
+
+export const SupportReplyTaskTopRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.xsmall};
+`;
+
+export const SupportReplyTaskMeta = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xxsmall};
+`;
+
+export const SupportReplyTaskDraft = styled(Text)`
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+export const SupportReplyTaskIconLink = styled(Link)`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: ${({ theme }) => theme.color.text.link};
+  text-decoration: none;
+
+  &:hover {
+    color: ${({ theme }) => theme.color.text.primary};
+  }
+`;
+
+export const SupportReplyTaskLink = styled(Link)`
+  color: ${({ theme }) => theme.color.text.link};
+  text-decoration: none;
+  font-weight: 600;
+
+  &:hover {
+    text-decoration: underline;
+  }
 `;

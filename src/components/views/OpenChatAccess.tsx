@@ -560,6 +560,7 @@ function OpenChatActionsPanel({
     ([, userUuid]) => fetchOpenChatIdempotentActions(userUuid),
     {
       revalidateOnFocus: true,
+      refreshInterval: 5000,
     },
   );
   const idempotentActions = idempotentActionsData?.results ?? [];

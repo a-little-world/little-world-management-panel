@@ -9,6 +9,9 @@ import {
   PlusIcon,
   Popover,
   SendIcon,
+  Tag,
+  TagAppearance,
+  TagSizes,
   Text,
   TextAreaSize,
   TextTypes,
@@ -16,6 +19,7 @@ import {
   TickIcon,
   textParser,
 } from '@a-little-world/little-world-design-system';
+import { ArrowUpRightIcon } from 'lucide-react';
 import { isSameDay } from 'date-fns';
 import { isEmpty } from 'lodash';
 import React, { useEffect, useRef, useState } from 'react';
@@ -26,8 +30,10 @@ import {
   deleteMessage,
   markMessageAsRead,
   sendChatMessage,
+  sendSupportMessageReply,
   sendFileAttachmentMessage,
 } from '../../../api/index';
+import { BLUE_40, CRIMSON_40, GREEN_40 } from '../../../constants';
 import {
   formatFileName,
   getCustomChatElements,
@@ -36,6 +42,7 @@ import {
 } from '../../../helpers/chat';
 import { formatMessageDate, formatTime } from '../../../helpers/date';
 import useInfiniteScroll from '../../../hooks/useInfiniteScroll';
+import { getSupportTaskDetailRoute } from '../../../router/routes';
 import { registerInput } from '../../../store';
 import UnreadDot from '../../atoms/UnreadDot';
 import {
@@ -51,12 +58,33 @@ import {
   NoMessages,
   SendButton,
   StickyDateHeader,
+  SupportReplyTaskDraft,
+  SupportReplyTaskIconLink,
+  SupportReplyTaskMeta,
+  SupportReplyTaskNotice,
+  SupportReplyTaskTopRow,
   Time,
   UnreadCheckbox,
   WriteSection,
 } from './UserChat.styles';
 
-const UserChat = ({ user }) => {
+type UserChatProps = {
+  user: any;
+  initialDraftMessage?: string;
+  sendViaSupportReplyApi?: boolean;
+  hideComposer?: boolean;
+  activeSupportReplyTask?: any;
+  onSupportReplySent?: (message: string) => void;
+};
+
+const UserChat = ({
+  user,
+  initialDraftMessage = '',
+  sendViaSupportReplyApi = false,
+  hideComposer = false,
+  activeSupportReplyTask = null,
+  onSupportReplySent = () => {},
+}: UserChatProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [unreadOnly, setUnreadOnly] = useState(false);
   const messagesRef = useRef();
@@ -140,6 +168,16 @@ const UserChat = ({ user }) => {
         onError,
         onSuccess: onMessageSent,
       });
+    } else if (shouldSendViaSupportReplyApi) {
+      sendSupportMessageReply({
+        userId: user.id,
+        text,
+        onError,
+        onSuccess: result => {
+          onMessageSent(result);
+          onSupportReplySent(text);
+        },
+      });
     } else {
       sendChatMessage({
         text,
@@ -192,6 +230,28 @@ const UserChat = ({ user }) => {
   };
 
   const messageGroups = groupMessagesByDate(messages);
+  const replyTask: any = activeSupportReplyTask;
+  const replyTaskActionStatus = replyTask?.action?.status ?? null;
+  const activeSupportReplySuggestion =
+    typeof replyTask?.action?.parameters?.message === 'string'
+      ? replyTask.action.parameters.message.trim()
+      : '';
+  const composerInitialMessage = initialDraftMessage || activeSupportReplySuggestion;
+  const shouldSendViaSupportReplyApi =
+    sendViaSupportReplyApi || Boolean(replyTask);
+  const replyTaskStatusLabel =
+    replyTaskActionStatus === 'EXECUTED'
+      ? 'Executed'
+      : replyTaskActionStatus === 'CANCELLED'
+        ? 'Cancelled'
+        : 'Open';
+  const replyTaskStatusColor =
+    replyTaskActionStatus === 'EXECUTED'
+      ? GREEN_40
+      : replyTaskActionStatus === 'CANCELLED'
+        ? CRIMSON_40
+        : BLUE_40;
+  const isReplyTaskCompleted = replyTaskActionStatus === 'EXECUTED';
 
   return (
     <ChatContainer>
@@ -327,82 +387,114 @@ const UserChat = ({ user }) => {
         )}
       </Messages>
 
-      <WriteSection onSubmit={handleSubmit(onSendMessage)}>
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleFileSelect}
-          style={{ display: 'none' }}
-          accept="application/pdf, .pdf,.doc,.docx,.txt,.rtf,.odt,
-                    .jpg,.jpeg,.png,.gif,.bmp,.webp,.tiff,
-                    .ppt,.pptx,.xls,.xlsx,.csv, image/*"
-        />
+      {replyTask && (
+        <SupportReplyTaskNotice $isCompleted={isReplyTaskCompleted}>
+          <SupportReplyTaskTopRow>
+            <SupportReplyTaskMeta>
+              <Text type={TextTypes.Body7} bold>
+                Task #{replyTask.id}
+              </Text>
+              <SupportReplyTaskIconLink to={getSupportTaskDetailRoute(replyTask.id)}>
+                <ArrowUpRightIcon size={14} />
+              </SupportReplyTaskIconLink>
+            </SupportReplyTaskMeta>
+            <Tag
+              size={TagSizes.small}
+              appearance={TagAppearance.outline}
+              color={replyTaskStatusColor}
+            >
+              {replyTaskStatusLabel}
+            </Tag>
+          </SupportReplyTaskTopRow>
+          {activeSupportReplySuggestion ? (
+            <SupportReplyTaskDraft type={TextTypes.Body7}>
+              {activeSupportReplySuggestion}
+            </SupportReplyTaskDraft>
+          ) : (
+            <Text type={TextTypes.Body7}>No draft suggestion yet.</Text>
+          )}
+        </SupportReplyTaskNotice>
+      )}
 
-        <MessageBox
-          {...registerInput({
-            register,
-            name: 'text',
-            options: { required: !selectedFile },
-          })}
-          key={`message ${messagesSent}`}
-          id="text"
-          error={errors?.newMessage?.message}
-          expandable
-          placeholder={'Write a message...'}
-          onSubmit={() => handleSubmit(onSendMessage)()}
-          size={TextAreaSize.Medium}
-        />
-        {!!selectedFile && (
-          <Attachment>
-            <AttachmentIcon
-              label={`Selected file: ${selectedFile.name}`}
-              height={40}
-              width={40}
-            />
-            <UnreadDot count={1} height="18px" top="0px" right="22px" />
-          </Attachment>
-        )}
-        <AttachmentButton
-          size={ButtonSizes.Large}
-          type="button"
-          variation={ButtonVariations.Circle}
-          appearance={ButtonAppearance.Secondary}
-          backgroundColor={
-            selectedFile
-              ? theme.color.status.error
-              : theme.color.surface.primary
-          }
-          borderColor={theme.color.text.title}
-          color={
-            selectedFile ? theme.color.text.reversed : theme.color.text.title
-          }
-          onClick={selectedFile ? clearSelectedFile : handleAttachmentClick}
-        >
-          {selectedFile ? (
-            <CloseIcon
-              label="Remove attachment"
-              onClick={clearSelectedFile}
+      {!hideComposer && (
+        <WriteSection onSubmit={handleSubmit(onSendMessage)}>
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileSelect}
+            style={{ display: 'none' }}
+            accept="application/pdf, .pdf,.doc,.docx,.txt,.rtf,.odt,
+                      .jpg,.jpeg,.png,.gif,.bmp,.webp,.tiff,
+                      .ppt,.pptx,.xls,.xlsx,.csv, image/*"
+          />
+
+          <MessageBox
+            {...registerInput({
+              register,
+              name: 'text',
+              options: { required: !selectedFile },
+            })}
+            key={`message ${messagesSent}`}
+            id="text"
+            defaultValue={composerInitialMessage}
+            error={errors?.newMessage?.message}
+            expandable
+            placeholder={'Write a message...'}
+            onSubmit={() => handleSubmit(onSendMessage)()}
+            size={TextAreaSize.Medium}
+          />
+          {!!selectedFile && (
+            <Attachment>
+              <AttachmentIcon
+                label={`Selected file: ${selectedFile.name}`}
+                height={40}
+                width={40}
+              />
+              <UnreadDot count={1} height="18px" top="0px" right="22px" />
+            </Attachment>
+          )}
+          <AttachmentButton
+            size={ButtonSizes.Large}
+            type="button"
+            variation={ButtonVariations.Circle}
+            appearance={ButtonAppearance.Secondary}
+            backgroundColor={
+              selectedFile
+                ? theme.color.status.error
+                : theme.color.surface.primary
+            }
+            borderColor={theme.color.text.title}
+            color={
+              selectedFile ? theme.color.text.reversed : theme.color.text.title
+            }
+            onClick={selectedFile ? clearSelectedFile : handleAttachmentClick}
+          >
+            {selectedFile ? (
+              <CloseIcon
+                label="Remove attachment"
+                onClick={clearSelectedFile}
+                width="20"
+                height="20"
+              />
+            ) : (
+              <PlusIcon label={'upload attachment'} width="20" height="20" />
+            )}
+          </AttachmentButton>
+          <SendButton
+            size={ButtonSizes.Large}
+            type="submit"
+            disabled={isSubmitting}
+            variation={ButtonVariations.Circle}
+          >
+            <SendIcon
+              label={'Send message'}
+              color={theme.color.text.reversed}
               width="20"
               height="20"
             />
-          ) : (
-            <PlusIcon label={'upload attachment'} width="20" height="20" />
-          )}
-        </AttachmentButton>
-        <SendButton
-          size={ButtonSizes.Large}
-          type="submit"
-          disabled={isSubmitting}
-          variation={ButtonVariations.Circle}
-        >
-          <SendIcon
-            label={'Send message'}
-            color={theme.color.text.reversed}
-            width="20"
-            height="20"
-          />
-        </SendButton>
-      </WriteSection>
+          </SendButton>
+        </WriteSection>
+      )}
     </ChatContainer>
   );
 };

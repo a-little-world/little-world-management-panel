@@ -207,7 +207,11 @@ const ChangedField = styled(Text)`
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function formatFieldName(field: string): string {
+function formatFieldName(field: string, modelType?: string): string {
+  if (field === 'status') {
+    if (modelType === 'supporttaskaction') return 'Action Status';
+    if (modelType === 'supporttask') return 'Task Status';
+  }
   return field.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
@@ -337,7 +341,7 @@ export default function ObjectHistoryList({
                           )}
                           changed
                           <ChangedField>
-                            {formatFieldName(entry.field)}
+                            {formatFieldName(entry.field, entry.model_type)}
                           </ChangedField>
                         </EntryHeader>
                         <DiffBlock>

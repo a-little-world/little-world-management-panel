@@ -307,6 +307,28 @@ export const sendChatMessage = async ({
   }
 };
 
+export const sendSupportMessageReply = async ({
+  userId,
+  text,
+  onSuccess,
+  onError,
+}: {
+  userId: string | number;
+  text: string;
+  onSuccess: (result: any) => void;
+  onError: (error: any) => void;
+}) => {
+  try {
+    const result = await apiFetch(`/api/matching/users/${userId}/message_reply/`, {
+      method: 'POST',
+      body: { message: text },
+    });
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
+  }
+};
+
 export const markMessageAsRead = ({
   messageId,
   userId,

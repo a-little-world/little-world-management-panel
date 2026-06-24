@@ -208,6 +208,8 @@ const DEFAULT_EXPORT_HEADERS = [
   'created_at',
 ];
 
+const DEFAULT_STATUS_FILTERS: TaskStatus[] = ['NEW', 'IN_PROGRESS'];
+
 // ─── Column definitions ───────────────────────────────────────────────────────
 
 const columnHelper = createColumnHelper<SupportTask>();
@@ -452,6 +454,9 @@ export default function SupportTasksOverview() {
     useState<string[]>(TASK_EXPORT_HEADERS);
 
   const statusFilters = searchParams.getAll('status');
+  const effectiveStatusFilters = (statusFilters.length
+    ? statusFilters
+    : DEFAULT_STATUS_FILTERS) as TaskStatus[];
   const sortBy = searchParams.get('sort_by') ?? 'created_at';
   const sortOrder = (searchParams.get('sort_order') ?? 'desc') as
     | 'asc'
@@ -461,7 +466,7 @@ export default function SupportTasksOverview() {
 
   const params = useMemo(
     (): SupportTaskListParams => ({
-      status: searchParams.getAll('status'),
+      status: effectiveStatusFilters,
       priority: searchParams.getAll(TaskFilterKeys.Priority),
       action_type: searchParams.getAll(TaskFilterKeys.ActionType),
       assigned_to: searchParams.get(TaskFilterKeys.AssignedTo) || undefined,
@@ -474,7 +479,7 @@ export default function SupportTasksOverview() {
       page: Number(searchParams.get('page')) || undefined,
       page_size: Number(searchParams.get('page_size')) || undefined,
     }),
-    [searchParams],
+    [searchParams, effectiveStatusFilters],
   );
 
   const {
@@ -498,16 +503,18 @@ export default function SupportTasksOverview() {
 
   const { data: staffUsers = [] } = useSWR('staff_users', fetchStaffUsers);
 
-  const showNew = statusFilters.includes('NEW');
-  const showInProgress = statusFilters.includes('IN_PROGRESS');
-  const showCompleted = statusFilters.includes('COMPLETED');
+  const showNew = effectiveStatusFilters.includes('NEW');
+  const showInProgress = effectiveStatusFilters.includes('IN_PROGRESS');
+  const showCompleted = effectiveStatusFilters.includes('COMPLETED');
   const onlyMe =
     currentUserId !== null && assignedToFilter === String(currentUserId);
 
   const toggleStatusFilter = (s: string) => {
     const next = new URLSearchParams(searchParams);
     next.delete('page');
-    const current = next.getAll('status');
+    const current = next.getAll('status').length
+      ? next.getAll('status')
+      : [...DEFAULT_STATUS_FILTERS];
     next.delete('status');
     if (current.includes(s)) {
       current.filter(v => v !== s).forEach(v => next.append('status', v));

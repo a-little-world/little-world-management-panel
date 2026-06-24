@@ -78,6 +78,7 @@ export interface SupportTaskListParams {
   priority?: string | string[];
   action_type?: string | string[];
   assigned_to?: string;
+  related_user?: string;
   sort_by?: string;
   sort_order?: 'asc' | 'desc';
   search?: string;
@@ -97,6 +98,7 @@ export const fetchSupportTasks = (
   appendList('priority', params.priority);
   appendList('action_type', params.action_type);
   if (params.assigned_to) query.set('assigned_to', params.assigned_to);
+  if (params.related_user) query.set('related_user', params.related_user);
   if (params.sort_by) query.set('sort_by', params.sort_by);
   if (params.sort_order) query.set('sort_order', params.sort_order);
   if (params.search) query.set('search', params.search);
