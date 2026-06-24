@@ -1,3 +1,4 @@
+import { Text, TextTypes } from '@a-little-world/little-world-design-system';
 import styled from 'styled-components';
 
 /**
@@ -31,6 +32,7 @@ export const StatValue = styled.p`
   font-weight: 700;
   color: ${({ theme }) => theme.color.text.heading};
   line-height: 1;
+  text-align: center;
 `;
 
 /**
@@ -42,4 +44,36 @@ export const StatLabel = styled.p`
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: ${({ theme }) => theme.color.text.secondary};
+  text-align: center;
+`;
+
+export const BreakdownList = styled.div`
+  border-top: 1px solid ${({ theme }) => theme.color.border.subtle};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xxxsmall};
+  margin-top: ${({ theme }) => theme.spacing.xxsmall};
+  padding-top: ${({ theme }) => theme.spacing.xxsmall};
+`;
+
+export const BreakdownRow = styled.div`
+  align-items: center;
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.xxsmall};
+  justify-content: space-between;
+`;
+
+export const BreakdownLabel = styled(Text).attrs({
+  tag: 'span' as const,
+  type: TextTypes.Body7,
+})`
+  color: ${({ theme }) => theme.color.text.secondary};
+`;
+
+export const BreakdownValue = styled(Text).attrs({
+  bold: true,
+  tag: 'span' as const,
+  type: TextTypes.Body7,
+})`
+  color: ${({ theme }) => theme.color.text.primary};
 `;
