@@ -236,7 +236,9 @@ const UserChat = ({
     typeof replyTask?.action?.parameters?.message === 'string'
       ? replyTask.action.parameters.message.trim()
       : '';
-  const composerInitialMessage = initialDraftMessage || activeSupportReplySuggestion;
+  const shouldPrefillFromSuggestion = replyTaskActionStatus === 'OPEN';
+  const composerInitialMessage =
+    initialDraftMessage || (shouldPrefillFromSuggestion ? activeSupportReplySuggestion : '');
   const shouldSendViaSupportReplyApi =
     sendViaSupportReplyApi || Boolean(replyTask);
   const replyTaskStatusLabel =
