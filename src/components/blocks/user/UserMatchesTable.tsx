@@ -107,10 +107,7 @@ const UserMatchesTable = ({
                   {match.partner?.censored ? (
                     <Text>Account no longer exists</Text>
                   ) : (
-                    <Link
-                      to={`/user/${match.partner.id}`}
-                      textDecoration={false}
-                    >
+                    <Link to={`/match/${match.id}`} textDecoration={false}>
                       <PartnerInfo>
                         <UserImage
                           hasPriority={match.partner.has_match_priority}

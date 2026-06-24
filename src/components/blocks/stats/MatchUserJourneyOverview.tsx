@@ -1,9 +1,9 @@
 import {
-    Card,
-    ChevronRightIcon,
-    Link,
-    Text,
-    TextTypes,
+  Card,
+  ChevronRightIcon,
+  Link,
+  Text,
+  TextTypes,
 } from '@a-little-world/little-world-design-system';
 import { isNumber } from 'lodash';
 import React from 'react';
@@ -12,13 +12,11 @@ import useSWR from 'swr';
 
 import { cratePostFetcher } from '../../../store';
 import {
-    HoverCard,
-    HoverCardContent,
-    HoverCardTrigger,
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
 } from '../../atoms/HoverCard';
 import LoadingSpinner from '../../atoms/LoadingSpinner';
-import Stat from '../../atoms/stats/Stat';
-import { DataGraphTwoCounts } from '../DataGraph';
 import { MatchJourneyOverview } from './MatchJourneyBuckets';
 import { UserJourneyBucketsOverview } from './UserJourneyBuckets';
 import { UserSignUpLossStatistic } from './UserSignUpLossStatistic';
@@ -89,12 +87,6 @@ export const SubBucket = styled.li`
   gap: ${({ theme }) => theme.spacing.xxsmall};
   display: flex;
   align-items: center;
-`;
-
-export const StatsGrouping = styled.ul`
-  display: flex;
-  gap: ${({ theme }) => theme.spacing.small};
-  align-items: flex-start;
 `;
 
 export const StyledChevron = styled(ChevronRightIcon)`
@@ -230,65 +222,6 @@ export function DynamicBucketsV2({
   );
 }
 
-export function DynamicUserInfluxOverview({ data }) {
-  return (
-    <Section>
-      <SectionTitle type={TextTypes.Body4} tag="h2">
-        User Influx
-      </SectionTitle>
-      <SectionCard>
-        <DataGraphTwoCounts
-          data={data}
-          dataLabel={'New registrations in the last week'}
-          maxHeight="240px"
-          minHeight="auto"
-        />
-      </SectionCard>
-    </Section>
-  );
-}
-
-const MatchingOverview = ({ extraCounts, extraMatchCounts }) => (
-  <Section>
-    <SectionTitle tag="h2" type={TextTypes.Body4}>
-      Matching
-    </SectionTitle>
-    <SectionCard>
-      <StatsGrouping>
-        <Stat
-          stat={extraCounts['needs_matching']?.count}
-          label={`No. of users that need matching.
-            <bold>${
-              (extraCounts['needs_matching']?.count ?? 0) -
-              (extraCounts['needs_matching_volunteers']?.count ?? 0)
-            } Learners</bold>
-            <bold>${
-              extraCounts['needs_matching_volunteers']?.count ?? 0
-            } Volunteers</bold>`}
-        />
-
-        <Stat
-          stat={extraMatchCounts['match_journey_v2__match_ongoing']?.count}
-          label={
-            'Ongoing matchings: matches in their first 10 weeks and have interacted within the last 3 weeks.'
-          }
-        />
-
-        <Stat
-          stat={extraMatchCounts['match_journey_v2__match_free_play']?.count}
-          label={
-            'Free-play matchings: matches still interacting but already past their first 10 weeks.'
-          }
-        />
-        <Stat
-          stat={extraMatchCounts['match_journey_v2__completed_match']?.count}
-          label="Completed Matchings"
-        />
-      </StatsGrouping>
-    </SectionCard>
-  </Section>
-);
-
 export function MatchUserJourneyOverview() {
   const allBuckets = userJourneyBuckets.flatMap(bucket => bucket.sub_buckets);
   const allBucketIds = allBuckets.map(bucket => bucket.id);
@@ -367,17 +300,12 @@ export function MatchUserJourneyOverview() {
   return (
     <Container>
       <Text type={TextTypes.Body3} center bold tag="h1">
-        Little World Statistics & User Journey Overview
+        User & Match Journey Overview
       </Text>
       <Description center>
         {`All the numbers in these overviews <bold>are live statistics</bold> and are <bold>filtered down to the current users access</bold>.`}
       </Description>
       <Sections>
-        <DynamicUserInfluxOverview data={userSignupsData} />
-        <MatchingOverview
-          extraCounts={extraCounts}
-          extraMatchCounts={extraMatchCounts}
-        />
         <UserJourneyBucketsOverview />
         <MatchJourneyOverview />
       </Sections>

@@ -292,6 +292,7 @@ function KPIsDashboard() {
         <BarChartTimeRanged
           displayTimeSelection={true}
           displayVolunteersOnlyCheckbox={true}
+          displayTooLowGermanLevelCheckbox={true}
           listDescriptionMap={{
             all: 'Total registered users',
             journey_v2__never_active_or_deleted: 'Registered users (adjusted)',

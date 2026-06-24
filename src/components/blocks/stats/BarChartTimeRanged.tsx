@@ -496,6 +496,7 @@ export function BarChartTimeRanged({
   initialCategory = 'user-signup-funnel',
   displayTimeSelection = true,
   displayVolunteersOnlyCheckbox = true,
+  displayTooLowGermanLevelCheckbox = true,
   displayExactTimeSelection = false,
   listDescriptionMap = {},
 }) {
@@ -503,6 +504,14 @@ export function BarChartTimeRanged({
     chartCategories.find(cat => cat.id === initialCategory),
   );
   const [volunteersOnly, setVolunteersOnly] = React.useState(false);
+  const [includeTooLowGermanLevel, setIncludeTooLowGermanLevel] =
+    React.useState(true);
+  const selectedFilters =
+    category?.filters.filter(
+      filter =>
+        includeTooLowGermanLevel ||
+        filter !== 'journey_v2__too_low_german_level',
+    ) ?? [];
 
   const today = new Date();
   const [startDate, setStartDate] = React.useState('2021-01-01');
@@ -515,10 +524,11 @@ export function BarChartTimeRanged({
     '/api/matching/users/statistics/user_journey_buckets/?random=' +
       random.current,
     cratePostFetcher({
-      selected_filters: category.filters,
+      selected_filters: selectedFilters,
       start_date: startDate,
       end_date: endDate,
       volunteers_only: volunteersOnly,
+      include_too_low_german_level: includeTooLowGermanLevel,
     }),
     {},
   );
@@ -585,6 +595,28 @@ export function BarChartTimeRanged({
                 className="text-sm font-medium text-gray-700"
               >
                 Volunteers only
+              </label>
+            </div>
+          )}
+          {displayTooLowGermanLevelCheckbox && (
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="include-too-low-german-level"
+                checked={includeTooLowGermanLevel}
+                onChange={e => {
+                  setIncludeTooLowGermanLevel(e.target.checked);
+                  setTimeout(() => {
+                    mutate();
+                  }, 500);
+                }}
+                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+              />
+              <label
+                htmlFor="include-too-low-german-level"
+                className="text-sm font-medium text-gray-700"
+              >
+                Include too low German level
               </label>
             </div>
           )}
