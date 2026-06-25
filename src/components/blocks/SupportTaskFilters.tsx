@@ -6,9 +6,9 @@ import {
   CardFooter,
   CardHeader,
   CardSizes,
-  Dropdown,
+  Select,
   Modal,
-  MultiCheckbox,
+  CheckboxGroup,
 } from '@a-little-world/little-world-design-system';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
@@ -104,7 +104,7 @@ const SupportTaskFilters: React.FC<SupportTaskFiltersProps> = ({
       <Card width={CardSizes.Large}>
         <CardHeader>Task Filters</CardHeader>
         <CardContent align="flex-start">
-          <MultiCheckbox
+          <CheckboxGroup
             key={filters[TaskFilterKeys.Priority]}
             name={TaskFilterKeys.Priority}
             heading="Priority"
@@ -123,7 +123,7 @@ const SupportTaskFilters: React.FC<SupportTaskFiltersProps> = ({
             }}
           />
 
-          <MultiCheckbox
+          <CheckboxGroup
             key={filters[TaskFilterKeys.ActionType]}
             name={TaskFilterKeys.ActionType}
             heading="Type"
@@ -144,7 +144,7 @@ const SupportTaskFilters: React.FC<SupportTaskFiltersProps> = ({
 
           <DropdownRow>
             <DropdownItem>
-              <Dropdown
+              <Select
                 id="assigned_to"
                 key={
                   TaskFilterKeys.AssignedTo +

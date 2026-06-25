@@ -40,7 +40,6 @@ const MATCH_TABS = [
   { key: 'overview', label: 'Overview' },
   { key: 'journey', label: 'Journey' },
   { key: 'calls', label: 'Calls' },
-  { key: 'stats', label: 'Stats' },
   { key: 'notes', label: 'Notes' },
   { key: 'actions', label: 'Actions' },
 ];
@@ -59,8 +58,6 @@ const MatchPanelContent = ({
   if (tab === 'journey') return <MatchJourney match={match} />;
 
   if (tab === 'calls') return <MatchCalls match={match} />;
-
-  if (tab === 'stats') return 'More detailed stats coming soon';
 
   if (tab === 'notes')
     return (

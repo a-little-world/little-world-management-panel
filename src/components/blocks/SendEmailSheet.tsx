@@ -1,6 +1,6 @@
 import {
   Button,
-  Dropdown,
+  Select,
   Loading,
   StatusMessage,
   StatusTypes,
@@ -117,7 +117,7 @@ export function SendEmailSheet({
                       field: { onChange, value },
                       fieldState: { error },
                     }) => (
-                      <Dropdown
+                      <Select
                         id="user_list"
                         onValueChange={val =>
                           onChange({ target: { value: val } })

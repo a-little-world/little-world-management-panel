@@ -1,5 +1,5 @@
 import {
-  Dropdown,
+  Select,
   Text,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
@@ -81,7 +81,7 @@ const FilterGroup = styled.div`
   min-width: 220px;
 `;
 
-const StyledDropdown = styled(Dropdown)`
+const StyledDropdown = styled(Select)`
   div[data-radix-popper-content-wrapper] {
     z-index: 20 !important;
   }

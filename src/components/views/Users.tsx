@@ -1,5 +1,5 @@
 import {
-  Dropdown,
+  Select,
   Tag,
   TagSizes,
 } from '@a-little-world/little-world-design-system';
@@ -136,9 +136,10 @@ const userColumns = [
       );
     },
     cell: ({ row }) =>
-      `${isNumber(row.original.waiting_time?.number_of_days)
-        ? row.original.waiting_time?.number_of_days
-        : row.original.waiting_time?.waiting_time_string
+      `${
+        isNumber(row.original.waiting_time?.number_of_days)
+          ? row.original.waiting_time?.number_of_days
+          : row.original.waiting_time?.waiting_time_string
       }`,
   }),
   columnHelper.accessor('state.company', {
@@ -427,7 +428,7 @@ export function Users() {
         isLoading={usersLoading}
         loadingText="Loading users..."
       >
-        <Dropdown
+        <Select
           id="users_order_by_dropdown"
           label={'Sort'}
           value={orderBy}
@@ -476,7 +477,9 @@ export function Users() {
               userList={userList}
               onSelectUser={async (user: Record<string, any>) => {
                 try {
-                  const fullUser = await getUserDetails(String(user.uuid ?? user.id));
+                  const fullUser = await getUserDetails(
+                    String(user.uuid ?? user.id),
+                  );
                   selectUser(fullUser);
                 } catch (error) {
                   console.log({ error });

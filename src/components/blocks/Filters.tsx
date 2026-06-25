@@ -6,11 +6,11 @@ import {
   CardFooter,
   CardHeader,
   CardSizes,
-  Dropdown,
   Label,
   Modal,
-  MultiCheckbox,
+  CheckboxGroup,
   RadioGroup,
+  Select,
   Switch,
 } from '@a-little-world/little-world-design-system';
 import { find, includes, isEmpty, isString, map, some } from 'lodash';
@@ -269,7 +269,7 @@ const Filters: React.FC<FiltersProps> = ({
 
           <DropdownRow>
             <DropdownItem>
-              <Dropdown
+              <Select
                 id={FilterKeys.UserList}
                 key={FilterKeys.UserList + filters[FilterKeys.UserList]}
                 label={'User List'}
@@ -286,7 +286,7 @@ const Filters: React.FC<FiltersProps> = ({
               />
             </DropdownItem>
             <DropdownItem>
-              <Dropdown
+              <Select
                 id={FilterKeys.UserType}
                 key={FilterKeys.UserType + filters[FilterKeys.UserType]}
                 onValueChange={val => {
@@ -306,7 +306,7 @@ const Filters: React.FC<FiltersProps> = ({
 
           <DropdownRow>
             <DropdownItem>
-              <Dropdown
+              <Select
                 id={FilterKeys.Company}
                 key={FilterKeys.Company + filters[FilterKeys.Company]}
                 onValueChange={val => {
@@ -331,7 +331,7 @@ const Filters: React.FC<FiltersProps> = ({
             </DropdownItem>
 
             <DropdownItem>
-              <Dropdown
+              <Select
                 id={FilterKeys.CountryOfResidence}
                 key={
                   FilterKeys.CountryOfResidence +
@@ -403,7 +403,7 @@ const Filters: React.FC<FiltersProps> = ({
             />
           </JourneySection>
 
-          <MultiCheckbox
+          <CheckboxGroup
             key={filters[FilterKeys.TargetGroups]}
             name={FilterKeys.TargetGroups}
             onSelection={val =>

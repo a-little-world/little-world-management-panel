@@ -1,5 +1,5 @@
 import {
-  Dropdown,
+  Select,
   Loading,
   LoadingSizes,
   Text,
@@ -128,7 +128,7 @@ function RandomCallHistory() {
       </Description>
 
       <DropdownContainer>
-        <Dropdown
+        <Select
           placeholder="Select a lobby..."
           value={selectedLobbyUuid || ''}
           onValueChange={handleLobbyChange}

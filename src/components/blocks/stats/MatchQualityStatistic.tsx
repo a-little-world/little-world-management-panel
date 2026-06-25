@@ -1,4 +1,4 @@
-import { Dropdown } from '@a-little-world/little-world-design-system';
+import { Select } from '@a-little-world/little-world-design-system';
 import React from 'react';
 import styled from 'styled-components';
 import useSWR from 'swr';
@@ -7,7 +7,7 @@ import { cratePostFetcher } from '../../../store';
 import { PieChart } from './PieChart';
 import { matchJourneyBucketsV4 } from './buckets';
 
-const StyledDropdown = styled(Dropdown)`
+const StyledDropdown = styled(Select)`
   div[data-radix-popper-content-wrapper] {
     z-index: 20 !important;
   }

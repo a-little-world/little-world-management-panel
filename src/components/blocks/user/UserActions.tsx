@@ -8,9 +8,9 @@ import {
   CardHeader,
   CardSizes,
   Checkbox,
-  Dropdown,
   Loading,
   Modal,
+  Select,
   StatusMessage,
   StatusTypes,
   Text,
@@ -21,11 +21,13 @@ import {
 import { isEmpty, map } from 'lodash';
 import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from 'styled-components';
 import useSWR from 'swr';
 
 import {
   deleteUser,
+  fetchMatchingPanelUser,
   fetchUserManagementPermissions,
   inviteNativeAppTester,
   sendPushNotification,
@@ -37,8 +39,9 @@ import {
   setUserManagementPermission,
   setUserSearching,
   setUserUnresponsive,
+  updateUserProfileFields,
 } from '../../../api/index';
-import { registerInput } from '../../../store';
+import { registerInput, useGlobalState } from '../../../store';
 
 const SUPPORT_USERS = [
   {
@@ -54,6 +57,11 @@ const SUPPORT_USERS = [
 const NATIVE_APP_PLATFORM_OPTIONS = [
   { label: 'iOS', value: 'ios' },
   { label: 'Android', value: 'android' },
+];
+
+const USER_TYPE_OPTIONS = [
+  { label: 'Learner', value: 'learner' },
+  { label: 'Volunteer', value: 'volunteer' },
 ];
 
 /** Django `management.apply_management_permissions` — cannot be granted/revoked via API. */
@@ -319,7 +327,7 @@ function InviteNativeAppTester({ user }: { user: any }) {
       <Text className="mb-2" tag="h4" bold>
         {isIos ? 'iOS Beta Invite' : 'Android Beta Invite'}
       </Text>
-      <Dropdown
+      <Select
         id="platform"
         name="platform"
         onValueChange={val => {
@@ -430,9 +438,17 @@ const UserActions = ({
   onUpdate: () => void;
 }) => {
   const theme = useTheme();
+  const { apiOptions } = useGlobalState();
+  const { t } = useTranslation();
   const [deleteUserModalOpen, setDeleteUserModalOpen] = useState(false);
+  const [deleteUserError, setDeleteUserError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [changesSaved, setChangesSaved] = useState(false);
+  const { data: currentUser, isLoading: currentUserLoading } = useSWR(
+    '/api/matching/me/',
+    fetchMatchingPanelUser,
+    { revalidateOnFocus: false },
+  );
   const {
     data: permissionsData,
     error: permissionsError,
@@ -450,6 +466,13 @@ const UserActions = ({
     formState: { dirtyFields, errors },
     setError,
   } = useForm();
+
+  const countryOptions: { value: string; label: string }[] = (
+    (apiOptions as any)?.profile?.country_of_residence ?? []
+  ).map(({ value, tag }: { value: string; tag: string }) => ({
+    value,
+    label: t(tag),
+  }));
 
   const saveChanges = data => {
     if (isEmpty(dirtyFields)) return;
@@ -470,6 +493,8 @@ const UserActions = ({
           func = setHasMatchPriority;
         } else if (key === 'randomCallsAccess') {
           func = setRandomCallsAccess;
+        } else if (key === 'user_type' || key === 'country_of_residence') {
+          func = updateUserProfileFields;
         } else {
           console.error(`No function mapped for key: ${key}`);
           return Promise.reject(
@@ -501,15 +526,18 @@ const UserActions = ({
   const onDeleteUser = () => {
     setIsSubmitting(true);
     setChangesSaved(false);
+    setDeleteUserError(null);
     deleteUser({
       id: user.id,
       onError: error => {
         console.error(error);
+        setDeleteUserError(error?.message || 'Could not delete this user.');
         setIsSubmitting(false);
       },
       onSuccess: () => {
         setIsSubmitting(false);
         setChangesSaved(true);
+        setDeleteUserModalOpen(false);
         onUpdate();
       },
     });
@@ -524,6 +552,25 @@ const UserActions = ({
   const showManagementPermissionsSection =
     Boolean(permissionsData) ||
     (Boolean(permissionsError) && permissionsStatus !== 403);
+  const canUpdateMatchingProfileFields = Boolean(currentUser?.is_matching_user);
+  const canDeleteUser = Boolean(currentUser?.can_edit_management_permissions);
+  const targetHasMatchingUserPermission = Boolean(
+    permissionsData?.permissions?.some(
+      row => row.permission === 'management.matching_user',
+    ),
+  );
+  const targetIsProtected = Boolean(
+    user.is_staff ||
+    user.is_superuser ||
+    user.is_matching_user ||
+    targetHasMatchingUserPermission,
+  );
+  const deleteDisabled =
+    isSubmitting ||
+    currentUserLoading ||
+    permissionsLoading ||
+    !canDeleteUser ||
+    targetIsProtected;
 
   return (
     <div className="w-full">
@@ -572,7 +619,7 @@ const UserActions = ({
                       field: { onChange, onBlur, value, name, ref },
                       fieldState: { error },
                     }) => (
-                      <Dropdown
+                      <Select
                         id="support_user"
                         name={name}
                         inputRef={ref}
@@ -588,6 +635,52 @@ const UserActions = ({
                       />
                     )}
                   />
+                  {canUpdateMatchingProfileFields && (
+                    <>
+                      <Controller
+                        defaultValue={user.profile.user_type}
+                        name="user_type"
+                        control={control}
+                        render={({
+                          field: { onChange, value },
+                          fieldState: { error },
+                        }) => (
+                          <Select
+                            id="user_type"
+                            onValueChange={val =>
+                              onChange({ target: { value: val } })
+                            }
+                            value={value}
+                            error={error?.message}
+                            label="User type"
+                            options={USER_TYPE_OPTIONS}
+                            placeholder="Select a user type"
+                          />
+                        )}
+                      />
+                      <Controller
+                        defaultValue={user.profile.country_of_residence}
+                        name="country_of_residence"
+                        control={control}
+                        render={({
+                          field: { onChange, value },
+                          fieldState: { error },
+                        }) => (
+                          <Select
+                            id="country_of_residence"
+                            onValueChange={val =>
+                              onChange({ target: { value: val } })
+                            }
+                            value={value}
+                            error={error?.message}
+                            label="Country of residence"
+                            options={countryOptions}
+                            placeholder="Select a country"
+                          />
+                        )}
+                      />
+                    </>
+                  )}
                   <Controller
                     defaultValue={user.profile.newsletter_subscribed}
                     name="newsletter"
@@ -776,7 +869,10 @@ const UserActions = ({
                   </Text>
                   <div>
                     <Button
-                      onClick={() => setDeleteUserModalOpen(true)}
+                      onClick={() => {
+                        setDeleteUserError(null);
+                        setDeleteUserModalOpen(true);
+                      }}
                       backgroundColor={theme.color.status.error}
                     >
                       Delete User
@@ -795,19 +891,29 @@ const UserActions = ({
         <Card width={CardSizes.Medium}>
           <CardHeader>Are you sure you want to delete this user?</CardHeader>
           <CardContent>
-            <StatusMessage type={StatusTypes.Error} visible={true}>
-              Cannot delete the user via this view. Please request admin user to
-              delete the user.
+            <Text>
+              This will delete the user account, censor their profile, close
+              their proposals, update their matches, and send the account
+              deletion email.
+            </Text>
+            <StatusMessage
+              type={StatusTypes.Error}
+              visible={!canDeleteUser || targetIsProtected || !!deleteUserError}
+            >
+              {deleteUserError ||
+                (targetIsProtected
+                  ? 'Staff, superusers, and matching users cannot be deleted from this view.'
+                  : `You do not have the required permissions to delete this user.`)}
             </StatusMessage>
           </CardContent>
           <CardFooter>
             <Button
               onClick={onDeleteUser}
               backgroundColor={theme.color.status.error}
-              disabled
+              disabled={deleteDisabled}
               size={ButtonSizes.Stretch}
             >
-              Delete Account
+              {isSubmitting ? 'Deleting...' : 'Delete Account'}
             </Button>
           </CardFooter>
         </Card>

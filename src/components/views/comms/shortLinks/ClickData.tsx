@@ -1,5 +1,5 @@
 import {
-  Dropdown,
+  Select,
   Loading,
   LoadingSizes,
   StatusMessage,
@@ -90,7 +90,7 @@ function LinkClicks() {
         isLoading={isLoading}
         loadingText="Loading short link clicks..."
       >
-        <Dropdown
+        <Select
           id="short-link-click-source"
           label="Source"
           value={source}

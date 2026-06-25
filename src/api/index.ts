@@ -597,16 +597,26 @@ export const updateMatchNotes = async ({ id, notes, onSuccess, onError }) => {
   }
 };
 
-export const deleteUser = async ({ id, onError, onSuccess }) => {
-  // api needs to be added to delete user by id
-  // try {
-  //   const result = await apiFetch(`/api/matching/users/${id}/delete/`, {
-  //     method: 'POST',
-  //   });
-  //   onSuccess(result);
-  // } catch (error) {
-  //   onError(error);
-  // }
+export const deleteUser = async ({
+  id,
+  onError,
+  onSuccess,
+}: {
+  id: string | number;
+  onError: (error: any) => void;
+  onSuccess: (result: any) => void;
+}) => {
+  try {
+    const result = await apiFetch(`/api/matching/users/${id}/delete_user/`, {
+      method: 'POST',
+      body: {
+        send_deletion_email: true,
+      },
+    });
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
+  }
 };
 
 export const burstUpdateMatchingScores = async ({
@@ -934,6 +944,37 @@ export const setRandomCallsAccess = async ({
   }
 };
 
+export const updateUserProfileFields = async ({
+  userId,
+  user_type,
+  country_of_residence,
+  onError,
+  onSuccess,
+}: {
+  userId: string | number;
+  user_type?: 'learner' | 'volunteer';
+  country_of_residence?: string;
+  onError: (error: any) => void;
+  onSuccess: (result: any) => void;
+}) => {
+  try {
+    const body = {
+      ...(user_type ? { user_type } : {}),
+      ...(country_of_residence ? { country_of_residence } : {}),
+    };
+    const result = await apiFetch(
+      `/api/matching/users/${userId}/update_profile_fields/`,
+      {
+        method: 'POST',
+        body,
+      },
+    );
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
+  }
+};
+
 export type ManagementPermissionRow = {
   permission: string;
   codename: string;
@@ -953,6 +994,9 @@ export type MatchingPanelUser = {
   can_edit_management_permissions: boolean;
   permissions: ManagementPermissionRow[];
 };
+
+export const fetchMatchingPanelUser = () =>
+  apiFetch<MatchingPanelUser>('/api/matching/me/', { method: 'GET' });
 
 export const fetchUserManagementPermissions = (userId: string) =>
   apiFetch<{ permissions: ManagementPermissionRow[] }>(

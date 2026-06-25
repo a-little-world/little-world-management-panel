@@ -1,9 +1,9 @@
 import {
-  Dropdown,
   Loading,
   LoadingSizes,
   StatusMessage,
   StatusTypes,
+  Select,
   Text,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
@@ -91,16 +91,21 @@ function CourseStats() {
   const startDate = parseDateParam(searchParams.get('start_date'));
   const endDate = parseDateParam(searchParams.get('end_date'));
 
-  const { data: coursesData, isLoading: coursesLoading } = useSWR<AdminCourseList>(
-    `${ADMIN_COURSES_ENDPOINT}?page_size=100`,
-    () => fetchAdminCourses('page_size=100'),
-    {
-      revalidateOnFocus: false,
-    },
-  );
+  const { data: coursesData, isLoading: coursesLoading } =
+    useSWR<AdminCourseList>(
+      `${ADMIN_COURSES_ENDPOINT}?page_size=100`,
+      () => fetchAdminCourses('page_size=100'),
+      {
+        revalidateOnFocus: false,
+      },
+    );
 
   const courseOptions = useMemo(
-    () => (coursesData?.results ?? []).map(c => ({ label: c.title, value: c.slug })),
+    () =>
+      (coursesData?.results ?? []).map(c => ({
+        label: c.title,
+        value: c.slug,
+      })),
     [coursesData],
   );
 
@@ -145,7 +150,7 @@ function CourseStats() {
       </PageHeader>
 
       <FiltersRow>
-        <Dropdown
+        <Select
           id="course-stats-course"
           label="Course"
           value={selectedSlug || 'all'}

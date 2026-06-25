@@ -4,7 +4,7 @@ import {
   ButtonSizes,
   Card as CardDS,
   Checkbox,
-  Dropdown,
+  Select,
   Link,
   Tag,
   TagAppearance,
@@ -195,7 +195,7 @@ const Matching = ({
             Select a matching option and then hit submit
           </CardDescription>
           <div className="flex gap-6 w-full items-center">
-            <Dropdown
+            <Select
               value={option}
               options={MATCHING_OPTIONS}
               onValueChange={val => setOption(val)}

@@ -1,4 +1,4 @@
-import { Dropdown } from '@a-little-world/little-world-design-system';
+import { Select } from '@a-little-world/little-world-design-system';
 import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
@@ -22,7 +22,7 @@ const pageSizeOptions = [
   },
 ];
 
-const StyledDropdown = styled(Dropdown)`
+const StyledDropdown = styled(Select)`
   div[data-radix-popper-content-wrapper] {
     z-index: 20 !important;
   }
