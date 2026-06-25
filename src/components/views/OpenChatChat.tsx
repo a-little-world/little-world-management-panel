@@ -512,7 +512,9 @@ const OpenChatChat = () => {
     isLoading: isMessagesLoading,
     mutate: refreshMessages,
   } = useSWR(
-    selectedChatUuid ? `/open-chat/messages/${selectedChatUuid}` : null,
+    selectedChatUuid && looksLikeUuid(selectedChatUuid)
+      ? `/open-chat/messages/${selectedChatUuid}`
+      : null,
     () => fetchOpenChatMessages(selectedChatUuid as string),
     {
       revalidateOnFocus: true,
