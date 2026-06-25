@@ -9,7 +9,9 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import styled, { useTheme } from 'styled-components';
 import useSWR from 'swr';
 
+import type { MatchingPanelUser } from '../../../api';
 import { MATCHING_ROUTE } from '../../../router/routes';
+import { hasManagementPermission } from '../../../helpers/managementPermissions';
 import { fetchSupportTasks } from '../../../api/supportTasks';
 import { dataFetcher, useGlobalState } from '../../../store';
 import { Section, SectionContent } from '../../atoms/Section';
@@ -41,6 +43,9 @@ const HeaderActionButton = styled(Button)`
   gap: ${({ theme }) => theme.spacing.xxsmall};
 `;
 
+const MANAGEMENT_PERMISSION_CAN_SEND_SUPPORT_MESSAGE_REPLIES =
+  'management.can_send_support_message_replies';
+
 const UserPanelContent = ({
   tab,
   user,
@@ -48,6 +53,7 @@ const UserPanelContent = ({
   onUpdate,
   activeSupportReplyTask,
   onSupportReplySent,
+  canSendSupportReplies,
 }: {
   tab: string;
   user: any;
@@ -55,6 +61,7 @@ const UserPanelContent = ({
   onUpdate: () => void;
   activeSupportReplyTask?: any;
   onSupportReplySent?: (message: string) => void;
+  canSendSupportReplies?: boolean;
 }) => {
   if (tab === 'profile')
     return (
@@ -66,7 +73,7 @@ const UserPanelContent = ({
       <UserChat
         user={user}
         activeSupportReplyTask={activeSupportReplyTask}
-        sendViaSupportReplyApi={Boolean(activeSupportReplyTask)}
+        sendViaSupportReplyApi={Boolean(activeSupportReplyTask) || Boolean(canSendSupportReplies)}
         onSupportReplySent={onSupportReplySent}
       />
     );
@@ -91,7 +98,7 @@ const UserPanelContent = ({
 
 const UserPanel = () => {
   const { userId } = useParams();
-  const { addUserToMatching, setUpdateCurrentUser } = useGlobalState();
+  const { addUserToMatching, panelUser, setUpdateCurrentUser } = useGlobalState();
   const theme = useTheme();
   let [searchParams, setSearchParams] = useSearchParams();
 
@@ -126,6 +133,10 @@ const UserPanel = () => {
   const userName = user
     ? `${user.profile.first_name} ${user.profile.second_name}`
     : 'User';
+  const canSendSupportReplies = hasManagementPermission(
+    panelUser as MatchingPanelUser | undefined,
+    MANAGEMENT_PERMISSION_CAN_SEND_SUPPORT_MESSAGE_REPLIES,
+  );
 
   const shouldLoadActiveReplyTask = selectedTabKey === 'chat' && Boolean(user?.id);
   const { data: activeReplyTasksResponse } = useSWR(
@@ -228,6 +239,7 @@ const UserPanel = () => {
                 onUpdate={mutate}
                 activeSupportReplyTask={activeSupportReplyTask}
                 onSupportReplySent={onSupportReplySent}
+                canSendSupportReplies={canSendSupportReplies}
               />
             </SectionContent>
           </Section>

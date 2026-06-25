@@ -160,15 +160,14 @@ const UserChat = ({
   const onSendMessage = ({ text }) => {
     setIsSubmitting(true);
 
-    if (selectedFile) {
-      sendFileAttachmentMessage({
-        file: selectedFile,
-        text,
-        chatId,
-        onError,
-        onSuccess: onMessageSent,
-      });
-    } else if (shouldSendViaSupportReplyApi) {
+    if (shouldSendViaSupportReplyApi) {
+      if (selectedFile) {
+        setError('message', {
+          message: 'Attachments are not supported for support-reply sending.',
+        });
+        setIsSubmitting(false);
+        return;
+      }
       sendSupportMessageReply({
         userId: user.id,
         text,
@@ -177,6 +176,14 @@ const UserChat = ({
           onMessageSent(result);
           onSupportReplySent(text);
         },
+      });
+    } else if (selectedFile) {
+      sendFileAttachmentMessage({
+        file: selectedFile,
+        text,
+        chatId,
+        onError,
+        onSuccess: onMessageSent,
       });
     } else {
       sendChatMessage({
