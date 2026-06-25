@@ -77,7 +77,7 @@ export default function SupportTaskModal({
           />
           <DropdownRow>
             {/* <DropdownItem>
-              <Dropdown
+              <Select
                 label={'User List'}
                 value={filters[FilterKeys.UserList]}
                 options={

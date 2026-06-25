@@ -6,15 +6,15 @@ import {
   CardFooter,
   CardHeader,
   CardSizes,
-  Dropdown,
   Label,
   Modal,
+  Select,
   Text,
   TextArea,
   TextInput,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
-import { useCallback, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import styled from 'styled-components';
 
@@ -134,7 +134,7 @@ export default function CreateSupportTaskModal({
                 name="priority"
                 control={control}
                 render={({ field }) => (
-                  <Dropdown
+                  <Select
                     value={field.value}
                     options={priorityOptions}
                     onValueChange={field.onChange}
@@ -151,7 +151,7 @@ export default function CreateSupportTaskModal({
                 name="assigned_to"
                 control={control}
                 render={({ field }) => (
-                  <Dropdown
+                  <Select
                     value={field.value}
                     options={assigneeOptions}
                     onValueChange={field.onChange}

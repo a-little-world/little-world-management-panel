@@ -2,6 +2,7 @@ import { isEmpty, map, size } from 'lodash';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 
+import styled from 'styled-components';
 import useSelectUser from '../../hooks/useSelectUser';
 import { useGlobalState } from '../../store';
 import {
@@ -17,12 +18,13 @@ import {
 import SearchBar from './SearchBar';
 import MatchCard from './match/MatchCard';
 
+const SelectedMatches = styled(SheetScrollableContent)`
+  gap: ${({ theme }) => theme.spacing.small};
+`;
+
 export function SelectedMatchesSheet() {
   const {
-    register,
-    handleSubmit,
     formState: { errors },
-    setError,
   } = useForm();
 
   const { selectedMatches, deselectMatch } = useGlobalState();
@@ -42,7 +44,7 @@ export function SelectedMatchesSheet() {
             Review your selected matches here.
           </SheetDescription>
         </SheetHeader>
-        <SheetScrollableContent className="h-full overflow-scroll">
+        <SelectedMatches>
           {map(selectedMatches, match => {
             return (
               <MatchCard
@@ -52,7 +54,7 @@ export function SelectedMatchesSheet() {
               />
             );
           })}
-        </SheetScrollableContent>
+        </SelectedMatches>
         <SheetFooter>
           <SearchBar
             name="matchUuid"

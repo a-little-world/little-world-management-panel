@@ -1,6 +1,6 @@
 import {
   Checkbox,
-  Dropdown,
+  Select,
   Text,
 } from '@a-little-world/little-world-design-system';
 import { isEmpty } from 'lodash';
@@ -107,7 +107,7 @@ const MatchCalls = ({ match }: MatchCallsProps) => {
         loadingText="Loading calls..."
         withoutPadding
       >
-        <Dropdown
+        <Select
           id="match_calls_call_type_dropdown"
           label="Type"
           value={callType}

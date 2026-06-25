@@ -1,5 +1,5 @@
 import {
-  Dropdown,
+  Select,
   Text,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
@@ -9,6 +9,10 @@ import useSWR from 'swr';
 
 import { apiFetch } from '../../../api/helpers';
 import {
+  BreakdownLabel,
+  BreakdownList,
+  BreakdownRow,
+  BreakdownValue,
   StatCard,
   StatCards,
   StatLabel,
@@ -21,6 +25,8 @@ interface HighlightsResponse {
   start_date: string;
   end_date: string;
   registrations: number;
+  registered_volunteers: number;
+  registered_learners: number;
   onboarded_volunteers: number;
   onboarded_learners: number;
   match_proposals_made: number;
@@ -32,10 +38,15 @@ interface HighlightsResponse {
   messages_sent_excluding_support: number;
 }
 
-interface HighlightCard {
+interface HighlightBreakdownItem {
   label: string;
   value: number | undefined;
   suffix?: string;
+  formatter?: (value: number | undefined) => string;
+}
+
+interface HighlightCard extends HighlightBreakdownItem {
+  breakdown?: HighlightBreakdownItem[];
 }
 
 const PERIOD_OPTIONS: { label: string; value: HighlightsPeriod }[] = [
@@ -70,7 +81,7 @@ const FilterGroup = styled.div`
   min-width: 220px;
 `;
 
-const StyledDropdown = styled(Dropdown)`
+const StyledDropdown = styled(Select)`
   div[data-radix-popper-content-wrapper] {
     z-index: 20 !important;
   }
@@ -124,31 +135,136 @@ const formatNumber = (value: number | undefined, suffix = '') => {
     maximumFractionDigits: suffix ? 1 : 0,
   }).format(value);
 
+  if (suffix === '%') {
+    return `${formatted}%`;
+  }
+
   return suffix ? `${formatted} ${suffix}` : formatted;
 };
 
-const buildCards = (data: HighlightsResponse | undefined): HighlightCard[] => [
-  { label: 'Registrations', value: data?.registrations },
-  { label: 'Onboarded volunteers', value: data?.onboarded_volunteers },
-  { label: 'Onboarded learners', value: data?.onboarded_learners },
-  { label: 'Match proposals made', value: data?.match_proposals_made },
-  { label: 'New matches', value: data?.new_matches },
-  { label: 'Ongoing matches', value: data?.ongoing_matches },
-  { label: 'Completed matches', value: data?.completed_matches },
-  {
-    label: 'Video calls, both users active',
-    value: data?.video_calls_both_active,
-  },
-  {
-    label: 'Total video call duration, both users active',
-    value: data?.video_call_duration_minutes_both_active,
-    suffix: 'min',
-  },
-  {
-    label: 'Messages sent, excluding support',
-    value: data?.messages_sent_excluding_support,
-  },
-];
+const formatDuration = (minutes: number | undefined) => {
+  if (minutes === undefined) {
+    return '-';
+  }
+
+  const roundedMinutes = Math.round(minutes);
+  const hours = Math.floor(roundedMinutes / 60);
+  const remainingMinutes = roundedMinutes % 60;
+
+  if (hours === 0) {
+    return `${remainingMinutes} min`;
+  }
+
+  return `${hours} hr ${remainingMinutes} min`;
+};
+
+const getPercentage = (
+  numerator: number | undefined,
+  denominator: number | undefined,
+) => {
+  if (numerator === undefined || denominator === undefined) {
+    return undefined;
+  }
+
+  return denominator > 0 ? (numerator / denominator) * 100 : 0;
+};
+
+const getAverageDuration = (
+  totalMinutes: number | undefined,
+  totalCalls: number | undefined,
+) => {
+  if (totalMinutes === undefined || totalCalls === undefined) {
+    return undefined;
+  }
+
+  return totalCalls > 0 ? totalMinutes / totalCalls : 0;
+};
+
+const formatCardValue = (card: HighlightCard) =>
+  card.formatter
+    ? card.formatter(card.value)
+    : formatNumber(card.value, card.suffix);
+
+const formatBreakdownValue = (item: HighlightBreakdownItem) =>
+  item.formatter
+    ? item.formatter(item.value)
+    : formatNumber(item.value, item.suffix);
+
+const buildCards = (data: HighlightsResponse | undefined): HighlightCard[] => {
+  const onboardedUsers =
+    data === undefined
+      ? undefined
+      : data.onboarded_volunteers + data.onboarded_learners;
+
+  return [
+    {
+      label: 'Registrations',
+      value: data?.registrations,
+      breakdown: [
+        { label: 'Learners', value: data?.registered_learners },
+        { label: 'Volunteers', value: data?.registered_volunteers },
+      ],
+    },
+    {
+      label: 'Onboarded users',
+      value: onboardedUsers,
+      breakdown: [
+        { label: 'Learners', value: data?.onboarded_learners },
+        { label: 'Volunteers', value: data?.onboarded_volunteers },
+      ],
+    },
+    {
+      label: 'Onboarded vs registered',
+      value: getPercentage(onboardedUsers, data?.registrations),
+      suffix: '%',
+      breakdown: [
+        {
+          label: 'Learners',
+          value: getPercentage(
+            data?.onboarded_learners,
+            data?.registered_learners,
+          ),
+          suffix: '%',
+        },
+        {
+          label: 'Volunteers',
+          value: getPercentage(
+            data?.onboarded_volunteers,
+            data?.registered_volunteers,
+          ),
+          suffix: '%',
+        },
+      ],
+    },
+    { label: 'Match proposals made', value: data?.match_proposals_made },
+    { label: 'New matches', value: data?.new_matches },
+    { label: 'Ongoing matches', value: data?.ongoing_matches },
+    { label: 'Completed matches', value: data?.completed_matches },
+    {
+      label: 'Video calls, both users active',
+      value: data?.video_calls_both_active,
+      breakdown: [
+        {
+          label: 'Total duration',
+          value: data?.video_call_duration_minutes_both_active,
+          formatter: formatDuration,
+        },
+        {
+          label: 'Average duration',
+          value: getAverageDuration(
+            data?.video_call_duration_minutes_both_active,
+            data?.video_calls_both_active,
+          ),
+          formatter: formatDuration,
+        },
+      ],
+    },
+    {
+      label: 'Messages sent, excluding support',
+      value: data?.messages_sent_excluding_support,
+    },
+  ];
+};
 
 function Highlights() {
   const [period, setPeriod] = React.useState<HighlightsPeriod>('monthly');
@@ -216,10 +332,20 @@ function Highlights() {
       <StatCards>
         {cards.map(card => (
           <StatCard key={card.label}>
-            <StatValue>
-              {isLoading ? '-' : formatNumber(card.value, card.suffix)}
-            </StatValue>
+            <StatValue>{isLoading ? '-' : formatCardValue(card)}</StatValue>
             <StatLabel>{card.label}</StatLabel>
+            {card.breakdown && (
+              <BreakdownList>
+                {card.breakdown.map(item => (
+                  <BreakdownRow key={item.label}>
+                    <BreakdownLabel>{item.label}</BreakdownLabel>
+                    <BreakdownValue>
+                      {isLoading ? '-' : formatBreakdownValue(item)}
+                    </BreakdownValue>
+                  </BreakdownRow>
+                ))}
+              </BreakdownList>
+            )}
           </StatCard>
         ))}
       </StatCards>

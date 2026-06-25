@@ -1,5 +1,5 @@
 import {
-  Dropdown,
+  Select,
   Tag,
   TagAppearance,
   TagSizes,
@@ -33,7 +33,7 @@ import ObjectHistoryList, { ObjectHistory } from '../blocks/ObjectHistory';
 import SupportTaskActionCard from '../blocks/SupportTaskActionCard';
 import UserChat from '../blocks/user/UserChat';
 
-// ─── Dropdown options ─────────────────────────────────────────────────────────
+// ─── Select options ─────────────────────────────────────────────────────────
 
 const STATUS_OPTIONS = Object.entries(STATUS_CONFIG).map(([value, cfg]) => ({
   value,
@@ -156,7 +156,6 @@ const SentMessageQuote = styled.blockquote`
   margin: 0;
   font-weight: 600;
 `;
-
 const UserInfoRow = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.spacing.small};
@@ -432,7 +431,7 @@ export default function SupportTaskDetail() {
 
           <MetaField>
             <MetaLabel>Status</MetaLabel>
-            <Dropdown
+            <Select
               key={`task-status-${task.status}`}
               value={task.status}
               options={STATUS_OPTIONS}
@@ -447,7 +446,7 @@ export default function SupportTaskDetail() {
 
           <MetaField>
             <MetaLabel>Priority</MetaLabel>
-            <Dropdown
+            <Select
               value={task.priority}
               options={priorityOptions}
               onValueChange={v =>
@@ -464,7 +463,7 @@ export default function SupportTaskDetail() {
 
           <MetaField>
             <MetaLabel>Assigned to</MetaLabel>
-            <Dropdown
+            <Select
               key={`task-assignee-${currentAssignee}`}
               value={currentAssignee}
               options={assigneeOptions}

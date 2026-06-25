@@ -1,9 +1,12 @@
-import { Dropdown, Text } from '@a-little-world/little-world-design-system';
+import { Select, Text } from '@a-little-world/little-world-design-system';
 import React, { useMemo, useRef } from 'react';
 import { createSearchParams, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { getMatchesExportPage, getMatchesListPaginationMeta } from '../../api/index';
+import {
+  getMatchesExportPage,
+  getMatchesListPaginationMeta,
+} from '../../api/index';
 import { useMatchListData, useMatchesFilterOptions } from '../../store';
 import {
   DownloadSettingsModal,
@@ -18,7 +21,7 @@ import {
 import { SelectedMatchesSheet } from '../blocks/SelectedMatchesSheet';
 import { SelectedUsersSheet } from '../blocks/SelectedUsersSheet';
 
-const StyledDropdown = styled(Dropdown)`
+const StyledDropdown = styled(Select)`
   div[data-radix-popper-content-wrapper] {
     z-index: 20 !important;
   }
@@ -77,9 +80,7 @@ export function Matches() {
   const [downloadSettingsOpen, setDownloadSettingsOpen] = React.useState(false);
   const [downloadFormat, setDownloadFormat] =
     React.useState<ExportDownloadFormat>('csv');
-  const [selectedHeaders, setSelectedHeaders] = React.useState<string[]>(
-    [],
-  );
+  const [selectedHeaders, setSelectedHeaders] = React.useState<string[]>([]);
   const paginatedDownloaderRef = useRef<PaginatedCsvDownloaderHandle>(null);
   const searchParamsString = useMemo(
     () => createSearchParams(searchParams).toString(),

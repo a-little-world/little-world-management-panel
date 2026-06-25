@@ -2,7 +2,7 @@ import {
   Button,
   ButtonAppearance,
   ButtonSizes,
-  Dropdown,
+  Select,
   InputWidth,
   Loading,
   LoadingSizes,
@@ -670,7 +670,7 @@ function ChapterEditorPane({
           name={`chapters.${chapterIndex}.available_to`}
           control={control}
           render={({ field: { value, onChange } }) => (
-            <Dropdown
+            <Select
               key={`chapter_audience_${chapterIndex}_${String(value ?? 'all')}`}
               id={`chapter_audience_${chapterIndex}`}
               label="Visible to"
@@ -798,7 +798,7 @@ function CourseDetailsPane({
           name="available_to"
           control={control}
           render={({ field: { value, onChange } }) => (
-            <Dropdown
+            <Select
               key={`course_audience_${String(value ?? 'all')}`}
               id="course_audience"
               label="Audience"
