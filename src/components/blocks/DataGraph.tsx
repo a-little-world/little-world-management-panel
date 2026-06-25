@@ -58,7 +58,7 @@ export function DataGraph({
           tickFormatter={value => value.slice(0, 10)}
         />
         <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-        <Bar dataKey="count" fill="var(--color-desktop)" radius={8} />
+        <Bar dataKey="count" fill="var(--color-desktop)" radius={0} />
       </BarChart>
     </StyledChartContainer>
   );

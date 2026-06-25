@@ -6,6 +6,7 @@ import AvailabilityOverview from '../blocks/stats/AvailabilityOverview';
 import { BarChartTimeRanged } from '../blocks/stats/BarChartTimeRanged';
 import Highlights from '../blocks/stats/Highlights';
 import KPIsDashboard from '../blocks/stats/KPIsDashboard';
+import MatchesStats from '../blocks/stats/MatchesStats';
 import { MatchJourneyOverview } from '../blocks/stats/MatchJourneyBuckets';
 import {
   Container,
@@ -14,8 +15,8 @@ import {
   Sections,
 } from '../blocks/stats/MatchUserJourneyOverview';
 import { RangedDataGraph } from '../blocks/stats/RangedDataGraph';
-import { UserJourneyBucketsOverview } from '../blocks/stats/UserJourneyBuckets';
 import ReportsDashboard from '../blocks/stats/reports/ReportsDashboard';
+import { UserJourneyBucketsOverview } from '../blocks/stats/UserJourneyBuckets';
 
 function Stats() {
   let [searchParams, setSearchParams] = useSearchParams();
@@ -31,6 +32,7 @@ function Stats() {
       <TabsList>
         <TabsTrigger value="kpis">KPIs</TabsTrigger>
         <TabsTrigger value="highlights">Highlights</TabsTrigger>
+        <TabsTrigger value="matches">Matches</TabsTrigger>
         <TabsTrigger value="overview">User & Match Journey</TabsTrigger>
         <TabsTrigger value="graphs">Graphs</TabsTrigger>
         <TabsTrigger value="signup-funnel">User Sign-up Funnel</TabsTrigger>
@@ -51,6 +53,11 @@ function Stats() {
       {tab === 'highlights' && (
         <TabsContent value="highlights">
           <Highlights />
+        </TabsContent>
+      )}
+      {tab === 'matches' && (
+        <TabsContent value="matches">
+          <MatchesStats />
         </TabsContent>
       )}
       {tab === 'graphs' && (

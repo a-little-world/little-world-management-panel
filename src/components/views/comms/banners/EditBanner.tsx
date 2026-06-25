@@ -5,7 +5,7 @@ import {
   ButtonSizes,
   ButtonVariations,
   CardContent,
-  Dropdown,
+  Select,
   ImageSearchIcon,
   InputWidth,
   Loading,
@@ -439,7 +439,7 @@ function EditBanner() {
                       name="type"
                       control={control}
                       render={({ field: { value, onChange } }) => (
-                        <Dropdown
+                        <Select
                           key={`banner_type_${String(value ?? 'small')}`}
                           id="banner_type"
                           label="Type"
@@ -463,7 +463,7 @@ function EditBanner() {
                       name="custom_filter"
                       control={control}
                       render={({ field: { value, onChange } }) => (
-                        <Dropdown
+                        <Select
                           id="banner_custom_filter"
                           label="Custom filter"
                           placeholder="Select filter"

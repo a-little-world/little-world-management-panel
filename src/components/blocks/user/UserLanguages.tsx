@@ -1,12 +1,32 @@
-import { MultiDropdown } from '@a-little-world/little-world-design-system';
+import { MultiSelect } from '@a-little-world/little-world-design-system';
 import React from 'react';
 
 import { useGlobalState } from '../../../store';
 
-interface UserLanguagesProps {
-  langSkill: any[];
+interface LangSkill {
+  lang: string;
+  level: string;
 }
-const getOptions = options => {};
+
+interface ApiOption {
+  tag: string;
+  value: string;
+}
+
+interface UserLanguageApiOptions {
+  profile: {
+    lang_skill: {
+      lang: ApiOption[];
+      level: ApiOption[];
+    };
+  };
+}
+
+type ApiTranslations = Record<string, Record<string, string>>;
+
+interface UserLanguagesProps {
+  langSkill: LangSkill[];
+}
 
 const firstDropdownProps = {
   dataField: 'lang',
@@ -24,23 +44,29 @@ const secondDropdownProps = {
 
 const UserLanguages = ({ langSkill }: UserLanguagesProps) => {
   const { apiOptions, apiTranslations } = useGlobalState();
+  const languageOptions = apiOptions as UserLanguageApiOptions;
+  const translations = apiTranslations as ApiTranslations;
 
   return (
-    <MultiDropdown
+    <MultiSelect
       locked
-      firstDropdown={{
+      addMoreLabel="Add language"
+      onValueChange={() => undefined}
+      firstSelect={{
         ...firstDropdownProps,
-        values: langSkill?.map(el => el.lang),
-        options: apiOptions.profile.lang_skill.lang.map(({ tag, value }) => ({
-          label: apiTranslations.en[tag],
+        errors: [],
+        values: langSkill?.map(el => el.lang) ?? [],
+        options: languageOptions.profile.lang_skill.lang.map(({ tag, value }) => ({
+          label: translations.en[tag],
           value,
         })),
       }}
-      secondDropdown={{
+      secondSelect={{
         ...secondDropdownProps,
-        values: langSkill?.map(el => el.level),
-        options: apiOptions.profile.lang_skill.level.map(({ tag, value }) => ({
-          label: apiTranslations.en[tag],
+        errors: [],
+        values: langSkill?.map(el => el.level) ?? [],
+        options: languageOptions.profile.lang_skill.level.map(({ tag, value }) => ({
+          label: translations.en[tag],
           value,
         })),
       }}

@@ -1,5 +1,5 @@
 import {
-  Dropdown,
+  Select,
   Tag,
   TagAppearance,
   TagSizes,
@@ -24,7 +24,7 @@ import {
 import UserImage from '../atoms/UserImage';
 import { SelectedUsersSheet } from '../blocks/SelectedUsersSheet';
 
-const StyledDropdown = styled(Dropdown)`
+const StyledDropdown = styled(Select)`
   div[data-radix-popper-content-wrapper] {
     z-index: 20 !important;
   }

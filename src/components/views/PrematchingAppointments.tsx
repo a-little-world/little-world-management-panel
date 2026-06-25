@@ -1,4 +1,4 @@
-import { Dropdown, Text } from '@a-little-world/little-world-design-system';
+import { Select, Text } from '@a-little-world/little-world-design-system';
 import React from 'react';
 import { createSearchParams, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
@@ -12,7 +12,7 @@ import FiltersToolbar from '../blocks/FiltersToolbar';
 import { SelectedUsersPrematchingCallAttended } from '../blocks/prematching/OnboardingSheet';
 import { PrematchingAppointmentsTable } from '../blocks/prematching/PrematchingAppointmentsTable';
 
-const StyledDropdown = styled(Dropdown)`
+const StyledDropdown = styled(Select)`
   div[data-radix-popper-content-wrapper] {
     z-index: 20 !important;
   }

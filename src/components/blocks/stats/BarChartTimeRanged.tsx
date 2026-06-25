@@ -1,5 +1,5 @@
 import {
-  Dropdown,
+  Select,
   Text as DSText,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
@@ -474,7 +474,8 @@ export function MonthTimeSelector({
 
   return (
     <div>
-      <Dropdown
+      <Select
+        id="month-time-selector"
         value={startDate}
         options={Object.keys(monthToDatesMap).map(month => ({
           value: month,

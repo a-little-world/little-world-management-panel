@@ -4,7 +4,7 @@ import {
   Card,
   CardHeader,
   CardSizes,
-  Dropdown,
+  Select,
   Modal,
   Popover,
   ProgressBar,
@@ -123,7 +123,7 @@ function useBurstCalculation() {
   };
 }
 
-const StyledDropdown = styled(Dropdown)`
+const StyledDropdown = styled(Select)`
   div[data-radix-popper-content-wrapper] {
     z-index: 20 !important;
   }

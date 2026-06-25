@@ -1,6 +1,6 @@
 import {
   Checkbox,
-  Dropdown,
+  Select,
   Tag,
   TagSizes,
   Text,
@@ -26,7 +26,11 @@ const APPLY_MANAGEMENT_PERMISSIONS = 'management.apply_management_permissions';
 
 const columnHelper = createColumnHelper();
 
-function PermissionTags({ permissions }: { permissions: ManagementPermissionRow[] }) {
+function PermissionTags({
+  permissions,
+}: {
+  permissions: ManagementPermissionRow[];
+}) {
   const enabled = permissions.filter(row => row.enabled);
   const disabled = permissions.filter(row => !row.enabled);
 
@@ -35,7 +39,12 @@ function PermissionTags({ permissions }: { permissions: ManagementPermissionRow[
       {enabled.length > 0 && (
         <div className="flex flex-wrap gap-1">
           {enabled.map(row => (
-            <Tag key={row.permission} bold size={TagSizes.small} color="#2563eb">
+            <Tag
+              key={row.permission}
+              bold
+              size={TagSizes.small}
+              color="#2563eb"
+            >
               {row.label ?? row.codename}
             </Tag>
           ))}
@@ -136,9 +145,8 @@ export function MatchingUsers() {
   const orderBy = searchParams.get('order_by') || '-date_joined';
   const search = searchParams.get('search') ?? '';
 
-  const { matchingUsersList, isLoading, error, mutate } = useMatchingUsersListData(
-    createSearchParams(searchParams).toString(),
-  );
+  const { matchingUsersList, isLoading, error, mutate } =
+    useMatchingUsersListData(createSearchParams(searchParams).toString());
 
   const canEdit = Boolean(matchingUsersList?.can_edit_management_permissions);
 
@@ -260,7 +268,7 @@ export function MatchingUsers() {
         isLoading={isLoading}
         loadingText="Loading matching users..."
       >
-        <Dropdown
+        <Select
           id="matching_users_order_by_dropdown"
           label="Sort"
           value={orderBy}

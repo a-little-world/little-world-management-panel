@@ -5,7 +5,7 @@ import {
   ButtonVariations,
   Card,
   CardSizes,
-  Dropdown,
+  Select,
   InfoIcon,
   InputWidth,
   Modal,
@@ -501,7 +501,7 @@ const CreateNewEmail = () => {
           await onSaveDynamicTemplate();
         })}
       >
-        <Dropdown
+        <Select
           onValueChange={setEmailTheme}
           key={emailTheme}
           maxWidth="160px"
@@ -521,7 +521,7 @@ const CreateNewEmail = () => {
             field: { onBlur, value, name, ref },
             fieldState: { error },
           }) => (
-            <Dropdown
+            <Select
               key={category}
               name={name}
               inputRef={ref}
@@ -554,7 +554,7 @@ const CreateNewEmail = () => {
             field: { onChange, onBlur, value, name, ref },
             fieldState: { error },
           }) => (
-            <Dropdown
+            <Select
               key={category}
               name={name}
               inputRef={ref}

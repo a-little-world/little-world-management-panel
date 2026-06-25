@@ -1,5 +1,5 @@
 import {
-  Dropdown,
+  Select,
   Text,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
@@ -148,7 +148,7 @@ export default function ChangeCountryOfResidenceAction({
           {getCountryName(newCode)} ({newCode})
         </CountryName>
         {isEditable && (
-          <Dropdown
+          <Select
             value={newCode}
             options={countryOptions}
             onValueChange={handleChange}

@@ -1,4 +1,4 @@
-import { Dropdown } from '@a-little-world/little-world-design-system';
+import { Select } from '@a-little-world/little-world-design-system';
 import React from 'react';
 import styled from 'styled-components';
 import useSWR from 'swr';
@@ -7,7 +7,7 @@ import { cratePostFetcher } from '../../../store';
 import { DatePicker } from '../../atoms/DatePicker';
 import DataGraph from '../DataGraph';
 
-const StyledDropdown = styled(Dropdown)`
+const StyledDropdown = styled(Select)`
   div[data-radix-popper-content-wrapper] {
     z-index: 20 !important;
   }
@@ -108,7 +108,7 @@ export function RangedDataGraph() {
         onValueChange={val => {
           setEndpoint(
             graphEndpoints.find(({ endpoint }) => endpoint === val) ||
-            graphEndpoints[0],
+              graphEndpoints[0],
           );
         }}
         placeholder="Select a user list..."

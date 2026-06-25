@@ -7,7 +7,7 @@ import {
   CardFooter,
   CardHeader,
   CardSizes,
-  Dropdown,
+  Select,
   StatusMessage,
   StatusTypes,
   Switch,
@@ -209,7 +209,7 @@ function EventForm({
                 name="frequency"
                 control={control}
                 render={({ field: { value, onChange } }) => (
-                  <Dropdown
+                  <Select
                     id="frequency"
                     label="Frequency"
                     placeholder="Select frequency"
@@ -232,7 +232,7 @@ function EventForm({
                 name="custom_filter"
                 control={control}
                 render={({ field: { value, onChange } }) => (
-                  <Dropdown
+                  <Select
                     id="custom_filter"
                     label="Custom filter"
                     placeholder="Select custom filter"

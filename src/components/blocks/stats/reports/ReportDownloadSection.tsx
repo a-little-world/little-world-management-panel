@@ -3,7 +3,7 @@ import useSWR from 'swr';
 
 import {
   Button,
-  Dropdown,
+  Select,
   StatusMessage,
   StatusTypes,
   Text,
@@ -214,7 +214,7 @@ const ReportDownloadSection: React.FC<ReportDownloadSectionProps> = ({
       <SectionTitle>{title}</SectionTitle>
       {description && <Text>{description}</Text>}
       {dropdownLabel && (
-        <Dropdown
+        <Select
           id={`${title.replace(/\s+/g, '_').toLowerCase()}_dropdown`}
           disabled={isEmpty(dropdownOptions)}
           label={dropdownLabel}

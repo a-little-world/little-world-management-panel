@@ -20,24 +20,27 @@ Always check `@a-little-world/little-world-design-system` before writing a new c
 Source lives at `../../../little-world-design-system/packages/web/src/components/` (sibling repo).
 
 **How to find a fitting component:**
+
 1. Read `packages/web/src/index.ts` for all exports.
 2. Read `packages/web/src/components/<Name>/<Name>.tsx` for implementation.
 3. Read `packages/core/src/types/<Name>.ts` for the prop interface.
 4. If a component exists but needs tweaks, extend it: `styled(DSComponent)`.
 
 **Available DS components (non-exhaustive):**
-`Button` · `Dropdown` · `Tag` · `Text` · `Loading` · `Modal` · `Card` · `Tabs` · `MultiCheckbox` · `Checkbox` · `Switch` · `RadioGroup` · `TextInput` · `Label` · `Tooltip` · `Popover` · `Separator` · `NavigationMenu` · `Toast`
+`Button` · `Select` · `Tag` · `Text` · `Loading` · `Modal` · `Card` · `Tabs` · `CheckboxGroup` · `Checkbox` · `Switch` · `RadioGroup` · `TextInput` · `Label` · `Tooltip` · `Popover` · `Separator` · `NavigationMenu` · `Toast`
 
 **Local atoms (check before writing new ones):**
 `src/components/atoms/Card.tsx` — `Card`, `CardHeader`, `CardTitle`, `CardContent`, `CardFooter` — use for page panel cards
 `src/components/atoms/UserImage.tsx` — user avatars, always use this, never custom avatar circles
 
 **Component folder structure (`src/components/`):**
+
 - `atoms/` — simple, single-purpose components. Building blocks used everywhere.
 - `blocks/` — composite components built from atoms (e.g. `FiltersToolbar`, `DataTable`, `ObjectHistory`).
 - `views/` — full pages (e.g. `Users.tsx`, `SupportTasksOverview.tsx`).
 
 **Component reuse rules (in priority order):**
+
 1. DS component
 2. Existing local component in `atoms/` or `blocks/`
 3. New shared component — add to `atoms/` if self-contained, `blocks/` if it composes others
@@ -53,7 +56,7 @@ When creating a new component, ask: could this be used elsewhere? If yes, save i
 
 ```tsx
 // ✗ wrong
-<div style={{ color: 'red', padding: 16 }}>...</div>
+<div style={{ color: 'red', padding: 16 }}>...</div>;
 
 // ✓ correct
 const Box = styled.div`
@@ -63,6 +66,7 @@ const Box = styled.div`
 ```
 
 Use `theme` tokens for all colors, spacing, radii, and z-index — **no hard-coded values**:
+
 - `theme.color.surface.*` · `theme.color.text.*` · `theme.color.border.*` · `theme.color.gradient.*`
 - `theme.spacing.{xxxxsmall … massive}`
 - `theme.radius.{xxxsmall … full}`
@@ -71,38 +75,42 @@ Use `theme` tokens for all colors, spacing, radii, and z-index — **no hard-cod
 
 **Spacing token map** (use these, never raw px):
 
-| px | token |
-|---|---|
-| 4px | `theme.spacing.xxxsmall` |
-| 8px | `theme.spacing.xxsmall` |
-| 12px | `theme.spacing.xsmall` |
-| 16px | `theme.spacing.small` |
-| 24px | `theme.spacing.medium` |
-| 32px | `theme.spacing.large` |
-| 40px | `theme.spacing.xlarge` |
-| 64px | `theme.spacing.xxlarge` |
+| px   | token                    |
+| ---- | ------------------------ |
+| 4px  | `theme.spacing.xxxsmall` |
+| 8px  | `theme.spacing.xxsmall`  |
+| 12px | `theme.spacing.xsmall`   |
+| 16px | `theme.spacing.small`    |
+| 24px | `theme.spacing.medium`   |
+| 32px | `theme.spacing.large`    |
+| 40px | `theme.spacing.xlarge`   |
+| 64px | `theme.spacing.xxlarge`  |
 
 **Radius token map:**
 
-| px | token |
-|---|---|
-| 4px | `theme.radius.xxxsmall` |
-| 8px | `theme.radius.xxsmall` |
-| 12px | `theme.radius.xsmall` |
-| 16px | `theme.radius.small` |
-| 20px | `theme.radius.medium` |
-| 24px | `theme.radius.large` |
+| px   | token                   |
+| ---- | ----------------------- |
+| 4px  | `theme.radius.xxxsmall` |
+| 8px  | `theme.radius.xxsmall`  |
+| 12px | `theme.radius.xsmall`   |
+| 16px | `theme.radius.small`    |
+| 20px | `theme.radius.medium`   |
+| 24px | `theme.radius.large`    |
 
 **No hard-coded colors.** The theme has no brand color tokens, so those live in `src/constants.ts` as named exports — never as anonymous hex literals in components:
 
 ```tsx
 // ✗ wrong — anonymous hex inside a component
-const Title = styled.h2`color: #db590b;`;
+const Title = styled.h2`
+  color: #db590b;
+`;
 const Dot = <InitialsDot $bg="#cfe3f8" />;
 
 // ✓ correct — named constant from constants.ts
 import { ORANGE_40, BLUE_10 } from '../../constants';
-const Title = styled.h2`color: ${ORANGE_40};`;
+const Title = styled.h2`
+  color: ${ORANGE_40};
+`;
 const Dot = <InitialsDot $bg={AVATAR_BLUE_BG} />;
 ```
 
@@ -126,20 +134,23 @@ import { Text, TextTypes } from '@a-little-world/little-world-design-system';
 
 **TextTypes size reference** (approximate at 16px root):
 
-| type | size |
-|---|---|
-| Body7 | 12px |
-| Body6 | 14px |
-| Body5 | 16px |
-| Body4 | 20px |
-| Body3 | 24px |
+| type     | size      |
+| -------- | --------- |
+| Body7    | 12px      |
+| Body6    | 14px      |
+| Body5    | 16px      |
+| Body4    | 20px      |
+| Body3    | 24px      |
 | Heading6 | 16px bold |
 | Heading5 | 24px bold |
 
 **`styled(Text)` pattern** — extend `Text` when you need additional CSS that can't be expressed via props (e.g. `text-transform`, `letter-spacing`, theme colors):
 
 ```tsx
-const MetaLabel = styled(Text).attrs({ type: TextTypes.Body7, tag: 'span' as const })`
+const MetaLabel = styled(Text).attrs({
+  type: TextTypes.Body7,
+  tag: 'span' as const,
+})`
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: ${({ theme }) => theme.color.text.tertiary};
@@ -154,6 +165,7 @@ const MetaLabel = styled(Text).attrs({ type: TextTypes.Body7, tag: 'span' as con
 ## Minimize Styled Components
 
 **Not everything needs a styled component.** Plain `<Text>`, `<Card>`, native HTML, and DS components are preferred. Create a styled component only when:
+
 - You need a layout container (`display: flex`, `display: grid`, `position`, etc.)
 - You need conditional CSS based on props
 - You need theme-token-based values that can't come from component props
@@ -171,7 +183,11 @@ const UserEmail = styled.div`font-size: 13px; color: ${...secondary};`;
 
 ```tsx
 // ✗ wrong
-const Card = styled.div`& + & { margin-top: 20px; }`;
+const Card = styled.div`
+  & + & {
+    margin-top: 20px;
+  }
+`;
 
 // ✓ correct
 const SideColumn = styled.aside`
@@ -188,15 +204,20 @@ const SideColumn = styled.aside`
 Brand colors and semantic display colors are defined in `src/constants.ts`. Import from there — never redeclare in a component file.
 
 **Available constants:**
+
 ```ts
 // Brand palette
-BLUE_10, BLUE_40, ORANGE_10, ORANGE_40, GREEN_10, GREEN_40
+(BLUE_10, BLUE_40, ORANGE_10, ORANGE_40, GREEN_10, GREEN_40);
 
 // Task display colors
-GRAY_40, RED_40, CRIMSON_40, AMBER_40, MAROON_40, PURPLE_40
+(GRAY_40, RED_40, CRIMSON_40, AMBER_40, MAROON_40, PURPLE_40);
 
 // ObjectHistory local constants (defined in ObjectHistory.tsx, not shared)
-DIFF_OLD_BG, DIFF_NEW_BG, AVATAR_BLUE_BG, AVATAR_NEUTRAL_BG, AVATAR_NEUTRAL_COLOR
+(DIFF_OLD_BG,
+  DIFF_NEW_BG,
+  AVATAR_BLUE_BG,
+  AVATAR_NEUTRAL_BG,
+  AVATAR_NEUTRAL_COLOR);
 ```
 
 ---
@@ -205,7 +226,7 @@ DIFF_OLD_BG, DIFF_NEW_BG, AVATAR_BLUE_BG, AVATAR_NEUTRAL_BG, AVATAR_NEUTRAL_COLO
 
 `STATUS_CONFIG`, `PRIORITY_CONFIG`, `ACTION_TYPE_CONFIG`, and `getActionTypeConfig` are the single source of truth for task display metadata (labels + colors). They live in `src/api/supportTasks.ts`. **Never redefine them in a view or filter component.**
 
-Derive dropdown options from the configs — don't re-declare labels:
+Derive select options from the configs — don't re-declare labels:
 
 ```tsx
 // ✓ correct — derived, labels stay in sync automatically
@@ -226,38 +247,38 @@ const PRIORITY_OPTIONS = [
 
 ## Reference Files for Common Patterns
 
-| Need | Reference |
-|---|---|
-| Table page with filters | `src/components/views/Users.tsx` |
-| Table page with dropdowns | `src/components/views/Matches.tsx` |
-| Support task table page | `src/components/views/SupportTasksOverview.tsx` |
-| Detail / single-record page | `src/components/views/SupportTaskDetail.tsx` |
-| Layout / navigation | `src/components/blocks/Layout.tsx`, `Header.tsx`, `Menu.tsx` |
-| Filter modal | `src/components/blocks/Filters.tsx`, `src/components/blocks/SupportTaskFilters.tsx` |
-| Toolbar with search/pagination | `src/components/blocks/FiltersToolbar.tsx` |
-| Data table | `src/components/blocks/DataTable.tsx` |
-| Download settings modal | `src/components/blocks/DownloadSettingsModal.tsx` |
-| Page panel cards | `src/components/atoms/Card.tsx` |
-| Timeline / change history | `src/components/blocks/ObjectHistory.tsx` |
-| User avatar/image | `src/components/atoms/UserImage.tsx` |
+| Need                           | Reference                                                                           |
+| ------------------------------ | ----------------------------------------------------------------------------------- |
+| Table page with filters        | `src/components/views/Users.tsx`                                                    |
+| Table page with dropdowns      | `src/components/views/Matches.tsx`                                                  |
+| Support task table page        | `src/components/views/SupportTasksOverview.tsx`                                     |
+| Detail / single-record page    | `src/components/views/SupportTaskDetail.tsx`                                        |
+| Layout / navigation            | `src/components/blocks/Layout.tsx`, `Header.tsx`, `Menu.tsx`                        |
+| Filter modal                   | `src/components/blocks/Filters.tsx`, `src/components/blocks/SupportTaskFilters.tsx` |
+| Toolbar with search/pagination | `src/components/blocks/FiltersToolbar.tsx`                                          |
+| Data table                     | `src/components/blocks/DataTable.tsx`                                               |
+| Download settings modal        | `src/components/blocks/DownloadSettingsModal.tsx`                                   |
+| Page panel cards               | `src/components/atoms/Card.tsx`                                                     |
+| Timeline / change history      | `src/components/blocks/ObjectHistory.tsx`                                           |
+| User avatar/image              | `src/components/atoms/UserImage.tsx`                                                |
 
 ---
 
 ## Table Pages — Required Pattern
 
-| Requirement | Implementation |
-|---|---|
-| Column definitions | `createColumnHelper` + `ColumnDef<T, any>[]` from `@tanstack/react-table` |
-| Table rendering | `<DataTable columns={...} data={...} />` |
-| Filter/sort/page state | `useSearchParams` from `react-router-dom` |
-| Toolbar | `<FiltersToolbar>` with `<Dropdown>` children for sort/filter |
-| Filter modal | Per-page `*Filters.tsx` component (see below) |
-| Export | `<DownloadSettingsModal>` |
-| Status / type pills | `<Tag appearance={TagAppearance.outline} color={...}>` |
-| User avatars | `<UserImage>` — not custom avatar circles |
-| Column text | `<Text type={TextTypes.Body6} tag="span">` — not custom styled spans |
+| Requirement            | Implementation                                                            |
+| ---------------------- | ------------------------------------------------------------------------- |
+| Column definitions     | `createColumnHelper` + `ColumnDef<T, any>[]` from `@tanstack/react-table` |
+| Table rendering        | `<DataTable columns={...} data={...} />`                                  |
+| Filter/sort/page state | `useSearchParams` from `react-router-dom`                                 |
+| Toolbar                | `<FiltersToolbar>` with `<Select>` children for sort/filter               |
+| Filter modal           | Per-page `*Filters.tsx` component (see below)                             |
+| Export                 | `<DownloadSettingsModal>`                                                 |
+| Status / type pills    | `<Tag appearance={TagAppearance.outline} color={...}>`                    |
+| User avatars           | `<UserImage>` — not custom avatar circles                                 |
+| Column text            | `<Text type={TextTypes.Body6} tag="span">` — not custom styled spans      |
 
-**`Dropdown` options must never use `value: ''`** — Radix Select forbids empty strings. Use a named sentinel (e.g. `'ALL'`) and convert to `undefined` before passing to the API.
+**`Select` options must never use `value: ''`** — Radix Select forbids empty strings. Use a named sentinel (e.g. `'ALL'`) and convert to `undefined` before passing to the API.
 
 ---
 
@@ -270,10 +291,12 @@ Each page owns its own `*Filters.tsx` in `src/components/blocks/`. Follow this s
   <Card width={CardSizes.Large}>
     <CardHeader>Filters</CardHeader>
     <CardContent align="flex-start">
-      {/* Dropdown / MultiCheckbox / Switch rows */}
+      {/* Select / CheckboxGroup / Switch rows */}
     </CardContent>
     <CardFooter align="space-between">
-      <Button variation={ButtonVariations.Inline} onClick={handleReset}>Clear all</Button>
+      <Button variation={ButtonVariations.Inline} onClick={handleReset}>
+        Clear all
+      </Button>
       <Button onClick={onClose}>Show results</Button>
     </CardFooter>
   </Card>

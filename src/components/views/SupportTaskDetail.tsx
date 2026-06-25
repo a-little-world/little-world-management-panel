@@ -1,5 +1,5 @@
 import {
-  Dropdown,
+  Select,
   Tag,
   TagAppearance,
   TagSizes,
@@ -22,7 +22,7 @@ import {
   getActionTypeConfig,
   patchSupportTask,
 } from '../../api/supportTasks';
-import { BLUE_10, BLUE_40, ORANGE_40 } from '../../constants';
+import { ORANGE_40 } from '../../constants';
 import { formatTimeDistance } from '../../helpers/date';
 import { useTaskPriorityList } from '../../hooks/useTaskPriorities';
 import { SUPPORT_TASKS_ROUTE } from '../../router/routes';
@@ -33,7 +33,7 @@ import ObjectHistoryList, { ObjectHistory } from '../blocks/ObjectHistory';
 import SupportTaskActionCard from '../blocks/SupportTaskActionCard';
 import UserChat from '../blocks/user/UserChat';
 
-// ─── Dropdown options ─────────────────────────────────────────────────────────
+// ─── Select options ─────────────────────────────────────────────────────────
 
 const STATUS_OPTIONS = Object.entries(STATUS_CONFIG).map(([value, cfg]) => ({
   value,
@@ -132,17 +132,6 @@ const SideColumn = styled.aside`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.medium};
-`;
-
-const MessageQuote = styled.blockquote`
-  background: ${BLUE_10};
-  border-left: 3px solid ${BLUE_40};
-  padding: ${({ theme }) => theme.spacing.small};
-  border-radius: 0 ${({ theme }) => theme.radius.xsmall}
-    ${({ theme }) => theme.radius.xsmall} 0;
-  line-height: 1.55;
-  color: ${({ theme }) => theme.color.text.primary};
-  margin: 0;
 `;
 
 const UserInfoRow = styled.div`
@@ -340,7 +329,7 @@ export default function SupportTaskDetail() {
 
           <MetaField>
             <MetaLabel>Status</MetaLabel>
-            <Dropdown
+            <Select
               value={task.status}
               options={STATUS_OPTIONS}
               onValueChange={v =>
@@ -354,7 +343,7 @@ export default function SupportTaskDetail() {
 
           <MetaField>
             <MetaLabel>Priority</MetaLabel>
-            <Dropdown
+            <Select
               value={task.priority}
               options={priorityOptions}
               onValueChange={v =>
@@ -371,7 +360,7 @@ export default function SupportTaskDetail() {
 
           <MetaField>
             <MetaLabel>Assigned to</MetaLabel>
-            <Dropdown
+            <Select
               value={currentAssignee}
               options={assigneeOptions}
               onValueChange={v =>
