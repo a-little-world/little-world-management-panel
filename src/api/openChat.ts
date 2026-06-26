@@ -133,12 +133,12 @@ type OpenChatMessagesResponse = {
 
 export type OpenChatInteraction = {
   interaction_id: string;
-  title?: string | null;
-  created?: string | null;
-  updated?: string | null;
-  status?: string | null;
-  shared_interaction_url?: string | null;
-  raw?: unknown;
+  title: string | null;
+  created: string | null;
+  updated: string | null;
+  status: string | null;
+  shared_interaction_url: string | null;
+  raw?: Record<string, unknown>;
 };
 
 type OpenChatInteractionsResponse = {
