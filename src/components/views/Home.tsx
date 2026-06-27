@@ -31,7 +31,7 @@ import {
   DYNAMIC_USER_LISTS_ROUTE,
   MATCHING_HUB_ROUTE,
   MATCHING_USERS_ROUTE,
-  OPEN_CHAT_CHAT_ROUTE,
+  OPEN_CHAT_ROUTE,
   RANDOM_CALLS_ROUTE,
   STATS_ROUTE,
   SUPPORT_TASKS_ROUTE,
@@ -103,7 +103,7 @@ const TABS: HomeNavigationTile[] = [
   },
   {
     name: 'Open Chat Access',
-    path: OPEN_CHAT_CHAT_ROUTE,
+    path: OPEN_CHAT_ROUTE,
     icon: <ChatBubbleLeftRightIcon className="h-16 w-16 text-white mb-2" />,
     requiredPermission: MANAGEMENT_PERMISSION_OPEN_CHAT_ACCESS,
   },
