@@ -115,6 +115,15 @@ function extractOpenChatInteractionUuid(rawUrl: string): string | null {
   }
 }
 
+export function extractOpenChatInteractionShareUuid(
+  rawUrl: string | null | undefined,
+): string | null {
+  if (!rawUrl?.trim()) {
+    return null;
+  }
+  return extractOpenChatInteractionUuid(rawUrl);
+}
+
 export function withOpenChatLightTheme(rawUrl: string): string {
   const url = new URL(rawUrl);
   url.searchParams.set('theme', 'light');

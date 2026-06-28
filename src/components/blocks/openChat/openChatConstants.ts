@@ -1,5 +1,7 @@
 import { getOpenChatChatRoute, OPEN_CHAT_ROUTE } from '../../../router/routes';
 
+export const OPEN_CHAT_INTERACTION_STATE_POLL_INTERVAL_MS = 2000;
+
 export const OPEN_CHAT_MESSAGES_REFRESH_INTERVAL_MS = 1500;
 export const OPEN_CHAT_QUERY_PARAM_TAB = 'tab';
 export const OPEN_CHAT_TAB_CHAT = 'chat';

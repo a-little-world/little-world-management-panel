@@ -18,6 +18,7 @@ import type { OpenChatMessage } from '../../../api/openChat';
 import { formatMessageDate, formatTime } from '../../../helpers/date';
 import {
   buildOpenChatInteractionNewestResponseUrl,
+  extractOpenChatInteractionShareUuid,
   getCustomChatElements,
   messageContainsWidget,
   parseOpenChatInteractionPayload,
@@ -38,6 +39,7 @@ import { OpenChatMessagesScroll } from './OpenChatWorkspace.styles';
 type OpenChatMessageListProps = {
   messages: OpenChatMessage[];
   currentUser: MatchingPanelUser;
+  openChatUserUuid: string;
   isLoading: boolean;
   error: unknown;
   onOpenInteraction: (interactionId: string) => void;
@@ -70,6 +72,7 @@ function groupMessagesByDate(messages: OpenChatMessage[]) {
 export function OpenChatMessageList({
   messages,
   currentUser,
+  openChatUserUuid,
   isLoading,
   error,
   onOpenInteraction,
@@ -152,6 +155,10 @@ export function OpenChatMessageList({
                     title={interactionPayload.title}
                     frameUrl={interactionNewestResponseUrl}
                     interactionId={interactionPayload.interaction_id}
+                    interactionShareUuid={extractOpenChatInteractionShareUuid(
+                      interactionPayload.shared_interaction_url,
+                    )}
+                    configurationOwnerUserUuid={openChatUserUuid}
                     onOpenInteraction={onOpenInteraction}
                   />
                   <Time type={TextTypes.Body6}>

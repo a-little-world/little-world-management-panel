@@ -313,6 +313,27 @@ export function fetchOpenChatInteractionDetail(
   );
 }
 
+export type OpenChatInteractionState = {
+  chat_uuid: string | null;
+  is_active: boolean;
+  state: 'idle' | 'active' | 'finished' | 'failed' | string;
+  latest_message_uuid: string | null;
+  latest_message_finished: boolean | null;
+  source: string | null;
+};
+
+export function fetchOpenChatInteractionState(
+  interactionShareUuid: string,
+  userUuid: string,
+) {
+  const query = new URLSearchParams({
+    user_uuid: userUuid,
+  });
+  return apiFetch<OpenChatInteractionState>(
+    `${OPEN_CHAT_INTERACTIONS_ENDPOINT}${encodeURIComponent(interactionShareUuid)}/state/?${query.toString()}`,
+  );
+}
+
 export function triggerOpenChatGenerateMessageReplies(userUuid: string) {
   const query = new URLSearchParams({
     user_uuid: userUuid,

@@ -3,10 +3,15 @@ import {
   TextTypes,
 } from '@a-little-world/little-world-design-system';
 import { ChevronDownIcon, ChevronUpIcon, ExternalLink, XIcon } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled, { css } from 'styled-components';
+import useSWR from 'swr';
 
-import { GRAY_40 } from '../../../constants';
+import {
+  fetchOpenChatInteractionState,
+  type OpenChatInteractionState,
+} from '../../../api/openChat';
+import { OPEN_CHAT_INTERACTION_STATE_POLL_INTERVAL_MS } from './openChatConstants';
 import { OpenChatInteractionWidget } from '../user/UserChat.styles';
 
 const WidgetShell = styled(OpenChatInteractionWidget)<{ $collapsedPreview: boolean }>`
@@ -54,7 +59,7 @@ const WidgetTitleRow = styled.div`
   flex: 1;
 `;
 
-const StatusPill = styled.span`
+const StatusPill = styled.span<{ $state: string }>`
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
@@ -66,8 +71,34 @@ const StatusPill = styled.span`
   line-height: 1.2;
   letter-spacing: 0.02em;
   text-transform: lowercase;
-  color: ${GRAY_40};
-  background: ${({ theme }) => theme.color.surface.secondary};
+
+  ${({ $state, theme }) => {
+    switch ($state) {
+      case 'active':
+        return css`
+          color: ${theme.color.status.info};
+          border-color: ${theme.color.status.info};
+          background: ${theme.color.status.info}1a;
+        `;
+      case 'finished':
+        return css`
+          color: ${theme.color.status.success};
+          border-color: ${theme.color.status.success};
+          background: ${theme.color.status.success}1a;
+        `;
+      case 'failed':
+        return css`
+          color: ${theme.color.status.error};
+          border-color: ${theme.color.status.error};
+          background: ${theme.color.status.error}1a;
+        `;
+      default:
+        return css`
+          color: ${theme.color.text.secondary};
+          background: ${theme.color.surface.secondary};
+        `;
+    }
+  }}
 `;
 
 const WidgetTitle = styled(Text).attrs({
@@ -162,19 +193,72 @@ type OpenChatInteractionEmbedProps = {
   title?: string;
   frameUrl: string | null;
   interactionId?: string;
+  interactionShareUuid?: string | null;
+  configurationOwnerUserUuid?: string;
   onOpenInteraction?: (interactionId: string) => void;
 };
+
+function resolveInteractionStateLabel(
+  interactionState: OpenChatInteractionState | undefined,
+): string {
+  return interactionState?.state?.trim() || 'idle';
+}
+
+function shouldAutoExpandInteraction(state: string): boolean {
+  return state === 'active';
+}
 
 export function OpenChatInteractionEmbed({
   title,
   frameUrl,
   interactionId,
+  interactionShareUuid,
+  configurationOwnerUserUuid,
   onOpenInteraction,
 }: OpenChatInteractionEmbedProps) {
   const [isVisible, setIsVisible] = useState(true);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [manualExpanded, setManualExpanded] = useState<boolean | null>(null);
+  const canPollState = Boolean(
+    interactionShareUuid?.trim() && configurationOwnerUserUuid?.trim(),
+  );
+
+  const { data: interactionState } = useSWR(
+    canPollState
+      ? [
+          '/open-chat/interaction-state',
+          interactionShareUuid,
+          configurationOwnerUserUuid,
+        ]
+      : null,
+    ([, shareUuid, userUuid]) =>
+      fetchOpenChatInteractionState(shareUuid as string, userUuid as string),
+    {
+      refreshInterval: OPEN_CHAT_INTERACTION_STATE_POLL_INTERVAL_MS,
+      revalidateOnFocus: true,
+    },
+  );
+
+  const stateLabel = resolveInteractionStateLabel(interactionState);
+  const autoExpanded = shouldAutoExpandInteraction(stateLabel);
+  const isExpanded = manualExpanded ?? autoExpanded;
+
+  useEffect(() => {
+    setManualExpanded(null);
+    setIsVisible(true);
+  }, [interactionShareUuid, frameUrl]);
+
+  useEffect(() => {
+    if (!shouldAutoExpandInteraction(stateLabel)) {
+      setManualExpanded(null);
+    }
+  }, [stateLabel]);
+
   const collapsedPreview = Boolean(frameUrl && isVisible && !isExpanded);
   const displayTitle = title?.trim() || 'Open Chat interaction';
+
+  const handleToggleExpanded = () => {
+    setManualExpanded(current => !(current ?? autoExpanded));
+  };
 
   return (
     <WidgetShell $collapsedPreview={collapsedPreview}>
@@ -196,7 +280,7 @@ export function OpenChatInteractionEmbed({
       <WidgetHeader>
         <WidgetTitleBlock>
           <WidgetTitleRow>
-            <StatusPill>idle</StatusPill>
+            <StatusPill $state={stateLabel}>{stateLabel}</StatusPill>
             <WidgetTitle>{displayTitle}</WidgetTitle>
           </WidgetTitleRow>
         </WidgetTitleBlock>
@@ -204,7 +288,7 @@ export function OpenChatInteractionEmbed({
           {frameUrl && isVisible && (
             <WidgetIconButton
               type="button"
-              onClick={() => setIsExpanded(current => !current)}
+              onClick={handleToggleExpanded}
               aria-label={isExpanded ? 'Collapse preview' : 'Expand preview'}
               title={isExpanded ? 'Collapse preview' : 'Expand preview'}
             >
@@ -217,7 +301,7 @@ export function OpenChatInteractionEmbed({
               onClick={() => {
                 setIsVisible(current => !current);
                 if (isVisible) {
-                  setIsExpanded(false);
+                  setManualExpanded(false);
                 }
               }}
               aria-label={isVisible ? 'Close preview' : 'Show preview'}

@@ -131,6 +131,7 @@ export function OpenChatMainPanel({
               <OpenChatMessageList
                 messages={orderedMessages}
                 currentUser={currentUser}
+                openChatUserUuid={openChatUserUuid}
                 isLoading={isMessagesLoading}
                 error={messagesError}
                 onOpenInteraction={navigateToInteraction}
