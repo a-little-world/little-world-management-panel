@@ -3,6 +3,15 @@ import {
   CallWidget,
 } from '@a-little-world/little-world-design-system';
 
+import { normalizeOpenChatBrowserUrl } from '../api/openChat';
+
+export type OpenChatInteractionPayload = {
+  type: 'open_chat_interaction';
+  title?: string;
+  interaction_id: string;
+  shared_interaction_url?: string | null;
+};
+
 interface Message {
   sender: string;
 }
@@ -95,6 +104,65 @@ export const formatFileName = (fileName: string): string => {
 
 export const messageContainsWidget = (message: string): boolean =>
   /AttachmentWidget|CallWidget/.test(message);
+
+function extractOpenChatInteractionUuid(rawUrl: string): string | null {
+  try {
+    const url = new URL(rawUrl);
+    const match = url.pathname.match(/\/interaction\/([^/]+)/);
+    return match?.[1] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function withOpenChatLightTheme(rawUrl: string): string {
+  const url = new URL(rawUrl);
+  url.searchParams.set('theme', 'light');
+  return url.toString();
+}
+
+export function parseOpenChatInteractionPayload(
+  value: string,
+): OpenChatInteractionPayload | null {
+  try {
+    const parsed = JSON.parse(value) as Partial<OpenChatInteractionPayload>;
+    if (
+      parsed?.type !== 'open_chat_interaction' ||
+      typeof parsed?.interaction_id !== 'string'
+    ) {
+      return null;
+    }
+    return {
+      type: 'open_chat_interaction',
+      title: typeof parsed.title === 'string' ? parsed.title : undefined,
+      interaction_id: parsed.interaction_id,
+      shared_interaction_url:
+        typeof parsed.shared_interaction_url === 'string'
+          ? parsed.shared_interaction_url
+          : null,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export function buildOpenChatInteractionNewestResponseUrl(
+  rawUrl: string,
+): string | null {
+  try {
+    const normalized = normalizeOpenChatBrowserUrl(rawUrl);
+    const normalizedUrl = new URL(normalized);
+    const interactionUuid = extractOpenChatInteractionUuid(normalized);
+    if (!interactionUuid) {
+      return null;
+    }
+    return withOpenChatLightTheme(
+      `${normalizedUrl.origin}/interaction/${interactionUuid}/newest_response`,
+    );
+  } catch {
+    return null;
+  }
+}
 
 export const processAttachmentWidgets = (
   message: any,

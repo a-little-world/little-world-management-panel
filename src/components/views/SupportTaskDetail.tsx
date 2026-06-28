@@ -6,7 +6,7 @@ import {
   Text,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
-import { ChevronDownIcon, ChevronLeftIcon, ChevronUpIcon } from 'lucide-react';
+import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
 import React, { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import styled from 'styled-components';
@@ -22,14 +22,19 @@ import {
   getActionTypeConfig,
   patchSupportTask,
 } from '../../api/supportTasks';
-import { BLUE_10, BLUE_40, ORANGE_40 } from '../../constants';
+import { ORANGE_40, BLUE_40 } from '../../constants';
 import { formatTimeDistance } from '../../helpers/date';
 import { useTaskPriorityList } from '../../hooks/useTaskPriorities';
 import { SUPPORT_TASKS_ROUTE, getOpenChatChatRoute } from '../../router/routes';
 import { dataFetcher } from '../../store';
 import { Card, CardContent, CardHeader, CardTitle } from '../atoms/Card';
+import { PageContainer } from '../atoms/PageLayout';
 import UserImage from '../atoms/UserImage';
+import { usePageHeader } from '../blocks/LayoutHeaderContext';
 import ObjectHistoryList, { ObjectHistory } from '../blocks/ObjectHistory';
+import SupportTaskAssigneePicker, {
+  SUPPORT_TASK_UNASSIGNED_ASSIGNEE,
+} from '../blocks/SupportTaskAssigneePicker';
 import SupportTaskActionCard from '../blocks/SupportTaskActionCard';
 import UserChat from '../blocks/user/UserChat';
 
@@ -40,70 +45,92 @@ const STATUS_OPTIONS = Object.entries(STATUS_CONFIG).map(([value, cfg]) => ({
   label: cfg.label,
 }));
 
-const UNASSIGNED = 'UNASSIGNED';
+const UNASSIGNED = SUPPORT_TASK_UNASSIGNED_ASSIGNEE;
 
-// ─── Styled ───────────────────────────────────────────────────────────────────
-
-const PageWrapper = styled.div`
-  flex: 1;
-  overflow-y: auto;
-  background: ${({ theme }) => theme.color.surface.primary};
+const OverviewTopRow = styled.div`
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.medium};
+  flex-wrap: wrap;
 `;
 
-const PageContent = styled.div`
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: ${({ theme }) => theme.spacing.medium}
-    ${({ theme }) => theme.spacing.xlarge}
-    ${({ theme }) => theme.spacing.xxlarge};
+const OverviewAside = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: ${({ theme }) => theme.spacing.xxxsmall};
+  margin-left: auto;
+  flex-shrink: 0;
 `;
 
-const BackLink = styled(Link)`
+const DescriptionSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xxxsmall};
+  margin-top: ${({ theme }) => theme.spacing.small};
+  padding-top: ${({ theme }) => theme.spacing.small};
+  border-top: 1px solid ${({ theme }) => theme.color.border.subtle};
+`;
+
+const DescriptionText = styled(Text).attrs({
+  type: TextTypes.Body6,
+  tag: 'p' as const,
+})`
+  margin: 0;
+  white-space: pre-wrap;
+  line-height: 1.55;
+`;
+
+const OpenChatLink = styled(Link)`
   display: inline-flex;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.xxxsmall};
-  font-size: 13px;
+  gap: ${({ theme }) => theme.spacing.xxsmall};
+  border: 1px solid ${({ theme }) => theme.color.border.subtle};
+  border-radius: ${({ theme }) => theme.radius.xxsmall};
+  padding: ${({ theme }) => theme.spacing.xxsmall}
+    ${({ theme }) => theme.spacing.small};
+  background: ${({ theme }) => theme.color.surface.secondary};
   color: ${({ theme }) => theme.color.text.link};
   text-decoration: none;
-  margin-bottom: ${({ theme }) => theme.spacing.small};
+  min-height: 2.5rem;
+
   &:hover {
+    background: ${({ theme }) => theme.color.surface.primary};
     text-decoration: underline;
   }
 `;
 
-const TitleRow = styled.div`
-  display: flex;
-  align-items: flex-start;
-  gap: ${({ theme }) => theme.spacing.small};
-  flex-wrap: wrap;
-  margin-bottom: ${({ theme }) => theme.spacing.xxsmall};
-`;
+// ─── Styled ───────────────────────────────────────────────────────────────────
 
-const PageTitle = styled.h2`
-  font-family: 'Work Sans', system-ui, sans-serif;
-  font-weight: 700;
-  font-size: 36px;
-  line-height: 1.15;
-  color: ${({ theme }) => theme.color.text.title};
-  letter-spacing: -0.01em;
-  margin: 0;
+const DetailBody = styled.div`
   flex: 1;
-  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.medium};
 `;
 
-const MetaRow = styled.div`
+const HeaderTags = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: 28px 36px;
-  padding: 18px 0 26px;
-  border-bottom: 1px solid ${({ theme }) => theme.color.border.subtle};
-  margin-bottom: ${({ theme }) => theme.spacing.large};
+  gap: ${({ theme }) => theme.spacing.xxsmall};
+  justify-content: flex-end;
+`;
+
+const MetaGrid = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: ${({ theme }) => theme.spacing.medium} ${({ theme }) => theme.spacing.large};
 `;
 
 const MetaField = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.xxxsmall};
+  min-width: 0;
 `;
 
 const MetaLabel = styled(Text).attrs({
@@ -114,6 +141,38 @@ const MetaLabel = styled(Text).attrs({
   letter-spacing: 0.08em;
   color: ${({ theme }) => theme.color.text.tertiary};
   font-weight: 600;
+`;
+
+const OverviewLabelSpacer = styled(MetaLabel)`
+  visibility: hidden;
+  user-select: none;
+`;
+
+const UserCell = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xxsmall};
+  min-height: 2.5rem;
+`;
+
+const MetaValue = styled.div`
+  min-height: 2.5rem;
+  display: flex;
+  align-items: center;
+`;
+
+const OverviewCard = styled(Card)`
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: ${({ theme }) => theme.color.surface.primary};
+`;
+
+const OverviewCardContent = styled(CardContent)`
+  && {
+    padding-top: ${({ theme }) => theme.spacing.small};
+    padding-bottom: ${({ theme }) => theme.spacing.small};
+  }
 `;
 
 const ContentGrid = styled.div`
@@ -134,17 +193,6 @@ const SideColumn = styled.aside`
   gap: ${({ theme }) => theme.spacing.medium};
 `;
 
-const MessageQuote = styled.blockquote`
-  background: ${BLUE_10};
-  border-left: 3px solid ${BLUE_40};
-  padding: ${({ theme }) => theme.spacing.small};
-  border-radius: 0 ${({ theme }) => theme.radius.xsmall}
-    ${({ theme }) => theme.radius.xsmall} 0;
-  line-height: 1.55;
-  color: ${({ theme }) => theme.color.text.primary};
-  margin: 0;
-`;
-
 const SentMessageQuote = styled.blockquote`
   background: ${({ theme }) => theme.color.status.success + '22'};
   border-left: 3px solid ${({ theme }) => theme.color.status.success};
@@ -153,8 +201,12 @@ const SentMessageQuote = styled.blockquote`
     ${({ theme }) => theme.radius.xsmall} 0;
   line-height: 1.55;
   color: ${({ theme }) => theme.color.text.primary};
-  margin: 0;
+  margin: 0 0 ${({ theme }) => theme.spacing.small};
   font-weight: 600;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 16rem;
+  overflow-y: auto;
 `;
 const UserInfoRow = styled.div`
   display: flex;
@@ -191,7 +243,8 @@ const CollapsibleHeader = styled(CardHeader)`
 `;
 
 const ChatWrapper = styled.div`
-  max-height: 500px;
+  min-height: 560px;
+  max-height: min(72vh, 720px);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -232,30 +285,6 @@ const ContextLabel = styled(Text).attrs({
   font-weight: 600;
 `;
 
-const InteractionLinkRow = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: ${({ theme }) => theme.spacing.xsmall};
-`;
-
-const InternalInteractionLink = styled(Link)`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid ${({ theme }) => theme.color.border.subtle};
-  border-radius: ${({ theme }) => theme.radius.xxsmall};
-  padding: ${({ theme }) => theme.spacing.xxsmall}
-    ${({ theme }) => theme.spacing.xsmall};
-  background: ${({ theme }) => theme.color.surface.secondary};
-  color: ${({ theme }) => theme.color.text.link};
-  text-decoration: none;
-
-  &:hover {
-    background: ${({ theme }) => theme.color.surface.primary};
-    text-decoration: underline;
-  }
-`;
-
 function getStaticString(staticParameters: Record<string, unknown>, key: string): string | null {
   const value = staticParameters[key];
   return typeof value === 'string' && value.trim() ? value.trim() : null;
@@ -272,7 +301,6 @@ export default function SupportTaskDetail() {
 
   const { taskId } = useParams<{ taskId: string }>();
   const id = Number(taskId);
-  const [descriptionOpen, setDescriptionOpen] = useState(true);
   const [chatOpen, setChatOpen] = useState(true);
   const [relatedUserOpen, setRelatedUserOpen] = useState(true);
 
@@ -297,27 +325,50 @@ export default function SupportTaskDetail() {
     dataFetcher,
   );
 
+  const actionTypeCfg = getActionTypeConfig(task?.action?.action_type ?? '');
+
+  usePageHeader({
+    breadcrumbs: {
+      items: [{ label: 'Support tasks', to: SUPPORT_TASKS_ROUTE }],
+      current: task?.title ?? (isLoading ? 'Loading…' : 'Task not found'),
+    },
+    actions: task ? (
+      <HeaderTags>
+        <Tag
+          bold
+          size={TagSizes.small}
+          appearance={TagAppearance.outline}
+          color={STATUS_CONFIG[task.status].color}
+        >
+          {STATUS_CONFIG[task.status].label}
+        </Tag>
+        <Tag
+          bold
+          size={TagSizes.small}
+          appearance={TagAppearance.outline}
+          color={actionTypeCfg.color}
+        >
+          {actionTypeCfg.label}
+        </Tag>
+      </HeaderTags>
+    ) : undefined,
+  });
+
   if (isLoading) {
     return (
-      <PageWrapper>
-        <PageContent>
-          <Text center>Loading task…</Text>
-        </PageContent>
-      </PageWrapper>
+      <PageContainer>
+        <Text center>Loading task…</Text>
+      </PageContainer>
     );
   }
 
   if (error || !task) {
     return (
-      <PageWrapper>
-        <PageContent>
-          <Text center>Task not found.</Text>
-        </PageContent>
-      </PageWrapper>
+      <PageContainer>
+        <Text center>Task not found.</Text>
+      </PageContainer>
     );
   }
-
-  const actionTypeCfg = getActionTypeConfig(task.action?.action_type ?? '');
   const relatedUser = task.related_user_profile;
   const createdBy = task.created_by_profile;
   const now = new Date();
@@ -336,24 +387,6 @@ export default function SupportTaskDetail() {
 
   const description = task.description;
 
-  const assigneeOptions = [
-    { value: UNASSIGNED, label: '— Unassigned' },
-    ...staffUsers.map(u => ({
-      value: String(u.id),
-      label: `${u.first_name} ${u.last_name}`,
-    })),
-  ];
-
-  if (
-    task.assigned_to_profile &&
-    !assigneeOptions.some(option => option.value === String(task.assigned_to_profile?.id))
-  ) {
-    assigneeOptions.push({
-      value: String(task.assigned_to_profile.id),
-      label: `${task.assigned_to_profile.first_name} ${task.assigned_to_profile.second_name}`,
-    });
-  }
-
   const currentAssignee = task.assigned_to_profile
     ? String(task.assigned_to_profile.id)
     : UNASSIGNED;
@@ -366,10 +399,6 @@ export default function SupportTaskDetail() {
   const supportReplyDraftMessage =
     typeof actionParameters.message === 'string' ? actionParameters.message : '';
   const interactionId = getStaticString(actionStaticParameters, 'interaction_id');
-  const sharedInteractionUrl = getStaticString(
-    actionStaticParameters,
-    'shared_interaction_url',
-  );
   const interactionInternalRoute = interactionId
     ? `${getOpenChatChatRoute(interactionId)}?tab=interactions`
     : null;
@@ -396,150 +425,155 @@ export default function SupportTaskDetail() {
   );
 
   return (
-    <PageWrapper>
-      <PageContent>
-        <BackLink to={SUPPORT_TASKS_ROUTE}>
-          <ChevronLeftIcon size={14} />
-          Support tasks
-        </BackLink>
+    <PageContainer>
+      <DetailBody>
+        <OverviewCard center={false}>
+          <OverviewCardContent>
+            <OverviewTopRow>
+              <MetaGrid>
+                <MetaField>
+                  <OverviewLabelSpacer>Overview</OverviewLabelSpacer>
+                  <Text type={TextTypes.Body5} bold tag="span">
+                    Overview
+                  </Text>
+                </MetaField>
 
-        <TitleRow>
-          <PageTitle>{task.title}</PageTitle>
-          <Tag
-            bold
-            size={TagSizes.large}
-            appearance={TagAppearance.outline}
-            color={STATUS_CONFIG[task.status].color}
-          >
-            {STATUS_CONFIG[task.status].label}
-          </Tag>
-          <Tag
-            bold
-            size={TagSizes.large}
-            appearance={TagAppearance.outline}
-            color={actionTypeCfg.color}
-          >
-            {actionTypeCfg.label}
-          </Tag>
-        </TitleRow>
+                <MetaField>
+                  <MetaLabel>Task ID</MetaLabel>
+                  <MetaValue>
+                    <Text type={TextTypes.Body6}>#{task.id}</Text>
+                  </MetaValue>
+                </MetaField>
 
-        <MetaRow>
-          <MetaField>
-            <MetaLabel>Task ID</MetaLabel>
-            <Text type={TextTypes.Body6}>#{task.id}</Text>
-          </MetaField>
+                <MetaField>
+                  <Select
+                    key={`task-status-${task.status}`}
+                    label="Status"
+                    value={task.status}
+                    options={STATUS_OPTIONS}
+                    onValueChange={v =>
+                      patch({ status: v as TaskStatus }, { status: v as TaskStatus })
+                    }
+                    placeholder="Status"
+                    cannotError
+                  />
+                </MetaField>
 
-          <MetaField>
-            <MetaLabel>Status</MetaLabel>
-            <Select
-              key={`task-status-${task.status}`}
-              value={task.status}
-              options={STATUS_OPTIONS}
-              onValueChange={v =>
-                patch({ status: v as TaskStatus }, { status: v as TaskStatus })
-              }
-              placeholder="Status"
-              cannotError
-              maxWidth="160px"
-            />
-          </MetaField>
+                <MetaField>
+                  <Select
+                    label="Priority"
+                    value={task.priority}
+                    options={priorityOptions}
+                    onValueChange={v =>
+                      patch(
+                        { priority: v as TaskPriority },
+                        { priority: v as TaskPriority },
+                      )
+                    }
+                    placeholder="Priority"
+                    cannotError
+                  />
+                </MetaField>
 
-          <MetaField>
-            <MetaLabel>Priority</MetaLabel>
-            <Select
-              value={task.priority}
-              options={priorityOptions}
-              onValueChange={v =>
-                patch(
-                  { priority: v as TaskPriority },
-                  { priority: v as TaskPriority },
-                )
-              }
-              placeholder="Priority"
-              cannotError
-              maxWidth="140px"
-            />
-          </MetaField>
+                <SupportTaskAssigneePicker
+                  value={currentAssignee}
+                  staffUsers={staffUsers}
+                  assignedProfile={task.assigned_to_profile}
+                  onValueChange={v =>
+                    patch(
+                      { assigned_to_id: v === UNASSIGNED ? null : Number(v) },
+                      {
+                        assigned_to_profile:
+                          v === UNASSIGNED
+                            ? null
+                            : staffUsers.find(u => String(u.id) === v)
+                              ? {
+                                  id: Number(v),
+                                  first_name:
+                                    staffUsers.find(u => String(u.id) === v)
+                                      ?.first_name ?? '',
+                                  second_name:
+                                    staffUsers.find(u => String(u.id) === v)
+                                      ?.last_name ?? '',
+                                  image: null,
+                                  avatar_config: {},
+                                  image_type: 'avatar' as const,
+                                }
+                              : task.assigned_to_profile &&
+                                  String(task.assigned_to_profile.id) === v
+                                ? task.assigned_to_profile
+                                : null,
+                      },
+                    )
+                  }
+                />
 
-          <MetaField>
-            <MetaLabel>Assigned to</MetaLabel>
-            <Select
-              key={`task-assignee-${currentAssignee}`}
-              value={currentAssignee}
-              options={assigneeOptions}
-              onValueChange={v =>
-                patch(
-                  { assigned_to_id: v === UNASSIGNED ? null : Number(v) },
-                  {
-                    assigned_to_profile:
-                      v === UNASSIGNED
-                        ? null
-                        : staffUsers.find(u => String(u.id) === v)
-                          ? {
-                              id: Number(v),
-                              first_name:
-                                staffUsers.find(u => String(u.id) === v)
-                                  ?.first_name ?? '',
-                              second_name:
-                                staffUsers.find(u => String(u.id) === v)
-                                  ?.last_name ?? '',
-                              image: null,
-                              avatar_config: {},
-                              image_type: 'avatar' as const,
-                            }
-                          : null,
-                  },
-                )
-              }
-              placeholder="Unassigned"
-              cannotError
-              maxWidth="200px"
-            />
-          </MetaField>
+                {createdBy && (
+                  <MetaField>
+                    <MetaLabel>Created by</MetaLabel>
+                    <UserCell>
+                      <UserImage
+                        alt={`${createdBy.first_name} ${createdBy.second_name}`}
+                        user={createdBy}
+                        dimensions={{ width: 28, height: 28 }}
+                      />
+                      <Text type={TextTypes.Body6} tag="span">
+                        {createdBy.first_name} {createdBy.second_name}
+                      </Text>
+                    </UserCell>
+                  </MetaField>
+                )}
 
-          {createdBy && (
-            <MetaField>
-              <MetaLabel>Created by</MetaLabel>
-              <Text type={TextTypes.Body6}>
-                {createdBy.first_name} {createdBy.second_name}
-              </Text>
-            </MetaField>
-          )}
+                <MetaField>
+                  <MetaLabel>Created</MetaLabel>
+                  <MetaValue>
+                    <Text type={TextTypes.Body6}>
+                      {formatTimeDistance(task.created_at, now)}
+                    </Text>
+                  </MetaValue>
+                </MetaField>
 
-          <MetaField>
-            <MetaLabel>Created</MetaLabel>
-            <Text type={TextTypes.Body6}>
-              {formatTimeDistance(task.created_at, now)}
-            </Text>
-          </MetaField>
+                <MetaField>
+                  <MetaLabel>Updated</MetaLabel>
+                  <MetaValue>
+                    <Text type={TextTypes.Body6}>
+                      {formatTimeDistance(task.updated_at, now)}
+                    </Text>
+                  </MetaValue>
+                </MetaField>
+              </MetaGrid>
 
-          <MetaField>
-            <MetaLabel>Updated</MetaLabel>
-            <Text type={TextTypes.Body6}>
-              {formatTimeDistance(task.updated_at, now)}
-            </Text>
-          </MetaField>
-        </MetaRow>
+              {interactionInternalRoute && (
+                <OverviewAside>
+                  <MetaLabel>Open Chat</MetaLabel>
+                  <OpenChatLink to={interactionInternalRoute}>
+                    <Tag
+                      bold
+                      size={TagSizes.small}
+                      appearance={TagAppearance.outline}
+                      color={BLUE_40}
+                    >
+                      Interaction
+                    </Tag>
+                    <Text type={TextTypes.Body6} tag="span">
+                      Open in Open Chat
+                    </Text>
+                  </OpenChatLink>
+                </OverviewAside>
+              )}
+            </OverviewTopRow>
+
+            {description && (
+              <DescriptionSection>
+                <MetaLabel>Description</MetaLabel>
+                <DescriptionText>{description}</DescriptionText>
+              </DescriptionSection>
+            )}
+          </OverviewCardContent>
+        </OverviewCard>
 
         <ContentGrid>
           <MainColumn>
-            {description && (
-              <Card center={false}>
-                <CollapsibleHeader onClick={() => setDescriptionOpen(o => !o)}>
-                  <CardTitle>Description</CardTitle>
-                  {descriptionOpen ? (
-                    <ChevronUpIcon size={16} />
-                  ) : (
-                    <ChevronDownIcon size={16} />
-                  )}
-                </CollapsibleHeader>
-                {descriptionOpen && (
-                  <CardContent>
-                    <Text tag="p">{description}</Text>
-                  </CardContent>
-                )}
-              </Card>
-            )}
             {isSupportReplyAction ? (
               <ContextGroup center={false}>
                 <ContextGroupHeader>
@@ -550,20 +584,6 @@ export default function SupportTaskDetail() {
                     <>
                       <ContextLabel>Action</ContextLabel>
                       <SupportTaskActionCard action={action} taskId={id} onResolved={mutate} />
-                    </>
-                  )}
-                  {interactionInternalRoute && (
-                    <>
-                      <ContextLabel>Related Open Chat Interaction</ContextLabel>
-                      <Card center={false}>
-                        <CardContent>
-                          <InteractionLinkRow>
-                            <InternalInteractionLink to={interactionInternalRoute}>
-                              Open interaction in Open Chat
-                            </InternalInteractionLink>
-                          </InteractionLinkRow>
-                        </CardContent>
-                      </Card>
                     </>
                   )}
                   {relatedUserDetail && (
@@ -580,21 +600,17 @@ export default function SupportTaskDetail() {
                         </CollapsibleHeader>
                         {chatOpen && (
                           <ChatWrapper>
-                            {supportReplyDraftMessage && (
+                            {isSupportReplyExecuted && supportReplyDraftMessage && (
                               <>
-                                <ContextLabel>
-                                  {isSupportReplyExecuted ? 'Sent message' : 'Draft message'}
-                                </ContextLabel>
-                                {isSupportReplyExecuted ? (
-                                  <SentMessageQuote>{supportReplyDraftMessage}</SentMessageQuote>
-                                ) : (
-                                  <MessageQuote>{supportReplyDraftMessage}</MessageQuote>
-                                )}
+                                <ContextLabel>Sent message</ContextLabel>
+                                <SentMessageQuote>{supportReplyDraftMessage}</SentMessageQuote>
                               </>
                             )}
                             <UserChat
                               user={relatedUserDetail}
-                              initialDraftMessage={supportReplyDraftMessage}
+                              initialDraftMessage={
+                                isSupportReplyExecuted ? '' : supportReplyDraftMessage
+                              }
                               sendViaSupportReplyApi
                               hideComposer={isSupportReplyExecuted}
                               onSupportReplySent={(message: string) => {
@@ -728,7 +744,7 @@ export default function SupportTaskDetail() {
             )}
           </SideColumn>
         </ContentGrid>
-      </PageContent>
-    </PageWrapper>
+      </DetailBody>
+    </PageContainer>
   );
 }

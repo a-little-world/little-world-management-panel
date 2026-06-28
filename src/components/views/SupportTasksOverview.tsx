@@ -16,7 +16,7 @@ import {
   ChevronUpIcon,
   ClockIcon,
 } from 'lucide-react';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import useSWR from 'swr';
@@ -49,6 +49,7 @@ import {
 import { getSupportTaskDetailRoute } from '../../router/routes';
 import { useCurrentUserId } from '../../store';
 import { Button } from '../atoms/Button';
+import SelectBox from '../atoms/SelectBox';
 import UserImage from '../atoms/UserImage';
 import CreateSupportTaskModal from '../blocks/CreateSupportTaskModal';
 import { DataTable } from '../blocks/DataTable';
@@ -127,6 +128,22 @@ const TaskCell = styled.div`
   gap: 3px;
   min-width: 200px;
   max-width: 320px;
+`;
+
+const TaskTitleLine = styled.div`
+  display: flex;
+  align-items: baseline;
+  gap: ${({ theme }) => theme.spacing.xxxsmall};
+  min-width: 0;
+`;
+
+const TaskIdPrefix = styled(Text).attrs({
+  type: TextTypes.Body7,
+  tag: 'span' as const,
+})`
+  color: ${({ theme }) => theme.color.text.tertiary};
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
 `;
 
 const TaskDesc = styled.span`
@@ -210,6 +227,22 @@ const DEFAULT_EXPORT_HEADERS = [
 
 const DEFAULT_STATUS_FILTERS: TaskStatus[] = ['NEW', 'IN_PROGRESS'];
 
+const EMPTY_TASKS: SupportTask[] = [];
+
+function pruneSelectedRows(current: number[], tasks: SupportTask[]): number[] {
+  if (!current.length || !tasks.length) {
+    return current.length ? [] : current;
+  }
+  const next = current.filter(id => tasks.some(task => task.id === id));
+  if (
+    next.length === current.length &&
+    next.every((id, index) => id === current[index])
+  ) {
+    return current;
+  }
+  return next;
+}
+
 // ─── Column definitions ───────────────────────────────────────────────────────
 
 const columnHelper = createColumnHelper<SupportTask>();
@@ -236,17 +269,24 @@ function buildColumns(
   sortOrder: 'asc' | 'desc',
   onSort: (field: string) => void,
   priorityConfig: Record<TaskPriority, PriorityConfig>,
+  selectedRows: number[],
+  onToggleRow: (id: number) => void,
 ): ColumnDef<SupportTask, any>[] {
   return [
-    columnHelper.accessor('id', {
-      header: () => (
-        <CenteredCell>
-          <Button variant="ghost" onClick={() => onSort('id')}>
-            ID <SortIcon field="id" sortBy={sortBy} sortOrder={sortOrder} />
-          </Button>
+    columnHelper.display({
+      id: 'select',
+      header: 'Selected',
+      cell: ({ row }) => (
+        <CenteredCell
+          onClick={event => event.stopPropagation()}
+          onMouseDown={event => event.stopPropagation()}
+        >
+          <SelectBox
+            checked={selectedRows.includes(row.original.id)}
+            onChange={() => onToggleRow(row.original.id)}
+          />
         </CenteredCell>
       ),
-      cell: ({ getValue }) => <CenteredCell>{getValue()}</CenteredCell>,
     }),
     columnHelper.accessor('title', {
       header: () => (
@@ -256,9 +296,12 @@ function buildColumns(
       ),
       cell: ({ row }) => (
         <TaskCell>
-          <Text type={TextTypes.Body6} bold tag="span">
-            {row.original.title}
-          </Text>
+          <TaskTitleLine>
+            <TaskIdPrefix>#{row.original.id}:</TaskIdPrefix>
+            <Text type={TextTypes.Body6} bold tag="span">
+              {row.original.title}
+            </Text>
+          </TaskTitleLine>
           <TaskDesc>{row.original.description}</TaskDesc>
         </TaskCell>
       ),
@@ -452,6 +495,7 @@ export default function SupportTasksOverview() {
   );
   const [availableHeaders, setAvailableHeaders] =
     useState<string[]>(TASK_EXPORT_HEADERS);
+  const [selectedRows, setSelectedRows] = useState<number[]>([]);
 
   const statusFilters = searchParams.getAll('status');
   const effectiveStatusFilters = (statusFilters.length
@@ -488,7 +532,19 @@ export default function SupportTasksOverview() {
     mutate: mutateTasks,
   } = useSWR<PaginatedSupportTaskList>(params, fetchSupportTasks);
 
-  const tasks = taskList?.results ?? [];
+  const tasks = taskList?.results ?? EMPTY_TASKS;
+
+  useEffect(() => {
+    setSelectedRows(current => pruneSelectedRows(current, tasks));
+  }, [tasks]);
+
+  const toggleSelectedRow = useCallback((id: number) => {
+    setSelectedRows(current =>
+      current.includes(id)
+        ? current.filter(rowId => rowId !== id)
+        : [...current, id],
+    );
+  }, []);
 
   const { data: stats, mutate: mutateTaskStats } = useSWR(
     'support_task_stats',
@@ -548,8 +604,16 @@ export default function SupportTasksOverview() {
   );
 
   const columns = useMemo(
-    () => buildColumns(sortBy, sortOrder, onSort, priorityConfig),
-    [sortBy, sortOrder, onSort, priorityConfig],
+    () =>
+      buildColumns(
+        sortBy,
+        sortOrder,
+        onSort,
+        priorityConfig,
+        selectedRows,
+        toggleSelectedRow,
+      ),
+    [sortBy, sortOrder, onSort, priorityConfig, selectedRows, toggleSelectedRow],
   );
 
   const updateSearchParam = (key: string, value: string | string[]) => {

@@ -157,6 +157,37 @@ export const MessageBox = styled(TextArea)`
   background: ${({ theme }) => theme.color.surface.secondary};
 `;
 
+export const SupportReplyMessageBox = styled(MessageBox)`
+  min-height: 8rem;
+  max-height: 20rem;
+`;
+
+export const OpenChatInteractionWidget = styled.div`
+  border: 1px solid ${({ theme }) => theme.color.border.selected};
+  border-radius: ${({ theme }) => theme.radius.xsmall};
+  padding: ${({ theme }) => theme.spacing.xxxsmall};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xxxsmall};
+  background: ${({ theme }) => theme.color.surface.primary};
+  width: 100%;
+  max-width: 100%;
+`;
+
+export const OpenChatInteractionFrame = styled.iframe`
+  border: 0;
+  border-radius: ${({ theme }) => theme.radius.xxxsmall};
+  width: 100%;
+  min-height: 16rem;
+  height: 16rem;
+  background: ${({ theme }) => theme.color.surface.primary};
+`;
+
+export const InteractionMessage = styled(Message)<{ $isSelf: boolean }>`
+  width: 100%;
+  max-width: 100%;
+`;
+
 export const UnreadCheckbox = styled(Checkbox)`
   position: absolute;
   top: ${({ theme }) => theme.spacing.medium};
@@ -235,9 +266,11 @@ export const SupportReplyTaskMeta = styled.div`
 `;
 
 export const SupportReplyTaskDraft = styled(Text)`
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+  max-height: 12rem;
+  overflow-y: auto;
 `;
 
 export const SupportReplyTaskIconLink = styled(Link)`

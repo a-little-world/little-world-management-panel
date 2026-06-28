@@ -21,10 +21,20 @@ import {
   TableRow,
 } from '../atoms/Table';
 
-// Overlay over full table row
+const CellLinkHost = styled.div`
+  position: relative;
+`;
+
+// Link overlay scoped to a single cell (not the full row)
 const RowLinkOverlay = styled(Link)`
   position: absolute;
   inset: 0;
+  z-index: 0;
+`;
+
+const SelectCellContent = styled.div`
+  position: relative;
+  z-index: 1;
 `;
 
 interface DataTableProps<TData, TValue> {
@@ -86,6 +96,9 @@ export function DataTable<TData, TValue>({
         {table.getRowModel().rows?.length ? (
           table.getRowModel().rows.map(row => {
             const rowLink = getRowLink?.(row.original);
+            const linkColumnIndex = row
+              .getVisibleCells()
+              .findIndex(cell => cell.column.id !== 'select');
             return (
               <TableRow
                 key={row.id}
@@ -96,14 +109,33 @@ export function DataTable<TData, TValue>({
                     : undefined
                 }
               >
-                {row.getVisibleCells()?.map((cell, idx) => (
-                  <TableCell key={cell.id}>
-                    {idx === 0 && rowLink && (
-                      <RowLinkOverlay to={rowLink} tabIndex={-1} aria-hidden />
-                    )}
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
+                {row.getVisibleCells()?.map((cell, idx) => {
+                  const isSelectCell = cell.column.id === 'select';
+                  const isLinkCell = idx === linkColumnIndex && rowLink;
+                  const cellContent = flexRender(
+                    cell.column.columnDef.cell,
+                    cell.getContext(),
+                  );
+
+                  return (
+                    <TableCell key={cell.id}>
+                      {isSelectCell ? (
+                        <SelectCellContent>{cellContent}</SelectCellContent>
+                      ) : isLinkCell ? (
+                        <CellLinkHost>
+                          <RowLinkOverlay
+                            to={rowLink}
+                            tabIndex={-1}
+                            aria-hidden
+                          />
+                          {cellContent}
+                        </CellLinkHost>
+                      ) : (
+                        cellContent
+                      )}
+                    </TableCell>
+                  );
+                })}
               </TableRow>
             );
           })

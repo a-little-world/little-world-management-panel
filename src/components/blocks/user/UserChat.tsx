@@ -36,8 +36,10 @@ import {
 import { BLUE_40, CRIMSON_40, GREEN_40 } from '../../../constants';
 import {
   formatFileName,
+  buildOpenChatInteractionNewestResponseUrl,
   getCustomChatElements,
   messageContainsWidget,
+  parseOpenChatInteractionPayload,
   processAttachmentWidgets,
 } from '../../../helpers/chat';
 import { formatMessageDate, formatTime } from '../../../helpers/date';
@@ -50,14 +52,18 @@ import {
   Attachment,
   AttachmentButton,
   ChatContainer,
+  InteractionMessage,
   Message,
   MessageBox,
   MessageGroup,
   MessageText,
   Messages,
   NoMessages,
+  OpenChatInteractionFrame,
+  OpenChatInteractionWidget,
   SendButton,
   StickyDateHeader,
+  SupportReplyMessageBox,
   SupportReplyTaskDraft,
   SupportReplyTaskIconLink,
   SupportReplyTaskMeta,
@@ -261,6 +267,12 @@ const UserChat = ({
         ? CRIMSON_40
         : BLUE_40;
   const isReplyTaskCompleted = replyTaskActionStatus === 'EXECUTED';
+  const showDraftInNotice =
+    Boolean(activeSupportReplySuggestion) && (hideComposer || !replyTask);
+  const ComposerField = composerInitialMessage ? SupportReplyMessageBox : MessageBox;
+  const composerSize = composerInitialMessage
+    ? TextAreaSize.Large
+    : TextAreaSize.Medium;
 
   return (
     <ChatContainer>
@@ -291,13 +303,21 @@ const UserChat = ({
                   <Text type={TextTypes.Body6}>{group.formattedDate}</Text>
                 </StickyDateHeader>
                 {group.messages.map(message => {
-                  // Process attachment widgets for malformed JSON
                   const errorMessage =
                     '[Attachment could not be displayed due to processing error]';
                   const processedMessageText = processAttachmentWidgets(
                     message,
                     errorMessage,
                   );
+                  const interactionPayload = message.parsable
+                    ? parseOpenChatInteractionPayload(processedMessageText)
+                    : null;
+                  const interactionNewestResponseUrl =
+                    interactionPayload?.shared_interaction_url
+                      ? buildOpenChatInteractionNewestResponseUrl(
+                          interactionPayload.shared_interaction_url,
+                        )
+                      : null;
 
                   const customChatElements = message?.parsable
                     ? getCustomChatElements({
@@ -305,6 +325,36 @@ const UserChat = ({
                         userId: user.uuid ?? user.hash,
                       })
                     : [];
+
+                  if (interactionPayload) {
+                    return (
+                      <InteractionMessage
+                        $isSelf={message.sender !== (user.uuid ?? user.hash)}
+                        key={message.uuid}
+                      >
+                        <OpenChatInteractionWidget>
+                          {interactionPayload.title && (
+                            <Text type={TextTypes.Body7} bold>
+                              {interactionPayload.title}
+                            </Text>
+                          )}
+                          {interactionNewestResponseUrl ? (
+                            <OpenChatInteractionFrame
+                              src={interactionNewestResponseUrl}
+                              title={`open-chat-interaction-widget-${interactionPayload.interaction_id}`}
+                            />
+                          ) : (
+                            <Text type={TextTypes.Body7}>
+                              Interaction preview unavailable.
+                            </Text>
+                          )}
+                        </OpenChatInteractionWidget>
+                        <Time type={TextTypes.Body6}>
+                          {formatTime(new Date(message.created))}
+                        </Time>
+                      </InteractionMessage>
+                    );
+                  }
 
                   return (
                     <Message
@@ -401,7 +451,7 @@ const UserChat = ({
           <SupportReplyTaskTopRow>
             <SupportReplyTaskMeta>
               <Text type={TextTypes.Body7} bold>
-                Task #{replyTask.id}
+                Support reply task #{replyTask.id}
               </Text>
               <SupportReplyTaskIconLink to={getSupportTaskDetailRoute(replyTask.id)}>
                 <ArrowUpRightIcon size={14} />
@@ -415,11 +465,19 @@ const UserChat = ({
               {replyTaskStatusLabel}
             </Tag>
           </SupportReplyTaskTopRow>
-          {activeSupportReplySuggestion ? (
+          {showDraftInNotice ? (
             <SupportReplyTaskDraft type={TextTypes.Body7}>
               {activeSupportReplySuggestion}
             </SupportReplyTaskDraft>
           ) : (
+            !hideComposer &&
+            activeSupportReplySuggestion && (
+              <Text type={TextTypes.Body7}>
+                Draft loaded in the composer below — review and send when ready.
+              </Text>
+            )
+          )}
+          {!activeSupportReplySuggestion && (
             <Text type={TextTypes.Body7}>No draft suggestion yet.</Text>
           )}
         </SupportReplyTaskNotice>
@@ -437,7 +495,7 @@ const UserChat = ({
                       .ppt,.pptx,.xls,.xlsx,.csv, image/*"
           />
 
-          <MessageBox
+          <ComposerField
             {...registerInput({
               register,
               name: 'text',
@@ -450,7 +508,7 @@ const UserChat = ({
             expandable
             placeholder={'Write a message...'}
             onSubmit={() => handleSubmit(onSendMessage)()}
-            size={TextAreaSize.Medium}
+            size={composerSize}
           />
           {!!selectedFile && (
             <Attachment>

@@ -275,7 +275,8 @@ const InteractionWidgetFrame = styled.iframe`
   border: 0;
   border-radius: ${({ theme }) => theme.radius.xxxsmall};
   width: 100%;
-  height: 9rem;
+  min-height: 16rem;
+  height: 16rem;
   background: ${({ theme }) => theme.color.surface.primary};
 `;
 
