@@ -115,10 +115,19 @@ function extractOpenChatInteractionUuid(rawUrl: string): string | null {
   }
 }
 
-function withOpenChatLightTheme(rawUrl: string): string {
+export function withOpenChatLightTheme(rawUrl: string): string {
   const url = new URL(rawUrl);
   url.searchParams.set('theme', 'light');
   return url.toString();
+}
+
+export function buildOpenChatInteractionPageUrl(
+  browserOrigin: string,
+  interactionUuid: string,
+): string {
+  return withOpenChatLightTheme(
+    `${browserOrigin.replace(/\/$/, '')}/interaction/${interactionUuid}`,
+  );
 }
 
 export function parseOpenChatInteractionPayload(

@@ -47,6 +47,7 @@ import useInfiniteScroll from '../../../hooks/useInfiniteScroll';
 import { getSupportTaskDetailRoute } from '../../../router/routes';
 import { registerInput } from '../../../store';
 import UnreadDot from '../../atoms/UnreadDot';
+import { OpenChatInteractionEmbed } from '../openChat/OpenChatInteractionEmbed';
 import {
   ActionsContainer,
   Attachment,
@@ -59,8 +60,6 @@ import {
   MessageText,
   Messages,
   NoMessages,
-  OpenChatInteractionFrame,
-  OpenChatInteractionWidget,
   SendButton,
   StickyDateHeader,
   SupportReplyMessageBox,
@@ -332,23 +331,11 @@ const UserChat = ({
                         $isSelf={message.sender !== (user.uuid ?? user.hash)}
                         key={message.uuid}
                       >
-                        <OpenChatInteractionWidget>
-                          {interactionPayload.title && (
-                            <Text type={TextTypes.Body7} bold>
-                              {interactionPayload.title}
-                            </Text>
-                          )}
-                          {interactionNewestResponseUrl ? (
-                            <OpenChatInteractionFrame
-                              src={interactionNewestResponseUrl}
-                              title={`open-chat-interaction-widget-${interactionPayload.interaction_id}`}
-                            />
-                          ) : (
-                            <Text type={TextTypes.Body7}>
-                              Interaction preview unavailable.
-                            </Text>
-                          )}
-                        </OpenChatInteractionWidget>
+                        <OpenChatInteractionEmbed
+                          title={interactionPayload.title}
+                          frameUrl={interactionNewestResponseUrl}
+                          interactionId={interactionPayload.interaction_id}
+                        />
                         <Time type={TextTypes.Body6}>
                           {formatTime(new Date(message.created))}
                         </Time>

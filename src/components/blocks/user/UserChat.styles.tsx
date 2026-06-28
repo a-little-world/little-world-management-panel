@@ -19,6 +19,16 @@ export const ChatContainer = styled.div`
   height: 100%;
 `;
 
+export const ChatPane = styled.div`
+  flex: 1;
+  min-height: 560px;
+  max-height: min(72vh, 720px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+`;
+
 export const ActionsContainer = styled.div`
   display: flex;
   align-items: flex-end;
@@ -186,6 +196,7 @@ export const OpenChatInteractionFrame = styled.iframe`
 export const InteractionMessage = styled(Message)<{ $isSelf: boolean }>`
   width: 100%;
   max-width: 100%;
+  padding-bottom: ${({ theme }) => theme.spacing.xxsmall};
 `;
 
 export const UnreadCheckbox = styled(Checkbox)`
