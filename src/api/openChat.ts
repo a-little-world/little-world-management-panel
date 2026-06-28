@@ -15,6 +15,8 @@ export const OPEN_CHAT_IDEMPOTENT_ACTIONS_ENDPOINT =
   '/api/matching/open-chat/idempotent-actions/';
 export const OPEN_CHAT_AUTOMATION_GENERATE_MESSAGE_REPLIES_ENDPOINT =
   '/api/matching/open-chat/automation-triggers/generate-message-replies/';
+export const OPEN_CHAT_REST_TOOLS_SYNC_ENDPOINT =
+  '/api/matching/open-chat/rest-tools/sync/';
 
 export const DEFAULT_OPEN_CHAT_HOST = 'http://host.docker.internal:1984';
 
@@ -303,6 +305,31 @@ export type OpenChatAutomationClearResult = {
   deleted_support_task_actions_count: number;
   detail: string;
 };
+
+export type OpenChatRestToolsSyncResult = {
+  target_user_uuid: string;
+  reload: boolean;
+  created: string[];
+  updated: string[];
+  deleted: string[];
+  detail: string;
+};
+
+export function syncOpenChatRestTools(
+  userUuid: string,
+  reload = false,
+) {
+  const query = new URLSearchParams({
+    user_uuid: userUuid,
+  });
+  return apiFetch<OpenChatRestToolsSyncResult>(
+    `${OPEN_CHAT_REST_TOOLS_SYNC_ENDPOINT}?${query.toString()}`,
+    {
+      method: 'POST',
+      body: { reload },
+    },
+  );
+}
 
 export function clearOpenChatIdempotentAction(
   clearEndpoint: string,

@@ -32,6 +32,7 @@ import {
   fetchOpenChatConfiguration,
   fetchOpenChatIdempotentActions,
   clearOpenChatIdempotentAction,
+  syncOpenChatRestTools,
   testOpenChatConnection,
   triggerOpenChatIdempotentAction,
   updateOpenChatConfiguration,
@@ -532,13 +533,18 @@ function OpenChatAccessUsersPanel() {
 
 function OpenChatActionsPanel({
   configuration,
+  configurationOwnerUserUuid,
   automationTargetUserUuid,
+  canEdit,
 }: {
   configuration: OpenChatConfiguration | null;
+  configurationOwnerUserUuid: string;
   automationTargetUserUuid: string;
+  canEdit: boolean;
 }) {
   const navigate = useNavigate();
   const hasConfiguration = configuration !== null;
+  const hasConfigurationOwner = configurationOwnerUserUuid.trim().length > 0;
   const hasAutomationTarget = automationTargetUserUuid.trim().length > 0;
   const [isTesting, setIsTesting] = useState(false);
   const [testError, setTestError] = useState<string | null>(null);
@@ -548,6 +554,10 @@ function OpenChatActionsPanel({
   const [clearingActionId, setClearingActionId] = useState<string | null>(null);
   const [actionErrors, setActionErrors] = useState<Record<string, string>>({});
   const [actionSuccess, setActionSuccess] = useState<Record<string, string>>({});
+  const [isSyncingRestTools, setIsSyncingRestTools] = useState(false);
+  const [isReloadingRestTools, setIsReloadingRestTools] = useState(false);
+  const [restToolsError, setRestToolsError] = useState<string | null>(null);
+  const [restToolsSuccess, setRestToolsSuccess] = useState<string | null>(null);
   const {
     data: idempotentActionsData,
     error: idempotentActionsError,
@@ -691,10 +701,112 @@ function OpenChatActionsPanel({
     }
   };
 
+  const handleSyncRestTools = async (reload: boolean) => {
+    if (!hasConfiguration || !hasConfigurationOwner) {
+      return;
+    }
+    if (isSyncingRestTools || isReloadingRestTools) {
+      return;
+    }
+
+    setRestToolsError(null);
+    setRestToolsSuccess(null);
+    if (reload) {
+      setIsReloadingRestTools(true);
+    } else {
+      setIsSyncingRestTools(true);
+    }
+
+    try {
+      const result = await syncOpenChatRestTools(
+        configurationOwnerUserUuid,
+        reload,
+      );
+      const created = result.created.length ? ` created ${result.created.join(', ')}` : '';
+      const updated = result.updated.length ? ` updated ${result.updated.join(', ')}` : '';
+      const deleted = result.deleted.length ? ` deleted ${result.deleted.join(', ')}` : '';
+      setRestToolsSuccess(`${result.detail}${created}${updated}${deleted}`.trim());
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Could not sync REST API tools.';
+      setRestToolsError(message);
+    } finally {
+      setIsSyncingRestTools(false);
+      setIsReloadingRestTools(false);
+    }
+  };
+
   return (
     <Accordion
       defaultValue="Open-Chat Automation Triggers"
       items={[
+        {
+          header: 'REST API Tools',
+          content: (
+            <div className="pt-2 flex flex-col gap-4 max-w-lg">
+              <Text type={TextTypes.Body4} tag="p">
+                Register Little World API operations as dynamic REST tools on
+                Open Chat. Sync creates or updates missing tools; reload deletes
+                and recreates them when the API schema changes.
+              </Text>
+              {!hasConfiguration && (
+                <Text type={TextTypes.Body4} tag="p">
+                  Save an open chat configuration before syncing REST API tools.
+                </Text>
+              )}
+              {restToolsError && (
+                <StatusMessage type={StatusTypes.Error} visible>
+                  {restToolsError}
+                </StatusMessage>
+              )}
+              {restToolsSuccess && (
+                <StatusMessage type={StatusTypes.Success} visible>
+                  {restToolsSuccess}
+                </StatusMessage>
+              )}
+              <Actions>
+                <Button
+                  type="button"
+                  appearance={ButtonAppearance.Primary}
+                  size={ButtonSizes.Medium}
+                  disabled={
+                    !canEdit ||
+                    !hasConfiguration ||
+                    !hasConfigurationOwner ||
+                    isSyncingRestTools ||
+                    isReloadingRestTools
+                  }
+                  onClick={() => {
+                    void handleSyncRestTools(false);
+                  }}
+                >
+                  {isSyncingRestTools ? 'Syncing…' : 'Sync REST API tools'}
+                </Button>
+                <Button
+                  type="button"
+                  appearance={ButtonAppearance.Secondary}
+                  size={ButtonSizes.Medium}
+                  disabled={
+                    !canEdit ||
+                    !hasConfiguration ||
+                    !hasConfigurationOwner ||
+                    isSyncingRestTools ||
+                    isReloadingRestTools
+                  }
+                  onClick={() => {
+                    void handleSyncRestTools(true);
+                  }}
+                >
+                  {isReloadingRestTools
+                    ? 'Reloading…'
+                    : 'Delete and reload REST API tools'}
+                </Button>
+              </Actions>
+            </div>
+          ),
+        },
         {
           header: 'Open-Chat Automation Triggers',
           content: (
@@ -879,6 +991,8 @@ export function OpenChatConfigurationPanel({
   embedded?: boolean;
   automationTargetUserUuid?: string;
 }) {
+  const { panelUser } = useGlobalState();
+  const configurationOwnerUserUuid = (panelUser as MatchingPanelUser | undefined)?.uuid?.trim() ?? '';
   const { data, error, isLoading } = useSWR(
     OPEN_CHAT_CONFIGURATION_ENDPOINT,
     fetchOpenChatConfiguration,
@@ -1156,7 +1270,9 @@ export function OpenChatConfigurationPanel({
           </Text>
           <OpenChatActionsPanel
             configuration={data ?? null}
+            configurationOwnerUserUuid={configurationOwnerUserUuid}
             automationTargetUserUuid={resolvedAutomationTargetUserUuid}
+            canEdit={canEdit}
           />
         </div>
 
