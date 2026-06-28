@@ -116,8 +116,21 @@ const ErrorText = styled(Text).attrs({
   color: ${({ theme }) => theme.color.text.error};
 `;
 
-const resolveValueByHeader = (row: Record<string, any>, header: string) =>
-  header.split('.').reduce((value, key) => value?.[key], row);
+const resolveValueByHeader = (row: Record<string, any>, header: string) => {
+  try {
+    return header.split('.').reduce<unknown>((value, key) => {
+      if (value === null || value === undefined) {
+        return undefined;
+      }
+      if (typeof value !== 'object') {
+        return undefined;
+      }
+      return (value as Record<string, unknown>)[key];
+    }, row);
+  } catch {
+    return undefined;
+  }
+};
 
 const toCsvValue = (value: unknown) => {
   if (value === null || value === undefined) {

@@ -6,7 +6,8 @@ import {
   Text,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
-import React, { useState } from 'react';
+import * as RadixPopover from '@radix-ui/react-popover';
+import React from 'react';
 import styled from 'styled-components';
 
 import type { StaffUser } from '../../api/supportTasks';
@@ -148,7 +149,6 @@ export default function SupportTaskAssigneePicker({
   assignedProfile = null,
   onValueChange,
 }: SupportTaskAssigneePickerProps) {
-  const [open, setOpen] = useState(false);
   const selectedProfile = getAssigneeProfile(value, staffUsers, assignedProfile);
   const options = [
     { value: UNASSIGNED, label: 'Unassigned', profile: null as UserProfile | null },
@@ -172,24 +172,17 @@ export default function SupportTaskAssigneePicker({
 
   const handleSelect = (nextValue: string) => {
     onValueChange(nextValue);
-    setOpen(false);
   };
 
   return (
     <Field>
       <Label htmlFor="support-task-assignee">Assigned to</Label>
       <Popover
-        open={open}
-        onOpenChange={setOpen}
         width={PopoverSizes.Auto}
         align="start"
         sideOffset={4}
         trigger={
-          <Trigger
-            id="support-task-assignee"
-            type="button"
-            data-state={open ? 'open' : 'closed'}
-          >
+          <Trigger id="support-task-assignee" type="button">
             <TriggerContent>
               {selectedProfile ? (
                 <>
@@ -214,21 +207,22 @@ export default function SupportTaskAssigneePicker({
       >
         <OptionList>
           {options.map(option => (
-            <OptionButton
-              key={option.value}
-              type="button"
-              $selected={option.value === value}
-              onClick={() => handleSelect(option.value)}
-            >
-              {option.profile && (
-                <UserImage
-                  alt={option.label}
-                  user={option.profile}
-                  dimensions={{ width: 24, height: 24 }}
-                />
-              )}
-              <OptionLabel>{option.label}</OptionLabel>
-            </OptionButton>
+            <RadixPopover.Close asChild key={option.value}>
+              <OptionButton
+                type="button"
+                $selected={option.value === value}
+                onClick={() => handleSelect(option.value)}
+              >
+                {option.profile && (
+                  <UserImage
+                    alt={option.label}
+                    user={option.profile}
+                    dimensions={{ width: 24, height: 24 }}
+                  />
+                )}
+                <OptionLabel>{option.label}</OptionLabel>
+              </OptionButton>
+            </RadixPopover.Close>
           ))}
         </OptionList>
       </Popover>

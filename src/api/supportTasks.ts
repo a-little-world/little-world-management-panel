@@ -137,6 +137,22 @@ export const executeAction = (taskId: number): Promise<SupportTaskAction> =>
 export const cancelAction = (taskId: number): Promise<SupportTaskAction> =>
   apiFetch(`/api/support_task/${taskId}/action/cancel/`, { method: 'POST' });
 
+export type BulkSupportTaskAction = 'delete' | 'complete' | 'cancel';
+
+export interface BulkSupportTaskResult {
+  succeeded: number[];
+  failed: { id: number; error: string }[];
+}
+
+export const bulkSupportTasks = (
+  taskIds: number[],
+  action: BulkSupportTaskAction,
+): Promise<BulkSupportTaskResult> =>
+  apiFetch('/api/support_task/bulk/', {
+    method: 'POST',
+    body: { task_ids: taskIds, action },
+  });
+
 export interface SupportTaskStats {
   NEW: number;
   IN_PROGRESS: number;

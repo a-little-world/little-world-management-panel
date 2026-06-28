@@ -1,6 +1,7 @@
 import {
   Checkbox,
   Button as DSButton,
+  Select,
   Tag,
   TagAppearance,
   TagSizes,
@@ -28,6 +29,8 @@ import {
   SupportTaskListParams,
   TaskPriority,
   TaskStatus,
+  BulkSupportTaskAction,
+  bulkSupportTasks,
   fetchStaffUsers,
   fetchSupportTaskStats,
   fetchSupportTasks,
@@ -195,6 +198,23 @@ const QuickFilters = styled.div`
   align-items: center;
   gap: ${({ theme }) => theme.spacing.medium};
 `;
+
+const BulkActions = styled.div`
+  display: inline-flex;
+  align-items: flex-end;
+  gap: ${({ theme }) => theme.spacing.xsmall};
+`;
+
+const BulkActionSelect = styled.div`
+  width: 11rem;
+`;
+
+const BULK_ACTION_OPTIONS: { value: BulkSupportTaskAction; label: string }[] =
+  [
+    { value: 'delete', label: 'Delete' },
+    { value: 'complete', label: 'Complete' },
+    { value: 'cancel', label: 'Cancel' },
+  ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -496,6 +516,9 @@ export default function SupportTasksOverview() {
   const [availableHeaders, setAvailableHeaders] =
     useState<string[]>(TASK_EXPORT_HEADERS);
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
+  const [bulkAction, setBulkAction] = useState<BulkSupportTaskAction | ''>('');
+  const [bulkRunning, setBulkRunning] = useState(false);
+  const [bulkError, setBulkError] = useState<string | null>(null);
 
   const statusFilters = searchParams.getAll('status');
   const effectiveStatusFilters = (statusFilters.length
@@ -550,6 +573,51 @@ export default function SupportTasksOverview() {
     'support_task_stats',
     fetchSupportTaskStats,
   );
+
+  const runBulkAction = async () => {
+    if (!bulkAction || !selectedRows.length) return;
+
+    if (
+      bulkAction === 'delete' &&
+      !window.confirm(
+        `Delete ${selectedRows.length} selected task${selectedRows.length === 1 ? '' : 's'}? This cannot be undone.`,
+      )
+    ) {
+      return;
+    }
+
+    setBulkRunning(true);
+    setBulkError(null);
+    try {
+      const result = await bulkSupportTasks(selectedRows, bulkAction);
+      if (result.failed.length) {
+        const summary = result.failed
+          .slice(0, 3)
+          .map(item => `#${item.id}: ${item.error}`)
+          .join('; ');
+        setBulkError(
+          result.succeeded.length
+            ? `Completed ${result.succeeded.length}, failed ${result.failed.length}. ${summary}`
+            : summary,
+        );
+      }
+      if (result.succeeded.length) {
+        setSelectedRows(current =>
+          current.filter(id => !result.succeeded.includes(id)),
+        );
+        await Promise.all([mutateTasks(), mutateTaskStats()]);
+      }
+      if (!result.failed.length) {
+        setBulkAction('');
+      }
+    } catch (error) {
+      setBulkError(
+        error instanceof Error ? error.message : 'Bulk action failed',
+      );
+    } finally {
+      setBulkRunning(false);
+    }
+  };
 
   const counts = {
     NEW: stats?.NEW ?? 0,
@@ -758,6 +826,35 @@ export default function SupportTasksOverview() {
               checked={onlyMe}
               onCheckedChange={toggleOnlyMe}
             />
+          )}
+          {selectedRows.length > 0 && (
+            <BulkActions>
+              <BulkActionSelect>
+                <Select
+                  label={`Actions (${selectedRows.length} selected)`}
+                  value={bulkAction}
+                  options={BULK_ACTION_OPTIONS}
+                  onValueChange={value =>
+                    setBulkAction(value as BulkSupportTaskAction)
+                  }
+                  placeholder="Choose action"
+                  cannotError
+                />
+              </BulkActionSelect>
+              {bulkAction && (
+                <DSButton
+                  disabled={bulkRunning}
+                  onClick={runBulkAction}
+                >
+                  {bulkRunning ? 'Running…' : 'Run'}
+                </DSButton>
+              )}
+            </BulkActions>
+          )}
+          {bulkError && (
+            <Text type={TextTypes.Body7} tag="span">
+              {bulkError}
+            </Text>
           )}
           <DSButton onClick={() => setCreateOpen(true)}>New task</DSButton>
         </QuickFilters>
