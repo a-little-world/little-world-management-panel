@@ -5,14 +5,11 @@ import {
   TextTypes,
 } from '@a-little-world/little-world-design-system';
 import React, { useMemo } from 'react';
-import { Link } from 'react-router-dom';
-import styled from 'styled-components';
 
 import type { MatchingPanelUser } from '../../api';
 import { buildOpenChatLoginUrl } from '../../api/openChat';
 import type { BreadcrumbItem } from '../atoms/Breadcrumbs';
 import { useOpenChatWorkspace } from '../../hooks/useOpenChatWorkspace';
-import { OPEN_CHAT_CONFIGURATION_ROUTE } from '../../router/routes';
 import { useGlobalState } from '../../store';
 import { PageContainer } from '../atoms/PageLayout';
 import { usePageHeader } from '../blocks/LayoutHeaderContext';
@@ -30,42 +27,13 @@ import {
   formatOpenChatPartnerName,
 } from '../blocks/openChat/openChatHelpers';
 import {
+  ActorSelect,
   ActorSelectWrap,
+  ConfigHeaderNavLink,
   HeaderActionsRow,
   HeaderLinkButton,
   WorkspaceGrid,
 } from '../blocks/openChat/OpenChatWorkspace.styles';
-
-const ConfigRouterLink = styled(Link)`
-  display: inline-flex;
-  align-items: center;
-  border: 1px solid ${({ theme }) => theme.color.border.subtle};
-  border-radius: ${({ theme }) => theme.radius.xxsmall};
-  padding: ${({ theme }) => theme.spacing.xxsmall}
-    ${({ theme }) => theme.spacing.small};
-  background: ${({ theme }) => theme.color.surface.secondary};
-  color: ${({ theme }) => theme.color.text.link};
-  text-decoration: none;
-  min-height: 2.5rem;
-  font-size: 0.875rem;
-
-  &:hover {
-    background: ${({ theme }) => theme.color.surface.primary};
-    text-decoration: underline;
-  }
-`;
-
-const ActorSelect = styled.select`
-  min-height: 2.5rem;
-  border: 1px solid ${({ theme }) => theme.color.border.subtle};
-  border-radius: ${({ theme }) => theme.radius.xxsmall};
-  padding: ${({ theme }) => theme.spacing.xxsmall}
-    ${({ theme }) => theme.spacing.small};
-  background: ${({ theme }) => theme.color.surface.primary};
-  color: ${({ theme }) => theme.color.text.primary};
-  font-size: 0.875rem;
-  width: 100%;
-`;
 
 const OpenChatChat = () => {
   const { panelUser } = useGlobalState();
@@ -196,9 +164,12 @@ const OpenChatChat = () => {
             </ActorSelect>
           </ActorSelectWrap>
         )}
-        <ConfigRouterLink to={OPEN_CHAT_CONFIGURATION_ROUTE}>
+        <ConfigHeaderNavLink
+          to={buildOpenChatTabUrl(OPEN_CHAT_TAB_HOME, { userUuid: openChatUserUuid })}
+          $active={selectedTab === OPEN_CHAT_TAB_HOME}
+        >
           Configuration
-        </ConfigRouterLink>
+        </ConfigHeaderNavLink>
         {loginConfiguration && (
           <HeaderLinkButton
             href={buildOpenChatLoginUrl(loginConfiguration)}

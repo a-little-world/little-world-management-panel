@@ -5,6 +5,7 @@ import {
 } from '@a-little-world/little-world-design-system';
 import React, { PropsWithChildren } from 'react';
 import {
+  Navigate,
   Outlet,
   RouterProvider,
   ScrollRestoration,
@@ -45,8 +46,11 @@ import EmailHtml from './components/views/emails/EmailHtml';
 import Emails from './components/views/emails/Emails';
 import { SendDynamicTemplateView } from './components/views/emails/SendDynamicTemplate';
 import MatchingHub from './components/views/matching/MatchingHub';
-import OpenChatAccess from './components/views/OpenChatAccess';
 import OpenChatChat from './components/views/OpenChatChat';
+import {
+  OPEN_CHAT_QUERY_PARAM_TAB,
+  OPEN_CHAT_TAB_HOME,
+} from './components/blocks/openChat/openChatConstants';
 import RandomCalls from './components/views/randomCalls/RandomCalls';
 import { EmailThemeProvider } from './emails/shared/theme';
 import { routeTitle } from './router/routeHandle';
@@ -242,8 +246,12 @@ const router = createBrowserRouter(
         },
         {
           path: OPEN_CHAT_CONFIGURATION_ROUTE,
-          element: <OpenChatAccess />,
-          ...routeTitle('Open Chat Configuration'),
+          element: (
+            <Navigate
+              to={`${OPEN_CHAT_ROUTE}?${OPEN_CHAT_QUERY_PARAM_TAB}=${OPEN_CHAT_TAB_HOME}`}
+              replace
+            />
+          ),
         },
         {
           path: OPEN_CHAT_CHAT_ROUTE,

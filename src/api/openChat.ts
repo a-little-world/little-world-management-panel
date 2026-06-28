@@ -9,6 +9,7 @@ export const OPEN_CHAT_TEST_CONNECTION_ENDPOINT =
 export const OPEN_CHAT_ACCESS_USERS_ENDPOINT =
   '/api/matching/open-chat-access-users/';
 export const OPEN_CHAT_CHATS_ENDPOINT = '/api/chats/';
+export const OPEN_CHAT_BOTS_ENDPOINT = '/api/matching/open-chat/bots/';
 export const OPEN_CHAT_INTERACTIONS_ENDPOINT =
   '/api/matching/open-chat/interactions/';
 export const OPEN_CHAT_IDEMPOTENT_ACTIONS_ENDPOINT =
@@ -127,10 +128,28 @@ export type OpenChatMessage = {
   created: string;
   text: string;
   read: boolean;
+  parsable?: boolean;
 };
 
 type OpenChatMessagesResponse = {
   results: OpenChatMessage[];
+};
+
+export type OpenChatBot = {
+  uuid: string | null;
+  name: string | null;
+  description: string | null;
+  bot_username: string | null;
+  bot_user_uuid: string | null;
+  is_active: boolean | null;
+  is_public: boolean | null;
+  is_legacy_contact_bot: boolean;
+  model: string | null;
+  default_shared_config: Record<string, unknown> | null;
+};
+
+type OpenChatBotsResponse = {
+  results: OpenChatBot[];
 };
 
 export type OpenChatInteraction = {
@@ -236,6 +255,40 @@ export function fetchOpenChatMessages(chatUuid: string) {
   });
   return apiFetch<OpenChatMessagesResponse>(
     `/api/messages/${chatUuid}/?${query.toString()}`,
+  );
+}
+
+export type OpenChatBotUpdatePayload = {
+  name?: string;
+  description?: string;
+  is_active?: boolean;
+  is_public?: boolean;
+  default_shared_config?: Record<string, unknown>;
+};
+
+export function fetchOpenChatBots(userUuid: string) {
+  const query = new URLSearchParams({
+    user_uuid: userUuid,
+  });
+  return apiFetch<OpenChatBotsResponse>(
+    `${OPEN_CHAT_BOTS_ENDPOINT}?${query.toString()}`,
+  );
+}
+
+export function updateOpenChatBot(
+  botIdentifier: string,
+  userUuid: string,
+  payload: OpenChatBotUpdatePayload,
+) {
+  const query = new URLSearchParams({
+    user_uuid: userUuid,
+  });
+  return apiFetch<OpenChatBot>(
+    `${OPEN_CHAT_BOTS_ENDPOINT}${encodeURIComponent(botIdentifier)}/?${query.toString()}`,
+    {
+      method: 'PATCH',
+      body: payload,
+    },
   );
 }
 

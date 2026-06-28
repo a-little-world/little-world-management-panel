@@ -4,7 +4,6 @@ import React from 'react';
 import type { OpenChatWorkspaceState } from '../../../hooks/useOpenChatWorkspace';
 import { formatTimeDistance } from '../../../helpers/date';
 import { LANGUAGES } from '../../../constants';
-import { CardHeader, CardTitle } from '../../atoms/Card';
 import { OpenChatConfigurationPanel } from '../../views/OpenChatAccess';
 import {
   OPEN_CHAT_TAB_CHAT,
@@ -114,7 +113,7 @@ export function OpenChatMainPanel({
         )}
         {selectedTab === OPEN_CHAT_TAB_HOME && (
           <Text type={TextTypes.Body5} tag="h2">
-            Home & automation
+            Home
           </Text>
         )}
       </MainPanelHeader>
@@ -164,9 +163,6 @@ export function OpenChatMainPanel({
 
         {selectedTab === OPEN_CHAT_TAB_HOME && (
           <HomeCardContent>
-            <CardHeader className="px-0 pt-0">
-              <CardTitle className="text-base">Connection & tools</CardTitle>
-            </CardHeader>
             <OpenChatConfigurationPanel
               canEdit={canEditOpenChatConfiguration}
               canManage={canManageOpenChatAccess}

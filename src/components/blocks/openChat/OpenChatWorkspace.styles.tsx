@@ -1,4 +1,5 @@
 import { Text, TextTypes } from '@a-little-world/little-world-design-system';
+import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { ListPanel } from '../../atoms/PageLayout';
@@ -139,6 +140,18 @@ export const HeaderLinkButton = styled.a`
 
 export const ActorSelectWrap = styled.div`
   min-width: 12rem;
+`;
+
+export const ActorSelect = styled.select`
+  min-height: 2.5rem;
+  border: 1px solid ${({ theme }) => theme.color.border.subtle};
+  border-radius: ${({ theme }) => theme.radius.xxsmall};
+  padding: ${({ theme }) => theme.spacing.xxsmall}
+    ${({ theme }) => theme.spacing.small};
+  background: ${({ theme }) => theme.color.surface.primary};
+  color: ${({ theme }) => theme.color.text.primary};
+  font-size: 0.875rem;
+  width: 100%;
 `;
 
 export const ConversationRowButton = styled.button<{ $active: boolean }>`
@@ -301,6 +314,121 @@ export const HomeCardContent = styled.div`
   min-height: 0;
   overflow: auto;
   padding: ${({ theme }) => theme.spacing.small};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.medium};
+`;
+
+export const HomeSection = styled.section`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xsmall};
+`;
+
+export const HomeSectionTitle = styled(Text).attrs({
+  type: TextTypes.Body6,
+  tag: 'h3' as const,
+})`
+  margin: 0;
+  color: ${({ theme }) => theme.color.text.secondary};
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+`;
+
+export const ConfigConnectionCard = styled.div`
+  border: 1px solid ${({ theme }) => theme.color.border.subtle};
+  border-radius: ${({ theme }) => theme.radius.small};
+  background: ${({ theme }) => theme.color.surface.secondary};
+  overflow: hidden;
+`;
+
+export const ConfigConnectionCardHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.small};
+  padding: ${({ theme }) => theme.spacing.xsmall} ${({ theme }) => theme.spacing.small};
+  border-bottom: 1px solid ${({ theme }) => theme.color.border.subtle};
+  background: ${({ theme }) => theme.color.surface.primary};
+`;
+
+export const ConfigConnectionCardTitle = styled(Text).attrs({
+  type: TextTypes.Body5,
+  tag: 'h4' as const,
+})`
+  margin: 0;
+  font-weight: 600;
+`;
+
+export const ConfigConnectionCardBody = styled.div`
+  padding: ${({ theme }) => theme.spacing.small};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.small};
+`;
+
+export const ConfigFieldsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: ${({ theme }) => theme.spacing.small};
+`;
+
+export const ConfigFieldItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xxxsmall};
+  min-width: 0;
+`;
+
+export const ConfigFieldLabel = styled.span`
+  color: ${({ theme }) => theme.color.text.tertiary};
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+`;
+
+export const ConfigFieldValue = styled.span`
+  color: ${({ theme }) => theme.color.text.primary};
+  font-size: 0.8125rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  word-break: break-all;
+`;
+
+export const ConfigHeaderNavLink = styled(Link)<{ $active?: boolean }>`
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid
+    ${({ theme, $active }) =>
+      $active ? theme.color.border.minimal : theme.color.border.subtle};
+  border-radius: ${({ theme }) => theme.radius.xxsmall};
+  padding: ${({ theme }) => theme.spacing.xxsmall}
+    ${({ theme }) => theme.spacing.small};
+  background: ${({ theme, $active }) =>
+    $active ? theme.color.surface.primary : theme.color.surface.secondary};
+  color: ${({ theme }) => theme.color.text.link};
+  text-decoration: none;
+  min-height: 2.5rem;
+  font-size: 0.875rem;
+  font-weight: ${({ $active }) => ($active ? 600 : 400)};
+
+  &:hover {
+    background: ${({ theme }) => theme.color.surface.primary};
+    text-decoration: underline;
+  }
+`;
+
+export const CompactConfigForm = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.small};
+`;
+
+export const CompactConfigFormGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: ${({ theme }) => theme.spacing.small};
 `;
 
 export const ComposerFooter = styled.div`

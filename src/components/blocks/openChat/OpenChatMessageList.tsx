@@ -18,7 +18,10 @@ import type { OpenChatMessage } from '../../../api/openChat';
 import { formatMessageDate, formatTime } from '../../../helpers/date';
 import {
   buildOpenChatInteractionNewestResponseUrl,
+  getCustomChatElements,
+  messageContainsWidget,
   parseOpenChatInteractionPayload,
+  processAttachmentWidgets,
 } from '../../../helpers/chat';
 import {
   InteractionMessage,
@@ -39,6 +42,9 @@ type OpenChatMessageListProps = {
   error: unknown;
   onOpenInteraction: (interactionId: string) => void;
 };
+
+const ATTACHMENT_WIDGET_ERROR =
+  '[Attachment could not be displayed due to processing error]';
 
 function groupMessagesByDate(messages: OpenChatMessage[]) {
   return messages.reduce<
@@ -71,6 +77,7 @@ export function OpenChatMessageList({
   const theme = useTheme();
   const scrollRef = useRef<HTMLDivElement>(null);
   const messageGroups = useMemo(() => groupMessagesByDate(messages), [messages]);
+  const currentUserId = currentUser.uuid ?? currentUser.hash;
 
   useEffect(() => {
     const container = scrollRef.current;
@@ -114,14 +121,29 @@ export function OpenChatMessageList({
             <Text type={TextTypes.Body6}>{group.formattedDate}</Text>
           </StickyDateHeader>
           {group.messages.map(message => {
-            const isSelf = message.sender === currentUser.uuid;
-            const interactionPayload = parseOpenChatInteractionPayload(message.text);
+            const isSelf = message.sender === currentUserId;
+            const processedMessageText = processAttachmentWidgets(
+              message,
+              ATTACHMENT_WIDGET_ERROR,
+            );
+            const interactionPayload = message.parsable
+              ? parseOpenChatInteractionPayload(processedMessageText)
+              : null;
             const interactionNewestResponseUrl =
               interactionPayload?.shared_interaction_url
                 ? buildOpenChatInteractionNewestResponseUrl(
                     interactionPayload.shared_interaction_url,
                   )
                 : null;
+            const customChatElements = message.parsable
+              ? getCustomChatElements({
+                  message: { ...message, text: processedMessageText },
+                  userId: currentUserId,
+                })
+              : [];
+            const isWidgetMessage =
+              Boolean(message.parsable) &&
+              messageContainsWidget(processedMessageText);
 
             if (interactionPayload) {
               return (
@@ -141,8 +163,16 @@ export function OpenChatMessageList({
 
             return (
               <Message $isSelf={isSelf} key={message.uuid}>
-                <MessageText $isSelf={isSelf} $isWidget={false} tag="div">
-                  {textParser(message.text, { onlyLinks: true })}
+                <MessageText
+                  {...(isWidgetMessage && { tag: 'div' as const })}
+                  disableParser
+                  $isSelf={isSelf}
+                  $isWidget={isWidgetMessage}
+                >
+                  {textParser(processedMessageText, {
+                    customElements: customChatElements,
+                    onlyLinks: !message.parsable,
+                  })}
                 </MessageText>
                 <Time type={TextTypes.Body6}>
                   {isSelf &&

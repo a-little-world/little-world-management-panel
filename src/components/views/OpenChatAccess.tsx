@@ -53,6 +53,21 @@ import { hasManagementPermission } from '../../helpers/managementPermissions';
 import { censorSecret } from '../../helpers/secrets';
 import { OPEN_CHAT_ROUTE, SUPPORT_TASKS_ROUTE } from '../../router/routes';
 import { useGlobalState } from '../../store';
+import {
+  CompactConfigForm,
+  CompactConfigFormGrid,
+  ConfigConnectionCard,
+  ConfigConnectionCardBody,
+  ConfigConnectionCardHeader,
+  ConfigConnectionCardTitle,
+  ConfigFieldItem,
+  ConfigFieldLabel,
+  ConfigFieldsGrid,
+  ConfigFieldValue,
+  HomeSection,
+  HomeSectionTitle,
+} from '../blocks/openChat/OpenChatWorkspace.styles';
+import { OpenChatBotsPanel } from '../blocks/openChat/OpenChatBotsPanel';
 import UserImage from '../atoms/UserImage';
 import { DataTable } from '../blocks/DataTable';
 import {
@@ -740,8 +755,20 @@ function OpenChatActionsPanel({
 
   return (
     <Accordion
-      defaultValue="Open-Chat Automation Triggers"
+      defaultValue="Bots"
       items={[
+        {
+          header: 'Bots',
+          content: (
+            <div className="pt-2">
+              <OpenChatBotsPanel
+                configurationOwnerUserUuid={configurationOwnerUserUuid}
+                hasConfiguration={hasConfiguration}
+                canEdit={canEdit}
+              />
+            </div>
+          ),
+        },
         {
           header: 'REST API Tools',
           content: (
@@ -1088,9 +1115,246 @@ export function OpenChatConfigurationPanel({
 
   const showCreateForm = isCreate && canEdit;
   const showEditForm = !isCreate && isEditing && canEdit;
+  const isEditingConfig = showCreateForm || showEditForm;
 
   const resolvedAutomationTargetUserUuid =
     automationTargetUserUuid?.trim() ?? data?.matching_user_uuid?.trim() ?? '';
+
+  const renderConfigFormFields = (compact: boolean) => (
+    <>
+      <TextInput
+        id="open_chat_user"
+        label="Open chat user"
+        placeholder="your-open-chat-username"
+        width={compact ? InputWidth.Medium : InputWidth.Large}
+        value={openChatUser}
+        onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+          setOpenChatUser(event.target.value)
+        }
+        autoComplete="off"
+      />
+      <TextInput
+        id="open_chat_host"
+        label="Open chat host"
+        placeholder={DEFAULT_OPEN_CHAT_HOST}
+        width={compact ? InputWidth.Medium : InputWidth.Large}
+        value={openChatHost}
+        onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+          setOpenChatHost(event.target.value)
+        }
+        autoComplete="off"
+      />
+      <TextInput
+        id="open_chat_api_key"
+        label="API key"
+        placeholder={
+          showCreateForm
+            ? 'Enter your API key'
+            : 'Enter a new API key or leave blank to keep the current one'
+        }
+        type="password"
+        width={compact ? InputWidth.Medium : InputWidth.Large}
+        value={apiKeyInput}
+        onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+          setApiKeyInput(event.target.value)
+        }
+        autoComplete="new-password"
+      />
+      {!showCreateForm && storedApiKey && (
+        <Text type={TextTypes.Body7} tag="p">
+          Current key: {censorSecret(storedApiKey)}
+        </Text>
+      )}
+    </>
+  );
+
+  const renderConfigHeaderActions = () => {
+    if (!canEdit) {
+      return null;
+    }
+
+    if (showCreateForm || showEditForm) {
+      return (
+        <Actions>
+          <Button
+            type="submit"
+            form="open-chat-configuration-form"
+            appearance={ButtonAppearance.Primary}
+            size={ButtonSizes.Small}
+            disabled={isSubmitting}
+          >
+            {showCreateForm ? 'Create' : isSubmitting ? 'Saving…' : 'Save'}
+          </Button>
+          {showEditForm && (
+            <Button
+              type="button"
+              appearance={ButtonAppearance.Secondary}
+              size={ButtonSizes.Small}
+              disabled={isSubmitting}
+              onClick={() => {
+                resetMessages();
+                setOpenChatUser(data?.open_chat_user ?? '');
+                setOpenChatHost(data?.open_chat_host ?? '');
+                setApiKeyInput('');
+                setIsEditing(false);
+              }}
+            >
+              Cancel
+            </Button>
+          )}
+        </Actions>
+      );
+    }
+
+    if (isCreate) {
+      return (
+        <Button
+          type="button"
+          appearance={ButtonAppearance.Primary}
+          size={ButtonSizes.Small}
+          onClick={() => {
+            resetMessages();
+            setIsEditing(true);
+          }}
+        >
+          Create
+        </Button>
+      );
+    }
+
+    return (
+      <Button
+        type="button"
+        appearance={ButtonAppearance.Secondary}
+        size={ButtonSizes.Small}
+        onClick={() => {
+          resetMessages();
+          setIsEditing(true);
+        }}
+      >
+        Edit
+      </Button>
+    );
+  };
+
+  const renderConfigurationSection = () => {
+    if (embedded) {
+      return (
+        <HomeSection>
+          <ConfigConnectionCard>
+            <ConfigConnectionCardHeader>
+              <ConfigConnectionCardTitle>Open Chat connection</ConfigConnectionCardTitle>
+              {renderConfigHeaderActions()}
+            </ConfigConnectionCardHeader>
+            <ConfigConnectionCardBody>
+              {isEditingConfig ? (
+                <CompactConfigForm id="open-chat-configuration-form" onSubmit={handleSubmit}>
+                  <CompactConfigFormGrid>{renderConfigFormFields(true)}</CompactConfigFormGrid>
+                </CompactConfigForm>
+              ) : isCreate ? (
+                <Text type={TextTypes.Body6} tag="p">
+                  No configuration saved yet. Create one to connect Open Chat.
+                </Text>
+              ) : (
+                <ConfigFieldsGrid>
+                  <ConfigFieldItem>
+                    <ConfigFieldLabel>User</ConfigFieldLabel>
+                    <ConfigFieldValue>{data?.open_chat_user}</ConfigFieldValue>
+                  </ConfigFieldItem>
+                  <ConfigFieldItem>
+                    <ConfigFieldLabel>Host</ConfigFieldLabel>
+                    <ConfigFieldValue>{data?.open_chat_host}</ConfigFieldValue>
+                  </ConfigFieldItem>
+                  <ConfigFieldItem>
+                    <ConfigFieldLabel>API key</ConfigFieldLabel>
+                    <ConfigFieldValue>
+                      {censorSecret(data?.open_chat_api_key ?? '')}
+                    </ConfigFieldValue>
+                  </ConfigFieldItem>
+                </ConfigFieldsGrid>
+              )}
+            </ConfigConnectionCardBody>
+          </ConfigConnectionCard>
+        </HomeSection>
+      );
+    }
+
+    return (
+      <div>
+        {showCreateForm || showEditForm ? (
+          <Form onSubmit={handleSubmit}>
+            {renderConfigFormFields(false)}
+            <Actions>
+              <Button
+                type="submit"
+                appearance={ButtonAppearance.Primary}
+                size={ButtonSizes.Medium}
+                disabled={isSubmitting}
+              >
+                {showCreateForm ? 'Create configuration' : 'Save changes'}
+              </Button>
+              {showEditForm && (
+                <Button
+                  type="button"
+                  appearance={ButtonAppearance.Secondary}
+                  size={ButtonSizes.Medium}
+                  disabled={isSubmitting}
+                  onClick={() => {
+                    resetMessages();
+                    setOpenChatUser(data?.open_chat_user ?? '');
+                    setOpenChatHost(data?.open_chat_host ?? '');
+                    setApiKeyInput('');
+                    setIsEditing(false);
+                  }}
+                >
+                  Cancel
+                </Button>
+              )}
+            </Actions>
+          </Form>
+        ) : isCreate ? (
+          <Text type={TextTypes.Body4} tag="p">
+            No configuration yet. You need the edit open chat configuration
+            permission to create one.
+          </Text>
+        ) : (
+          <ViewSection>
+            <FieldGroup>
+              <FieldLabel>Open chat user</FieldLabel>
+              <FieldValue>{data?.open_chat_user}</FieldValue>
+            </FieldGroup>
+            <FieldGroup>
+              <FieldLabel>Open chat host</FieldLabel>
+              <FieldValue>{data?.open_chat_host}</FieldValue>
+            </FieldGroup>
+            <FieldGroup>
+              <FieldLabel>API key</FieldLabel>
+              <FieldValue>
+                {censorSecret(data?.open_chat_api_key ?? '')}
+              </FieldValue>
+            </FieldGroup>
+            <Actions>
+              <Button
+                type="button"
+                appearance={ButtonAppearance.Primary}
+                size={ButtonSizes.Medium}
+                disabled={!canEdit}
+                onClick={() => {
+                  if (!canEdit) {
+                    return;
+                  }
+                  resetMessages();
+                  setIsEditing(true);
+                }}
+              >
+                Edit configuration
+              </Button>
+            </Actions>
+          </ViewSection>
+        )}
+      </div>
+    );
+  };
 
   if (isLoading) {
     return embedded ? (
@@ -1147,144 +1411,44 @@ export function OpenChatConfigurationPanel({
         </StatusMessage>
       )}
 
-      <div className="w-full flex flex-col gap-4">
-        <div>
-          {showCreateForm || showEditForm ? (
-            <Form onSubmit={handleSubmit}>
-              <TextInput
-                id="open_chat_user"
-                label="Open chat user"
-                placeholder="your-open-chat-username"
-                width={InputWidth.Large}
-                value={openChatUser}
-                onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                  setOpenChatUser(event.target.value)
-                }
-                autoComplete="off"
-              />
-              <TextInput
-                id="open_chat_host"
-                label="Open chat host"
-                placeholder={DEFAULT_OPEN_CHAT_HOST}
-                width={InputWidth.Large}
-                value={openChatHost}
-                onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                  setOpenChatHost(event.target.value)
-                }
-                autoComplete="off"
-              />
-              <TextInput
-                id="open_chat_api_key"
-                label="API key"
-                placeholder={
-                  showCreateForm
-                    ? 'Enter your API key'
-                    : 'Enter a new API key or leave blank to keep the current one'
-                }
-                type="password"
-                width={InputWidth.Large}
-                value={apiKeyInput}
-                onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                  setApiKeyInput(event.target.value)
-                }
-                autoComplete="new-password"
-              />
-              {!showCreateForm && storedApiKey && (
-                <Text type={TextTypes.Body5} tag="p">
-                  Current key: {censorSecret(storedApiKey)}
-                </Text>
-              )}
-              <Actions>
-                <Button
-                  type="submit"
-                  appearance={ButtonAppearance.Primary}
-                  size={ButtonSizes.Medium}
-                  disabled={isSubmitting}
-                >
-                  {showCreateForm ? 'Create configuration' : 'Save changes'}
-                </Button>
-                {showEditForm && (
-                  <Button
-                    type="button"
-                    appearance={ButtonAppearance.Secondary}
-                    size={ButtonSizes.Medium}
-                    disabled={isSubmitting}
-                    onClick={() => {
-                      resetMessages();
-                      setOpenChatUser(data?.open_chat_user ?? '');
-                      setOpenChatHost(data?.open_chat_host ?? '');
-                      setApiKeyInput('');
-                      setIsEditing(false);
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                )}
-              </Actions>
-            </Form>
-          ) : isCreate ? (
-            <Text type={TextTypes.Body4} tag="p">
-              No configuration yet. You need the edit open chat configuration
-              permission to create one.
-            </Text>
-          ) : (
-            <ViewSection>
-              <FieldGroup>
-                <FieldLabel>Open chat user</FieldLabel>
-                <FieldValue>{data?.open_chat_user}</FieldValue>
-              </FieldGroup>
-              <FieldGroup>
-                <FieldLabel>Open chat host</FieldLabel>
-                <FieldValue>{data?.open_chat_host}</FieldValue>
-              </FieldGroup>
-              <FieldGroup>
-                <FieldLabel>API key</FieldLabel>
-                <FieldValue>
-                  {censorSecret(data?.open_chat_api_key ?? '')}
-                </FieldValue>
-              </FieldGroup>
-              <Actions>
-                <Button
-                  type="button"
-                  appearance={ButtonAppearance.Primary}
-                  size={ButtonSizes.Medium}
-                  disabled={!canEdit}
-                  onClick={() => {
-                    if (!canEdit) {
-                      return;
-                    }
-                    resetMessages();
-                    setIsEditing(true);
-                  }}
-                >
-                  Edit configuration
-                </Button>
-              </Actions>
-            </ViewSection>
-          )}
-        </div>
+      <div className={embedded ? 'flex flex-col gap-4' : 'w-full flex flex-col gap-4'}>
+        {renderConfigurationSection()}
 
-        <div>
-          <Text type={TextTypes.Body5} tag="h3">
-            Open-Chat Actions
-          </Text>
-          <OpenChatActionsPanel
-            configuration={data ?? null}
-            configurationOwnerUserUuid={configurationOwnerUserUuid}
-            automationTargetUserUuid={resolvedAutomationTargetUserUuid}
-            canEdit={canEdit}
-          />
-        </div>
+        {embedded ? (
+          <HomeSection>
+            <HomeSectionTitle>Automation & tools</HomeSectionTitle>
+            <OpenChatActionsPanel
+              configuration={data ?? null}
+              configurationOwnerUserUuid={configurationOwnerUserUuid}
+              automationTargetUserUuid={resolvedAutomationTargetUserUuid}
+              canEdit={canEdit}
+            />
+          </HomeSection>
+        ) : (
+          <div>
+            <Text type={TextTypes.Body5} tag="h3">
+              Open-Chat Actions
+            </Text>
+            <OpenChatActionsPanel
+              configuration={data ?? null}
+              configurationOwnerUserUuid={configurationOwnerUserUuid}
+              automationTargetUserUuid={resolvedAutomationTargetUserUuid}
+              canEdit={canEdit}
+            />
+          </div>
+        )}
 
         {canManage && (
-          <Accordion
-            items={[
-              {
-                header: 'Manage Open Chat Access',
-                content: <OpenChatAccessUsersPanel />,
-              },
-            ]}
-          />
+          <HomeSection>
+            <Accordion
+              items={[
+                {
+                  header: 'Manage Open Chat Access',
+                  content: <OpenChatAccessUsersPanel />,
+                },
+              ]}
+            />
+          </HomeSection>
         )}
       </div>
     </>

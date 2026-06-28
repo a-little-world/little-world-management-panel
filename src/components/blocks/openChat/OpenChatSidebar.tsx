@@ -13,11 +13,11 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 import type { OpenChatWorkspaceState } from '../../../hooks/useOpenChatWorkspace';
-import { OPEN_CHAT_CONFIGURATION_ROUTE } from '../../../router/routes';
 import { Description } from '../../atoms/PageLayout';
 import UserImage from '../../atoms/UserImage';
 import { Tabs, TabsList, TabsTrigger } from '../../atoms/Tabs';
 import {
+  buildOpenChatTabUrl,
   OPEN_CHAT_TAB_CHAT,
   OPEN_CHAT_TAB_HOME,
   OPEN_CHAT_TAB_INTERACTIONS,
@@ -109,7 +109,9 @@ export function OpenChatSidebar({
         {showMissingTargetUserUuid && (
           <Description type={TextTypes.Body7} tag="p">
             No matching partner found. Set up matching on{' '}
-            <Link to={OPEN_CHAT_CONFIGURATION_ROUTE}>Open Chat configuration</Link>.
+            <Link to={buildOpenChatTabUrl(OPEN_CHAT_TAB_HOME, { userUuid: openChatUserUuid })}>
+              Open Chat home
+            </Link>.
           </Description>
         )}
 
