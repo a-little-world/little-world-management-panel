@@ -9,6 +9,10 @@ import {
 import React from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
+import { MatchingPanelUser } from '../../api/index';
+import { MANAGEMENT_PERMISSION_OPEN_CHAT_ACCESS } from '../../constants/managementPermissions';
+import { hasManagementPermission } from '../../helpers/managementPermissions';
+import useSelectUser from '../../hooks/useSelectUser';
 import {
   BANNERS_ROUTE,
   COMMUNICATIONS_ROUTE,
@@ -28,7 +32,7 @@ import {
   USERS_ROUTE,
   VIDEO_CALLS_ROUTE,
 } from '../../router/routes';
-import useSelectUser from '../../hooks/useSelectUser';
+import { useGlobalState } from '../../store';
 import SearchBar from './SearchBar';
 
 const Menu = () => {
@@ -36,6 +40,11 @@ const Menu = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { selectExactUser } = useSelectUser();
+  const { panelUser } = useGlobalState();
+  const hasOpenChatAccess = hasManagementPermission(
+    panelUser as MatchingPanelUser,
+    MANAGEMENT_PERMISSION_OPEN_CHAT_ACCESS,
+  );
 
   const onUserSearch = ({ search }: { search: string }) => {
     const params =
@@ -157,12 +166,14 @@ const Menu = () => {
           >
             Random Calls
           </NavigationMenuContentItem>
-          <NavigationMenuContentItem
-            to={OPEN_CHAT_ROUTE}
-            active={location.pathname.startsWith(OPEN_CHAT_ROUTE)}
-          >
-            Open Chat
-          </NavigationMenuContentItem>
+          {hasOpenChatAccess && (
+            <NavigationMenuContentItem
+              to={OPEN_CHAT_ROUTE}
+              active={location.pathname.startsWith(OPEN_CHAT_ROUTE)}
+            >
+              Open Chat
+            </NavigationMenuContentItem>
+          )}
           <NavigationMenuContentItem
             to={COURSES_ROUTE}
             active={location.pathname === COURSES_ROUTE}
