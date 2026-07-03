@@ -198,6 +198,69 @@ type OpenChatInteractionEmbedProps = {
   onOpenInteraction?: (interactionId: string) => void;
 };
 
+type LiveToolCall = {
+  id: string;
+  name: string;
+  status: string;
+  error?: string;
+};
+
+const LiveToolStatus = styled(Text).attrs({
+  type: TextTypes.Body7,
+  tag: 'p' as const,
+})`
+  position: relative;
+  z-index: 1;
+  margin: ${({ theme }) => `${theme.spacing.xxsmall} 0 0`};
+  color: ${({ theme }) => theme.color.text.secondary};
+  line-height: 1.35;
+`;
+
+function resolveToolStatusLabel(toolCalls: LiveToolCall[]): string | null {
+  if (!toolCalls.length) {
+    return null;
+  }
+
+  const latest = toolCalls[toolCalls.length - 1];
+  const ongoing = [...toolCalls]
+    .reverse()
+    .find(call => call.status === 'ongoing');
+  if (ongoing) {
+    return `Calling ${ongoing.name || 'tool'}...`;
+  }
+
+  if (latest.status === 'failed') {
+    return `Tool failed: ${latest.name || 'tool'}`;
+  }
+  if (latest.status === 'pending_confirmation') {
+    return `Waiting confirmation: ${latest.name || 'tool'}`;
+  }
+  if (latest.status === 'succeeded') {
+    return `Last tool succeeded: ${latest.name || 'tool'}`;
+  }
+  return `Tool update: ${latest.name || 'tool'}`;
+}
+
+function normalizeLiveToolCalls(value: unknown): LiveToolCall[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map(raw => {
+      const call = raw as Record<string, unknown>;
+      const id = typeof call.id === 'string' ? call.id : '';
+      const name = typeof call.name === 'string' ? call.name : 'tool';
+      const status = typeof call.status === 'string' ? call.status : '';
+      const error = typeof call.error === 'string' ? call.error : undefined;
+      if (!id && !name) {
+        return null;
+      }
+      return { id: id || `${name}-${Math.random()}`, name, status, error };
+    })
+    .filter((item): item is LiveToolCall => item !== null);
+}
+
 function resolveInteractionStateLabel(
   interactionState: OpenChatInteractionState | undefined,
 ): string {
@@ -218,6 +281,7 @@ export function OpenChatInteractionEmbed({
 }: OpenChatInteractionEmbedProps) {
   const [isVisible, setIsVisible] = useState(true);
   const [manualExpanded, setManualExpanded] = useState<boolean | null>(null);
+  const [liveToolCalls, setLiveToolCalls] = useState<LiveToolCall[]>([]);
   const canPollState = Boolean(
     interactionShareUuid?.trim() && configurationOwnerUserUuid?.trim(),
   );
@@ -245,6 +309,7 @@ export function OpenChatInteractionEmbed({
   useEffect(() => {
     setManualExpanded(null);
     setIsVisible(true);
+    setLiveToolCalls([]);
   }, [interactionShareUuid, frameUrl]);
 
   useEffect(() => {
@@ -253,8 +318,51 @@ export function OpenChatInteractionEmbed({
     }
   }, [stateLabel]);
 
+  useEffect(() => {
+    if (!interactionShareUuid?.trim() || !frameUrl?.trim()) {
+      return;
+    }
+
+    let socket: WebSocket | null = null;
+    try {
+      const frame = new URL(frameUrl);
+      const protocol = frame.protocol === 'https:' ? 'wss:' : 'ws:';
+      socket = new WebSocket(
+        `${protocol}//${frame.host}/ws/interaction/${interactionShareUuid}`,
+      );
+    } catch {
+      return;
+    }
+
+    socket.onmessage = event => {
+      try {
+        const parsed = JSON.parse(String(event.data)) as {
+          type?: string;
+          content?: { tool_calls?: unknown };
+        };
+        if (
+          parsed.type !== 'new_partial_message' &&
+          parsed.type !== 'new_message'
+        ) {
+          return;
+        }
+        const normalized = normalizeLiveToolCalls(parsed.content?.tool_calls);
+        if (normalized.length > 0) {
+          setLiveToolCalls(normalized);
+        }
+      } catch {
+        // ignore invalid websocket payload
+      }
+    };
+
+    return () => {
+      socket?.close();
+    };
+  }, [interactionShareUuid, frameUrl]);
+
   const collapsedPreview = Boolean(frameUrl && isVisible && !isExpanded);
   const displayTitle = title?.trim() || 'Open Chat interaction';
+  const toolStatusLabel = resolveToolStatusLabel(liveToolCalls);
 
   const handleToggleExpanded = () => {
     setManualExpanded(current => !(current ?? autoExpanded));
@@ -329,6 +437,10 @@ export function OpenChatInteractionEmbed({
 
       {frameUrl && !isVisible && (
         <WidgetHint>Preview hidden — use the arrow to show again.</WidgetHint>
+      )}
+
+      {frameUrl && isVisible && toolStatusLabel && (
+        <LiveToolStatus>{toolStatusLabel}</LiveToolStatus>
       )}
 
       {frameUrl && isVisible && isExpanded && (
