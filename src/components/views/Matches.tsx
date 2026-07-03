@@ -64,6 +64,7 @@ const MATCH_EXPORT_HEADERS = [
   'unmatching_type',
   'unmatch_reason',
   'is_manual_unmatch',
+  'video_call_success_units',
   'notes',
   'user1.id',
   'user1.uuid',

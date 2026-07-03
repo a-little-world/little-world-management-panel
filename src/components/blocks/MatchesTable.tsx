@@ -6,7 +6,7 @@ import {
 } from '@a-little-world/little-world-design-system';
 import { get, isEmpty } from 'lodash';
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, createSearchParams } from 'react-router-dom';
 
 import { useGlobalState } from '../../store';
 import SelectBox from '../atoms/SelectBox';
@@ -25,6 +25,7 @@ const MATCHES_FIELDS = [
   { key: 'status', label: 'Status' },
   { key: 'match_type', label: 'Type' },
   { key: 'uuid', label: 'Match ID (click to view)' },
+  { key: 'video_call_success_units', label: 'Video Success Units' },
   { key: 'user1', label: 'User 1' },
   { key: 'user2', label: 'User 2' },
   { key: 'bucket', label: 'Bucket' },
@@ -98,6 +99,21 @@ export function MatchesTable({ matchList, list }) {
                     return (
                       <TableCell key={match.uuid + key}>
                         <Link to={`/match/${match.uuid}`}>{match.uuid}</Link>
+                      </TableCell>
+                    );
+                  }
+
+                  if (key === 'video_call_success_units') {
+                    const participants = `${match.user1.id},${match.user2.id}`;
+                    const query = createSearchParams({
+                      list: 'all',
+                      match_participants: participants,
+                    }).toString();
+                    return (
+                      <TableCell key={match.uuid + key}>
+                        <Link to={`/video-calls/?${query}`}>
+                          {match.video_call_success_units ?? 0}
+                        </Link>
                       </TableCell>
                     );
                   }
