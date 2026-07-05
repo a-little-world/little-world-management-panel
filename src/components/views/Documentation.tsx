@@ -1,12 +1,16 @@
 import { Text, TextTypes } from '@a-little-world/little-world-design-system';
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
+import reportingBugsAndIssuesMdx from '../../content/documentation/reporting-bugs-and-issues.mdx';
 
 import {
   ALGORITHM_ROUTE,
   DOCUMENTATION_ROUTE,
   MATCH_JOURNEY_DOCUMENTATION_ROUTE,
+  REPORTING_BUGS_DOCUMENTATION_ROUTE,
   USER_JOURNEY_DOCUMENTATION_ROUTE,
 } from '../../router/routes';
 import { useFilterOptions, useMatchesFilterOptions } from '../../store';
@@ -108,6 +112,43 @@ const DocumentationPageContent = styled.div`
   gap: ${({ theme }) => theme.spacing.medium};
 `;
 
+const MarkdownDocument = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.medium};
+
+  h1,
+  h2,
+  p,
+  ul {
+    margin: 0;
+  }
+
+  p,
+  li {
+    color: ${({ theme }) => theme.color.text.primary};
+    line-height: 1.6;
+  }
+
+  ul {
+    display: flex;
+    flex-direction: column;
+    gap: ${({ theme }) => theme.spacing.xxsmall};
+    padding-left: ${({ theme }) => theme.spacing.medium};
+  }
+
+  a {
+    color: ${({ theme }) => theme.color.text.primary};
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: ${({ theme }) => theme.spacing.xxxsmall};
+  }
+
+  a:hover {
+    color: ${({ theme }) => theme.color.text.secondary};
+  }
+`;
+
 const TablePanel = styled.div`
   overflow-x: auto;
 `;
@@ -169,6 +210,13 @@ const documentationLinks: DocumentationLink[] = [
     description:
       'All match list filters from the backend registry, including descriptions, source references, and direct links into the matching matches page.',
     route: MATCH_JOURNEY_DOCUMENTATION_ROUTE,
+  },
+  {
+    id: 'reporting-bugs-and-issues',
+    title: 'Reporting Bugs and Issues',
+    description:
+      'How to report bugs in the open-source repository and where to file sensitive internal issues.',
+    route: REPORTING_BUGS_DOCUMENTATION_ROUTE,
   },
 ];
 
@@ -338,6 +386,21 @@ export const MatchJourneyDocumentation: React.FC = () => {
       isLoading={isLoading}
       error={error}
     />
+  );
+};
+
+export const ReportingBugsAndIssuesDocumentation: React.FC = () => {
+  return (
+    <DocumentationContainer>
+      <DocumentationPageContent>
+        <Link to={DOCUMENTATION_ROUTE}>Back to Documentation</Link>
+        <MarkdownDocument>
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {reportingBugsAndIssuesMdx}
+          </ReactMarkdown>
+        </MarkdownDocument>
+      </DocumentationPageContent>
+    </DocumentationContainer>
   );
 };
 
