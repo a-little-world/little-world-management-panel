@@ -16,6 +16,7 @@ import Layout from './components/blocks/Layout';
 import UserPanel from './components/blocks/user/UserPanel';
 import Algorithm from './components/views/Algorithm';
 import Documentation, {
+  JourneyOverviewDocumentation,
   MatchJourneyDocumentation,
   PreMatchingCheckoffsDocumentation,
   ReportingBugsAndIssuesDocumentation,
@@ -73,6 +74,7 @@ import {
   EMAIL_HTML_ROUTE,
   EMAIL_ROUTE,
   EVENTS_ROUTE,
+  JOURNEY_OVERVIEW_DOCUMENTATION_ROUTE,
   JOURNEY_OVERVIEW_ROUTE,
   MATCHES_LIST_ROUTE,
   MATCHING_HUB_ROUTE,
@@ -240,6 +242,10 @@ const router = createBrowserRouter(
         {
           path: USER_JOURNEY_DOCUMENTATION_ROUTE,
           element: <UserJourneyDocumentation />,
+        },
+        {
+          path: JOURNEY_OVERVIEW_DOCUMENTATION_ROUTE,
+          element: <JourneyOverviewDocumentation />,
         },
         {
           path: MATCH_JOURNEY_DOCUMENTATION_ROUTE,

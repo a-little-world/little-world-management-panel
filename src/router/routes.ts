@@ -3,6 +3,8 @@ export const BASE_ROUTE = '/matching/';
 export const CREATE_NEW_EMAIL_ROUTE = '/email/new';
 export const DEVKIT_ROUTE = '/devkit/';
 export const DOCUMENTATION_ROUTE = '/documentation/';
+export const JOURNEY_OVERVIEW_DOCUMENTATION_ROUTE =
+  '/documentation/journey-overview-alpha/';
 export const MATCH_JOURNEY_DOCUMENTATION_ROUTE =
   '/documentation/match-journey/';
 export const PRE_MATCHING_CHECKOFFS_DOCUMENTATION_ROUTE =

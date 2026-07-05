@@ -61,7 +61,7 @@ type JourneyDefinition = {
   edges: JourneyEdge[];
 };
 
-type JourneyPayload = {
+export type JourneyPayload = {
   title: string;
   journeys: {
     user: JourneyDefinition;
@@ -277,7 +277,7 @@ const nodeTypes: NodeTypes = {
   journeyNode: JourneyNode,
 };
 
-const buildGraph = (payload?: JourneyPayload): { nodes: JourneyNodeType[]; edges: Edge[] } => {
+export const buildGraph = (payload?: JourneyPayload): { nodes: JourneyNodeType[]; edges: Edge[] } => {
   if (!payload) {
     return { nodes: [], edges: [] };
   }

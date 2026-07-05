@@ -3,22 +3,27 @@ import {
   Text,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
+import { Background, ReactFlow, ReactFlowProvider } from '@xyflow/react';
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Link } from 'react-router-dom';
 import styled, { keyframes } from 'styled-components';
+import useSWR from 'swr';
 import issueCreateImage from '../../assets/documentation/github_issues/repo_issues_create_highlighted.png';
 import projectBoardImage from '../../assets/documentation/github_issues/little_world_project_panel.png';
 import issuesTabImage from '../../assets/documentation/github_issues/repo_issues_highlighed.png';
 import preMatchingCheckOffCompleteImage from '../../assets/documentation/prematching_check_off/prematching_check_off_complete_page_censored.png';
 import preMatchingCheckOffSelectionImage from '../../assets/documentation/prematching_check_off/prematching_checkoff_user_selection_preview_censored.png';
+import journeyOverviewAlphaMdx from '../../content/documentation/journey-overview-alpha.mdx';
 import preMatchingCheckoffsMdx from '../../content/documentation/how-pre-matching-check-offs-work.mdx';
 import reportingBugsAndIssuesMdx from '../../content/documentation/reporting-bugs-and-issues.mdx';
 
 import {
   ALGORITHM_ROUTE,
   DOCUMENTATION_ROUTE,
+  JOURNEY_OVERVIEW_DOCUMENTATION_ROUTE,
+  JOURNEY_OVERVIEW_ROUTE,
   MATCH_JOURNEY_DOCUMENTATION_ROUTE,
   PRE_MATCHING_CHECKOFFS_DOCUMENTATION_ROUTE,
   PREMATCH_APPOINTMENTS_ROUTE,
@@ -26,11 +31,15 @@ import {
   USER_JOURNEY_DOCUMENTATION_ROUTE,
 } from '../../router/routes';
 import {
+  dataFetcher,
   useFilterOptions,
   useMatchesFilterOptions,
   usePrematchAppointmentsListData,
   usePrematchingAppointmentsFilterOptions,
 } from '../../store';
+import { buildGraph, JourneyPayload } from './JourneyOverview';
+
+import '@xyflow/react/dist/style.css';
 import {
   Table,
   TableBody,
@@ -196,6 +205,43 @@ const DemoImageRow = styled.div`
   @media (max-width: ${({ theme }) => theme.breakpoints.medium}) {
     grid-template-columns: 1fr;
   }
+`;
+
+const JourneyOverviewOpenButton = styled(Link)`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.small};
+  border: 1px solid ${({ theme }) => theme.color.border.subtle};
+  border-radius: ${({ theme }) => theme.radius.medium};
+  padding: ${({ theme }) => theme.spacing.medium};
+  background: ${({ theme }) => theme.color.surface.secondary};
+  text-decoration: none;
+  color: inherit;
+
+  &:hover {
+    border-color: ${({ theme }) => theme.color.border.selected};
+  }
+`;
+
+const JourneyPreview = styled.div`
+  border: 1px solid ${({ theme }) => theme.color.border.subtle};
+  border-radius: ${({ theme }) => theme.radius.small};
+  padding: 0;
+  background: ${({ theme }) => theme.color.surface.primary};
+  overflow: hidden;
+  height: 220px;
+
+  .react-flow__attribution {
+    display: none;
+  }
+`;
+
+const JourneyPreviewMessage = styled.div`
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: ${({ theme }) => theme.spacing.small};
 `;
 
 const BackToDocumentationLink = styled(Link)`
@@ -544,12 +590,39 @@ const reportingMarkdownComponents: any = {
   li: ({ children, ...props }: { children: React.ReactNode }) => (
     <li {...props}>{renderMentionsInNode(children, 'list-item')}</li>
   ),
+  a: ({ href, children, ...props }: any) => {
+    if (typeof href === 'string' && href.startsWith('/')) {
+      return <Link to={href}>{children}</Link>;
+    }
+
+    return (
+      <a href={href} {...props}>
+        {children}
+      </a>
+    );
+  },
+};
+
+const markdownLinkComponents: any = {
+  a: ({ href, children, ...props }: any) => {
+    if (typeof href === 'string' && href.startsWith('/')) {
+      return <Link to={href}>{children}</Link>;
+    }
+
+    return (
+      <a href={href} {...props}>
+        {children}
+      </a>
+    );
+  },
 };
 
 const REPORTING_BUGS_MDX_URL =
   'https://github.com/a-little-world/little-world-management-panel/blob/main/src/content/documentation/reporting-bugs-and-issues.mdx';
 const PRE_MATCHING_CHECKOFFS_MDX_URL =
   'https://github.com/a-little-world/little-world-management-panel/blob/main/src/content/documentation/how-pre-matching-check-offs-work.mdx';
+const JOURNEY_OVERVIEW_ALPHA_MDX_URL =
+  'https://github.com/a-little-world/little-world-management-panel/blob/main/src/content/documentation/journey-overview-alpha.mdx';
 
 const PREMATCH_ORDERING_OPTIONS = [
   { value: 'start_time', label: '(Asc) Starts At' },
@@ -653,6 +726,86 @@ function PreMatchingLiveSelectorDemo() {
   );
 }
 
+function JourneyOverviewGraphPreview() {
+  const { data, error, isLoading } = useSWR<JourneyPayload>(
+    '/api/matching/journeys/overview/',
+    dataFetcher,
+  );
+  const graph = React.useMemo(() => buildGraph(data), [data]);
+
+  const previewNodes = React.useMemo(
+    () =>
+      graph.nodes.map(node => ({
+        id: node.id,
+        position: {
+          x: node.position.x * 0.24,
+          y: node.position.y * 0.24,
+        },
+        draggable: false,
+        selectable: false,
+        data: {
+          label: (node.data as any)?.step?.title || node.id,
+        },
+      })),
+    [graph.nodes],
+  );
+
+  const previewEdges = React.useMemo(
+    () =>
+      graph.edges.map(edge => ({
+        ...edge,
+        label: undefined,
+      })),
+    [graph.edges],
+  );
+
+  if (isLoading) {
+    return (
+      <JourneyPreview>
+        <JourneyPreviewMessage>
+          <Text type={TextTypes.Body7}>Loading preview...</Text>
+        </JourneyPreviewMessage>
+      </JourneyPreview>
+    );
+  }
+
+  if (error || !previewNodes.length) {
+    return (
+      <JourneyPreview>
+        <JourneyPreviewMessage>
+          <Text type={TextTypes.Body7}>Preview not available yet.</Text>
+        </JourneyPreviewMessage>
+      </JourneyPreview>
+    );
+  }
+
+  return (
+    <JourneyPreview>
+      <ReactFlowProvider>
+        <ReactFlow
+          nodes={previewNodes}
+          edges={previewEdges}
+          fitView
+          fitViewOptions={{ padding: 0.15 }}
+          minZoom={0.05}
+          maxZoom={1}
+          nodesConnectable={false}
+          nodesDraggable={false}
+          elementsSelectable={false}
+          zoomOnScroll={false}
+          panOnScroll={false}
+          panOnDrag={false}
+          zoomOnPinch={false}
+          zoomOnDoubleClick={false}
+          proOptions={{ hideAttribution: true }}
+        >
+          <Background gap={22} />
+        </ReactFlow>
+      </ReactFlowProvider>
+    </JourneyPreview>
+  );
+}
+
 const TablePanel = styled.div`
   overflow-x: auto;
 `;
@@ -700,6 +853,13 @@ const documentationLinks: DocumentationLink[] = [
     description:
       'Comprehensive guide to our custom matching algorithm that pairs learners with volunteers. Learn about scoring elements including gender preferences, time slot overlap, language levels, interests, and distance calculations. Understand how we achieve maximum cardinality matching to optimize successful pairings.',
     route: ALGORITHM_ROUTE,
+  },
+  {
+    id: 'journey-overview-alpha',
+    title: 'User & Match Journey Overview (Alpha)',
+    description:
+      'Preview the new alpha journey overview for user and match lifecycle insights.',
+    route: JOURNEY_OVERVIEW_DOCUMENTATION_ROUTE,
   },
   {
     id: 'user-journey',
@@ -902,6 +1062,44 @@ export const MatchJourneyDocumentation: React.FC = () => {
   );
 };
 
+export const JourneyOverviewDocumentation: React.FC = () => {
+  return (
+    <DocumentationContainer>
+      <DocumentationPageContent>
+        <DocumentationPageTopRow>
+          <BackToDocumentationLink to={DOCUMENTATION_ROUTE}>
+            {'<- Back to Documentation'}
+          </BackToDocumentationLink>
+          <ViewOnGitHubButton
+            href={JOURNEY_OVERVIEW_ALPHA_MDX_URL}
+            target="_blank"
+            rel="noreferrer"
+          >
+            View on GitHub
+          </ViewOnGitHubButton>
+        </DocumentationPageTopRow>
+        <ReportingPagePanel>
+          <MarkdownDocument>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={markdownLinkComponents}
+            >
+              {journeyOverviewAlphaMdx}
+            </ReactMarkdown>
+          </MarkdownDocument>
+
+          <JourneyOverviewOpenButton to={JOURNEY_OVERVIEW_ROUTE}>
+            <Text type={TextTypes.Heading4} tag="span">
+              Open Journey Overview
+            </Text>
+            <JourneyOverviewGraphPreview />
+          </JourneyOverviewOpenButton>
+        </ReportingPagePanel>
+      </DocumentationPageContent>
+    </DocumentationContainer>
+  );
+};
+
 export const ReportingBugsAndIssuesDocumentation: React.FC = () => {
   return (
     <DocumentationContainer>
@@ -984,7 +1182,10 @@ export const PreMatchingCheckoffsDocumentation: React.FC = () => {
         </DocumentationPageTopRow>
         <ReportingPagePanel>
           <MarkdownDocument>
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={markdownLinkComponents}
+            >
               {preMatchingCheckoffsMdx}
             </ReactMarkdown>
           </MarkdownDocument>
