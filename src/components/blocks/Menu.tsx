@@ -15,6 +15,7 @@ import {
   COURSES_ROUTE,
   DOCUMENTATION_ROUTE,
   DYNAMIC_USER_LISTS_ROUTE,
+  JOURNEY_OVERVIEW_ROUTE,
   MATCHES_LIST_ROUTE,
   MATCHING_HUB_ROUTE,
   MATCHING_USERS_ROUTE,
@@ -150,6 +151,12 @@ const Menu = () => {
             active={location.pathname === DOCUMENTATION_ROUTE}
           >
             Documentation
+          </NavigationMenuContentItem>
+          <NavigationMenuContentItem
+            to={JOURNEY_OVERVIEW_ROUTE}
+            active={location.pathname === JOURNEY_OVERVIEW_ROUTE}
+          >
+            Journey Overview
           </NavigationMenuContentItem>
           <NavigationMenuContentItem
             to={RANDOM_CALLS_ROUTE}

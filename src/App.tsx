@@ -26,6 +26,7 @@ import Matches from './components/views/Matches';
 import Matching from './components/views/Matching';
 import MatchingUsers from './components/views/MatchingUsers';
 import PrematchingAppointments from './components/views/PrematchingAppointments';
+import JourneyOverview from './components/views/JourneyOverview';
 import Scores from './components/views/Scores';
 import Stats from './components/views/Stats';
 import SupportTaskDetail from './components/views/SupportTaskDetail';
@@ -70,6 +71,7 @@ import {
   EMAIL_HTML_ROUTE,
   EMAIL_ROUTE,
   EVENTS_ROUTE,
+  JOURNEY_OVERVIEW_ROUTE,
   MATCHES_LIST_ROUTE,
   MATCHING_HUB_ROUTE,
   MATCHING_ROUTE,
@@ -225,6 +227,11 @@ const router = createBrowserRouter(
           path: DOCUMENTATION_ROUTE,
           element: <Documentation />,
           ...routeTitle('Documentation'),
+        },
+        {
+          path: JOURNEY_OVERVIEW_ROUTE,
+          element: <JourneyOverview />,
+          ...routeTitle('Journey Overview'),
         },
         {
           path: USER_JOURNEY_DOCUMENTATION_ROUTE,
