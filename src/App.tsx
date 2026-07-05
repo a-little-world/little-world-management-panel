@@ -17,6 +17,7 @@ import UserPanel from './components/blocks/user/UserPanel';
 import Algorithm from './components/views/Algorithm';
 import Documentation, {
   MatchJourneyDocumentation,
+  PreMatchingCheckoffsDocumentation,
   ReportingBugsAndIssuesDocumentation,
   UserJourneyDocumentation,
 } from './components/views/Documentation';
@@ -82,6 +83,7 @@ import {
   OPEN_CHAT_CONFIGURATION_ROUTE,
   OPEN_CHAT_ROUTE,
   OPEN_CHAT_CHAT_ROUTE,
+  PRE_MATCHING_CHECKOFFS_DOCUMENTATION_ROUTE,
   PREMATCH_APPOINTMENTS_ROUTE,
   QUESTION_CARDS_ROUTE,
   RANDOM_CALLS_ROUTE,
@@ -247,6 +249,11 @@ const router = createBrowserRouter(
           path: REPORTING_BUGS_DOCUMENTATION_ROUTE,
           element: <ReportingBugsAndIssuesDocumentation />,
           ...routeTitle('Reporting Bugs and Issues'),
+        },
+        {
+          path: PRE_MATCHING_CHECKOFFS_DOCUMENTATION_ROUTE,
+          element: <PreMatchingCheckoffsDocumentation />,
+          ...routeTitle('How Pre-Matching Check-offs Work'),
         },
         {
           path: RANDOM_CALLS_ROUTE,

@@ -5,6 +5,8 @@ export const DEVKIT_ROUTE = '/devkit/';
 export const DOCUMENTATION_ROUTE = '/documentation/';
 export const MATCH_JOURNEY_DOCUMENTATION_ROUTE =
   '/documentation/match-journey/';
+export const PRE_MATCHING_CHECKOFFS_DOCUMENTATION_ROUTE =
+  '/documentation/pre-matching-check-offs/';
 export const REPORTING_BUGS_DOCUMENTATION_ROUTE =
   '/documentation/reporting-bugs-and-issues/';
 export const USER_JOURNEY_DOCUMENTATION_ROUTE = '/documentation/user-journey/';

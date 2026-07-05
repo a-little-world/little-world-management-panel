@@ -1,22 +1,36 @@
-import { Text, TextTypes } from '@a-little-world/little-world-design-system';
+import {
+  Select,
+  Text,
+  TextTypes,
+} from '@a-little-world/little-world-design-system';
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Link } from 'react-router-dom';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import issueCreateImage from '../../assets/documentation/github_issues/repo_issues_create_highlighted.png';
 import projectBoardImage from '../../assets/documentation/github_issues/little_world_project_panel.png';
 import issuesTabImage from '../../assets/documentation/github_issues/repo_issues_highlighed.png';
+import preMatchingCheckOffCompleteImage from '../../assets/documentation/prematching_check_off/prematching_check_off_complete_page_censored.png';
+import preMatchingCheckOffSelectionImage from '../../assets/documentation/prematching_check_off/prematching_checkoff_user_selection_preview_censored.png';
+import preMatchingCheckoffsMdx from '../../content/documentation/how-pre-matching-check-offs-work.mdx';
 import reportingBugsAndIssuesMdx from '../../content/documentation/reporting-bugs-and-issues.mdx';
 
 import {
   ALGORITHM_ROUTE,
   DOCUMENTATION_ROUTE,
   MATCH_JOURNEY_DOCUMENTATION_ROUTE,
+  PRE_MATCHING_CHECKOFFS_DOCUMENTATION_ROUTE,
+  PREMATCH_APPOINTMENTS_ROUTE,
   REPORTING_BUGS_DOCUMENTATION_ROUTE,
   USER_JOURNEY_DOCUMENTATION_ROUTE,
 } from '../../router/routes';
-import { useFilterOptions, useMatchesFilterOptions } from '../../store';
+import {
+  useFilterOptions,
+  useMatchesFilterOptions,
+  usePrematchAppointmentsListData,
+  usePrematchingAppointmentsFilterOptions,
+} from '../../store';
 import {
   Table,
   TableBody,
@@ -116,6 +130,74 @@ const DocumentationPageContent = styled.div`
   gap: ${({ theme }) => theme.spacing.medium};
 `;
 
+const DocumentationPageTopRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.small};
+`;
+
+const DemoPanel = styled.section`
+  border: 1px solid ${({ theme }) => theme.color.border.subtle};
+  border-radius: ${({ theme }) => theme.radius.small};
+  background: ${({ theme }) => theme.color.surface.secondary};
+  padding: ${({ theme }) => theme.spacing.medium};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.small};
+`;
+
+const DemoHeaderRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.small};
+`;
+
+const OpenAppointmentsButton = styled(Link)`
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid ${({ theme }) => theme.color.border.subtle};
+  border-radius: ${({ theme }) => theme.radius.small};
+  padding: ${({ theme }) => theme.spacing.xxxsmall}
+    ${({ theme }) => theme.spacing.xsmall};
+  color: ${({ theme }) => theme.color.text.secondary};
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.7rem;
+  font-weight: 600;
+
+  &:hover {
+    color: ${({ theme }) => theme.color.text.primary};
+    border-color: ${({ theme }) => theme.color.border.selected};
+  }
+`;
+
+const DemoControls = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${({ theme }) => theme.spacing.small};
+`;
+
+const DemoSelect = styled(Select)`
+  min-width: 280px;
+
+  div[data-radix-popper-content-wrapper] {
+    z-index: 30 !important;
+  }
+`;
+
+const DemoImageRow = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: ${({ theme }) => theme.spacing.small};
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.medium}) {
+    grid-template-columns: 1fr;
+  }
+`;
+
 const BackToDocumentationLink = styled(Link)`
   width: fit-content;
   display: inline-flex;
@@ -127,6 +209,26 @@ const BackToDocumentationLink = styled(Link)`
   border: 1px solid ${({ theme }) => theme.color.border.subtle};
   color: ${({ theme }) => theme.color.text.secondary};
   text-decoration: none;
+
+  &:hover {
+    color: ${({ theme }) => theme.color.text.primary};
+    border-color: ${({ theme }) => theme.color.border.selected};
+  }
+`;
+
+const ViewOnGitHubButton = styled.a`
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid ${({ theme }) => theme.color.border.subtle};
+  border-radius: ${({ theme }) => theme.radius.small};
+  padding: ${({ theme }) => theme.spacing.xxxsmall}
+    ${({ theme }) => theme.spacing.xsmall};
+  color: ${({ theme }) => theme.color.text.secondary};
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.7rem;
+  font-weight: 600;
 
   &:hover {
     color: ${({ theme }) => theme.color.text.primary};
@@ -228,20 +330,83 @@ const InlineIssueImages = styled.div`
   }
 `;
 
-const GuideImage = styled.img`
+const heartbeat = keyframes`
+  0% {
+    opacity: 0.45;
+    transform: scale(0.995);
+  }
+
+  50% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+
+  100% {
+    opacity: 0.45;
+    transform: scale(0.995);
+  }
+`;
+
+const GuideImageFrame = styled.div<{
+  $loaded: boolean;
+  $maxWidth?: string;
+  $minHeight?: string;
+}>`
+  position: relative;
   width: 100%;
-  height: auto;
+  max-width: ${({ $maxWidth }) => $maxWidth ?? 'none'};
+  min-height: ${({ $loaded, $minHeight }) =>
+    $loaded ? '0' : ($minHeight ?? '220px')};
   border: 1px solid ${({ theme }) => theme.color.border.subtle};
   border-radius: ${({ theme }) => theme.radius.small};
+  overflow: hidden;
+  background: ${({ theme }) => theme.color.surface.secondary};
 `;
 
-const ProjectBoardImage = styled(GuideImage)`
-  max-width: 860px;
+const GuideImageSkeleton = styled.div`
+  position: absolute;
+  inset: 0;
+  background: ${({ theme }) => theme.color.surface.secondary};
+  animation: ${heartbeat} 1.4s ease-in-out infinite;
 `;
 
-const InlineGuideImage = styled(GuideImage)`
-  max-width: 440px;
+const GuideImage = styled.img<{ $loaded: boolean }>`
+  width: 100%;
+  height: auto;
+  display: block;
+  opacity: ${({ $loaded }) => ($loaded ? 1 : 0)};
+  transition: opacity 0.2s ease;
 `;
+
+const DocumentationImageWithPlaceholder = ({
+  src,
+  alt,
+  maxWidth,
+  minHeight,
+}: {
+  src: string;
+  alt: string;
+  maxWidth?: string;
+  minHeight?: string;
+}) => {
+  const [isLoaded, setIsLoaded] = React.useState(false);
+
+  return (
+    <GuideImageFrame
+      $loaded={isLoaded}
+      $maxWidth={maxWidth}
+      $minHeight={minHeight}
+    >
+      {!isLoaded && <GuideImageSkeleton />}
+      <GuideImage
+        src={src}
+        alt={alt}
+        $loaded={isLoaded}
+        onLoad={() => setIsLoaded(true)}
+      />
+    </GuideImageFrame>
+  );
+};
 
 const MANAGEMENT_USER_MENTION_RE =
   /@([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})/g;
@@ -306,7 +471,8 @@ const renderMentionsInNode = (
         return null;
       }
 
-      const href = child.props?.href;
+      const props = child.props as { href?: unknown };
+      const href = props.href;
       if (typeof href !== 'string' || !href.startsWith('mailto:')) {
         return null;
       }
@@ -380,6 +546,113 @@ const reportingMarkdownComponents: any = {
   ),
 };
 
+const REPORTING_BUGS_MDX_URL =
+  'https://github.com/a-little-world/little-world-management-panel/blob/main/src/content/documentation/reporting-bugs-and-issues.mdx';
+const PRE_MATCHING_CHECKOFFS_MDX_URL =
+  'https://github.com/a-little-world/little-world-management-panel/blob/main/src/content/documentation/how-pre-matching-check-offs-work.mdx';
+
+const PREMATCH_ORDERING_OPTIONS = [
+  { value: 'start_time', label: '(Asc) Starts At' },
+  { value: '-start_time', label: '(Desc) Starts At' },
+];
+
+function PreMatchingLiveSelectorDemo() {
+  const [selectedList, setSelectedList] = React.useState('all');
+  const [orderBy, setOrderBy] = React.useState('-start_time');
+  const { filterOptions, isLoading: isLoadingFilters } =
+    usePrematchingAppointmentsFilterOptions();
+
+  const query = React.useMemo(() => {
+    const params = new URLSearchParams({
+      list: selectedList,
+      order_by: orderBy,
+      page_size: '20',
+    });
+    return params.toString();
+  }, [selectedList, orderBy]);
+
+  const openAppointmentsLink = `${PREMATCH_APPOINTMENTS_ROUTE}?${query}`;
+
+  const { prematchAppointmentsList, isLoading } =
+    usePrematchAppointmentsListData(query);
+
+  const listOptions =
+    filterOptions?.lists?.map((item: { name: string; description: string }) => ({
+      value: item.name,
+      label: item.description,
+    })) ?? [];
+
+  const appointments = prematchAppointmentsList?.results ?? [];
+
+  return (
+    <DemoPanel>
+      <DemoHeaderRow>
+        <Text type={TextTypes.Heading4} tag="h3">
+          Live Pre-Matching Selector (same backend API)
+        </Text>
+        <OpenAppointmentsButton to={openAppointmentsLink}>
+          Open appointment
+        </OpenAppointmentsButton>
+      </DemoHeaderRow>
+      <Text type={TextTypes.Body6}>
+        This demo uses `/api/matching/prematchingappointments/filters/` and
+        `/api/matching/prematchingappointments/` directly.
+      </Text>
+
+      <DemoControls>
+        <DemoSelect
+          value={selectedList}
+          options={listOptions}
+          onValueChange={setSelectedList}
+          placeholder="Select appointment date/time"
+          cannotError
+        />
+        <DemoSelect
+          value={orderBy}
+          options={PREMATCH_ORDERING_OPTIONS}
+          onValueChange={setOrderBy}
+          placeholder="Order by"
+          cannotError
+        />
+      </DemoControls>
+
+      {(isLoadingFilters || isLoading) && (
+        <Text type={TextTypes.Body6}>Loading appointment data...</Text>
+      )}
+
+      {!isLoading && appointments.length > 0 && (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Starts At</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {appointments.slice(0, 5).map((appointment: any) => (
+              <TableRow key={appointment.uuid}>
+                <TableCell>
+                  {appointment.user?.profile?.first_name}{' '}
+                  {appointment.user?.profile?.second_name}
+                </TableCell>
+                <TableCell>{appointment.user?.email}</TableCell>
+                <TableCell>{appointment.start_time}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
+
+      {!isLoading && appointments.length === 0 && (
+        <Text type={TextTypes.Body6}>
+          No appointments found for this selection.
+        </Text>
+      )}
+    </DemoPanel>
+  );
+}
+
 const TablePanel = styled.div`
   overflow-x: auto;
 `;
@@ -448,6 +721,13 @@ const documentationLinks: DocumentationLink[] = [
     description:
       'How to report bugs in the open-source repository and where to file sensitive internal issues.',
     route: REPORTING_BUGS_DOCUMENTATION_ROUTE,
+  },
+  {
+    id: 'pre-matching-check-offs',
+    title: 'How Pre-Matching Check-offs Work',
+    description:
+      'How attendee check-offs update onboarding state and trigger follow-up emails in the pre-matching flow.',
+    route: PRE_MATCHING_CHECKOFFS_DOCUMENTATION_ROUTE,
   },
 ];
 
@@ -626,9 +906,18 @@ export const ReportingBugsAndIssuesDocumentation: React.FC = () => {
   return (
     <DocumentationContainer>
       <DocumentationPageContent>
-        <BackToDocumentationLink to={DOCUMENTATION_ROUTE}>
-          {'<- Back to Documentation'}
-        </BackToDocumentationLink>
+        <DocumentationPageTopRow>
+          <BackToDocumentationLink to={DOCUMENTATION_ROUTE}>
+            {'<- Back to Documentation'}
+          </BackToDocumentationLink>
+          <ViewOnGitHubButton
+            href={REPORTING_BUGS_MDX_URL}
+            target="_blank"
+            rel="noreferrer"
+          >
+            View on GitHub
+          </ViewOnGitHubButton>
+        </DocumentationPageTopRow>
         <ReportingPagePanel>
           <VisualGuideCard>
             <ReportingMainTitle>
@@ -638,13 +927,17 @@ export const ReportingBugsAndIssuesDocumentation: React.FC = () => {
               Use the repository Issues tab and then the create issue button.
             </Text>
             <InlineIssueImages>
-              <InlineGuideImage
+              <DocumentationImageWithPlaceholder
                 src={issuesTabImage}
                 alt="Repository navigation with Issues tab highlighted"
+                maxWidth="440px"
+                minHeight="160px"
               />
-              <InlineGuideImage
+              <DocumentationImageWithPlaceholder
                 src={issueCreateImage}
                 alt="Repository issues page with Create issue button highlighted"
+                maxWidth="440px"
+                minHeight="160px"
               />
             </InlineIssueImages>
           </VisualGuideCard>
@@ -658,9 +951,11 @@ export const ReportingBugsAndIssuesDocumentation: React.FC = () => {
             </ReactMarkdown>
           </MarkdownDocument>
 
-          <ProjectBoardImage
+          <DocumentationImageWithPlaceholder
             src={projectBoardImage}
             alt="Little World GitHub project board overview"
+            maxWidth="860px"
+            minHeight="260px"
           />
 
         </ReportingPagePanel>
@@ -670,3 +965,48 @@ export const ReportingBugsAndIssuesDocumentation: React.FC = () => {
 };
 
 export default Documentation;
+
+export const PreMatchingCheckoffsDocumentation: React.FC = () => {
+  return (
+    <DocumentationContainer>
+      <DocumentationPageContent>
+        <DocumentationPageTopRow>
+          <BackToDocumentationLink to={DOCUMENTATION_ROUTE}>
+            {'<- Back to Documentation'}
+          </BackToDocumentationLink>
+          <ViewOnGitHubButton
+            href={PRE_MATCHING_CHECKOFFS_MDX_URL}
+            target="_blank"
+            rel="noreferrer"
+          >
+            View on GitHub
+          </ViewOnGitHubButton>
+        </DocumentationPageTopRow>
+        <ReportingPagePanel>
+          <MarkdownDocument>
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {preMatchingCheckoffsMdx}
+            </ReactMarkdown>
+          </MarkdownDocument>
+
+          <PreMatchingLiveSelectorDemo />
+
+          <DemoImageRow>
+            <DocumentationImageWithPlaceholder
+              src={preMatchingCheckOffCompleteImage}
+              alt="Prematching check-off page overview"
+              maxWidth="520px"
+              minHeight="180px"
+            />
+            <DocumentationImageWithPlaceholder
+              src={preMatchingCheckOffSelectionImage}
+              alt="Prematching user selection and confirmation preview"
+              maxWidth="520px"
+              minHeight="180px"
+            />
+          </DemoImageRow>
+        </ReportingPagePanel>
+      </DocumentationPageContent>
+    </DocumentationContainer>
+  );
+};
