@@ -88,6 +88,10 @@ var config = function (env) {
           include: [path.resolve(__dirname, 'src')],
         },
         {
+          test: /\.(md|mdx)$/,
+          type: 'asset/source',
+        },
+        {
           test: /\.svg$/,
           use: [
             {

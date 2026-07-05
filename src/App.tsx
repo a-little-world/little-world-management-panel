@@ -17,6 +17,7 @@ import UserPanel from './components/blocks/user/UserPanel';
 import Algorithm from './components/views/Algorithm';
 import Documentation, {
   MatchJourneyDocumentation,
+  ReportingBugsAndIssuesDocumentation,
   UserJourneyDocumentation,
 } from './components/views/Documentation';
 import { DynamicUserListView } from './components/views/DynamicUserListView';
@@ -84,6 +85,7 @@ import {
   PREMATCH_APPOINTMENTS_ROUTE,
   QUESTION_CARDS_ROUTE,
   RANDOM_CALLS_ROUTE,
+  REPORTING_BUGS_DOCUMENTATION_ROUTE,
   SCORES_ROUTE,
   SEND_DYNAMIC_EMAIL_ROUTE,
   SHORT_LINKS_ROUTE,
@@ -240,6 +242,11 @@ const router = createBrowserRouter(
         {
           path: MATCH_JOURNEY_DOCUMENTATION_ROUTE,
           element: <MatchJourneyDocumentation />,
+        },
+        {
+          path: REPORTING_BUGS_DOCUMENTATION_ROUTE,
+          element: <ReportingBugsAndIssuesDocumentation />,
+          ...routeTitle('Reporting Bugs and Issues'),
         },
         {
           path: RANDOM_CALLS_ROUTE,

@@ -4,6 +4,9 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
+import issueCreateImage from '../../assets/documentation/github_issues/repo_issues_create_highlighted.png';
+import projectBoardImage from '../../assets/documentation/github_issues/little_world_project_panel.png';
+import issuesTabImage from '../../assets/documentation/github_issues/repo_issues_highlighed.png';
 import reportingBugsAndIssuesMdx from '../../content/documentation/reporting-bugs-and-issues.mdx';
 
 import {
@@ -22,6 +25,7 @@ import {
   TableHeader,
   TableRow,
 } from '../atoms/Table';
+import ManagementUserInlineLink from '../atoms/ManagementUserInlineLink';
 
 interface DocumentationLink {
   id: string;
@@ -112,6 +116,41 @@ const DocumentationPageContent = styled.div`
   gap: ${({ theme }) => theme.spacing.medium};
 `;
 
+const BackToDocumentationLink = styled(Link)`
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xxxsmall};
+  padding: ${({ theme }) => theme.spacing.xxxsmall}
+    ${({ theme }) => theme.spacing.xsmall};
+  border-radius: ${({ theme }) => theme.radius.small};
+  border: 1px solid ${({ theme }) => theme.color.border.subtle};
+  color: ${({ theme }) => theme.color.text.secondary};
+  text-decoration: none;
+
+  &:hover {
+    color: ${({ theme }) => theme.color.text.primary};
+    border-color: ${({ theme }) => theme.color.border.selected};
+  }
+`;
+
+const ReportingPagePanel = styled.section`
+  background: ${({ theme }) => theme.color.surface.primary};
+  border: 1px solid ${({ theme }) => theme.color.border.subtle};
+  border-radius: ${({ theme }) => theme.radius.medium};
+  padding: ${({ theme }) => theme.spacing.large};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.large};
+`;
+
+const ReportingMainTitle = styled.h1`
+  margin: 0;
+  color: ${({ theme }) => theme.color.text.primary};
+  font-size: 2rem;
+  line-height: 1.2;
+`;
+
 const MarkdownDocument = styled.div`
   display: flex;
   flex-direction: column;
@@ -120,8 +159,16 @@ const MarkdownDocument = styled.div`
   h1,
   h2,
   p,
-  ul {
+  ul,
+  pre {
     margin: 0;
+  }
+
+  h2 {
+    color: ${({ theme }) => theme.color.text.primary};
+    font-size: 1.625rem;
+    line-height: 1.25;
+    margin-top: ${({ theme }) => theme.spacing.small};
   }
 
   p,
@@ -131,10 +178,26 @@ const MarkdownDocument = styled.div`
   }
 
   ul {
-    display: flex;
-    flex-direction: column;
-    gap: ${({ theme }) => theme.spacing.xxsmall};
+    list-style: disc;
+    list-style-position: outside;
     padding-left: ${({ theme }) => theme.spacing.medium};
+  }
+
+  li + li {
+    margin-top: ${({ theme }) => theme.spacing.xxsmall};
+  }
+
+  pre {
+    border: 1px solid ${({ theme }) => theme.color.border.subtle};
+    border-radius: ${({ theme }) => theme.radius.small};
+    background: ${({ theme }) => theme.color.surface.secondary};
+    padding: ${({ theme }) => theme.spacing.small};
+    overflow-x: auto;
+  }
+
+  code {
+    color: ${({ theme }) => theme.color.text.primary};
+    font-size: 0.875rem;
   }
 
   a {
@@ -148,6 +211,174 @@ const MarkdownDocument = styled.div`
     color: ${({ theme }) => theme.color.text.secondary};
   }
 `;
+
+const VisualGuideCard = styled.section`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.small};
+`;
+
+const InlineIssueImages = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: ${({ theme }) => theme.spacing.medium};
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.medium}) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const GuideImage = styled.img`
+  width: 100%;
+  height: auto;
+  border: 1px solid ${({ theme }) => theme.color.border.subtle};
+  border-radius: ${({ theme }) => theme.radius.small};
+`;
+
+const ProjectBoardImage = styled(GuideImage)`
+  max-width: 860px;
+`;
+
+const InlineGuideImage = styled(GuideImage)`
+  max-width: 440px;
+`;
+
+const MANAGEMENT_USER_MENTION_RE =
+  /@([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})/g;
+
+const renderTextWithMentions = (text: string, keyPrefix: string) => {
+  const matches = [...text.matchAll(MANAGEMENT_USER_MENTION_RE)];
+  if (!matches.length) {
+    return text;
+  }
+
+  const output: React.ReactNode[] = [];
+  let cursor = 0;
+
+  matches.forEach((match, index) => {
+    const mentionStart = match.index ?? 0;
+    const mentionText = match[0];
+    const email = match[1];
+
+    if (mentionStart > cursor) {
+      output.push(text.slice(cursor, mentionStart));
+    }
+
+    output.push(
+      <ManagementUserInlineLink
+        key={`${keyPrefix}-${email}-${index}`}
+        email={email}
+        tab="chat"
+      />,
+    );
+
+    cursor = mentionStart + mentionText.length;
+  });
+
+  if (cursor < text.length) {
+    output.push(text.slice(cursor));
+  }
+
+  return output;
+};
+
+const renderMentionsInNode = (
+  node: React.ReactNode,
+  keyPrefix: string,
+): React.ReactNode => {
+  if (typeof node === 'string') {
+    return renderTextWithMentions(node, keyPrefix);
+  }
+
+  if (Array.isArray(node)) {
+    const output: React.ReactNode[] = [];
+
+    const appendNode = (value: React.ReactNode) => {
+      if (Array.isArray(value)) {
+        output.push(...value);
+      } else {
+        output.push(value);
+      }
+    };
+
+    const getMailtoEmail = (child: React.ReactNode) => {
+      if (!React.isValidElement<any>(child)) {
+        return null;
+      }
+
+      const href = child.props?.href;
+      if (typeof href !== 'string' || !href.startsWith('mailto:')) {
+        return null;
+      }
+
+      return decodeURIComponent(href.replace('mailto:', '')).trim();
+    };
+
+    for (let index = 0; index < node.length; index += 1) {
+      const child = node[index];
+      const nextChild = node[index + 1];
+
+      if (typeof child === 'string') {
+        const nextEmail = getMailtoEmail(nextChild);
+        if (child === '@' && nextEmail) {
+          appendNode(
+            <ManagementUserInlineLink
+              key={`${keyPrefix}-mailto-${nextEmail}-${index}`}
+              email={nextEmail}
+              tab="chat"
+            />,
+          );
+          index += 1;
+          continue;
+        }
+
+        appendNode(renderTextWithMentions(child, `${keyPrefix}-${index}`));
+        continue;
+      }
+
+      const mailtoEmail = getMailtoEmail(child);
+      if (mailtoEmail) {
+        const lastOutputIndex = output.length - 1;
+        const lastOutput = output[lastOutputIndex];
+
+        if (typeof lastOutput === 'string' && lastOutput.endsWith('@')) {
+          output[lastOutputIndex] = lastOutput.slice(0, -1);
+        }
+
+        appendNode(
+          <ManagementUserInlineLink
+            key={`${keyPrefix}-mailto-${mailtoEmail}-${index}`}
+            email={mailtoEmail}
+            tab="chat"
+          />,
+        );
+        continue;
+      }
+
+      appendNode(renderMentionsInNode(child, `${keyPrefix}-${index}`));
+    }
+
+    return output;
+  }
+
+  if (React.isValidElement<{ children?: React.ReactNode }>(node)) {
+    return React.cloneElement(node, {
+      ...node.props,
+      children: renderMentionsInNode(node.props.children, `${keyPrefix}-child`),
+    });
+  }
+
+  return node;
+};
+
+const reportingMarkdownComponents: any = {
+  p: ({ children, ...props }: { children: React.ReactNode }) => (
+    <p {...props}>{renderMentionsInNode(children, 'paragraph')}</p>
+  ),
+  li: ({ children, ...props }: { children: React.ReactNode }) => (
+    <li {...props}>{renderMentionsInNode(children, 'list-item')}</li>
+  ),
+};
 
 const TablePanel = styled.div`
   overflow-x: auto;
@@ -304,7 +535,9 @@ function JourneyListDocumentationPage({
   return (
     <DocumentationContainer>
       <DocumentationPageContent>
-        <Link to={DOCUMENTATION_ROUTE}>Back to Documentation</Link>
+        <BackToDocumentationLink to={DOCUMENTATION_ROUTE}>
+          {'<- Back to Documentation'}
+        </BackToDocumentationLink>
         <DocumentationHeader>
           <Text type={TextTypes.Heading3} tag="h1">
             {title}
@@ -393,12 +626,44 @@ export const ReportingBugsAndIssuesDocumentation: React.FC = () => {
   return (
     <DocumentationContainer>
       <DocumentationPageContent>
-        <Link to={DOCUMENTATION_ROUTE}>Back to Documentation</Link>
-        <MarkdownDocument>
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>
-            {reportingBugsAndIssuesMdx}
-          </ReactMarkdown>
-        </MarkdownDocument>
+        <BackToDocumentationLink to={DOCUMENTATION_ROUTE}>
+          {'<- Back to Documentation'}
+        </BackToDocumentationLink>
+        <ReportingPagePanel>
+          <VisualGuideCard>
+            <ReportingMainTitle>
+              Reporting Bugs and Issues on GitHub
+            </ReportingMainTitle>
+            <Text type={TextTypes.Body5}>
+              Use the repository Issues tab and then the create issue button.
+            </Text>
+            <InlineIssueImages>
+              <InlineGuideImage
+                src={issuesTabImage}
+                alt="Repository navigation with Issues tab highlighted"
+              />
+              <InlineGuideImage
+                src={issueCreateImage}
+                alt="Repository issues page with Create issue button highlighted"
+              />
+            </InlineIssueImages>
+          </VisualGuideCard>
+
+          <MarkdownDocument>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={reportingMarkdownComponents}
+            >
+              {reportingBugsAndIssuesMdx}
+            </ReactMarkdown>
+          </MarkdownDocument>
+
+          <ProjectBoardImage
+            src={projectBoardImage}
+            alt="Little World GitHub project board overview"
+          />
+
+        </ReportingPagePanel>
       </DocumentationPageContent>
     </DocumentationContainer>
   );
