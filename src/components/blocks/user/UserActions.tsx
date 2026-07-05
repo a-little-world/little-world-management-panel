@@ -64,12 +64,13 @@ const USER_TYPE_OPTIONS = [
   { label: 'Volunteer', value: 'volunteer' },
 ];
 
-/** Django `management.apply_management_permissions` — cannot be granted/revoked via API. */
+/** Only staff can grant/revoke `management.apply_management_permissions`. */
 const APPLY_MANAGEMENT_PERMISSIONS = 'management.apply_management_permissions';
 
 function ManagementPermissionsSection({
   onUserUpdated,
   userId,
+  canGrantApplyManagementPermissions,
   permissionsData,
   permissionsError,
   permissionsLoading,
@@ -77,6 +78,7 @@ function ManagementPermissionsSection({
 }: {
   onUserUpdated: () => void;
   userId: string;
+  canGrantApplyManagementPermissions: boolean;
   permissionsData?: { permissions: any[] };
   permissionsError?: unknown;
   permissionsLoading: boolean;
@@ -90,7 +92,12 @@ function ManagementPermissionsSection({
   const rows = permissionsData?.permissions ?? [];
 
   const onToggle = (permission: string, nextEnabled: boolean) => {
-    if (permission === APPLY_MANAGEMENT_PERMISSIONS) return;
+    if (
+      permission === APPLY_MANAGEMENT_PERMISSIONS &&
+      !canGrantApplyManagementPermissions
+    ) {
+      return;
+    }
     setActionError(null);
     setPendingPermission(permission);
     setUserManagementPermission({
@@ -127,27 +134,33 @@ function ManagementPermissionsSection({
           {actionError}
         </StatusMessage>
       )}
-      {rows.map(row => (
-        <div key={row.permission} className="flex flex-col gap-1">
-          <Checkbox
-            disabled={pendingPermission !== null}
-            readOnly={row.permission === APPLY_MANAGEMENT_PERMISSIONS}
-            id={`mgmt-perm-${row.codename}`}
-            label={
-              row.permission === APPLY_MANAGEMENT_PERMISSIONS
-                ? `${row.label} [READ ONLY]`
-                : (row.label ?? row.codename)
-            }
-            checked={row.enabled}
-            onCheckedChange={(val: boolean) => {
-              if (val !== row.enabled) {
-                onToggle(row.permission, val);
+      {rows.map(row => {
+        const isApplyPermissionReadOnly =
+          row.permission === APPLY_MANAGEMENT_PERMISSIONS &&
+          !canGrantApplyManagementPermissions;
+
+        return (
+          <div key={row.permission} className="flex flex-col gap-1">
+            <Checkbox
+              disabled={pendingPermission !== null}
+              readOnly={isApplyPermissionReadOnly}
+              id={`mgmt-perm-${row.codename}`}
+              label={
+                isApplyPermissionReadOnly
+                  ? `${row.label} [STAFF ONLY]`
+                  : (row.label ?? row.codename)
               }
-            }}
-            required={false}
-          />
-        </div>
-      ))}
+              checked={row.enabled}
+              onCheckedChange={(val: boolean) => {
+                if (val !== row.enabled) {
+                  onToggle(row.permission, val);
+                }
+              }}
+              required={false}
+            />
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -554,6 +567,9 @@ const UserActions = ({
     (Boolean(permissionsError) && permissionsStatus !== 403);
   const canUpdateMatchingProfileFields = Boolean(currentUser?.is_matching_user);
   const canDeleteUser = Boolean(currentUser?.can_edit_management_permissions);
+  const canGrantApplyManagementPermissions = Boolean(
+    currentUser?.can_grant_apply_management_permissions,
+  );
   const targetHasMatchingUserPermission = Boolean(
     permissionsData?.permissions?.some(
       row => row.permission === 'management.matching_user',
@@ -592,6 +608,9 @@ const UserActions = ({
                   content: (
                     <ManagementPermissionsSection
                       userId={user.id}
+                      canGrantApplyManagementPermissions={
+                        canGrantApplyManagementPermissions
+                      }
                       onUserUpdated={onUpdate}
                       permissionsData={permissionsData}
                       permissionsError={permissionsError}

@@ -18,6 +18,7 @@ import Algorithm from './components/views/Algorithm';
 import Documentation, {
   JourneyOverviewDocumentation,
   MatchJourneyDocumentation,
+  MultiUserManagementDocumentation,
   PreMatchingCheckoffsDocumentation,
   ReportingBugsAndIssuesDocumentation,
   UserJourneyDocumentation,
@@ -81,6 +82,7 @@ import {
   MATCHING_ROUTE,
   MATCHING_USERS_ROUTE,
   MATCH_JOURNEY_DOCUMENTATION_ROUTE,
+  MULTI_USER_MANAGEMENT_DOCUMENTATION_ROUTE,
   MATCH_ROUTE,
   OPEN_CHAT_CONFIGURATION_ROUTE,
   OPEN_CHAT_ROUTE,
@@ -255,6 +257,11 @@ const router = createBrowserRouter(
           path: REPORTING_BUGS_DOCUMENTATION_ROUTE,
           element: <ReportingBugsAndIssuesDocumentation />,
           ...routeTitle('Reporting Bugs and Issues'),
+        },
+        {
+          path: MULTI_USER_MANAGEMENT_DOCUMENTATION_ROUTE,
+          element: <MultiUserManagementDocumentation />,
+          ...routeTitle('Multi User Management and Management Onboarding'),
         },
         {
           path: PRE_MATCHING_CHECKOFFS_DOCUMENTATION_ROUTE,

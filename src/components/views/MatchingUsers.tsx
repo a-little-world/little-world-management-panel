@@ -66,10 +66,12 @@ function PermissionTags({
 function PermissionCheckboxes({
   userId,
   permissions,
+  canGrantApplyManagementPermissions,
   onUpdated,
 }: {
   userId: number;
   permissions: ManagementPermissionRow[];
+  canGrantApplyManagementPermissions: boolean;
   onUpdated: () => void;
 }) {
   const [pendingPermission, setPendingPermission] = useState<string | null>(
@@ -78,7 +80,12 @@ function PermissionCheckboxes({
   const [actionError, setActionError] = useState<string | null>(null);
 
   const onToggle = (permission: string, nextEnabled: boolean) => {
-    if (permission === APPLY_MANAGEMENT_PERMISSIONS) return;
+    if (
+      permission === APPLY_MANAGEMENT_PERMISSIONS &&
+      !canGrantApplyManagementPermissions
+    ) {
+      return;
+    }
     setActionError(null);
     setPendingPermission(permission);
     setUserManagementPermission({
@@ -104,26 +111,32 @@ function PermissionCheckboxes({
           {actionError}
         </Text>
       )}
-      {permissions.map(row => (
-        <Checkbox
-          key={row.permission}
-          disabled={pendingPermission !== null}
-          readOnly={row.permission === APPLY_MANAGEMENT_PERMISSIONS}
-          id={`matching-user-${userId}-perm-${row.codename}`}
-          label={
-            row.permission === APPLY_MANAGEMENT_PERMISSIONS
-              ? `${row.label ?? row.codename} [READ ONLY]`
-              : (row.label ?? row.codename)
-          }
-          checked={row.enabled}
-          onCheckedChange={(val: boolean) => {
-            if (val !== row.enabled) {
-              onToggle(row.permission, val);
+      {permissions.map(row => {
+        const isApplyPermissionReadOnly =
+          row.permission === APPLY_MANAGEMENT_PERMISSIONS &&
+          !canGrantApplyManagementPermissions;
+
+        return (
+          <Checkbox
+            key={row.permission}
+            disabled={pendingPermission !== null}
+            readOnly={isApplyPermissionReadOnly}
+            id={`matching-user-${userId}-perm-${row.codename}`}
+            label={
+              isApplyPermissionReadOnly
+                ? `${row.label ?? row.codename} [STAFF ONLY]`
+                : (row.label ?? row.codename)
             }
-          }}
-          required={false}
-        />
-      ))}
+            checked={row.enabled}
+            onCheckedChange={(val: boolean) => {
+              if (val !== row.enabled) {
+                onToggle(row.permission, val);
+              }
+            }}
+            required={false}
+          />
+        );
+      })}
     </div>
   );
 }
@@ -149,6 +162,9 @@ export function MatchingUsers() {
     useMatchingUsersListData(createSearchParams(searchParams).toString());
 
   const canEdit = Boolean(matchingUsersList?.can_edit_management_permissions);
+  const canGrantApplyManagementPermissions = Boolean(
+    matchingUsersList?.can_grant_apply_management_permissions,
+  );
 
   const matchingUserColumns = useMemo(
     () => [
@@ -203,6 +219,9 @@ export function MatchingUsers() {
             <PermissionCheckboxes
               userId={row.original.id}
               permissions={row.original.permissions ?? []}
+              canGrantApplyManagementPermissions={
+                canGrantApplyManagementPermissions
+              }
               onUpdated={() => mutate()}
             />
           ) : (
@@ -244,7 +263,7 @@ export function MatchingUsers() {
             : '—',
       }),
     ],
-    [canEdit, mutate],
+    [canEdit, canGrantApplyManagementPermissions, mutate],
   );
 
   const updateSearchParams = (key: string, value: string) => {

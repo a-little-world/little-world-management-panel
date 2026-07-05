@@ -7,6 +7,8 @@ export const JOURNEY_OVERVIEW_DOCUMENTATION_ROUTE =
   '/documentation/journey-overview-alpha/';
 export const MATCH_JOURNEY_DOCUMENTATION_ROUTE =
   '/documentation/match-journey/';
+export const MULTI_USER_MANAGEMENT_DOCUMENTATION_ROUTE =
+  '/documentation/multi-user-management-and-management-onboarding/';
 export const PRE_MATCHING_CHECKOFFS_DOCUMENTATION_ROUTE =
   '/documentation/pre-matching-check-offs/';
 export const REPORTING_BUGS_DOCUMENTATION_ROUTE =

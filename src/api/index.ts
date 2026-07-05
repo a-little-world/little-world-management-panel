@@ -1014,6 +1014,7 @@ export type MatchingPanelUser = {
   is_superuser: boolean;
   is_matching_user: boolean;
   can_edit_management_permissions: boolean;
+  can_grant_apply_management_permissions: boolean;
   permissions: ManagementPermissionRow[];
 };
 

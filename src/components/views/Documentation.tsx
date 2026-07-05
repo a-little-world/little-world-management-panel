@@ -13,10 +13,12 @@ import useSWR from 'swr';
 import issueCreateImage from '../../assets/documentation/github_issues/repo_issues_create_highlighted.png';
 import projectBoardImage from '../../assets/documentation/github_issues/little_world_project_panel.png';
 import issuesTabImage from '../../assets/documentation/github_issues/repo_issues_highlighed.png';
+import onboardingManagementUsersPermissionsImage from '../../assets/documentation/onboarding_management_users/onboarding_management_users_relevant_permissions_labeled.png';
 import preMatchingCheckOffCompleteImage from '../../assets/documentation/prematching_check_off/prematching_check_off_complete_page_censored.png';
 import preMatchingCheckOffSelectionImage from '../../assets/documentation/prematching_check_off/prematching_checkoff_user_selection_preview_censored.png';
 import journeyOverviewAlphaMdx from '../../content/documentation/journey-overview-alpha.mdx';
 import preMatchingCheckoffsMdx from '../../content/documentation/how-pre-matching-check-offs-work.mdx';
+import multiUserManagementMdx from '../../content/documentation/multi-user-management-and-management-onboarding.mdx';
 import reportingBugsAndIssuesMdx from '../../content/documentation/reporting-bugs-and-issues.mdx';
 
 import {
@@ -25,6 +27,7 @@ import {
   JOURNEY_OVERVIEW_DOCUMENTATION_ROUTE,
   JOURNEY_OVERVIEW_ROUTE,
   MATCH_JOURNEY_DOCUMENTATION_ROUTE,
+  MULTI_USER_MANAGEMENT_DOCUMENTATION_ROUTE,
   PRE_MATCHING_CHECKOFFS_DOCUMENTATION_ROUTE,
   PREMATCH_APPOINTMENTS_ROUTE,
   REPORTING_BUGS_DOCUMENTATION_ROUTE,
@@ -623,6 +626,8 @@ const PRE_MATCHING_CHECKOFFS_MDX_URL =
   'https://github.com/a-little-world/little-world-management-panel/blob/main/src/content/documentation/how-pre-matching-check-offs-work.mdx';
 const JOURNEY_OVERVIEW_ALPHA_MDX_URL =
   'https://github.com/a-little-world/little-world-management-panel/blob/main/src/content/documentation/journey-overview-alpha.mdx';
+const MULTI_USER_MANAGEMENT_MDX_URL =
+  'https://github.com/a-little-world/little-world-management-panel/blob/main/src/content/documentation/multi-user-management-and-management-onboarding.mdx';
 
 const PREMATCH_ORDERING_OPTIONS = [
   { value: 'start_time', label: '(Asc) Starts At' },
@@ -888,6 +893,13 @@ const documentationLinks: DocumentationLink[] = [
     description:
       'How attendee check-offs update onboarding state and trigger follow-up emails in the pre-matching flow.',
     route: PRE_MATCHING_CHECKOFFS_DOCUMENTATION_ROUTE,
+  },
+  {
+    id: 'multi-user-management-and-management-onboarding',
+    title: 'Multi User Management and Management Onboarding',
+    description:
+      'Step-by-step process for onboarding management users and assigning required panel permissions.',
+    route: MULTI_USER_MANAGEMENT_DOCUMENTATION_ROUTE,
   },
 ];
 
@@ -1163,6 +1175,44 @@ export const ReportingBugsAndIssuesDocumentation: React.FC = () => {
 };
 
 export default Documentation;
+
+export const MultiUserManagementDocumentation: React.FC = () => {
+  return (
+    <DocumentationContainer>
+      <DocumentationPageContent>
+        <DocumentationPageTopRow>
+          <BackToDocumentationLink to={DOCUMENTATION_ROUTE}>
+            {'<- Back to Documentation'}
+          </BackToDocumentationLink>
+          <ViewOnGitHubButton
+            href={MULTI_USER_MANAGEMENT_MDX_URL}
+            target="_blank"
+            rel="noreferrer"
+          >
+            View on GitHub
+          </ViewOnGitHubButton>
+        </DocumentationPageTopRow>
+        <ReportingPagePanel>
+          <MarkdownDocument>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={markdownLinkComponents}
+            >
+              {multiUserManagementMdx}
+            </ReactMarkdown>
+          </MarkdownDocument>
+
+          <DocumentationImageWithPlaceholder
+            src={onboardingManagementUsersPermissionsImage}
+            alt="Labeled management user permission settings"
+            maxWidth="920px"
+            minHeight="260px"
+          />
+        </ReportingPagePanel>
+      </DocumentationPageContent>
+    </DocumentationContainer>
+  );
+};
 
 export const PreMatchingCheckoffsDocumentation: React.FC = () => {
   return (
