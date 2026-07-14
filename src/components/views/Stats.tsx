@@ -8,6 +8,7 @@ import Highlights from '../blocks/stats/Highlights';
 import KPIsDashboard from '../blocks/stats/KPIsDashboard';
 import MatchesStats from '../blocks/stats/MatchesStats';
 import { MatchJourneyOverview } from '../blocks/stats/MatchJourneyBuckets';
+import ProposalStats from '../blocks/stats/ProposalStats';
 import {
   Container,
   MatchUserJourneyOverview,
@@ -33,6 +34,7 @@ function Stats() {
         <TabsTrigger value="kpis">KPIs</TabsTrigger>
         <TabsTrigger value="highlights">Highlights</TabsTrigger>
         <TabsTrigger value="matches">Matches</TabsTrigger>
+        <TabsTrigger value="proposals">Proposals</TabsTrigger>
         <TabsTrigger value="overview">User & Match Journey</TabsTrigger>
         <TabsTrigger value="graphs">Graphs</TabsTrigger>
         <TabsTrigger value="signup-funnel">User Sign-up Funnel</TabsTrigger>
@@ -58,6 +60,11 @@ function Stats() {
       {tab === 'matches' && (
         <TabsContent value="matches">
           <MatchesStats />
+        </TabsContent>
+      )}
+      {tab === 'proposals' && (
+        <TabsContent value="proposals">
+          <ProposalStats />
         </TabsContent>
       )}
       {tab === 'graphs' && (
