@@ -233,10 +233,11 @@ const MatchEligibility: React.FC<{ userId: string }> = ({ userId }) => {
 };
 
 const UserDetailsFull: React.FC<{
+  canViewProfile: boolean;
   user: User;
   appointment?: any;
   isVolunteer: boolean;
-}> = ({ user, appointment, isVolunteer }) => (
+}> = ({ canViewProfile, user, appointment, isVolunteer }) => (
   <FullContentGrid>
     <DetailsColumn>
       <InfoGrid>
@@ -331,6 +332,18 @@ const UserDetailsFull: React.FC<{
     </DetailsColumn>
 
     <SidebarColumn>
+      {canViewProfile && (
+        <ViewProfileLink>
+          <Link
+            href={`https://little-world.com/app/profile/${user.uuid ?? user.hash}`}
+            target="_blank"
+            buttonAppearance={ButtonAppearance.Secondary}
+            buttonSize={ButtonSizes.Stretch}
+          >
+            View App Profile
+          </Link>
+        </ViewProfileLink>
+      )}
       <SidebarSection>
         <SectionLabel>Match eligibility</SectionLabel>
         <MatchEligibility userId={user.id} />
@@ -354,17 +367,6 @@ const UserDetailsFull: React.FC<{
         </MatchesContainer>
       </SidebarSection>
 
-      <ViewProfileLink>
-        <Link
-          href={`https://little-world.com/app/profile/${user.uuid ?? user.hash}`}
-          target="_blank"
-          buttonAppearance={ButtonAppearance.Secondary}
-          buttonSize={ButtonSizes.Stretch}
-        >
-          View App Profile
-        </Link>
-      </ViewProfileLink>
-
       <UserStatus user={user} appointment={appointment} />
     </SidebarColumn>
   </FullContentGrid>
@@ -380,6 +382,7 @@ export const UserCard: React.FC<UserCardProps> = ({
 }) => {
   const navigate = useNavigate();
   const { addUserToMatching, panelUser } = useGlobalState();
+
   const canViewProfile = hasManagementPermission(
     panelUser as MatchingPanelUser | undefined,
     MANAGEMENT_PERMISSION_IS_MAIN_SUPPORT_ACCOUNT,
@@ -436,6 +439,7 @@ export const UserCard: React.FC<UserCardProps> = ({
         </ProfileHeaderRow>
 
         <UserDetailsFull
+          canViewProfile={canViewProfile}
           user={user}
           appointment={appointment}
           isVolunteer={isVolunteer}
@@ -527,7 +531,6 @@ export const UserCard: React.FC<UserCardProps> = ({
             </Text>
           </MetaFieldGroup>
         </InfoRowWrap>
-        {canViewProfile && <Link to={`/user/${user.id}`}>View profile</Link>}
         <InfoRow>
           <Text className="whitespace-nowrap" tag="h4" bold>
             Match eligibility:
@@ -551,6 +554,7 @@ export const UserCard: React.FC<UserCardProps> = ({
       </UserInfoContainer>
 
       <ActionContainer $horizontal={horizontal}>
+        <Link to={`/user/${user.id}`}>View profile</Link>
         <Link to={`/user/${user.id}?tab=chat`} state={{ openTab: 'chat' }}>
           Open chat
         </Link>
