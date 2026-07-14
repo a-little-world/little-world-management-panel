@@ -13,35 +13,49 @@ import {
   TagSizes,
   Tags,
   Text,
-  TextTypes,
 } from '@a-little-world/little-world-design-system';
 import { capitalize } from 'lodash';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import useSWR from 'swr';
 
+import type { MatchingPanelUser } from '../../../api/index';
+import { MANAGEMENT_PERMISSION_IS_MAIN_SUPPORT_ACCOUNT } from '../../../constants/managementPermissions';
 import { formatDate, formatTimeDistance } from '../../../helpers/date';
+import { hasManagementPermission } from '../../../helpers/managementPermissions';
 import { MATCHING_ROUTE } from '../../../router/routes';
 import { dataFetcher, useGlobalState } from '../../../store';
+import DataField from '../../atoms/DataField';
 import MatchesIcons from '../../atoms/MatchesIcons';
 import UserImage from '../../atoms/UserImage';
+import UserAvailability from './UserAvailability';
 import {
   AboutField,
   ActionContainer,
   BucketTag,
-  DetailsContainer,
-  DetailsList,
+  ContentSection,
+  DetailsColumn,
+  FullContentGrid,
+  FullName,
   HeaderContainer,
   ImageContainer,
+  InfoGrid,
+  InfoGridRow,
   InfoRow,
   InfoRowWrap,
   MatchesContainer,
   MetaFieldGroup,
+  ProfileHeaderRow,
+  ProfileIdentity,
+  SectionLabel,
+  SidebarColumn,
+  SidebarSection,
   StatusContainer,
   StyledCard,
   UnresponsiveWarning,
   UserInfoContainer,
   UserNameContainer,
+  ViewProfileLink,
 } from './UserCard.styles';
 import UserLanguages from './UserLanguages';
 
@@ -58,6 +72,7 @@ interface UserProfile {
   interests: string[];
   description: string;
   lang_skill: any; // Replace 'any' with proper type
+  availability?: Record<string, string[]>;
   user_type: 'volunteer' | 'refugee';
 }
 
@@ -166,7 +181,6 @@ const UserStatus: React.FC<{ user: User; appointment?: any }> = ({
       : []),
   ];
 
-  // Furthest completed step.
   let lastCompletedIndex = -1;
   for (let i = 0; i < stepsWithCompletion.length; i++) {
     if (stepsWithCompletion[i].isCompleted) {
@@ -183,9 +197,7 @@ const UserStatus: React.FC<{ user: User; appointment?: any }> = ({
 
   return (
     <StatusContainer>
-      <Text type={TextTypes.Body4} center bold>
-        Current Status
-      </Text>
+      <SectionLabel>Current status</SectionLabel>
       <Stepper
         steps={steps}
         activeStepIndex={activeStepIndex}
@@ -196,92 +208,168 @@ const UserStatus: React.FC<{ user: User; appointment?: any }> = ({
   );
 };
 
-const DetailRow: React.FC<{ label: string; value: string }> = ({
-  label,
-  value,
-}) => (
-  <InfoRow>
-    <Text tag="h4" bold>
-      {label}:
-    </Text>
-    <Text>{value}</Text>
-  </InfoRow>
-);
+const MatchEligibility: React.FC<{ userId: string }> = ({ userId }) => {
+  const {
+    data: waitingTime,
+    error: waitingTimeError,
+    isLoading,
+  } = useSWR(`/api/matching/users/${userId}/match_waiting_time/`, dataFetcher);
 
-const UserDetails: React.FC<{
+  if (isLoading) return <Loading />;
+
+  if (waitingTimeError) return <Text>Error fetching</Text>;
+
+  return (
+    <Text
+      color={
+        waitingTime?.first_search && waitingTime?.number_of_days > 0
+          ? 'red'
+          : undefined
+      }
+    >
+      {waitingTime.waiting_time_string}
+    </Text>
+  );
+};
+
+const UserDetailsFull: React.FC<{
   user: User;
   appointment?: any;
   isVolunteer: boolean;
 }> = ({ user, appointment, isVolunteer }) => (
-  <DetailsContainer>
-    <DetailsList>
-      {user.state.is_onboarded && (
-        <InfoRow>
-          <Text tag="h4" bold>
-            Matching State:
-          </Text>
-          <Tag
-            appearance={
-              TagAppearance[
-                user.state.searching_state === 'searching' ? 'success' : 'error'
-              ]
-            }
-            size={TagSizes.small}
-          >
-            {user.state.searching_state}
-          </Tag>
-        </InfoRow>
-      )}
-      <DetailRow label="Id" value={user.id} />
-      <DetailRow label="Email" value={user.email} />
-      <DetailRow label="Company" value={user.state.company || '-'} />
-      <DetailRow
-        label="Residence"
-        value={user.profile.country_of_residence || '-'}
-      />
-      <DetailRow
-        label="Phone Number"
-        value={`${user.profile.phone_mobile} (Notify via ${user.profile.phone_mobile})`}
-      />
-      <DetailRow
-        label={isVolunteer ? 'Target Group' : 'Group'}
-        value={
-          isVolunteer
-            ? (user.profile.target_group ?? 'No target group')
-            : (user.profile.target_groups?.join(', ') ?? 'No groups')
-        }
-      />
-      <DetailRow
-        label={'Gender Preference'}
-        value={user.profile.partner_gender}
-      />
-      <InfoRow>
-        <Text tag="h4" bold>
-          Job Search:
-        </Text>
-        <Text>{user.profile.job_search ? 'Yes' : 'No'}</Text>
-      </InfoRow>
+  <FullContentGrid>
+    <DetailsColumn>
+      <InfoGrid>
+        {user.state.is_onboarded && (
+          <InfoGridRow>
+            <Text tag="span" bold>
+              Matching State:
+            </Text>
+            <Tag
+              appearance={
+                TagAppearance[
+                  user.state.searching_state === 'searching'
+                    ? 'success'
+                    : 'error'
+                ]
+              }
+              size={TagSizes.small}
+            >
+              {user.state.searching_state}
+            </Tag>
+          </InfoGridRow>
+        )}
+        <DataField title="Id" value={user.id} />
+        <DataField title="Email" value={user.email} />
+        <DataField title="Company" value={user.state.company || '-'} />
+        <DataField
+          title="Residence"
+          value={user.profile.country_of_residence || '-'}
+        />
+        <DataField
+          title="Phone Number"
+          value={`${user.profile.phone_mobile} (Notify via ${user.profile.phone_mobile})`}
+        />
+        <DataField
+          title={isVolunteer ? 'Target Group' : 'Group'}
+          value={
+            isVolunteer
+              ? (user.profile.target_group ?? 'No target group')
+              : (user.profile.target_groups?.join(', ') ?? 'No groups')
+          }
+        />
+        <DataField
+          title="Gender Preference"
+          value={user.profile.partner_gender}
+        />
+        <DataField
+          title="Job Search"
+          value={user.profile.job_search ? 'Yes' : 'No'}
+        />
+        <DataField
+          title="Joined"
+          value={formatDate(new Date(user.date_joined), 'dd.MM.yy', 'en')}
+        />
+        <DataField
+          title="Last login"
+          value={
+            user.last_login
+              ? formatTimeDistance(new Date(user.last_login), new Date(), 'en')
+              : 'Never'
+          }
+        />
+      </InfoGrid>
+
+      <ContentSection>
+        <SectionLabel>About</SectionLabel>
+        <AboutField tag="div">{user.profile.description}</AboutField>
+      </ContentSection>
+
+      <ContentSection>
+        <SectionLabel>Availability</SectionLabel>
+        <UserAvailability availability={user.profile.availability} />
+      </ContentSection>
+
+      <ContentSection>
+        <SectionLabel>Interests</SectionLabel>
+        <Tags content={user.profile.interests} />
+      </ContentSection>
+
+      <ContentSection>
+        <SectionLabel>Languages</SectionLabel>
+        <UserLanguages langSkill={user.profile.lang_skill} />
+      </ContentSection>
+
       {user.profile.job_skill_description && (
-        <AboutField>{user.profile.job_skill_description}</AboutField>
+        <ContentSection>
+          <SectionLabel>Job skills</SectionLabel>
+          <AboutField tag="div">
+            {user.profile.job_skill_description}
+          </AboutField>
+        </ContentSection>
       )}
-      <Text tag="h4" bold>
-        Interests
-      </Text>
-      <Tags className="mb-4" content={user.profile.interests} />
-      <Text tag="h4" bold>
-        About
-      </Text>
-      <AboutField>{user.profile.description}</AboutField>
-      <Text tag="h4" bold>
-        Languages:
-      </Text>
-      <UserLanguages langSkill={user.profile.lang_skill} />
-    </DetailsList>
-    <UserStatus user={user} appointment={appointment} />
-  </DetailsContainer>
+    </DetailsColumn>
+
+    <SidebarColumn>
+      <SidebarSection>
+        <SectionLabel>Match eligibility</SectionLabel>
+        <MatchEligibility userId={user.id} />
+      </SidebarSection>
+
+      <SidebarSection>
+        <SectionLabel>Matches</SectionLabel>
+        <MatchesContainer>
+          <MatchesIcons
+            label="Confirmed"
+            matches={user.matches.confirmed?.results}
+          />
+          <MatchesIcons
+            label="Unconfirmed"
+            matches={user.matches.unconfirmed?.results}
+          />
+          <MatchesIcons
+            label="Proposed"
+            matches={user.matches.proposed?.results}
+          />
+        </MatchesContainer>
+      </SidebarSection>
+
+      <ViewProfileLink>
+        <Link
+          href={`https://little-world.com/app/profile/${user.uuid ?? user.hash}`}
+          target="_blank"
+          buttonAppearance={ButtonAppearance.Secondary}
+          buttonSize={ButtonSizes.Stretch}
+        >
+          View App Profile
+        </Link>
+      </ViewProfileLink>
+
+      <UserStatus user={user} appointment={appointment} />
+    </SidebarColumn>
+  </FullContentGrid>
 );
 
-// Main Component
 export const UserCard: React.FC<UserCardProps> = ({
   user,
   appointment,
@@ -291,16 +379,16 @@ export const UserCard: React.FC<UserCardProps> = ({
   horizontal = false,
 }) => {
   const navigate = useNavigate();
-  const { addUserToMatching } = useGlobalState();
-  const {
-    data: waitingTime,
-    error: waitingTimeError,
-    isLoading,
-  } = useSWR(`/api/matching/users/${user.id}/match_waiting_time/`, dataFetcher);
+  const { addUserToMatching, panelUser } = useGlobalState();
+  const canViewProfile = hasManagementPermission(
+    panelUser as MatchingPanelUser | undefined,
+    MANAGEMENT_PERMISSION_IS_MAIN_SUPPORT_ACCOUNT,
+  );
 
   if (!user) return <div>Undefined User</div>;
 
   const isVolunteer = user.profile.user_type === 'volunteer';
+  const isFull = !partial;
 
   const onAddToMatching = () => {
     addUserToMatching(user);
@@ -311,6 +399,50 @@ export const UserCard: React.FC<UserCardProps> = ({
     deselectUser?.(user.uuid ?? user.hash ?? '');
     e.stopPropagation();
   };
+
+  if (isFull) {
+    return (
+      <StyledCard $full>
+        {user.state.unresponsive && (
+          <UnresponsiveWarning>Marked as unresponsive</UnresponsiveWarning>
+        )}
+
+        <HeaderContainer>
+          <Tag bold color={isVolunteer ? '#9631c5' : '#ec2525'}>
+            {capitalize(user.profile.user_type)}
+          </Tag>
+          {user.bucket && (
+            <Tag bold color="#000000">
+              {user.bucket}
+            </Tag>
+          )}
+        </HeaderContainer>
+
+        <ProfileHeaderRow>
+          <UserImage
+            hasPriority={user.state.has_match_priority}
+            tooltipText={
+              user.state.has_match_priority ? 'Match priority' : undefined
+            }
+            alt="user profile pic"
+            user={user.profile}
+            dimensions={{ height: 120, width: 120 }}
+          />
+          <ProfileIdentity>
+            <FullName>
+              {user.profile.first_name} {user.profile.second_name}
+            </FullName>
+          </ProfileIdentity>
+        </ProfileHeaderRow>
+
+        <UserDetailsFull
+          user={user}
+          appointment={appointment}
+          isVolunteer={isVolunteer}
+        />
+      </StyledCard>
+    );
+  }
 
   return (
     <StyledCard $horizontal={horizontal}>
@@ -395,25 +527,12 @@ export const UserCard: React.FC<UserCardProps> = ({
             </Text>
           </MetaFieldGroup>
         </InfoRowWrap>
+        {canViewProfile && <Link to={`/user/${user.id}`}>View profile</Link>}
         <InfoRow>
           <Text className="whitespace-nowrap" tag="h4" bold>
             Match eligibility:
           </Text>
-          {isLoading ? (
-            <Loading />
-          ) : waitingTimeError ? (
-            <Text>Error fetching</Text>
-          ) : (
-            <Text
-              color={
-                waitingTime?.first_search && waitingTime?.number_of_days > 0
-                  ? 'red'
-                  : 'black'
-              }
-            >
-              {waitingTime.waiting_time_string}
-            </Text>
-          )}
+          <MatchEligibility userId={user.id} />
         </InfoRow>
         <MatchesContainer $partial={partial}>
           <MatchesIcons
@@ -431,42 +550,16 @@ export const UserCard: React.FC<UserCardProps> = ({
         </MatchesContainer>
       </UserInfoContainer>
 
-      {!partial && (
-        <>
-          <div className="my-2">
-            <Link
-              href={`https://little-world.com/app/profile/${user.uuid ?? user.hash}`}
-              target="_blank"
-              buttonAppearance={ButtonAppearance.Secondary}
-              buttonSize={ButtonSizes.Stretch}
-            >
-              View App Profile
-            </Link>
-          </div>
-          <UserDetails
-            user={user}
-            appointment={appointment}
-            isVolunteer={isVolunteer}
-          />
-        </>
-      )}
-
-      {partial && (
-        <ActionContainer $horizontal={horizontal}>
-          <Link to={`/user/${user.id}`}>View profile</Link>
-          <Link to={`/user/${user.id}?tab=chat`} state={{ openTab: 'chat' }}>
-            Open chat
-          </Link>
-          {!horizontal && (
-            <Button
-              variation={ButtonVariations.Inline}
-              onClick={onAddToMatching}
-            >
-              Match
-            </Button>
-          )}
-        </ActionContainer>
-      )}
+      <ActionContainer $horizontal={horizontal}>
+        <Link to={`/user/${user.id}?tab=chat`} state={{ openTab: 'chat' }}>
+          Open chat
+        </Link>
+        {!horizontal && (
+          <Button variation={ButtonVariations.Inline} onClick={onAddToMatching}>
+            Match
+          </Button>
+        )}
+      </ActionContainer>
     </StyledCard>
   );
 };

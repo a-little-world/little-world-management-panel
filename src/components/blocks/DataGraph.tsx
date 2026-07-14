@@ -1,9 +1,11 @@
 import React from 'react';
-import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
-import styled from 'styled-components';
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
+import styled, { useTheme } from 'styled-components';
 
 import {
   ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
 } from '../atoms/Chart';
@@ -115,6 +117,121 @@ export function DataGraphTwoCounts({
           radius={[8, 8, 0, 0]}
           stackId={'a'}
         />
+      </BarChart>
+    </StyledChartContainer>
+  );
+}
+
+type StackedPercentageSeries = {
+  dataKey: string;
+  label: string;
+  color: string;
+  countKey: string;
+};
+
+interface DataGraphStackedPercentagesProps {
+  data: Record<string, unknown>[];
+  series: StackedPercentageSeries[];
+  minHeight?: string;
+  maxHeight?: string;
+}
+
+const formatMonthLabel = (value: string) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value.slice(0, 7);
+  }
+
+  return date.toLocaleDateString(undefined, {
+    month: 'short',
+    year: 'numeric',
+  });
+};
+
+export function DataGraphStackedPercentages({
+  data,
+  series,
+  maxHeight,
+  minHeight,
+}: DataGraphStackedPercentagesProps) {
+  const theme = useTheme();
+  const chartConfig = {
+    date: {
+      label: 'Month',
+      color: theme.color.text.primary,
+    },
+    ...Object.fromEntries(
+      series.map(item => [
+        item.dataKey,
+        {
+          label: item.label,
+          color: item.color,
+        },
+      ]),
+    ),
+  };
+
+  const countKeyByDataKey = Object.fromEntries(
+    series.map(item => [item.dataKey, item.countKey]),
+  );
+
+  return (
+    <StyledChartContainer
+      config={chartConfig}
+      $maxHeight={maxHeight}
+      $minHeight={minHeight}
+    >
+      <BarChart accessibilityLayer data={data}>
+        <CartesianGrid vertical={false} />
+        <XAxis
+          dataKey="date"
+          tickLine={true}
+          tickMargin={8}
+          axisLine={true}
+          angle={-25}
+          textAnchor="end"
+          tickFormatter={formatMonthLabel}
+        />
+        <YAxis
+          type="number"
+          domain={[0, 100]}
+          ticks={[0, 25, 50, 75, 100]}
+          allowDecimals={false}
+          tickFormatter={value => `${value}%`}
+        />
+        <ChartTooltip
+          cursor={false}
+          content={
+            <ChartTooltipContent
+              labelFormatter={formatMonthLabel}
+              formatter={(value, _name, item) => {
+                const countKey = countKeyByDataKey[String(item.dataKey)];
+                const count =
+                  countKey && item.payload
+                    ? item.payload[countKey as keyof typeof item.payload]
+                    : null;
+
+                if (typeof count === 'number') {
+                  return `${value}% (${count})`;
+                }
+
+                return `${value}%`;
+              }}
+            />
+          }
+        />
+        <ChartLegend content={<ChartLegendContent />} />
+        {series.map((item, index) => (
+          <Bar
+            key={item.dataKey}
+            dataKey={item.dataKey}
+            fill={item.color}
+            stackId="outcomes"
+            radius={
+              index === series.length - 1 ? [8, 8, 0, 0] : [0, 0, 0, 0]
+            }
+          />
+        ))}
       </BarChart>
     </StyledChartContainer>
   );

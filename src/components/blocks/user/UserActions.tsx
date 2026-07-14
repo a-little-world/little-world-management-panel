@@ -570,16 +570,8 @@ const UserActions = ({
   const canGrantApplyManagementPermissions = Boolean(
     currentUser?.can_grant_apply_management_permissions,
   );
-  const targetHasMatchingUserPermission = Boolean(
-    permissionsData?.permissions?.some(
-      row => row.permission === 'management.matching_user',
-    ),
-  );
   const targetIsProtected = Boolean(
-    user.is_staff ||
-    user.is_superuser ||
-    user.is_matching_user ||
-    targetHasMatchingUserPermission,
+    user.is_staff || user.is_superuser || user.is_matching_user,
   );
   const deleteDisabled =
     isSubmitting ||

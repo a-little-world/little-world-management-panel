@@ -6,3 +6,6 @@ export const MANAGEMENT_PERMISSION_EDIT_OPEN_CHAT_CONFIGURATION =
 
 export const MANAGEMENT_PERMISSION_MANAGE_OPEN_CHAT_ACCESS =
   'management.manage_open_chat_access';
+
+export const MANAGEMENT_PERMISSION_IS_MAIN_SUPPORT_ACCOUNT =
+  'management.is_main_support_account';
