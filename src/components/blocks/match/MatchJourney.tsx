@@ -468,8 +468,7 @@ const MatchJourney = ({ match }: { match: any }) => {
           {hiddenTrailingWeeks > 0 && lastActivityWeek > 0 && (
             <LastActivityNotice>
               <Text type={TextTypes.Body7} tag="span" bold>
-                Last week of activity: week {lastActivityWeek}. Empty weeks
-                after that are hidden.
+                Last week of activity: week {lastActivityWeek}.
               </Text>
             </LastActivityNotice>
           )}

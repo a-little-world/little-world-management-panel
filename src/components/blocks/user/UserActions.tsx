@@ -21,7 +21,6 @@ import {
 import { isEmpty, map } from 'lodash';
 import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
 import { useTheme } from 'styled-components';
 import useSWR from 'swr';
 
@@ -41,6 +40,7 @@ import {
   setUserUnresponsive,
   updateUserProfileFields,
 } from '../../../api/index';
+import { formatCountryOfResidenceOptions } from '../../../helpers/countryOfResidenceOptions';
 import { registerInput, useGlobalState } from '../../../store';
 
 const SUPPORT_USERS = [
@@ -451,8 +451,7 @@ const UserActions = ({
   onUpdate: () => void;
 }) => {
   const theme = useTheme();
-  const { apiOptions } = useGlobalState();
-  const { t } = useTranslation();
+  const { apiOptions, apiTranslations } = useGlobalState();
   const [deleteUserModalOpen, setDeleteUserModalOpen] = useState(false);
   const [deleteUserError, setDeleteUserError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -480,12 +479,10 @@ const UserActions = ({
     setError,
   } = useForm();
 
-  const countryOptions: { value: string; label: string }[] = (
-    (apiOptions as any)?.profile?.country_of_residence ?? []
-  ).map(({ value, tag }: { value: string; tag: string }) => ({
-    value,
-    label: t(tag),
-  }));
+  const countryOptions = formatCountryOfResidenceOptions(
+    (apiOptions as any)?.profile?.country_of_residence,
+    apiTranslations as Record<string, Record<string, string>>,
+  );
 
   const saveChanges = data => {
     if (isEmpty(dirtyFields)) return;

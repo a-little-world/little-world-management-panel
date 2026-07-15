@@ -5,11 +5,14 @@ import {
 } from '@a-little-world/little-world-design-system';
 import { ArrowRightIcon } from 'lucide-react';
 import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 
 import { patchAction } from '../../../api/supportTasks';
 import { ORANGE_40 } from '../../../constants';
+import {
+  formatCountryOfResidenceOptions,
+  getCountryOfResidenceLabel,
+} from '../../../helpers/countryOfResidenceOptions';
 import { useGlobalState } from '../../../store';
 
 // ─── Styled ───────────────────────────────────────────────────────────────────
@@ -100,18 +103,15 @@ export default function ChangeCountryOfResidenceAction({
   onChanged,
 }: ChangeCountryOfResidenceActionProps) {
   const [saving, setSaving] = useState(false);
-  const { apiOptions } = useGlobalState();
-  const { t } = useTranslation();
+  const { apiOptions, apiTranslations } = useGlobalState();
 
-  const countryOptions: { value: string; label: string }[] = (
-    (apiOptions as any)?.profile?.country_of_residence ?? []
-  ).map(({ value, tag }: { value: string; tag: string }) => ({
-    value,
-    label: t(tag),
-  }));
+  const countryOptions = formatCountryOfResidenceOptions(
+    (apiOptions as any)?.profile?.country_of_residence,
+    apiTranslations as Record<string, Record<string, string>>,
+  );
 
   const getCountryName = (code: string) =>
-    countryOptions.find(o => o.value === code)?.label ?? code;
+    getCountryOfResidenceLabel(code, countryOptions);
 
   const handleChange = async (code: string) => {
     setSaving(true);
