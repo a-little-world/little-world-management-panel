@@ -1,7 +1,14 @@
-import { Tag, Text, TextTypes } from '@a-little-world/little-world-design-system';
+import {
+  Tag,
+  Text,
+  TextTypes,
+} from '@a-little-world/little-world-design-system';
 import styled, { css } from 'styled-components';
 
-export const StyledCard = styled.div<{ $horizontal?: boolean; $full?: boolean }>`
+export const StyledCard = styled.div<{
+  $horizontal?: boolean;
+  $full?: boolean;
+}>`
   width: 100%;
   position: relative;
   display: flex;
@@ -78,7 +85,6 @@ export const ProfileHeaderRow = styled.div`
 export const ProfileIdentity = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: ${({ theme }) => theme.spacing.xsmall};
 `;
 
