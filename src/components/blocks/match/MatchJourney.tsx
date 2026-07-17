@@ -9,7 +9,13 @@ import React from 'react';
 import styled from 'styled-components';
 
 import { useTheme } from 'styled-components';
-import { BLUE_40, LANGUAGES, ORANGE_10, ORANGE_40 } from '../../../constants';
+import {
+  BLUE_40,
+  LANGUAGES,
+  ORANGE_10,
+  ORANGE_40,
+  PURPLE_40,
+} from '../../../constants';
 import { formatDate } from '../../../helpers/date';
 
 type WeeklyActivity = {
@@ -17,6 +23,8 @@ type WeeklyActivity = {
   start_at: string;
   end_at: string;
   messages: number;
+  messages_user1: number;
+  messages_user2: number;
   video_calls: number;
   is_current_week: boolean;
   is_free_play_week: boolean;
@@ -132,6 +140,7 @@ const ActivityRow = styled.div`
 `;
 
 const ActivityTrack = styled.div`
+  display: flex;
   height: ${({ theme }) => theme.spacing.xxxsmall};
   border-radius: ${({ theme }) => theme.radius.xxsmall};
   background: ${({ theme }) => theme.color.surface.secondary};
@@ -141,14 +150,44 @@ const ActivityTrack = styled.div`
 const ActivityBar = styled.div<{
   $value: number;
   $max: number;
-  $activity: 'messages' | 'video';
 }>`
   width: ${({ $value, $max }) => `${Math.round(($value / $max) * 100)}%`};
   min-width: ${({ $value }) => ($value > 0 ? '4px' : '0')};
   height: 100%;
   border-radius: ${({ theme }) => theme.radius.xxsmall};
-  background: ${({ $activity }) =>
-    $activity === 'messages' ? BLUE_40 : ORANGE_40};
+  background: ${PURPLE_40};
+`;
+
+const MessageActivityBar = styled.div<{
+  $value: number;
+  $max: number;
+  $color: string;
+}>`
+  width: ${({ $value, $max }) => `${Math.round(($value / $max) * 100)}%`};
+  min-width: ${({ $value }) => ($value > 0 ? '2px' : '0')};
+  height: 100%;
+  background: ${({ $color }) => $color};
+`;
+
+const MessageLegend = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${({ theme }) => theme.spacing.xsmall};
+  margin-top: ${({ theme }) => theme.spacing.xxxsmall};
+`;
+
+const LegendItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xxxsmall};
+`;
+
+const LegendSwatch = styled.span<{ $color: string }>`
+  width: ${({ theme }) => theme.spacing.xxsmall};
+  height: ${({ theme }) => theme.spacing.xxsmall};
+  border-radius: ${({ theme }) => theme.radius.xxxsmall};
+  background: ${({ $color }) => $color};
+  flex-shrink: 0;
 `;
 
 const EmptyState = styled.div`
@@ -343,10 +382,17 @@ const StreakSummaryRow = ({
 
 const MatchJourney = ({ match }: { match: any }) => {
   const theme = useTheme();
-  const weeklyActivity: WeeklyActivity[] =
-    match?.journey?.weekly_activity ?? [];
+  const weeklyActivity: WeeklyActivity[] = (
+    match?.journey?.weekly_activity ?? []
+  ).map((week: WeeklyActivity) => ({
+    ...week,
+    messages_user1: week.messages_user1 ?? 0,
+    messages_user2: week.messages_user2 ?? 0,
+  }));
   const currentWeek = match?.journey?.current_week ?? 1;
   const desiredDurationWeeks = match?.journey?.desired_duration_weeks ?? 10;
+  const user1Name = match?.user1?.profile?.first_name ?? 'User 1';
+  const user2Name = match?.user2?.profile?.first_name ?? 'User 2';
   const maxActivity = Math.max(
     1,
     ...weeklyActivity.flatMap(week => [week.messages, week.video_calls]),
@@ -464,6 +510,26 @@ const MatchJourney = ({ match }: { match: any }) => {
               Messages and mutual video calls grouped by week since this match
               was created.
             </Text>
+            <MessageLegend>
+              <LegendItem>
+                <LegendSwatch $color={BLUE_40} />
+                <Text type={TextTypes.Body7} tag="span">
+                  {user1Name}
+                </Text>
+              </LegendItem>
+              <LegendItem>
+                <LegendSwatch $color={ORANGE_40} />
+                <Text type={TextTypes.Body7} tag="span">
+                  {user2Name}
+                </Text>
+              </LegendItem>
+              <LegendItem>
+                <LegendSwatch $color={PURPLE_40} />
+                <Text type={TextTypes.Body7} tag="span">
+                  Video calls
+                </Text>
+              </LegendItem>
+            </MessageLegend>
           </ActivityIntro>
           {hiddenTrailingWeeks > 0 && lastActivityWeek > 0 && (
             <LastActivityNotice>
@@ -515,10 +581,17 @@ const MatchJourney = ({ match }: { match: any }) => {
                   <ActivityRow>
                     <Text type={TextTypes.Body7}>Messages</Text>
                     <ActivityTrack>
-                      <ActivityBar
-                        $activity="messages"
-                        $value={week.messages}
+                      <MessageActivityBar
+                        $value={week.messages_user1}
                         $max={maxActivity}
+                        $color={BLUE_40}
+                        title={`${user1Name}: ${week.messages_user1}`}
+                      />
+                      <MessageActivityBar
+                        $value={week.messages_user2}
+                        $max={maxActivity}
+                        $color={ORANGE_40}
+                        title={`${user2Name}: ${week.messages_user2}`}
                       />
                     </ActivityTrack>
                     <Text type={TextTypes.Body7} bold>
@@ -529,7 +602,6 @@ const MatchJourney = ({ match }: { match: any }) => {
                     <Text type={TextTypes.Body7}>Calls</Text>
                     <ActivityTrack>
                       <ActivityBar
-                        $activity="video"
                         $value={week.video_calls}
                         $max={maxActivity}
                       />

@@ -100,7 +100,7 @@ interface User {
   hash?: string;
   email: string;
   date_joined: string;
-  last_login?: string | null;
+  last_seen?: string | null;
   profile: UserProfile;
   state: UserState;
   matches: UserMatches;
@@ -287,18 +287,6 @@ const UserDetailsFull: React.FC<{
           title="Job Search"
           value={user.profile.job_search ? 'Yes' : 'No'}
         />
-        <DataField
-          title="Joined"
-          value={formatDate(new Date(user.date_joined), 'dd.MM.yy', 'en')}
-        />
-        <DataField
-          title="Last login"
-          value={
-            user.last_login
-              ? formatTimeDistance(new Date(user.last_login), new Date(), 'en')
-              : 'Never'
-          }
-        />
       </InfoGrid>
 
       <ContentSection>
@@ -349,6 +337,8 @@ const UserDetailsFull: React.FC<{
         <MatchEligibility userId={user.id} />
       </SidebarSection>
 
+      <UserStatus user={user} appointment={appointment} />
+
       <SidebarSection>
         <SectionLabel>Matches</SectionLabel>
         <MatchesContainer>
@@ -366,8 +356,6 @@ const UserDetailsFull: React.FC<{
           />
         </MatchesContainer>
       </SidebarSection>
-
-      <UserStatus user={user} appointment={appointment} />
     </SidebarColumn>
   </FullContentGrid>
 );
@@ -435,6 +423,22 @@ export const UserCard: React.FC<UserCardProps> = ({
             <FullName>
               {user.profile.first_name} {user.profile.second_name}
             </FullName>
+            <DataField
+              title="Joined"
+              value={formatDate(new Date(user.date_joined), 'dd.MM.yy', 'en')}
+            />
+            <DataField
+              title="Last online"
+              value={
+                user.last_seen
+                  ? formatTimeDistance(
+                      new Date(user.last_seen),
+                      new Date(),
+                      'en',
+                    )
+                  : 'Never'
+              }
+            />
           </ProfileIdentity>
         </ProfileHeaderRow>
 
@@ -518,15 +522,11 @@ export const UserCard: React.FC<UserCardProps> = ({
           </MetaFieldGroup>
           <MetaFieldGroup>
             <Text tag="h4" bold>
-              Last login:
+              Last online:
             </Text>
             <Text>
-              {user.last_login
-                ? formatTimeDistance(
-                    new Date(user.last_login),
-                    new Date(),
-                    'en',
-                  )
+              {user.last_seen
+                ? formatTimeDistance(new Date(user.last_seen), new Date(), 'en')
                 : 'Never'}
             </Text>
           </MetaFieldGroup>
