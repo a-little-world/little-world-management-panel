@@ -7,7 +7,6 @@ import {
 import React, { useMemo } from 'react';
 
 import type { MatchingPanelUser } from '../../api';
-import { buildOpenChatLoginUrl } from '../../api/openChat';
 import type { BreadcrumbItem } from '../atoms/Breadcrumbs';
 import { useOpenChatWorkspace } from '../../hooks/useOpenChatWorkspace';
 import { useGlobalState } from '../../store';
@@ -31,7 +30,6 @@ import {
   ActorSelectWrap,
   ConfigHeaderNavLink,
   HeaderActionsRow,
-  HeaderLinkButton,
   WorkspaceGrid,
 } from '../blocks/openChat/OpenChatWorkspace.styles';
 
@@ -43,10 +41,8 @@ const OpenChatChat = () => {
   const {
     canAccess,
     canManageOpenChatAccess,
-    configuration,
     users,
     openChatUserUuid,
-    selectedUser,
     selectedTab,
     selectedChat,
     selectedInteractionDetail,
@@ -67,9 +63,6 @@ const OpenChatChat = () => {
       })),
     [users],
   );
-
-  const loginConfiguration =
-    selectedUser?.configuration ?? configuration ?? null;
 
   const breadcrumbs = useMemo(() => {
     const openChatRoot: BreadcrumbItem = {
@@ -170,15 +163,6 @@ const OpenChatChat = () => {
         >
           Configuration
         </ConfigHeaderNavLink>
-        {loginConfiguration && (
-          <HeaderLinkButton
-            href={buildOpenChatLoginUrl(loginConfiguration)}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Open in Open Chat
-          </HeaderLinkButton>
-        )}
       </HeaderActionsRow>
     ),
   });

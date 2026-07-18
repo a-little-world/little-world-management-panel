@@ -118,26 +118,6 @@ export const HeaderActionsRow = styled.div`
   flex-wrap: wrap;
 `;
 
-export const HeaderLinkButton = styled.a`
-  display: inline-flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.xxsmall};
-  border: 1px solid ${({ theme }) => theme.color.border.subtle};
-  border-radius: ${({ theme }) => theme.radius.xxsmall};
-  padding: ${({ theme }) => theme.spacing.xxsmall}
-    ${({ theme }) => theme.spacing.small};
-  background: ${({ theme }) => theme.color.surface.secondary};
-  color: ${({ theme }) => theme.color.text.link};
-  text-decoration: none;
-  min-height: 2.5rem;
-  font-size: 0.875rem;
-
-  &:hover {
-    background: ${({ theme }) => theme.color.surface.primary};
-    text-decoration: underline;
-  }
-`;
-
 export const ActorSelectWrap = styled.div`
   min-width: 12rem;
 `;

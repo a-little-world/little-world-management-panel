@@ -37,7 +37,6 @@ import {
   triggerOpenChatIdempotentAction,
   updateOpenChatConfiguration,
   updateOpenChatUserConfiguration,
-  buildOpenChatLoginUrl,
   type OpenChatAccessUser,
   type OpenChatConfiguration,
   type OpenChatIdempotentAction,
@@ -564,7 +563,6 @@ function OpenChatActionsPanel({
   const [isTesting, setIsTesting] = useState(false);
   const [testError, setTestError] = useState<string | null>(null);
   const [testSuccess, setTestSuccess] = useState<string | null>(null);
-  const [loginError, setLoginError] = useState<string | null>(null);
   const [triggeringActionId, setTriggeringActionId] = useState<string | null>(null);
   const [clearingActionId, setClearingActionId] = useState<string | null>(null);
   const [actionErrors, setActionErrors] = useState<Record<string, string>>({});
@@ -611,35 +609,6 @@ function OpenChatActionsPanel({
       setTestError(message);
     } finally {
       setIsTesting(false);
-    }
-  };
-
-  const handleLoginToOpenChat = () => {
-    if (!configuration) {
-      return;
-    }
-
-    setLoginError(null);
-
-    try {
-      const loginUrl = buildOpenChatLoginUrl(configuration);
-      const newWindow = window.open(
-        loginUrl,
-        '_blank',
-        'noopener,noreferrer',
-      );
-
-      if (!newWindow) {
-        setLoginError(
-          'Popup blocked. Allow popups for this site and try again.',
-        );
-      }
-    } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : 'Could not open Open Chat login.';
-      setLoginError(message);
     }
   };
 
@@ -965,38 +934,6 @@ function OpenChatActionsPanel({
                   onClick={handleTestConnection}
                 >
                   {isTesting ? 'Testing…' : 'Test connection'}
-                </Button>
-              </Actions>
-            </div>
-          ),
-        },
-        {
-          header: 'Login to Open Chat',
-          content: (
-            <div className="pt-2 flex flex-col gap-4 max-w-lg">
-              <Text type={TextTypes.Body4} tag="p">
-                Opens Open Chat in a new browser tab and logs in automatically
-                using your saved credentials.
-              </Text>
-              {!hasConfiguration && (
-                <Text type={TextTypes.Body4} tag="p">
-                  Save an open chat configuration before logging in.
-                </Text>
-              )}
-              {loginError && (
-                <StatusMessage type={StatusTypes.Error} visible>
-                  {loginError}
-                </StatusMessage>
-              )}
-              <Actions>
-                <Button
-                  type="button"
-                  appearance={ButtonAppearance.Primary}
-                  size={ButtonSizes.Medium}
-                  disabled={!hasConfiguration}
-                  onClick={handleLoginToOpenChat}
-                >
-                  Login to Open Chat (new tab)
                 </Button>
               </Actions>
             </div>

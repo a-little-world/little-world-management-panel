@@ -64,17 +64,6 @@ export function normalizeOpenChatBrowserUrl(rawUrl: string): string {
   return normalized.toString();
 }
 
-export function buildOpenChatLoginUrl(configuration: OpenChatConfiguration): string {
-  const origin = normalizeOpenChatBrowserHost(configuration.open_chat_host);
-  const params = new URLSearchParams({
-    email: configuration.open_chat_user,
-    password: configuration.open_chat_api_key,
-    auto_login: 'true',
-  });
-
-  return `${origin}/login?${params.toString()}`;
-}
-
 export type OpenChatConfigurationPayload = OpenChatConfiguration;
 
 export type OpenChatTestConnectionResult = {
