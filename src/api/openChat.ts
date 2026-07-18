@@ -25,6 +25,8 @@ export type OpenChatConfiguration = {
   open_chat_api_key: string;
   open_chat_user: string;
   open_chat_host: string;
+  /** Browser/iframe origin; falls back to open_chat_host when unset. */
+  open_chat_frontend_host?: string;
   matching_exists?: boolean;
   matching_user_uuid?: string | null;
   matching_user_id?: number | null;
@@ -34,7 +36,27 @@ const DOCKER_DEV_HOSTS = new Set([
   'host.docker.internal',
   'frontend',
   'backend',
+  'open-chat-go-backend',
 ]);
+
+export function resolveOpenChatBrowserHost(
+  configuration?: Pick<
+    OpenChatConfiguration,
+    'open_chat_frontend_host' | 'open_chat_host'
+  > | null,
+): string | null {
+  const host =
+    configuration?.open_chat_frontend_host?.trim() ||
+    configuration?.open_chat_host?.trim();
+  if (!host) {
+    return null;
+  }
+  try {
+    return normalizeOpenChatBrowserHost(host);
+  } catch {
+    return null;
+  }
+}
 
 export function normalizeOpenChatBrowserHost(host: string): string {
   const trimmed = host.trim();
@@ -53,9 +75,15 @@ export function normalizeOpenChatBrowserHost(host: string): string {
   return url.origin;
 }
 
-export function normalizeOpenChatBrowserUrl(rawUrl: string): string {
+export function normalizeOpenChatBrowserUrl(
+  rawUrl: string,
+  preferredFrontendHost?: string | null,
+): string {
   const parsed = new URL(rawUrl);
-  const normalizedOrigin = normalizeOpenChatBrowserHost(parsed.origin);
+  const preferred = preferredFrontendHost?.trim();
+  const normalizedOrigin = preferred
+    ? normalizeOpenChatBrowserHost(preferred)
+    : normalizeOpenChatBrowserHost(parsed.origin);
   const normalized = new URL(rawUrl);
   const normalizedOriginUrl = new URL(normalizedOrigin);
   normalized.protocol = normalizedOriginUrl.protocol;

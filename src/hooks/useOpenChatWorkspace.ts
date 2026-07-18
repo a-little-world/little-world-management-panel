@@ -14,8 +14,8 @@ import {
   fetchOpenChatInteractions,
   fetchOpenChatMessages,
   fetchOpenChatsForUser,
-  normalizeOpenChatBrowserHost,
   normalizeOpenChatBrowserUrl,
+  resolveOpenChatBrowserHost,
   sendOpenChatMessage,
   type OpenChatInteraction,
   type OpenChatInteractionDetail,
@@ -311,23 +311,18 @@ export function useOpenChatWorkspace(currentUser: MatchingPanelUser) {
     interactionDetailData ?? selectedInteraction;
 
   const interactionBrowserOrigin = useMemo(() => {
-    const host =
-      selectedUser?.configuration?.open_chat_host ?? configuration?.open_chat_host;
-    if (!host) {
-      return null;
-    }
-    try {
-      return normalizeOpenChatBrowserHost(host);
-    } catch {
-      return null;
-    }
+    return resolveOpenChatBrowserHost(
+      selectedUser?.configuration ?? configuration,
+    );
   }, [selectedUser, configuration]);
 
   const interactionFrameUrl = useMemo(() => {
     const sharedUrl = selectedInteractionDetail?.shared_interaction_url;
     if (sharedUrl) {
       try {
-        return withOpenChatLightTheme(normalizeOpenChatBrowserUrl(sharedUrl));
+        return withOpenChatLightTheme(
+          normalizeOpenChatBrowserUrl(sharedUrl, interactionBrowserOrigin),
+        );
       } catch {
         // Fallback to interaction page URL below.
       }
