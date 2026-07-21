@@ -2,6 +2,8 @@ import {
   Checkbox,
   Button as DSButton,
   Select,
+  StatusMessage,
+  StatusTypes,
   Tag,
   TagAppearance,
   TagSizes,
@@ -23,13 +25,13 @@ import styled from 'styled-components';
 import useSWR from 'swr';
 
 import {
+  BulkSupportTaskAction,
   PaginatedSupportTaskList,
   STATUS_CONFIG,
   SupportTask,
   SupportTaskListParams,
   TaskPriority,
   TaskStatus,
-  BulkSupportTaskAction,
   bulkSupportTasks,
   fetchStaffUsers,
   fetchSupportTaskStats,
@@ -44,6 +46,7 @@ import {
   ORANGE_10,
   ORANGE_40,
 } from '../../constants';
+import { resolveAttachmentWidgetText } from '../../helpers/chat';
 import { formatTimeDistance } from '../../helpers/date';
 import {
   PriorityConfig,
@@ -61,6 +64,7 @@ import {
   ExportDownloadFormat,
 } from '../blocks/DownloadSettingsModal';
 import FiltersToolbar from '../blocks/FiltersToolbar';
+import { usePageHeader } from '../blocks/LayoutHeaderContext';
 import SupportTaskFilters, {
   TaskFilterKeys,
   containsTaskFilterKey,
@@ -193,28 +197,26 @@ const CenteredCell = styled.div`
   justify-content: center;
 `;
 
-const QuickFilters = styled.div`
-  display: inline-flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.medium};
+const BulkActionSelect = styled.div`
+  width: 11rem;
 `;
 
-const BulkActions = styled.div`
+const HeaderActions = styled.div`
   display: inline-flex;
   align-items: flex-end;
   gap: ${({ theme }) => theme.spacing.xsmall};
 `;
 
-const BulkActionSelect = styled.div`
-  width: 11rem;
+const StatusMessageSection = styled.div`
+  padding: 0 ${({ theme }) => theme.spacing.xlarge}
+    ${({ theme }) => theme.spacing.small};
 `;
 
-const BULK_ACTION_OPTIONS: { value: BulkSupportTaskAction; label: string }[] =
-  [
-    { value: 'delete', label: 'Delete' },
-    { value: 'complete', label: 'Complete' },
-    { value: 'cancel', label: 'Cancel' },
-  ];
+const BULK_ACTION_OPTIONS: { value: BulkSupportTaskAction; label: string }[] = [
+  { value: 'delete', label: 'Delete' },
+  { value: 'complete', label: 'Complete' },
+  { value: 'cancel', label: 'Cancel' },
+];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -322,7 +324,9 @@ function buildColumns(
               {row.original.title}
             </Text>
           </TaskTitleLine>
-          <TaskDesc>{row.original.description}</TaskDesc>
+          <TaskDesc>
+            {resolveAttachmentWidgetText(row.original.description)}
+          </TaskDesc>
         </TaskCell>
       ),
     }),
@@ -521,9 +525,9 @@ export default function SupportTasksOverview() {
   const [bulkError, setBulkError] = useState<string | null>(null);
 
   const statusFilters = searchParams.getAll('status');
-  const effectiveStatusFilters = (statusFilters.length
-    ? statusFilters
-    : DEFAULT_STATUS_FILTERS) as TaskStatus[];
+  const effectiveStatusFilters = (
+    statusFilters.length ? statusFilters : DEFAULT_STATUS_FILTERS
+  ) as TaskStatus[];
   const sortBy = searchParams.get('sort_by') ?? 'created_at';
   const sortOrder = (searchParams.get('sort_order') ?? 'desc') as
     | 'asc'
@@ -681,7 +685,14 @@ export default function SupportTasksOverview() {
         selectedRows,
         toggleSelectedRow,
       ),
-    [sortBy, sortOrder, onSort, priorityConfig, selectedRows, toggleSelectedRow],
+    [
+      sortBy,
+      sortOrder,
+      onSort,
+      priorityConfig,
+      selectedRows,
+      toggleSelectedRow,
+    ],
   );
 
   const updateSearchParam = (key: string, value: string | string[]) => {
@@ -752,6 +763,36 @@ export default function SupportTasksOverview() {
     a.click();
   };
 
+  usePageHeader({
+    showMenu: true,
+    actions: (
+      <HeaderActions>
+        {selectedRows.length > 0 && (
+          <>
+            <BulkActionSelect>
+              <Select
+                label={`${selectedRows.length} tasks selected`}
+                value={bulkAction}
+                options={BULK_ACTION_OPTIONS}
+                onValueChange={value =>
+                  setBulkAction(value as BulkSupportTaskAction)
+                }
+                placeholder="Choose action"
+                cannotError
+              />
+            </BulkActionSelect>
+            {bulkAction && (
+              <DSButton disabled={bulkRunning} onClick={runBulkAction}>
+                {bulkRunning ? 'Running…' : 'Run'}
+              </DSButton>
+            )}
+          </>
+        )}
+        <DSButton onClick={() => setCreateOpen(true)}>New task</DSButton>
+      </HeaderActions>
+    ),
+  });
+
   return (
     <PageWrapper>
       <SummaryGrid>
@@ -778,6 +819,14 @@ export default function SupportTasksOverview() {
         />
       </SummaryGrid>
 
+      {bulkError && (
+        <StatusMessageSection>
+          <StatusMessage type={StatusTypes.Error} visible>
+            {bulkError}
+          </StatusMessage>
+        </StatusMessageSection>
+      )}
+
       <FiltersToolbar
         showSearchBar
         searchPlaceholder="Search by title or task ID…"
@@ -796,68 +845,36 @@ export default function SupportTasksOverview() {
         isLoading={isLoading}
         loadingText="Loading tasks…"
       >
-        <QuickFilters>
+        <Checkbox
+          id="show_new"
+          name="show_new"
+          label="New"
+          checked={showNew}
+          onCheckedChange={() => toggleStatusFilter('NEW')}
+        />
+        <Checkbox
+          id="show_in_progress"
+          name="show_in_progress"
+          label="In progress"
+          checked={showInProgress}
+          onCheckedChange={() => toggleStatusFilter('IN_PROGRESS')}
+        />
+        <Checkbox
+          id="show_completed"
+          name="show_completed"
+          label="Completed"
+          checked={showCompleted}
+          onCheckedChange={() => toggleStatusFilter('COMPLETED')}
+        />
+        {currentUserId !== null && (
           <Checkbox
-            id="show_new"
-            name="show_new"
-            label="New"
-            checked={showNew}
-            onCheckedChange={() => toggleStatusFilter('NEW')}
+            id="assigned_to_me"
+            name="assigned_to_me"
+            label="Assigned to me"
+            checked={onlyMe}
+            onCheckedChange={toggleOnlyMe}
           />
-          <Checkbox
-            id="show_in_progress"
-            name="show_in_progress"
-            label="In progress"
-            checked={showInProgress}
-            onCheckedChange={() => toggleStatusFilter('IN_PROGRESS')}
-          />
-          <Checkbox
-            id="show_completed"
-            name="show_completed"
-            label="Completed"
-            checked={showCompleted}
-            onCheckedChange={() => toggleStatusFilter('COMPLETED')}
-          />
-          {currentUserId !== null && (
-            <Checkbox
-              id="assigned_to_me"
-              name="assigned_to_me"
-              label="Assigned to me"
-              checked={onlyMe}
-              onCheckedChange={toggleOnlyMe}
-            />
-          )}
-          {selectedRows.length > 0 && (
-            <BulkActions>
-              <BulkActionSelect>
-                <Select
-                  label={`Actions (${selectedRows.length} selected)`}
-                  value={bulkAction}
-                  options={BULK_ACTION_OPTIONS}
-                  onValueChange={value =>
-                    setBulkAction(value as BulkSupportTaskAction)
-                  }
-                  placeholder="Choose action"
-                  cannotError
-                />
-              </BulkActionSelect>
-              {bulkAction && (
-                <DSButton
-                  disabled={bulkRunning}
-                  onClick={runBulkAction}
-                >
-                  {bulkRunning ? 'Running…' : 'Run'}
-                </DSButton>
-              )}
-            </BulkActions>
-          )}
-          {bulkError && (
-            <Text type={TextTypes.Body7} tag="span">
-              {bulkError}
-            </Text>
-          )}
-          <DSButton onClick={() => setCreateOpen(true)}>New task</DSButton>
-        </QuickFilters>
+        )}
       </FiltersToolbar>
 
       {isLoading ? (
