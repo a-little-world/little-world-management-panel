@@ -46,7 +46,6 @@ const FiltersContainer = styled.div<{ $withoutPadding?: boolean }>`
   gap: ${({ theme }) => theme.spacing.medium};
   padding: ${({ theme, $withoutPadding }) =>
     $withoutPadding ? 0 : theme.spacing.small};
-  justify-content: space-between;
   flex-wrap: wrap;
 `;
 
@@ -54,22 +53,27 @@ const LeftSection = styled.div`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing.small};
-  flex-shrink: 0;
+  flex: 0 0 auto;
 `;
 
 const MiddleSection = styled.div`
   display: flex;
   align-items: flex-end;
+  flex-wrap: nowrap;
   gap: ${({ theme }) => theme.spacing.small};
-  min-width: 0;
-  flex: 1;
+  flex: 1 1 0;
+  min-width: fit-content;
+
+  & > * {
+    flex-shrink: 0;
+  }
 `;
 
 const RightSection = styled.div`
   display: flex;
   align-items: flex-end;
   gap: ${({ theme }) => theme.spacing.large};
-  flex-shrink: 0;
+  flex: 0 0 auto;
   flex-wrap: nowrap;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.medium}) {

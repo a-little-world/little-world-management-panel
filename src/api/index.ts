@@ -310,18 +310,30 @@ export const sendChatMessage = async ({
 export const sendSupportMessageReply = async ({
   userId,
   text,
+  file,
   onSuccess,
   onError,
 }: {
   userId: string | number;
   text: string;
+  file?: File | null;
   onSuccess: (result: any) => void;
   onError: (error: any) => void;
 }) => {
   try {
+    const body = file
+      ? (() => {
+          const data = new FormData();
+          data.append('file', file);
+          data.append('message', text);
+          return data;
+        })()
+      : { message: text };
+
     const result = await apiFetch(`/api/matching/users/${userId}/message_reply/`, {
       method: 'POST',
-      body: { message: text },
+      ...(file ? { useTagsOnly: true } : {}),
+      body,
     });
     onSuccess(result);
   } catch (error) {
@@ -370,22 +382,32 @@ export const deleteMessage = ({
   onError: (error: any) => void;
   onSuccess: () => void;
 }) =>
-  fetch(
-    `/api/matching/users/${userId}/delete_message/?message_id=${messageId}`,
-    {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCookiesAsObject().csrftoken,
-      },
+  fetch(`/api/matching/users/${userId}/delete_message/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookiesAsObject().csrftoken,
     },
-  )
-    .then(res => {
+    body: JSON.stringify({
+      message_id: messageId,
+    }),
+  })
+    .then(async res => {
       if (res.ok) {
         onSuccess();
-      } else {
-        onError('Request failed');
+        return;
       }
+
+      let errorMessage = 'Request failed';
+      try {
+        const body = await res.json();
+        if (body?.msg) {
+          errorMessage = body.msg;
+        }
+      } catch {
+        // keep default error message
+      }
+      onError({ status: res.status, message: errorMessage });
     })
     .catch(onError);
 

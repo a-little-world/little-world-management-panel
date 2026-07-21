@@ -9,13 +9,29 @@ interface InfiniteScrollArgs {
   fetchCondition?: boolean;
   initialPage?: number;
   initialTotalPages?: number;
+  revalidateOnFocus?: boolean;
+  refreshInterval?: number;
 }
+
+const mergePageOneResults = (prevItems: any[], pageResults: any[]) => {
+  const incomingIds = new Set(pageResults.map(message => message.uuid));
+  const olderLoaded = prevItems.filter(message => !incomingIds.has(message.uuid));
+  return [...pageResults, ...olderLoaded];
+};
+
+const appendPageResults = (prevItems: any[], pageResults: any[]) => {
+  const existingIds = new Set(prevItems.map(message => message.uuid));
+  const newResults = pageResults.filter(message => !existingIds.has(message.uuid));
+  return [...prevItems, ...newResults];
+};
 
 const useInfiniteScroll = ({
   url,
   fetchCondition = true,
   initialPage = 1,
   initialTotalPages = 1,
+  revalidateOnFocus = false,
+  refreshInterval,
 }: InfiniteScrollArgs) => {
   const [items, setItems] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState(initialPage);
@@ -27,15 +43,48 @@ const useInfiniteScroll = ({
       ? `${url}?page=${currentPage}`
       : null,
     dataFetcher,
-    { revalidateOnFocus: false, keepPreviousData: true },
+    {
+      revalidateOnFocus,
+      keepPreviousData: true,
+      ...(refreshInterval ? { refreshInterval } : {}),
+    },
+  );
+
+  const { data: latestPageData } = useSWR(
+    fetchCondition && refreshInterval && currentPage > 1
+      ? `${url}?page=1`
+      : null,
+    dataFetcher,
+    {
+      revalidateOnFocus,
+      refreshInterval,
+      dedupingInterval: refreshInterval,
+    },
   );
 
   useEffect(() => {
-    if (data && !isEmpty(data?.messages.results)) {
-      setItems(prevItems => [...prevItems, ...data.messages.results]);
-      setTotalPages(data.messages.pages_total);
+    if (!data?.messages?.results) {
+      return;
     }
-  }, [data, error]);
+
+    setTotalPages(data.messages.pages_total);
+    setItems(prevItems =>
+      currentPage === 1
+        ? mergePageOneResults(prevItems, data.messages.results)
+        : appendPageResults(prevItems, data.messages.results),
+    );
+  }, [data, currentPage]);
+
+  useEffect(() => {
+    if (!latestPageData?.messages?.results) {
+      return;
+    }
+
+    setTotalPages(latestPageData.messages.pages_total);
+    setItems(prevItems =>
+      mergePageOneResults(prevItems, latestPageData.messages.results),
+    );
+  }, [latestPageData]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(entries => {

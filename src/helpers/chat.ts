@@ -182,6 +182,32 @@ export function buildOpenChatInteractionNewestResponseUrl(
   }
 }
 
+/**
+ * If `text` is an AttachmentWidget markup string, returns a human-readable
+ * summary: the caption if non-empty, otherwise the attachmentTitle.
+ * Returns the original text unchanged for anything that isn't a widget.
+ */
+export function resolveAttachmentWidgetText(text: string): string {
+  if (!text) return text;
+  const widgetStartTag = '<AttachmentWidget ';
+  const widgetEndTag = ' ></AttachmentWidget>';
+  const widgetStart = text.indexOf(widgetStartTag);
+  const widgetEnd = text.indexOf(widgetEndTag);
+  if (widgetStart === -1 || widgetEnd <= widgetStart) return text;
+  const jsonPart = text.substring(widgetStart + widgetStartTag.length, widgetEnd);
+  try {
+    const parsed = JSON.parse(jsonPart) as {
+      caption?: string;
+      attachmentTitle?: string;
+    };
+    const caption = parsed.caption?.trim();
+    const title = parsed.attachmentTitle?.trim();
+    return caption || title || text;
+  } catch {
+    return text;
+  }
+}
+
 export const processAttachmentWidgets = (
   message: any,
   errorMessage: string,

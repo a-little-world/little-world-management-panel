@@ -23,6 +23,7 @@ import {
   patchSupportTask,
 } from '../../api/supportTasks';
 import { ORANGE_40, BLUE_40 } from '../../constants';
+import { resolveAttachmentWidgetText } from '../../helpers/chat';
 import { formatTimeDistance } from '../../helpers/date';
 import { useTaskPriorityList } from '../../hooks/useTaskPriorities';
 import { SUPPORT_TASKS_ROUTE, getOpenChatChatRoute } from '../../router/routes';
@@ -566,7 +567,7 @@ export default function SupportTaskDetail() {
             {description && (
               <DescriptionSection>
                 <MetaLabel>Description</MetaLabel>
-                <DescriptionText>{description}</DescriptionText>
+                <DescriptionText>{resolveAttachmentWidgetText(description)}</DescriptionText>
               </DescriptionSection>
             )}
           </OverviewCardContent>

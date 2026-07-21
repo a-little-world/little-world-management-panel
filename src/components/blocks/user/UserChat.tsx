@@ -19,9 +19,9 @@ import {
   TickIcon,
   textParser,
 } from '@a-little-world/little-world-design-system';
-import { ArrowUpRightIcon } from 'lucide-react';
 import { isSameDay } from 'date-fns';
 import { isEmpty } from 'lodash';
+import { ArrowUpRightIcon } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTheme } from 'styled-components';
@@ -30,13 +30,13 @@ import {
   deleteMessage,
   markMessageAsRead,
   sendChatMessage,
-  sendSupportMessageReply,
   sendFileAttachmentMessage,
+  sendSupportMessageReply,
 } from '../../../api/index';
 import { BLUE_40, CRIMSON_40, GREEN_40 } from '../../../constants';
 import {
-  formatFileName,
   buildOpenChatInteractionNewestResponseUrl,
+  formatFileName,
   getCustomChatElements,
   messageContainsWidget,
   parseOpenChatInteractionPayload,
@@ -116,11 +116,12 @@ const UserChat = ({
     results,
     setResults,
     loading: isLoading,
-    mutate,
     scrollRef,
     fetchError,
   } = useInfiniteScroll({
     url: `/api/matching/users/${user.id}/messages/`,
+    revalidateOnFocus: true,
+    refreshInterval: 10000,
   });
 
   const messages = unreadOnly
@@ -166,16 +167,10 @@ const UserChat = ({
     setIsSubmitting(true);
 
     if (shouldSendViaSupportReplyApi) {
-      if (selectedFile) {
-        setError('message', {
-          message: 'Attachments are not supported for support-reply sending.',
-        });
-        setIsSubmitting(false);
-        return;
-      }
       sendSupportMessageReply({
         userId: user.id,
         text,
+        file: selectedFile,
         onError,
         onSuccess: result => {
           onMessageSent(result);
@@ -205,7 +200,13 @@ const UserChat = ({
       userId: user.id,
       messageId,
       onError: error => console.log({ error }),
-      onSuccess: () => mutate(),
+      onSuccess: () => {
+        setResults(prev =>
+          prev.map(message =>
+            message.uuid === messageId ? { ...message, read: true } : message,
+          ),
+        );
+      },
     });
   };
 
@@ -213,8 +214,22 @@ const UserChat = ({
     deleteMessage({
       userId: user.id,
       messageId,
-      onError: error => console.log({ error }),
-      onSuccess: () => mutate(),
+      onError: error => {
+        if (
+          error?.status === 400 &&
+          error?.message === 'Only unread messages can be deleted.'
+        ) {
+          setResults(prev =>
+            prev.map(message =>
+              message.uuid === messageId ? { ...message, read: true } : message,
+            ),
+          );
+        }
+        console.log({ error });
+      },
+      onSuccess: () => {
+        setResults(prev => prev.filter(message => message.uuid !== messageId));
+      },
     });
   };
 
@@ -250,7 +265,8 @@ const UserChat = ({
       : '';
   const shouldPrefillFromSuggestion = replyTaskActionStatus === 'OPEN';
   const composerInitialMessage =
-    initialDraftMessage || (shouldPrefillFromSuggestion ? activeSupportReplySuggestion : '');
+    initialDraftMessage ||
+    (shouldPrefillFromSuggestion ? activeSupportReplySuggestion : '');
   const shouldSendViaSupportReplyApi =
     sendViaSupportReplyApi || Boolean(replyTask);
   const replyTaskStatusLabel =
@@ -268,7 +284,9 @@ const UserChat = ({
   const isReplyTaskCompleted = replyTaskActionStatus === 'EXECUTED';
   const showDraftInNotice =
     Boolean(activeSupportReplySuggestion) && (hideComposer || !replyTask);
-  const ComposerField = composerInitialMessage ? SupportReplyMessageBox : MessageBox;
+  const ComposerField = composerInitialMessage
+    ? SupportReplyMessageBox
+    : MessageBox;
   const composerSize = composerInitialMessage
     ? TextAreaSize.Large
     : TextAreaSize.Medium;
@@ -342,51 +360,49 @@ const UserChat = ({
                       </InteractionMessage>
                     );
                   }
-
+                  const isSelf = message.sender !== (user.uuid ?? user.hash);
                   return (
-                    <Message
-                      $isSelf={message.sender !== (user.uuid ?? user.hash)}
-                      key={message.uuid}
-                    >
+                    <Message $isSelf={isSelf} key={message.uuid}>
                       <ActionsContainer>
-                        <Popover
-                          trigger={
-                            <Button
-                              type="button"
-                              variation={ButtonVariations.Icon}
-                            >
-                              <DotsIcon
-                                circular
-                                height="16px"
-                                width="16px"
-                                label="message menu icon"
-                                color={theme.color.surface.quaternary}
-                              />
-                            </Button>
-                          }
-                        >
-                          <Button
-                            variation={ButtonVariations.Inline}
-                            disabled={
-                              message.sender !== (user.uuid ?? user.hash) ||
-                              message.read
+                        {!message.read && (
+                          <Popover
+                            trigger={
+                              <Button
+                                type="button"
+                                variation={ButtonVariations.Icon}
+                              >
+                                <DotsIcon
+                                  circular
+                                  height="16px"
+                                  width="16px"
+                                  label="message menu icon"
+                                  color={theme.color.surface.quaternary}
+                                />
+                              </Button>
                             }
-                            onClick={() => handleReadMessage(message.uuid)}
                           >
-                            Mark as Read
-                          </Button>
-                          {message.sender !== (user.uuid ?? user.hash) && (
-                            <Button
-                              variation={ButtonVariations.Inline}
-                              disabled={
-                                message.sender === (user.uuid ?? user.hash)
-                              }
-                              onClick={() => handleDeleteMessage(message.uuid)}
-                            >
-                              Delete Message
-                            </Button>
-                          )}
-                        </Popover>
+                            {!isSelf && (
+                              <Button
+                                variation={ButtonVariations.Inline}
+                                disabled={message.read}
+                                onClick={() => handleReadMessage(message.uuid)}
+                              >
+                                Mark as Read
+                              </Button>
+                            )}
+                            {isSelf && (
+                              <Button
+                                variation={ButtonVariations.Inline}
+                                disabled={message.read}
+                                onClick={() =>
+                                  handleDeleteMessage(message.uuid)
+                                }
+                              >
+                                Delete Message
+                              </Button>
+                            )}
+                          </Popover>
+                        )}
 
                         <MessageText
                           {...(message.parsable &&
@@ -440,7 +456,9 @@ const UserChat = ({
               <Text type={TextTypes.Body7} bold>
                 Support reply task #{replyTask.id}
               </Text>
-              <SupportReplyTaskIconLink to={getSupportTaskDetailRoute(replyTask.id)}>
+              <SupportReplyTaskIconLink
+                to={getSupportTaskDetailRoute(replyTask.id)}
+              >
                 <ArrowUpRightIcon size={14} />
               </SupportReplyTaskIconLink>
             </SupportReplyTaskMeta>
