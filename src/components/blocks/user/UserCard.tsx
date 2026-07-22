@@ -105,6 +105,7 @@ interface User {
   state: UserState;
   matches: UserMatches;
   bucket?: string;
+  random_call_lobby_count?: number;
 }
 
 interface UserCardProps {
@@ -286,6 +287,10 @@ const UserDetailsFull: React.FC<{
         <DataField
           title="Job Search"
           value={user.profile.job_search ? 'Yes' : 'No'}
+        />
+        <DataField
+          title="Lobbys für Zufällsgespräche"
+          value={user.random_call_lobby_count ?? 0}
         />
       </InfoGrid>
 

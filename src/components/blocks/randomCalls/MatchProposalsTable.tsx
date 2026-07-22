@@ -50,6 +50,7 @@ export default function MatchProposalsTable({
           <TableHead>Match UUID</TableHead>
           <TableHead>User 1</TableHead>
           <TableHead>User 2</TableHead>
+          <TableHead>Created at</TableHead>
           <TableHead>U1 Accepted</TableHead>
           <TableHead>U2 Accepted</TableHead>
           <TableHead>Status</TableHead>
@@ -62,6 +63,11 @@ export default function MatchProposalsTable({
             {<TableCell>{match.uuid}</TableCell>}
             <TableCell>{getUserLabel(match, 1)}</TableCell>
             <TableCell>{getUserLabel(match, 2)}</TableCell>
+            <TableCell>
+              {match.created_at
+                ? new Date(match.created_at).toLocaleString()
+                : '—'}
+            </TableCell>
             <TableCell>
               <Tag
                 appearance={

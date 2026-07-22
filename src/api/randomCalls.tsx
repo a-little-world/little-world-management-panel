@@ -33,6 +33,24 @@ export interface MatchProposal {
   created_at?: string | null;
 }
 
+export interface LobbyParticipant {
+  user_id: number;
+  user_uuid: string;
+  user_name: string;
+  user_type?: string;
+  is_active: boolean;
+  completed_calls: number;
+  unsuccessful_proposals: number;
+  accepted_proposals: number;
+  longest_call_duration_seconds: number;
+  profile: {
+    first_name: string;
+    image_type: string;
+    avatar_config: Record<string, unknown>;
+    image: string | null;
+  };
+}
+
 export interface LobbyOverviewData {
   lobby: {
     name: string;
@@ -51,6 +69,7 @@ export interface LobbyOverviewData {
     last_status_checked_at: string | null;
     has_pending_match: boolean;
   }>;
+  lobby_participants: LobbyParticipant[];
   match_proposals: {
     pending: MatchProposal[];
     accepted: MatchProposal[];
@@ -65,6 +84,8 @@ export interface LobbyOverviewData {
     rejected_count: number;
     expired_count: number;
     dangling_count: number;
+    first_time_count: number;
+    returning_count: number;
   };
 }
 
