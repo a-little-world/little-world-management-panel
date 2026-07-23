@@ -7,7 +7,7 @@ import {
   ButtonSizes,
   Link,
 } from '@a-little-world/little-world-design-system';
-import { formatVideoTimeHours } from '../../../helpers/date';
+import { formatRoundedDuration } from '../../../helpers/date';
 import { VIDEO_CALLS_ROUTE } from '../../../router/routes';
 import { dataFetcher } from '../../../store';
 
@@ -73,7 +73,9 @@ const UserStats = ({ user }: { user: { id: number } }) => {
         </StatCard>
         <StatCard>
           <StatLabel>Total time in video calls</StatLabel>
-          <StatValue>{formatVideoTimeHours(total_video_time_hours)}</StatValue>
+          <StatValue>
+            {formatRoundedDuration(total_video_time_hours * 3600)}
+          </StatValue>
         </StatCard>
       </StatsContainer>
       <Link

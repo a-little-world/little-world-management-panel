@@ -1,11 +1,15 @@
 import {
+  Button,
+  ButtonAppearance,
+  ButtonSizes,
+  ButtonVariations,
   Tag,
   TagAppearance,
   TagSizes,
   Text,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 
 import { useTheme } from 'styled-components';
@@ -17,6 +21,7 @@ import {
   PURPLE_40,
 } from '../../../constants';
 import { formatDate } from '../../../helpers/date';
+import MatchWeeklyActivity from './MatchWeeklyActivity';
 
 type WeeklyActivity = {
   week: number;
@@ -137,6 +142,10 @@ const ActivityRow = styled.div`
   grid-template-columns: 72px minmax(0, 1fr) 28px;
   align-items: center;
   gap: ${({ theme }) => theme.spacing.xxsmall};
+`;
+
+const WeekDetailsButton = styled(Button)`
+  margin-top: ${({ theme }) => theme.spacing.xxsmall};
 `;
 
 const ActivityTrack = styled.div`
@@ -382,6 +391,7 @@ const StreakSummaryRow = ({
 
 const MatchJourney = ({ match }: { match: any }) => {
   const theme = useTheme();
+  const [detailsWeek, setDetailsWeek] = useState<WeeklyActivity | null>(null);
   const weeklyActivity: WeeklyActivity[] = (
     match?.journey?.weekly_activity ?? []
   ).map((week: WeeklyActivity) => ({
@@ -421,6 +431,17 @@ const MatchJourney = ({ match }: { match: any }) => {
 
   return (
     <JourneyGrid>
+      <MatchWeeklyActivity
+        open={detailsWeek !== null}
+        onClose={() => setDetailsWeek(null)}
+        matchUuid={match.uuid}
+        week={detailsWeek?.week ?? null}
+        weekLabel={detailsWeek ? formatWeekRange(detailsWeek) : ''}
+        user1Id={match.user1.id}
+        user1Name={user1Name}
+        user2Id={match.user2.id}
+        user2Name={user2Name}
+      />
       <SummaryGrid>
         <SummaryCard>
           <SummaryContent>
@@ -611,6 +632,16 @@ const MatchJourney = ({ match }: { match: any }) => {
                     </Text>
                   </ActivityRow>
                 </ActivityRows>
+                {hasActivity(week) && (
+                  <WeekDetailsButton
+                    appearance={ButtonAppearance.Secondary}
+                    size={ButtonSizes.Small}
+                    variation={ButtonVariations.Inline}
+                    onClick={() => setDetailsWeek(week)}
+                  >
+                    View details
+                  </WeekDetailsButton>
+                )}
               </WeekCard>
             ))}
             {hiddenTrailingWeeks > 0 && lastActivityWeek > 0 && (

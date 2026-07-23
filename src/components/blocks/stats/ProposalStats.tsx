@@ -27,6 +27,20 @@ import { DataGraphStackedPercentages } from '../DataGraph';
 
 type MatchProposalType = 'all' | 'standard' | 'random_call';
 
+type WaitingTimeSummary = {
+  count: number;
+  average_days: number | null;
+  median_days: number | null;
+  still_waiting_count: number;
+  completed_count: number;
+};
+
+type OutcomeWaitingTimeSummary = {
+  count: number;
+  average_days: number | null;
+  median_days: number | null;
+};
+
 type MatchProposalStatisticsResponse = {
   start_date: string;
   end_date: string;
@@ -40,6 +54,20 @@ type MatchProposalStatisticsResponse = {
   rejected_percentage: number;
   pending_count: number;
   pending_percentage: number;
+  waiting_time: {
+    first_proposal_learners: WaitingTimeSummary;
+    first_match_total: WaitingTimeSummary;
+    first_match_learners: WaitingTimeSummary;
+    first_match_volunteers: WaitingTimeSummary;
+  };
+  first_proposal_outcome_waiting_time: {
+    accepted: OutcomeWaitingTimeSummary;
+    expired: OutcomeWaitingTimeSummary;
+    rejected: OutcomeWaitingTimeSummary;
+    pending_count: number;
+    excluded_count: number;
+    total_first_proposals: number;
+  };
 };
 
 type MatchProposalOutcomeTrendPoint = {
@@ -125,6 +153,12 @@ const GraphHeader = styled.div`
   gap: ${({ theme }) => theme.spacing.xxsmall};
 `;
 
+const WaitingTimeSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.small};
+`;
+
 const formatCountWithPercentage = (
   count: number | undefined,
   percentage: number | undefined,
@@ -135,6 +169,75 @@ const formatCountWithPercentage = (
 
   return `${count} (${percentage}%)`;
 };
+
+const formatDays = (value: number | null | undefined) =>
+  value === null || value === undefined ? '-' : `${value} days`;
+
+const OutcomeWaitingTimeBreakdown = ({
+  summary,
+  isLoading,
+}: {
+  summary?: OutcomeWaitingTimeSummary;
+  isLoading: boolean;
+}) => (
+  <BreakdownList>
+    <BreakdownRow>
+      <BreakdownLabel>Average</BreakdownLabel>
+      <BreakdownValue>
+        {isLoading ? '-' : formatDays(summary?.average_days)}
+      </BreakdownValue>
+    </BreakdownRow>
+    <BreakdownRow>
+      <BreakdownLabel>Median</BreakdownLabel>
+      <BreakdownValue>
+        {isLoading ? '-' : formatDays(summary?.median_days)}
+      </BreakdownValue>
+    </BreakdownRow>
+    <BreakdownRow>
+      <BreakdownLabel>First proposals</BreakdownLabel>
+      <BreakdownValue>{isLoading ? '-' : (summary?.count ?? 0)}</BreakdownValue>
+    </BreakdownRow>
+  </BreakdownList>
+);
+
+const WaitingTimeBreakdown = ({
+  summary,
+  isLoading,
+}: {
+  summary?: WaitingTimeSummary;
+  isLoading: boolean;
+}) => (
+  <BreakdownList>
+    <BreakdownRow>
+      <BreakdownLabel>Average</BreakdownLabel>
+      <BreakdownValue>
+        {isLoading ? '-' : formatDays(summary?.average_days)}
+      </BreakdownValue>
+    </BreakdownRow>
+    <BreakdownRow>
+      <BreakdownLabel>Median</BreakdownLabel>
+      <BreakdownValue>
+        {isLoading ? '-' : formatDays(summary?.median_days)}
+      </BreakdownValue>
+    </BreakdownRow>
+    <BreakdownRow>
+      <BreakdownLabel>Still waiting</BreakdownLabel>
+      <BreakdownValue>
+        {isLoading ? '-' : (summary?.still_waiting_count ?? 0)}
+      </BreakdownValue>
+    </BreakdownRow>
+    <BreakdownRow>
+      <BreakdownLabel>Received</BreakdownLabel>
+      <BreakdownValue>
+        {isLoading ? '-' : (summary?.completed_count ?? 0)}
+      </BreakdownValue>
+    </BreakdownRow>
+    <BreakdownRow>
+      <BreakdownLabel>Onboarded in range</BreakdownLabel>
+      <BreakdownValue>{isLoading ? '-' : (summary?.count ?? 0)}</BreakdownValue>
+    </BreakdownRow>
+  </BreakdownList>
+);
 
 const getDefaultStartDate = () => {
   const date = new Date();
@@ -331,6 +434,123 @@ const ProposalStats = () => {
           <StatLabel>Rejected</StatLabel>
         </StatCard>
       </StatCards>
+
+      <WaitingTimeSection>
+        <HeaderText>
+          <Text type={TextTypes.Body4} bold>
+            Waiting time
+          </Text>
+          <MutedText type={TextTypes.Body6}>
+            Users onboarded in the selected date range. Waiting time counts
+            completed waits plus current waits for those still without a first
+            proposal or first match.
+          </MutedText>
+        </HeaderText>
+        <StatCards>
+          <StatCard>
+            <StatValue>
+              {isLoading
+                ? '-'
+                : formatDays(
+                    data?.waiting_time?.first_proposal_learners?.median_days,
+                  )}
+            </StatValue>
+            <StatLabel>First proposal (learners)</StatLabel>
+            <WaitingTimeBreakdown
+              isLoading={isLoading}
+              summary={data?.waiting_time?.first_proposal_learners}
+            />
+          </StatCard>
+          <StatCard>
+            <StatValue>
+              {isLoading
+                ? '-'
+                : formatDays(
+                    data?.waiting_time?.first_match_learners?.median_days,
+                  )}
+            </StatValue>
+            <StatLabel>First match (learners)</StatLabel>
+            <WaitingTimeBreakdown
+              isLoading={isLoading}
+              summary={data?.waiting_time?.first_match_learners}
+            />
+          </StatCard>
+          <StatCard>
+            <StatValue>
+              {isLoading
+                ? '-'
+                : formatDays(
+                    data?.waiting_time?.first_match_volunteers?.median_days,
+                  )}
+            </StatValue>
+            <StatLabel>First match (volunteers)</StatLabel>
+            <WaitingTimeBreakdown
+              isLoading={isLoading}
+              summary={data?.waiting_time?.first_match_volunteers}
+            />
+          </StatCard>
+        </StatCards>
+      </WaitingTimeSection>
+
+      <WaitingTimeSection>
+        <HeaderText>
+          <Text type={TextTypes.Body4} bold>
+            Waiting time vs proposal outcome
+          </Text>
+          <MutedText type={TextTypes.Body6}>
+            Each learner&apos;s first proposal created in the selected date
+            range. Waiting time is from learner onboarded to first proposal sent.
+            Repeat proposals are excluded.
+          </MutedText>
+        </HeaderText>
+        <StatCards>
+          <StatCard>
+            <StatValue>
+              {isLoading
+                ? '-'
+                : formatDays(
+                    data?.first_proposal_outcome_waiting_time?.accepted
+                      ?.median_days,
+                  )}
+            </StatValue>
+            <StatLabel>Accepted first proposals</StatLabel>
+            <OutcomeWaitingTimeBreakdown
+              isLoading={isLoading}
+              summary={data?.first_proposal_outcome_waiting_time?.accepted}
+            />
+          </StatCard>
+          <StatCard>
+            <StatValue>
+              {isLoading
+                ? '-'
+                : formatDays(
+                    data?.first_proposal_outcome_waiting_time?.expired
+                      ?.median_days,
+                  )}
+            </StatValue>
+            <StatLabel>Expired first proposals</StatLabel>
+            <OutcomeWaitingTimeBreakdown
+              isLoading={isLoading}
+              summary={data?.first_proposal_outcome_waiting_time?.expired}
+            />
+          </StatCard>
+          <StatCard>
+            <StatValue>
+              {isLoading
+                ? '-'
+                : formatDays(
+                    data?.first_proposal_outcome_waiting_time?.rejected
+                      ?.median_days,
+                  )}
+            </StatValue>
+            <StatLabel>Rejected first proposals</StatLabel>
+            <OutcomeWaitingTimeBreakdown
+              isLoading={isLoading}
+              summary={data?.first_proposal_outcome_waiting_time?.rejected}
+            />
+          </StatCard>
+        </StatCards>
+      </WaitingTimeSection>
 
       <GraphCard>
         <GraphHeader>
