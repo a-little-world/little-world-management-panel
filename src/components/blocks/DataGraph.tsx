@@ -18,6 +18,20 @@ const StyledChartContainer = styled(ChartContainer)<{
   min-height: ${({ $minHeight }) => $minHeight || '400px'};
 `;
 
+const CohortTooltipCard = styled.div`
+  background: ${({ theme }) => theme.color.surface.primary};
+  border: 1px solid ${({ theme }) => theme.color.border.subtle};
+  border-radius: ${({ theme }) => theme.radius.small};
+  padding: ${({ theme }) => theme.spacing.xsmall};
+  font-size: 12px;
+  color: ${({ theme }) => theme.color.text.primary};
+`;
+
+const CohortTooltipTitle = styled.div`
+  font-weight: 600;
+  margin-bottom: ${({ theme }) => theme.spacing.xxsmall};
+`;
+
 interface DataGraphProps {
   data: any;
   dataLabel: string;
@@ -232,6 +246,144 @@ export function DataGraphStackedPercentages({
             }
           />
         ))}
+      </BarChart>
+    </StyledChartContainer>
+  );
+}
+
+type CohortSuccessDataPoint = {
+  date: string;
+  count: number;
+  cohort_size: number;
+  mutual_call_match_count?: number;
+  both_messaged_match_count?: number;
+};
+
+type DataGraphCohortSuccessProps = {
+  data: CohortSuccessDataPoint[];
+  successCountKey: 'mutual_call_match_count' | 'both_messaged_match_count';
+  successLabel: string;
+  failureLabel: string;
+  minHeight?: string;
+  maxHeight?: string;
+};
+
+const formatWeekLabel = (value: string) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value.slice(0, 10);
+  }
+
+  return date.toLocaleDateString(undefined, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+};
+
+export function DataGraphCohortSuccess({
+  data,
+  successCountKey,
+  successLabel,
+  failureLabel,
+  maxHeight,
+  minHeight,
+}: DataGraphCohortSuccessProps) {
+  const theme = useTheme();
+
+  const chartData = React.useMemo(
+    () =>
+      data.map(point => {
+        const successCount = point[successCountKey] ?? 0;
+        const cohortSize = point.cohort_size ?? 0;
+        const failureCount = Math.max(cohortSize - successCount, 0);
+        const percentage =
+          cohortSize > 0
+            ? Math.round((successCount / cohortSize) * 1000) / 10
+            : 0;
+
+        return {
+          date: point.date,
+          success_count: successCount,
+          failure_count: failureCount,
+          cohort_size: cohortSize,
+          percentage,
+        };
+      }),
+    [data, successCountKey],
+  );
+
+  const chartConfig = {
+    date: {
+      label: 'Week',
+      color: theme.color.text.primary,
+    },
+    success_count: {
+      label: successLabel,
+      color: theme.color.status.success,
+    },
+    failure_count: {
+      label: failureLabel,
+      color: theme.color.border.subtle,
+    },
+  };
+
+  return (
+    <StyledChartContainer
+      config={chartConfig}
+      $maxHeight={maxHeight}
+      $minHeight={minHeight}
+    >
+      <BarChart accessibilityLayer data={chartData}>
+        <CartesianGrid vertical={false} />
+        <XAxis
+          dataKey="date"
+          tickLine={true}
+          tickMargin={8}
+          axisLine={true}
+          angle={-25}
+          textAnchor="end"
+          tickFormatter={formatWeekLabel}
+        />
+        <YAxis
+          type="number"
+          allowDecimals={false}
+          tickFormatter={value => String(value)}
+        />
+        <ChartTooltip
+          cursor={false}
+          content={({ active, payload }) => {
+            if (!active || !payload?.[0]?.payload) {
+              return null;
+            }
+
+            const point = payload[0].payload as (typeof chartData)[number];
+
+            return (
+              <CohortTooltipCard>
+                <CohortTooltipTitle>
+                  {formatWeekLabel(point.date)}
+                </CohortTooltipTitle>
+                <div>
+                  {successLabel}: {point.success_count} / {point.cohort_size}{' '}
+                  ({point.percentage}%)
+                </div>
+              </CohortTooltipCard>
+            );
+          }}
+        />
+        <ChartLegend content={<ChartLegendContent />} />
+        <Bar
+          dataKey="success_count"
+          stackId="cohort"
+          fill={theme.color.status.success}
+        />
+        <Bar
+          dataKey="failure_count"
+          stackId="cohort"
+          fill={theme.color.border.subtle}
+          radius={[8, 8, 0, 0]}
+        />
       </BarChart>
     </StyledChartContainer>
   );

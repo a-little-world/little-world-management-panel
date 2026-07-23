@@ -104,27 +104,17 @@ export const stringToDate = (dateString: string): Date => parseISO(dateString);
 /** Formats Date to YYYY-MM-DD string. */
 export const dateToString = (date: Date): string => format(date, 'yyyy-MM-dd');
 
-/**
- * Formats a decimal number of hours as a human-readable duration (e.g. "2 hours 21 minutes", "45 minutes").
- */
-export function formatVideoTimeHours(hours: number): string {
-  const totalMinutes = hours * 60;
-  const h = Math.floor(totalMinutes / 60);
-  const m = Math.round(totalMinutes % 60);
-  const parts: string[] = [];
-  if (h) {
-    parts.push(h === 1 ? '1 hour' : `${h} hours`);
-  }
-  if (m) {
-    parts.push(m === 1 ? '1 minute' : `${m} minutes`);
-  }
-  if (parts.length === 0) {
-    return '0 minutes';
-  }
-  return parts.join(' ');
-}
+export const formatDurationSeconds = (seconds: number): string => {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = seconds % 60;
+  return `${hours}h ${minutes}m ${remainingSeconds}s`;
+};
 
-export function formatTotalDurationRoundedMinutes(totalSeconds: number): string {
+/**
+ * Formats a duration in seconds as days, hours, and minutes, rounded to the nearest minute.
+ */
+export function formatRoundedDuration(totalSeconds: number): string {
   const totalMinutes = Math.round(totalSeconds / 60);
   const days = Math.floor(totalMinutes / (60 * 24));
   const hours = Math.floor((totalMinutes % (60 * 24)) / 60);

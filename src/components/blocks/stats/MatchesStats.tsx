@@ -20,7 +20,7 @@ import {
   StatLabel,
   StatValue,
 } from '../../atoms/stats/StatCard';
-import DataGraph from '../DataGraph';
+import DataGraph, { DataGraphCohortSuccess } from '../DataGraph';
 
 type MatchTimingStatisticsResponse = {
   start_date: string;
@@ -39,7 +39,9 @@ type MatchTimingStatisticsResponse = {
   no_message_match_count: number;
   no_message_match_percentage: number;
   average_days_to_first_call: number | null;
+  median_days_to_first_call: number | null;
   average_days_until_both_messaged: number | null;
+  median_days_until_both_messaged: number | null;
 };
 
 type MatchTrendDataPoint = {
@@ -265,10 +267,26 @@ const MatchesStats = () => {
       <StatCards>
         <StatCard>
           <StatValue>
-            {isLoading ? '-' : formatDays(data?.average_days_to_first_call)}
+            {isLoading ? '-' : formatDays(data?.median_days_to_first_call)}
           </StatValue>
           <StatLabel>No. of days till first call</StatLabel>
           <BreakdownList>
+            <BreakdownRow>
+              <BreakdownLabel>Average</BreakdownLabel>
+              <BreakdownValue>
+                {isLoading
+                  ? '-'
+                  : formatDays(data?.average_days_to_first_call)}
+              </BreakdownValue>
+            </BreakdownRow>
+            <BreakdownRow>
+              <BreakdownLabel>Median</BreakdownLabel>
+              <BreakdownValue>
+                {isLoading
+                  ? '-'
+                  : formatDays(data?.median_days_to_first_call)}
+              </BreakdownValue>
+            </BreakdownRow>
             <BreakdownRow>
               <BreakdownLabel>Matches with a mutual call</BreakdownLabel>
               <BreakdownValue>
@@ -314,10 +332,26 @@ const MatchesStats = () => {
           <StatValue>
             {isLoading
               ? '-'
-              : formatDays(data?.average_days_until_both_messaged)}
+              : formatDays(data?.median_days_until_both_messaged)}
           </StatValue>
           <StatLabel>No. of days till both users have messaged</StatLabel>
           <BreakdownList>
+            <BreakdownRow>
+              <BreakdownLabel>Average</BreakdownLabel>
+              <BreakdownValue>
+                {isLoading
+                  ? '-'
+                  : formatDays(data?.average_days_until_both_messaged)}
+              </BreakdownValue>
+            </BreakdownRow>
+            <BreakdownRow>
+              <BreakdownLabel>Median</BreakdownLabel>
+              <BreakdownValue>
+                {isLoading
+                  ? '-'
+                  : formatDays(data?.median_days_until_both_messaged)}
+              </BreakdownValue>
+            </BreakdownRow>
             <BreakdownRow>
               <BreakdownLabel>Matches with messages both ways</BreakdownLabel>
               <BreakdownValue>
@@ -367,10 +401,10 @@ const MatchesStats = () => {
             Mutual calls within the first two weeks
           </Text>
           <MutedText type={TextTypes.Body6}>
-            Weekly match creation cohorts. Each bar shows the percentage of
-            matches created that week that had a mutual video call within 14
-            days of being matched. Recent cohorts without a full 14-day
-            observation window are excluded.
+            Weekly match creation cohorts. Bar height is the number of matches
+            created that week; the filled portion had a mutual video call within
+            14 days. Hover for exact counts and percentages. Recent cohorts
+            without a full 14-day observation window are excluded.
           </MutedText>
         </GraphHeader>
         {mutualCallTrendError && (
@@ -384,9 +418,11 @@ const MatchesStats = () => {
           <Text type={TextTypes.Body6}>Loading mutual call trend...</Text>
         )}
         {!isMutualCallTrendLoading && mutualCallTrendData && (
-          <DataGraph
+          <DataGraphCohortSuccess
             data={mutualCallTrendData}
-            dataLabel="% of cohort with mutual call: "
+            successCountKey="mutual_call_match_count"
+            successLabel="Mutual call within 14 days"
+            failureLabel="No mutual call within 14 days"
             minHeight="320px"
             maxHeight="420px"
           />
@@ -399,10 +435,10 @@ const MatchesStats = () => {
             Messages both ways within the first two weeks
           </Text>
           <MutedText type={TextTypes.Body6}>
-            Weekly match creation cohorts. Each bar shows the percentage of
-            matches created that week where both users sent at least one message
-            within 14 days of being matched. Recent cohorts without a full
-            14-day observation window are excluded.
+            Weekly match creation cohorts. Bar height is the number of matches
+            created that week; the filled portion had messages both ways within
+            14 days. Hover for exact counts and percentages. Recent cohorts
+            without a full 14-day observation window are excluded.
           </MutedText>
         </GraphHeader>
         {bothMessagedTrendError && (
@@ -418,9 +454,11 @@ const MatchesStats = () => {
           </Text>
         )}
         {!isBothMessagedTrendLoading && bothMessagedTrendData && (
-          <DataGraph
+          <DataGraphCohortSuccess
             data={bothMessagedTrendData}
-            dataLabel="% of cohort with messages both ways: "
+            successCountKey="both_messaged_match_count"
+            successLabel="Messages both ways within 14 days"
+            failureLabel="Not both messaged within 14 days"
             minHeight="320px"
             maxHeight="420px"
           />

@@ -189,7 +189,7 @@ const MatchWeeklyActivityDetailsModal = ({
                 <SectionTitle type={TextTypes.Body5} bold>
                   Messages ({messageCount})
                 </SectionTitle>
-                <ParticipantCounts type={TextTypes.Body7}>
+                <ParticipantCounts type={TextTypes.Body6}>
                   {user1Name}: {messageCountsByParticipant[user1Id]} ·{' '}
                   {user2Name}: {messageCountsByParticipant[user2Id]}
                 </ParticipantCounts>

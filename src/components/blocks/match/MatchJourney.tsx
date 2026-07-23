@@ -21,7 +21,7 @@ import {
   PURPLE_40,
 } from '../../../constants';
 import { formatDate } from '../../../helpers/date';
-import MatchWeeklyActivityDetailsModal from './MatchWeeklyActivityDetailsModal';
+import MatchWeeklyActivity from './MatchWeeklyActivity';
 
 type WeeklyActivity = {
   week: number;
@@ -431,7 +431,7 @@ const MatchJourney = ({ match }: { match: any }) => {
 
   return (
     <JourneyGrid>
-      <MatchWeeklyActivityDetailsModal
+      <MatchWeeklyActivity
         open={detailsWeek !== null}
         onClose={() => setDetailsWeek(null)}
         matchUuid={match.uuid}

@@ -17,7 +17,7 @@ import {
   formatDate,
   formatDurationSeconds,
   formatTimeDistance,
-  formatTotalDurationRoundedMinutes,
+  formatRoundedDuration,
 } from '../../../helpers/date';
 import DataField from '../../atoms/DataField';
 import MatchReport, { getMatchReportProps } from '../../atoms/MatchReport';
@@ -229,7 +229,7 @@ const formatAverageVideoCallDuration = (
 const formatTotalVideoCallDuration = (
   seconds: number | null | undefined,
 ) =>
-  seconds != null ? formatTotalDurationRoundedMinutes(seconds) : 'n/a';
+  seconds != null ? formatRoundedDuration(seconds) : 'n/a';
 
 const MatchCard = (props: MatchCardProps) => {
   const { match } = props;
