@@ -13,10 +13,25 @@ import React from 'react';
 import styled, { css } from 'styled-components';
 
 import { LANGUAGES, MATCH_STATUS } from '../../../constants';
-import { formatDate, formatTimeDistance } from '../../../helpers/date';
+import {
+  formatDate,
+  formatDurationSeconds,
+  formatTimeDistance,
+  formatTotalDurationRoundedMinutes,
+} from '../../../helpers/date';
 import DataField from '../../atoms/DataField';
 import MatchReport, { getMatchReportProps } from '../../atoms/MatchReport';
 import Stat from '../../atoms/stats/Stat';
+import {
+  BreakdownLabel,
+  BreakdownList,
+  BreakdownRow,
+  BreakdownValue,
+  StatCard,
+  StatCards,
+  StatLabel,
+  StatValue,
+} from '../../atoms/stats/StatCard';
 import UserImage from '../../atoms/UserImage';
 import MatchProgress from './MatchProgress';
 
@@ -127,6 +142,16 @@ const StatsRow = styled.div<{ $variant: 'full' | 'compact' }>`
         `}
 `;
 
+const MatchStatsCards = styled(StatCards)`
+  padding: 0;
+  width: 100%;
+`;
+
+const DurationStatValue = styled(StatValue)`
+  font-size: 1.25rem;
+  line-height: 1.2;
+`;
+
 const StyledTag = styled(Tag)`
   position: absolute;
   top: -6px;
@@ -197,6 +222,15 @@ export type MatchCardProps = MatchCardPropsFull | MatchCardPropsCompact;
 const formatPanelInstant = (iso: string | null | undefined, locale: string) =>
   iso ? formatDate(new Date(iso), 'dd.MM.yy HH:mm', locale) : 'n/a';
 
+const formatAverageVideoCallDuration = (
+  seconds: number | null | undefined,
+) => (seconds != null ? formatDurationSeconds(seconds) : 'n/a');
+
+const formatTotalVideoCallDuration = (
+  seconds: number | null | undefined,
+) =>
+  seconds != null ? formatTotalDurationRoundedMinutes(seconds) : 'n/a';
+
 const MatchCard = (props: MatchCardProps) => {
   const { match } = props;
   const variant = props.variant ?? 'full';
@@ -239,6 +273,18 @@ const MatchCard = (props: MatchCardProps) => {
         <Stat
           label="Video Calls"
           stat={match.total_mutal_video_calls_counter}
+        />
+        <Stat
+          label="Avg. call duration"
+          stat={formatAverageVideoCallDuration(
+            match.average_video_call_duration_seconds,
+          )}
+        />
+        <Stat
+          label="Median call duration"
+          stat={formatAverageVideoCallDuration(
+            match.median_video_call_duration_seconds,
+          )}
         />
       </StatsRow>
       <ViewDetailsButton
@@ -304,18 +350,42 @@ const MatchCard = (props: MatchCardProps) => {
               )}
             />
           </TimestampSection>
-          <StatsRow $variant={variant}>
-            <Stat
-              label="Total no. of messages"
-              stat={match.total_messages_counter}
-              withBorder
-            />
-            <Stat
-              label="Total no. of video calls"
-              stat={match.total_mutal_video_calls_counter}
-              withBorder
-            />
-          </StatsRow>
+          <MatchStatsCards>
+            <StatCard>
+              <StatValue>{match.total_messages_counter}</StatValue>
+              <StatLabel>Total messages</StatLabel>
+            </StatCard>
+            <StatCard>
+              <StatValue>{match.total_mutal_video_calls_counter}</StatValue>
+              <StatLabel>Total video calls</StatLabel>
+            </StatCard>
+            <StatCard>
+              <DurationStatValue>
+                {formatTotalVideoCallDuration(
+                  match.total_video_call_duration_seconds,
+                )}
+              </DurationStatValue>
+              <StatLabel>Total video call duration</StatLabel>
+              <BreakdownList>
+                <BreakdownRow>
+                  <BreakdownLabel>Average</BreakdownLabel>
+                  <BreakdownValue>
+                    {formatAverageVideoCallDuration(
+                      match.average_video_call_duration_seconds,
+                    )}
+                  </BreakdownValue>
+                </BreakdownRow>
+                <BreakdownRow>
+                  <BreakdownLabel>Median</BreakdownLabel>
+                  <BreakdownValue>
+                    {formatAverageVideoCallDuration(
+                      match.median_video_call_duration_seconds,
+                    )}
+                  </BreakdownValue>
+                </BreakdownRow>
+              </BreakdownList>
+            </StatCard>
+          </MatchStatsCards>
         </MatchDetailsColumn>
         <MatchProgress match={match} />
       </FullContentGrid>

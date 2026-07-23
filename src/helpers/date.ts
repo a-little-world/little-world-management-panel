@@ -123,3 +123,23 @@ export function formatVideoTimeHours(hours: number): string {
   }
   return parts.join(' ');
 }
+
+export function formatTotalDurationRoundedMinutes(totalSeconds: number): string {
+  const totalMinutes = Math.round(totalSeconds / 60);
+  const days = Math.floor(totalMinutes / (60 * 24));
+  const hours = Math.floor((totalMinutes % (60 * 24)) / 60);
+  const minutes = totalMinutes % 60;
+  const parts: string[] = [];
+
+  if (days) {
+    parts.push(days === 1 ? '1 day' : `${days} days`);
+  }
+  if (hours) {
+    parts.push(hours === 1 ? '1 hour' : `${hours} hours`);
+  }
+  if (minutes || parts.length === 0) {
+    parts.push(minutes === 1 ? '1 minute' : `${minutes} minutes`);
+  }
+
+  return parts.join(', ');
+}
