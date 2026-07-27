@@ -30,6 +30,24 @@ function getUserLabel(match: MatchProposal, userNumber: 1 | 2): string {
   return `${name} - ${type ?? '—'} (${userUuid})`;
 }
 
+function getStatusTagAppearance(status: string | undefined): TagAppearance {
+  switch (status) {
+    case 'accepted':
+      return TagAppearance.success;
+    case 'rejected':
+    case 'expired':
+    case 'exited':
+      return TagAppearance.error;
+    default:
+      return TagAppearance.outline;
+  }
+}
+
+function formatProposalStatus(status: string | undefined): string {
+  if (!status) return '-';
+  return status.charAt(0).toUpperCase() + status.slice(1);
+}
+
 export default function MatchProposalsTable({
   matches,
   showCompletedColumn = false,
@@ -50,8 +68,11 @@ export default function MatchProposalsTable({
           <TableHead>Match UUID</TableHead>
           <TableHead>User 1</TableHead>
           <TableHead>User 2</TableHead>
+          <TableHead>Created at</TableHead>
           <TableHead>U1 Accepted</TableHead>
           <TableHead>U2 Accepted</TableHead>
+          <TableHead>U1 Status</TableHead>
+          <TableHead>U2 Status</TableHead>
           <TableHead>Status</TableHead>
           {showCompletedColumn && <TableHead>Completed</TableHead>}
         </TableRow>
@@ -62,6 +83,11 @@ export default function MatchProposalsTable({
             {<TableCell>{match.uuid}</TableCell>}
             <TableCell>{getUserLabel(match, 1)}</TableCell>
             <TableCell>{getUserLabel(match, 2)}</TableCell>
+            <TableCell>
+              {match.created_at
+                ? new Date(match.created_at).toLocaleString()
+                : '—'}
+            </TableCell>
             <TableCell>
               <Tag
                 appearance={
@@ -84,6 +110,22 @@ export default function MatchProposalsTable({
                 size={TagSizes.small}
               >
                 {match.u2_accepted ? 'Yes' : 'No'}
+              </Tag>
+            </TableCell>
+            <TableCell>
+              <Tag
+                appearance={getStatusTagAppearance(match.u1_status)}
+                size={TagSizes.small}
+              >
+                {formatProposalStatus(match.u1_status)}
+              </Tag>
+            </TableCell>
+            <TableCell>
+              <Tag
+                appearance={getStatusTagAppearance(match.u2_status)}
+                size={TagSizes.small}
+              >
+                {formatProposalStatus(match.u2_status)}
               </Tag>
             </TableCell>
             <TableCell>

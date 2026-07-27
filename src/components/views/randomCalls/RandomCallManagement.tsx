@@ -33,6 +33,16 @@ import { formatDate, formatEventTime } from '../../../helpers/date';
 import { dataFetcher } from '../../../store';
 import { PageContainer } from '../../atoms/PageLayout';
 import {
+  BreakdownLabel,
+  BreakdownList,
+  BreakdownRow,
+  BreakdownValue,
+  StatCard,
+  StatCards,
+  StatLabel,
+  StatValue,
+} from '../../atoms/stats/StatCard';
+import {
   Table,
   TableBody,
   TableCell,
@@ -41,6 +51,7 @@ import {
   TableRow,
 } from '../../atoms/Table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../atoms/Tabs';
+import LobbyParticipantsTable from '../../blocks/randomCalls/LobbyParticipantsTable';
 import MatchProposalsTable from '../../blocks/randomCalls/MatchProposalsTable';
 import {
   CollapsibleContent,
@@ -55,10 +66,6 @@ import {
   SectionTitle,
   SectionTitleClickable,
   SectionTitleFlush,
-  StatCard,
-  StatLabel,
-  StatsGrid,
-  StatValue,
   TaskDetailLabel,
   TaskDetailRow,
   TaskDetailSection,
@@ -91,6 +98,23 @@ interface LobbyData {
     expired: MatchProposal[];
     dangling: MatchProposal[];
   };
+  lobby_participants: Array<{
+    user_id: number;
+    user_uuid: string;
+    user_name: string;
+    user_type: string;
+    is_active: boolean;
+    completed_calls: number;
+    unsuccessful_proposals: number;
+    accepted_proposals: number;
+    longest_call_duration_seconds: number;
+    profile: {
+      first_name: string;
+      image_type: string;
+      avatar_config: Record<string, unknown>;
+      image: string | null;
+    };
+  }>;
   statistics: {
     total_matches: number;
     pending_count: number;
@@ -98,6 +122,8 @@ interface LobbyData {
     rejected_count: number;
     expired_count: number;
     dangling_count: number;
+    first_time_count: number;
+    returning_count: number;
   };
   schedule: Array<{
     uuid: string;
@@ -376,69 +402,11 @@ function TasksTable({ tasks }: { tasks: TaskData[] }) {
 }
 
 function DanglingMatchesTable({ matches }: { matches: MatchProposal[] }) {
-  if (isEmpty(matches)) {
-    return (
-      <Text className="p-4 w-full" center>
-        No dangling match proposals.
-      </Text>
-    );
-  }
-
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Match UUID</TableHead>
-          <TableHead>User 1</TableHead>
-          <TableHead>User 2</TableHead>
-          <TableHead>Created</TableHead>
-          <TableHead>U1 Accepted</TableHead>
-          <TableHead>U2 Accepted</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {matches.map(match => (
-          <TableRow key={match.uuid}>
-            <TableCell>{match.uuid}</TableCell>
-            <TableCell>
-              {match.u1_name} - {match.u1_user_type ?? '—'} ({match.u1_uuid})
-            </TableCell>
-            <TableCell>
-              {match.u2_name} - {match.u2_user_type ?? '—'} ({match.u2_uuid})
-            </TableCell>
-            <TableCell>
-              {match.created_at
-                ? new Date(match.created_at).toLocaleString()
-                : '—'}
-            </TableCell>
-            <TableCell>
-              <Tag
-                appearance={
-                  match.u1_accepted
-                    ? TagAppearance.success
-                    : TagAppearance.error
-                }
-                size={TagSizes.small}
-              >
-                {match.u1_accepted ? 'Yes' : 'No'}
-              </Tag>
-            </TableCell>
-            <TableCell>
-              <Tag
-                appearance={
-                  match.u2_accepted
-                    ? TagAppearance.success
-                    : TagAppearance.error
-                }
-                size={TagSizes.small}
-              >
-                {match.u2_accepted ? 'Yes' : 'No'}
-              </Tag>
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+    <MatchProposalsTable
+      matches={matches}
+      emptyMessage="No dangling match proposals."
+    />
   );
 }
 
@@ -625,7 +593,13 @@ function RandomCallManagement() {
     );
   }
 
-  const { lobby, active_users, match_proposals, statistics } = data;
+  const {
+    lobby,
+    active_users,
+    match_proposals,
+    lobby_participants,
+    statistics,
+  } = data;
   const danglingMatches = match_proposals.dangling ?? [];
   const danglingCount = statistics.dangling_count ?? 0;
 
@@ -811,7 +785,7 @@ function RandomCallManagement() {
         {/* Lobby Status */}
         <Section>
           <SectionTitle>{lobbyPeriodLabel}</SectionTitle>
-          <StatsGrid>
+          <StatCards>
             <StatCard>
               <StatValue>{lobby.active_users_count}</StatValue>
               <StatLabel>Active Users</StatLabel>
@@ -819,39 +793,49 @@ function RandomCallManagement() {
             <StatCard>
               <StatValue>{lobby.total_users_count}</StatValue>
               <StatLabel>Total Users</StatLabel>
+              <BreakdownList>
+                <BreakdownRow>
+                  <BreakdownLabel>First time</BreakdownLabel>
+                  <BreakdownValue>{statistics.first_time_count}</BreakdownValue>
+                </BreakdownRow>
+                <BreakdownRow>
+                  <BreakdownLabel>Returning</BreakdownLabel>
+                  <BreakdownValue>{statistics.returning_count}</BreakdownValue>
+                </BreakdownRow>
+              </BreakdownList>
             </StatCard>
             <StatCard>
               <StatValue>{statistics.total_matches}</StatValue>
               <StatLabel>Total Matches</StatLabel>
             </StatCard>
-          </StatsGrid>
+          </StatCards>
         </Section>
 
-        {/* Match Statistics */}
+        {/* Proposal Statistics */}
         <Section>
-          <SectionTitle>Match Statistics</SectionTitle>
-          <StatsGrid>
+          <SectionTitle>Proposal Statistics</SectionTitle>
+          <StatCards>
             <StatCard>
               <StatValue>{statistics.pending_count}</StatValue>
-              <StatLabel>Pending Matches</StatLabel>
+              <StatLabel>Pending Proposals</StatLabel>
             </StatCard>
             <StatCard>
               <StatValue>{statistics.accepted_count}</StatValue>
-              <StatLabel>Accepted Matches</StatLabel>
+              <StatLabel>Accepted Proposals</StatLabel>
             </StatCard>
             <StatCard>
               <StatValue>{statistics.rejected_count}</StatValue>
-              <StatLabel>Rejected Matches</StatLabel>
+              <StatLabel>Rejected Proposals</StatLabel>
             </StatCard>
             <StatCard>
               <StatValue>{statistics.expired_count}</StatValue>
-              <StatLabel>Expired Matches</StatLabel>
+              <StatLabel>Expired Proposals</StatLabel>
             </StatCard>
             <StatCard>
               <StatValue>{danglingCount}</StatValue>
               <StatLabel>Dangling proposals</StatLabel>
             </StatCard>
-          </StatsGrid>
+          </StatCards>
         </Section>
 
         {/* Active Users */}
@@ -863,10 +847,10 @@ function RandomCallManagement() {
           />
         </Section>
 
-        {/* Dangling match proposals */}
+        {/* Dangling proposals */}
         <Section>
           <SectionHeaderRow>
-            <SectionTitleFlush>Dangling match proposals</SectionTitleFlush>
+            <SectionTitleFlush>Dangling Proposals</SectionTitleFlush>
             <Button
               appearance={ButtonAppearance.Secondary}
               color="red"
@@ -880,9 +864,9 @@ function RandomCallManagement() {
           <DanglingMatchesTable matches={danglingMatches} />
         </Section>
 
-        {/* Match Proposals */}
+        {/* Proposals */}
         <Section>
-          <SectionTitle>Match Proposals</SectionTitle>
+          <SectionTitle>Proposals</SectionTitle>
           <Tabs defaultValue="pending">
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="pending">
@@ -916,6 +900,11 @@ function RandomCallManagement() {
           </Tabs>
         </Section>
 
+        <Section>
+          <SectionTitle>Lobby Participants</SectionTitle>
+          <LobbyParticipantsTable participants={lobby_participants ?? []} />
+        </Section>
+
         {/* Celery Tasks */}
         <Section>
           <SectionTitleClickable
@@ -929,7 +918,7 @@ function RandomCallManagement() {
               <Text>Error loading tasks: {tasksError.message}</Text>
             ) : tasksData ? (
               <>
-                <StatsGrid>
+                <StatCards>
                   <StatCard>
                     <StatValue>{tasksData.statistics.total}</StatValue>
                     <StatLabel>Total Tasks</StatLabel>
@@ -967,7 +956,7 @@ function RandomCallManagement() {
                     </StatValue>
                     <StatLabel>Pending</StatLabel>
                   </StatCard>
-                </StatsGrid>
+                </StatCards>
                 <div style={{ marginTop: '1.5rem' }}>
                   <TasksTable tasks={tasksData.tasks} />
                 </div>

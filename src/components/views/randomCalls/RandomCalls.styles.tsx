@@ -82,24 +82,8 @@ export const SectionTitleClickable = styled(SectionTitle)`
   }
 `;
 
-// Stats — layout variants specific to RandomCalls
-export const StatsGrid = StatCards;
-
 export const StatsGridTight = styled(StatCards)`
   margin-bottom: ${({ theme }) => theme.spacing.small};
-`;
-
-export const StatCardSecondary = styled.div`
-  padding: ${({ theme }) => theme.spacing.small};
-  background: ${({ theme }) => theme.color.surface.secondary};
-  border-radius: 8px;
-  border: 1px solid ${({ theme }) => theme.color.border.subtle};
-`;
-
-export const StatValueSmall = styled.div`
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: ${({ theme }) => theme.color.text.primary};
 `;
 
 // Schedule (Schedule tab)

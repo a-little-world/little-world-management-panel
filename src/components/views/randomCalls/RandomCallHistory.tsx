@@ -1,7 +1,7 @@
 import {
-  Select,
   Loading,
   LoadingSizes,
+  Select,
   Text,
 } from '@a-little-world/little-world-design-system';
 import { isEmpty } from 'lodash';
@@ -17,17 +17,25 @@ import {
 import { formatDate, formatEventTime } from '../../../helpers/date';
 import { dataFetcher } from '../../../store';
 import { PageContainer } from '../../atoms/PageLayout';
+import {
+  BreakdownLabel,
+  BreakdownList,
+  BreakdownRow,
+  BreakdownValue,
+  StatCard,
+  StatCards,
+  StatLabel,
+  StatValue,
+} from '../../atoms/stats/StatCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../atoms/Tabs';
+import LobbyParticipantsTable from '../../blocks/randomCalls/LobbyParticipantsTable';
 import MatchProposalsTable from '../../blocks/randomCalls/MatchProposalsTable';
 import {
   Description,
   DropdownContainer,
   Section,
   SectionTitle,
-  StatCardSecondary as StatCard,
-  StatLabel,
-  StatsGridTight as StatsGrid,
-  StatValueSmall as StatValue,
+  StatsGridTight,
   Title,
 } from './RandomCalls.styles';
 
@@ -107,6 +115,7 @@ function RandomCallHistory() {
     rejected: [],
     expired: [],
   };
+  const lobby_participants = lobbyData?.lobby_participants || [];
 
   const lobbyOptions = allLobbies.map(lobbyItem => {
     const startDate = new Date(lobbyItem.start_time);
@@ -157,48 +166,71 @@ function RandomCallHistory() {
           {/* Key Stats */}
           <Section>
             <SectionTitle>Key Stats</SectionTitle>
-            <StatsGrid>
+            <StatsGridTight>
               <StatCard>
-                <StatLabel>Total Users</StatLabel>
                 <StatValue>{lobby.total_users_count}</StatValue>
+                <StatLabel>Total Users</StatLabel>
+                <BreakdownList>
+                  <BreakdownRow>
+                    <BreakdownLabel>First time</BreakdownLabel>
+                    <BreakdownValue>
+                      {statistics.first_time_count}
+                    </BreakdownValue>
+                  </BreakdownRow>
+                  <BreakdownRow>
+                    <BreakdownLabel>Returning</BreakdownLabel>
+                    <BreakdownValue>
+                      {statistics.returning_count}
+                    </BreakdownValue>
+                  </BreakdownRow>
+                </BreakdownList>
               </StatCard>
               <StatCard>
-                <StatLabel>Total Calls</StatLabel>
                 <StatValue>{match_proposals.accepted.length}</StatValue>
+                <StatLabel>Total Calls</StatLabel>
               </StatCard>
               <StatCard>
+                <StatValue>{statistics.accepted_count}</StatValue>
                 <StatLabel>Matches Made</StatLabel>
-                <StatValue>{statistics.accepted_count}</StatValue>
               </StatCard>
-            </StatsGrid>
+            </StatsGridTight>
           </Section>
 
-          {/* Match Statistics */}
+          {/* Proposal Statistics */}
           <Section>
-            <SectionTitle>Match Statistics</SectionTitle>
-            <StatsGrid>
+            <SectionTitle>Proposal Statistics</SectionTitle>
+            <StatCards>
               <StatCard>
-                <StatLabel>Pending Matches</StatLabel>
                 <StatValue>{statistics.pending_count}</StatValue>
+                <StatLabel>Pending Proposals</StatLabel>
               </StatCard>
               <StatCard>
-                <StatLabel>Accepted Matches</StatLabel>
                 <StatValue>{statistics.accepted_count}</StatValue>
+                <StatLabel>Accepted Proposals</StatLabel>
               </StatCard>
               <StatCard>
-                <StatLabel>Rejected Matches</StatLabel>
                 <StatValue>{statistics.rejected_count}</StatValue>
+                <StatLabel>Rejected Proposals</StatLabel>
               </StatCard>
               <StatCard>
-                <StatLabel>Expired Matches</StatLabel>
                 <StatValue>{statistics.expired_count}</StatValue>
+                <StatLabel>Expired Proposals</StatLabel>
               </StatCard>
-            </StatsGrid>
+            </StatCards>
           </Section>
 
-          {/* Match Proposals */}
+          {/* Lobby Participants */}
           <Section>
-            <SectionTitle>Match Proposals</SectionTitle>
+            <SectionTitle>Lobby Participants</SectionTitle>
+            <LobbyParticipantsTable
+              participants={lobby_participants}
+              showStatus={false}
+            />
+          </Section>
+
+          {/* Proposals */}
+          <Section>
+            <SectionTitle>Proposals</SectionTitle>
             <Tabs defaultValue="pending">
               <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="pending">
@@ -236,24 +268,24 @@ function RandomCallHistory() {
           {tasksData && (
             <Section>
               <SectionTitle>Celery Tasks</SectionTitle>
-              <StatsGrid>
+              <StatCards>
                 <StatCard>
-                  <StatLabel>Total Tasks</StatLabel>
                   <StatValue>{tasksData.statistics.total}</StatValue>
+                  <StatLabel>Total Tasks</StatLabel>
                 </StatCard>
                 <StatCard>
-                  <StatLabel>Successful</StatLabel>
                   <StatValue>{tasksData.statistics.success}</StatValue>
+                  <StatLabel>Successful</StatLabel>
                 </StatCard>
                 <StatCard>
-                  <StatLabel>Failed</StatLabel>
                   <StatValue>{tasksData.statistics.failure}</StatValue>
+                  <StatLabel>Failed</StatLabel>
                 </StatCard>
                 <StatCard>
-                  <StatLabel>Pending</StatLabel>
                   <StatValue>{tasksData.statistics.pending}</StatValue>
+                  <StatLabel>Pending</StatLabel>
                 </StatCard>
-              </StatsGrid>
+              </StatCards>
             </Section>
           )}
         </>
