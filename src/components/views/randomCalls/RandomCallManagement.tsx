@@ -402,69 +402,11 @@ function TasksTable({ tasks }: { tasks: TaskData[] }) {
 }
 
 function DanglingMatchesTable({ matches }: { matches: MatchProposal[] }) {
-  if (isEmpty(matches)) {
-    return (
-      <Text className="p-4 w-full" center>
-        No dangling match proposals.
-      </Text>
-    );
-  }
-
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Match UUID</TableHead>
-          <TableHead>User 1</TableHead>
-          <TableHead>User 2</TableHead>
-          <TableHead>Created</TableHead>
-          <TableHead>U1 Accepted</TableHead>
-          <TableHead>U2 Accepted</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {matches.map(match => (
-          <TableRow key={match.uuid}>
-            <TableCell>{match.uuid}</TableCell>
-            <TableCell>
-              {match.u1_name} - {match.u1_user_type ?? '—'} ({match.u1_uuid})
-            </TableCell>
-            <TableCell>
-              {match.u2_name} - {match.u2_user_type ?? '—'} ({match.u2_uuid})
-            </TableCell>
-            <TableCell>
-              {match.created_at
-                ? new Date(match.created_at).toLocaleString()
-                : '—'}
-            </TableCell>
-            <TableCell>
-              <Tag
-                appearance={
-                  match.u1_accepted
-                    ? TagAppearance.success
-                    : TagAppearance.error
-                }
-                size={TagSizes.small}
-              >
-                {match.u1_accepted ? 'Yes' : 'No'}
-              </Tag>
-            </TableCell>
-            <TableCell>
-              <Tag
-                appearance={
-                  match.u2_accepted
-                    ? TagAppearance.success
-                    : TagAppearance.error
-                }
-                size={TagSizes.small}
-              >
-                {match.u2_accepted ? 'Yes' : 'No'}
-              </Tag>
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+    <MatchProposalsTable
+      matches={matches}
+      emptyMessage="No dangling match proposals."
+    />
   );
 }
 

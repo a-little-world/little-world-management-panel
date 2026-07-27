@@ -25,6 +25,8 @@ export interface MatchProposal {
   u2_user_type?: string;
   u1_accepted: boolean;
   u2_accepted: boolean;
+  u1_status?: string;
+  u2_status?: string;
   accepted: boolean;
   rejected: boolean;
   expired?: boolean;
