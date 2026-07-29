@@ -289,7 +289,7 @@ const UserDetailsFull: React.FC<{
           value={user.profile.job_search ? 'Yes' : 'No'}
         />
         <DataField
-          title="Lobbys für Zufällsgespräche"
+          title="Lobbys für Zufallsgespräche"
           value={user.random_call_lobby_count ?? 0}
         />
       </InfoGrid>

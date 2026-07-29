@@ -1,6 +1,6 @@
 import {
-  Select,
   Text as DSText,
+  Select,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
 import React from 'react';
@@ -8,7 +8,15 @@ import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
 import styled from 'styled-components';
 import useSWR from 'swr';
 
-import { modifyData, type FunnelMergeGroup } from '../../../helpers/stats';
+import {
+  SIGNUP_FUNNEL_FILTERS,
+  SIGNUP_FUNNEL_ID,
+  SIGNUP_FUNNEL_MERGE_GROUPS,
+  SIGNUP_FUNNEL_MODE,
+  SIGNUP_FUNNEL_TITLE,
+  USER_SIGNUP_FUNNEL_BUCKET_META,
+} from '../../../constants/signupFunnel';
+import { FunnelMergeGroup, modifyData } from '../../../helpers/stats';
 import { cratePostFetcher } from '../../../store';
 import { Card, CardContent, CardHeader } from '../../atoms/Card';
 import {
@@ -17,6 +25,11 @@ import {
   ChartTooltipContent,
 } from '../../atoms/Chart';
 import { DatePicker } from '../../atoms/DatePicker';
+import {
+  DateRangePicker,
+  formatLocalDateYmd,
+  parseYmdToLocalDate,
+} from '../../atoms/DateRangePicker';
 import HorizontalBarChart from '../../atoms/stats/HorizontalBarChart';
 
 const matchJourneyChartCategories = [
@@ -38,45 +51,15 @@ const chartCategories: Array<{
   chartBackend?: string;
   filters: string[];
   funnelMergeGroups?: FunnelMergeGroup[];
+  funnelMode?: 'stage' | 'dropout';
 }> = [
   {
-    id: 'user-signup-funnel',
-    title: 'User Signup Funnel',
+    id: SIGNUP_FUNNEL_ID,
+    title: SIGNUP_FUNNEL_TITLE,
     chartBackend: 'v2',
-    filters: [
-      'all',
-      'journey_v2__never_active_or_deleted',
-      'journey_v2__user_created',
-      //'journey_v2__user_deleted', is within the first bucket now!
-      'journey_v2__email_verified',
-      'journey_v2__user_form_completed',
-      'journey_v2__too_low_german_level',
-      'journey_v2__booked_onboarding_call',
-      'journey_v2__self_onboarding_started',
-      'journey_v2__no_show',
-    ],
-    funnelMergeGroups: [
-      {
-        buckets: [
-          'journey_v2__booked_onboarding_call',
-          'journey_v2__self_onboarding_started',
-        ],
-        label: 'Onboarding started',
-      },
-    ],
-  },
-  {
-    id: 'simplified-user-signup-funnel',
-    title: 'Simplified User Signup Funnel',
-    filters: [
-      'all',
-      // Registered users
-      'journey_v2__never_active_or_deleted_or_created',
-      // Verified users
-      'journey_v2__email_verified_and_form_completed',
-      // Not onboarded users
-      'journey_v2__too_low_german_level_or_not_onboarded',
-    ],
+    filters: SIGNUP_FUNNEL_FILTERS,
+    funnelMergeGroups: SIGNUP_FUNNEL_MERGE_GROUPS,
+    funnelMode: SIGNUP_FUNNEL_MODE,
   },
   {
     id: 'in-reg',
@@ -494,12 +477,12 @@ export function MonthTimeSelector({
 }
 
 export function BarChartTimeRanged({
-  initialCategory = 'user-signup-funnel',
+  initialCategory = SIGNUP_FUNNEL_ID,
   displayTimeSelection = true,
   displayVolunteersOnlyCheckbox = true,
   displayTooLowGermanLevelCheckbox = true,
   displayExactTimeSelection = false,
-  listDescriptionMap = {},
+  bucketMetaMap = USER_SIGNUP_FUNNEL_BUCKET_META,
 }) {
   const [category, setCategory] = React.useState(
     chartCategories.find(cat => cat.id === initialCategory),
@@ -507,12 +490,9 @@ export function BarChartTimeRanged({
   const [volunteersOnly, setVolunteersOnly] = React.useState(false);
   const [includeTooLowGermanLevel, setIncludeTooLowGermanLevel] =
     React.useState(true);
-  const selectedFilters =
-    category?.filters.filter(
-      filter =>
-        includeTooLowGermanLevel ||
-        filter !== 'journey_v2__too_low_german_level',
-    ) ?? [];
+  // German-level filtering is a cohort gate applied server-side via CohortSpec.
+  // The frontend passes include_too_low_german_level; no filter step is removed here.
+  const selectedFilters = category?.filters ?? [];
 
   const today = new Date();
   const [startDate, setStartDate] = React.useState('2021-01-01');
@@ -520,17 +500,27 @@ export function BarChartTimeRanged({
     today.toISOString().split('T')[0],
   );
 
-  const random = React.useRef(Date.now() + Math.random());
+  // Array key: SWR uses the whole array for cache identity; cratePostFetcher
+  // only receives the URL (first element) so params stay out of the path.
+  const requestKey = [
+    '/api/matching/users/statistics/user_journey_buckets/',
+    startDate,
+    endDate,
+    volunteersOnly,
+    includeTooLowGermanLevel,
+    selectedFilters.join(','),
+  ] as const;
+
   const { mutate, error, data, isLoading } = useSWR(
-    '/api/matching/users/statistics/user_journey_buckets/?random=' +
-      random.current,
-    cratePostFetcher({
-      selected_filters: selectedFilters,
-      start_date: startDate,
-      end_date: endDate,
-      volunteers_only: volunteersOnly,
-      include_too_low_german_level: includeTooLowGermanLevel,
-    }),
+    requestKey,
+    ([url]: readonly [string, ...unknown[]]) =>
+      cratePostFetcher({
+        selected_filters: selectedFilters,
+        start_date: startDate,
+        end_date: endDate,
+        volunteers_only: volunteersOnly,
+        include_too_low_german_level: includeTooLowGermanLevel,
+      })(url, undefined),
     {},
   );
 
@@ -544,8 +534,10 @@ export function BarChartTimeRanged({
     return <div>Error: {errorMessage}</div>;
   }
 
-  const modifiedData = modifyData(data?.buckets ?? [], listDescriptionMap, {
+  const modifiedData = modifyData(data?.buckets ?? [], {
     mergeGroups: category?.funnelMergeGroups ?? [],
+    bucketMetaMap,
+    mode: category?.funnelMode ?? 'dropout',
   });
 
   return (
@@ -554,15 +546,23 @@ export function BarChartTimeRanged({
         <div className="flex justify-between items-center">
           <span>{category?.title}</span>
         </div>
+        <p className="text-xs text-muted-foreground mt-1">
+          Includes all users that created an account from {startDate} to{' '}
+          {endDate}.
+        </p>
         <div className="flex flex-row items-center gap-4 mt-3">
           {displayTimeSelection && (
             <div className="flex-1">
-              <MonthTimeSelector
-                startDate={startDate}
-                endDate={endDate}
-                setStartDate={setStartDate}
-                setEndDate={setEndDate}
-                mutate={mutate}
+              <DateRangePicker
+                range={{
+                  from: parseYmdToLocalDate(startDate),
+                  to: parseYmdToLocalDate(endDate),
+                }}
+                setRange={range => {
+                  if (!range?.from) return;
+                  setStartDate(formatLocalDateYmd(range.from));
+                  setEndDate(formatLocalDateYmd(range.to ?? range.from));
+                }}
               />
             </div>
           )}

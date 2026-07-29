@@ -1,6 +1,6 @@
 /**
  * Consecutive API bucket rows merged into one funnel step (single cumulative subtraction).
- * `label` is the row title; segment labels still come from bucketDescriptionMap via bucket keys.
+ * `label` is the row title; segment labels come from bucketMetaMap via bucket keys.
  */
 export type FunnelMergeGroup = {
   buckets: string[];
@@ -75,12 +75,26 @@ export type FunnelBarRow = {
   segments?: FunnelBarSegment[];
 };
 
+export type BucketDisplayMeta = {
+  label: string;
+  description?: string;
+};
+
 export function modifyData(
   data: RawBucket[],
-  bucketDescriptionMap: Record<string, string> = {},
-  options: { mergeGroups?: FunnelMergeGroup[] } = {},
+  options: {
+    mergeGroups?: FunnelMergeGroup[];
+    bucketMetaMap?: Record<string, BucketDisplayMeta>;
+    /** stage = bar shows membership count; dropout = bar shows remaining after subtract */
+    mode?: 'stage' | 'dropout';
+  } = {},
 ): FunnelBarRow[] {
-  const { mergeGroups = [] } = options;
+  const { mergeGroups = [], bucketMetaMap = {}, mode = 'dropout' } = options;
+
+  if (mode === 'stage') {
+    return modifyStageData(data, bucketMetaMap);
+  }
+
   const mergedInput = mergeConsecutiveBuckets(data, mergeGroups);
 
   const modifiedData: FunnelBarRow[] = [];
@@ -92,12 +106,8 @@ export function modifyData(
       currentCount -= item.count;
     }
     const percentage = Math.round((currentCount / topCount) * 100);
-    const displayName = Object.prototype.hasOwnProperty.call(
-      bucketDescriptionMap,
-      item.name,
-    )
-      ? bucketDescriptionMap[item.name]
-      : item.name;
+    const meta = bucketMetaMap[item.name];
+    const displayName = meta.label;
 
     let longDescription = `${index !== 0 ? '-' : ''} ${item.name} (${
       item.count
@@ -105,7 +115,7 @@ export function modifyData(
 
     if (isMergedFunnelRow(item)) {
       const parts = item.__mergeMeta.segmentCounts.map(s => {
-        const lbl = bucketDescriptionMap[s.bucketKey] ?? s.bucketKey;
+        const lbl = bucketMetaMap[s.bucketKey].label;
         return `${lbl} (${s.count})`;
       });
       longDescription = `${index !== 0 ? '-' : ''} ${parts.join(' · ')} = ${currentCount} (${percentage}%)`;
@@ -116,6 +126,7 @@ export function modifyData(
       count: currentCount,
       longDescription,
       percentage,
+      description: meta?.description,
     };
 
     if (isMergedFunnelRow(item)) {
@@ -124,7 +135,7 @@ export function modifyData(
         0,
       );
       row.segments = item.__mergeMeta.segmentCounts.map(s => ({
-        label: bucketDescriptionMap[s.bucketKey] ?? s.bucketKey,
+        label: bucketMetaMap[s.bucketKey].label,
         count: s.count,
         fraction: totalSeg > 0 ? s.count / totalSeg : 0,
       }));
@@ -136,6 +147,27 @@ export function modifyData(
     modifiedData.push(row);
   });
   return modifiedData;
+}
+
+/** Stage funnel: each bar is the membership count of that stage. */
+function modifyStageData(
+  data: RawBucket[],
+  bucketMetaMap: Record<string, BucketDisplayMeta>,
+): FunnelBarRow[] {
+  if (!data?.length) return [];
+  const topCount = data[0].count || 1;
+
+  return data.map(item => {
+    const meta = bucketMetaMap[item.name];
+    const percentage = Math.round((item.count / topCount) * 100);
+    return {
+      name: meta?.label ?? item.name,
+      count: item.count,
+      percentage,
+      description: meta?.description,
+      longDescription: `${item.name} (${item.count}) = ${percentage}% of cohort`,
+    };
+  });
 }
 
 export function modifyDataToPercentages(data: RawBucket[]) {
