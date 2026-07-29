@@ -33,7 +33,6 @@ function Calendar({
       disabled={disabledDays}
       className={cn('p-3', className)}
       classNames={{
-        months: 'flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0',
         month:
           'flex flex-row flex-wrap gap-y-4 [&>.month_grid]:w-full [&>.weeks]:w-full',
         month_caption: 'flex flex-1 min-w-0 justify-center items-center pt-1',

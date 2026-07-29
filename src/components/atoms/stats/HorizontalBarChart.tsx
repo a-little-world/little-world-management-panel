@@ -173,7 +173,7 @@ function renderBarFill(
   item: BarData,
   index: number,
   totalRows: number,
-  splitBarsEnabled: boolean,
+  splitBarsEnabled?: boolean,
 ) {
   const pct = item.percentage;
   const baseColor = item.color || getDefaultColor(totalRows, index);
