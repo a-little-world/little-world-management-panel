@@ -2,23 +2,37 @@ import {
   Button,
   ButtonAppearance,
   ButtonSizes,
+  ButtonVariations,
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardSizes,
   Loading,
   LoadingSizes,
+  Modal,
   StatusMessage,
   StatusTypes,
   Tag,
   TagAppearance,
   Text,
   TextTypes,
+  Toast,
+  TrashIcon,
 } from '@a-little-world/little-world-design-system';
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import useSWR from 'swr';
+import { useTheme } from 'styled-components';
+import useSWR, { mutate } from 'swr';
 
-import { Banner, fetchAdminBanners } from '../../../../api/banners';
+import {
+  ADMIN_BANNERS_ENDPOINT,
+  Banner,
+  deleteBanner,
+  fetchAdminBanners,
+} from '../../../../api/banners';
 import { BANNERS_ROUTE } from '../../../../router/routes';
 import {
-  Description,
   ListPanel,
   ListScroll,
   PageContainer,
@@ -48,9 +62,19 @@ const hasFutureActivation = (banner: Banner, now: Date) => {
 
 function Banners() {
   const navigate = useNavigate();
+  const theme = useTheme();
   const [tab, setTab] = useState<BannerTab>('active-or-upcoming');
+  const [bannerToDelete, setBannerToDelete] = useState<Banner | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [toast, setToast] = useState<{
+    id: number;
+    headline: string;
+    title: string;
+  } | null>(null);
+
   const { data, error, isLoading } = useSWR<Banner[]>(
-    '/api/admin/banners/',
+    ADMIN_BANNERS_ENDPOINT,
     fetchAdminBanners,
     { revalidateOnFocus: true, revalidateOnMount: true },
   );
@@ -72,6 +96,32 @@ function Banners() {
   const currentList =
     tab === 'active-or-upcoming' ? activeOrUpcomingBanners : inactiveBanners;
 
+  const closeDeleteModal = () => {
+    if (deleting) return;
+    setBannerToDelete(null);
+    setDeleteError(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!bannerToDelete) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await deleteBanner(bannerToDelete.id);
+      await mutate(ADMIN_BANNERS_ENDPOINT);
+      setToast({
+        id: Date.now(),
+        headline: 'Success',
+        title: `Banner “${bannerToDelete.name}” deleted.`,
+      });
+      setBannerToDelete(null);
+    } catch (e: any) {
+      setDeleteError(e?.message || 'Failed to delete banner.');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   usePageHeader({
     actions: (
       <Button
@@ -87,9 +137,11 @@ function Banners() {
   return (
     <PageContainer>
       <PageHeader>
-        <Description>
-          Manage active and scheduled communication banners.
-        </Description>
+        <StatusMessage type={StatusTypes.Warning} visible withBorder>
+          Active means the banner is live on the site. If an activation or
+          expiration date is set, the active status updates automatically at
+          those times.
+        </StatusMessage>
       </PageHeader>
 
       {error && (
@@ -125,15 +177,9 @@ function Banners() {
                       <TableHead className="w-32 text-center">
                         Activation
                       </TableHead>
-                      <TableHead className="w-32 text-center">
-                        Expiry
-                      </TableHead>
-                      <TableHead className="w-32 text-center">
-                        Filter
-                      </TableHead>
-                      <TableHead className="w-28 text-center">
-                        Status
-                      </TableHead>
+                      <TableHead className="w-32 text-center">Expiry</TableHead>
+                      <TableHead className="w-32 text-center">Filter</TableHead>
+                      <TableHead className="w-28 text-center">Status</TableHead>
                       <TableHead className="w-24 text-center">Type</TableHead>
                       <TableHead className="w-28 text-center">
                         Priority
@@ -141,6 +187,7 @@ function Banners() {
                       <TableHead className="w-[5.5rem] text-center">
                         Edit
                       </TableHead>
+                      <TableHead className="w-16 text-center">Delete</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -185,6 +232,26 @@ function Banners() {
                             Edit
                           </Button>
                         </TableCell>
+                        <TableCell className="text-center">
+                          <Button
+                            type="button"
+                            variation={ButtonVariations.Icon}
+                            size={ButtonSizes.Small}
+                            disabled={deleting}
+                            title={`Delete ${banner.name}`}
+                            onClick={() => {
+                              setDeleteError(null);
+                              setBannerToDelete(banner);
+                            }}
+                          >
+                            <TrashIcon
+                              label={`delete ${banner.name}`}
+                              width={16}
+                              height={16}
+                              color={theme.color.status.error}
+                            />
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -194,6 +261,53 @@ function Banners() {
           </ListPanel>
         </TabsContent>
       </Tabs>
+
+      <Modal open={Boolean(bannerToDelete)} onClose={closeDeleteModal}>
+        <Card width={CardSizes.Medium}>
+          <CardHeader>Delete banner permanently?</CardHeader>
+          <CardContent>
+            <Text>
+              This will permanently delete
+              {bannerToDelete ? ` “${bannerToDelete.name}”` : ' this banner'}.
+              This cannot be undone.
+            </Text>
+            <StatusMessage
+              type={StatusTypes.Error}
+              visible={Boolean(deleteError)}
+            >
+              {deleteError}
+            </StatusMessage>
+          </CardContent>
+          <CardFooter align="space-between">
+            <Button
+              appearance={ButtonAppearance.Secondary}
+              size={ButtonSizes.Small}
+              onClick={closeDeleteModal}
+              disabled={deleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              size={ButtonSizes.Small}
+              backgroundColor={theme.color.status.error}
+              onClick={handleConfirmDelete}
+              disabled={deleting}
+              loading={deleting}
+            >
+              Delete permanently
+            </Button>
+          </CardFooter>
+        </Card>
+      </Modal>
+
+      {toast && (
+        <Toast
+          key={toast.id}
+          headline={toast.headline}
+          title={toast.title}
+          onClose={() => setToast(null)}
+        />
+      )}
     </PageContainer>
   );
 }

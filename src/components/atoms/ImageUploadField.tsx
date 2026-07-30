@@ -205,11 +205,13 @@ export function ImageUploadField({
               aria-label="Replace image — opens file dialog"
             >
               <PreviewImage src={previewSrc!} alt="" $compact={compact} />
-              {file && !disabled && (
+              {!disabled && (
                 <RemoveImageButton
                   type="button"
                   onClick={handleClearNewFile}
-                  aria-label="Remove selected image"
+                  aria-label={
+                    file ? 'Remove selected image' : 'Remove saved image'
+                  }
                 >
                   <RemoveIcon strokeWidth={1.75} aria-hidden />
                 </RemoveImageButton>
