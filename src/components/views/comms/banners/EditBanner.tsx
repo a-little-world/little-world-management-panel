@@ -5,11 +5,12 @@ import {
   ButtonSizes,
   ButtonVariations,
   CardContent,
-  Select,
+  CloseIcon,
   ImageSearchIcon,
   InputWidth,
   Loading,
   LoadingSizes,
+  Select,
   StatusMessage,
   StatusTypes,
   Switch,
@@ -30,6 +31,7 @@ import {
   BannerPayload,
   createBanner,
   fetchAdminBanner,
+  resolveBannerBackgroundCss,
   resolveBannerImageUrl,
   updateBanner,
 } from '../../../../api/banners';
@@ -41,8 +43,11 @@ import { usePageHeader } from '../../../blocks/LayoutHeaderContext';
 import {
   AddBackgroundImageButton,
   BackgroundInputRow,
+  ClearBackgroundImageButton,
   Container,
+  CtaColumn,
   CtaGrid,
+  CtaTextColorRow,
   DateField,
   DatesRow,
   EditableFields,
@@ -63,6 +68,10 @@ type BannerFormValues = BannerPayload & {
   bannerImageFile: File | null;
   backgroundImageFile: File | null;
 };
+
+function isCssUrlBackground(value: string | null | undefined): boolean {
+  return Boolean(value?.trim().match(/^url\s*\(/i));
+}
 
 const BERLIN_TZ = 'Europe/Berlin';
 
@@ -152,15 +161,17 @@ function getSafePreviewBackground(
 
 const defaultValues: BannerFormValues = {
   name: '',
-  active: true,
+  active: false,
   title: '',
   text: '',
   text_color: '#000000',
   background: '',
   cta_1_url: '',
   cta_1_text: '',
+  cta_1_color: '',
   cta_2_url: '',
   cta_2_text: '',
+  cta_2_color: '',
   type: 'small',
   image_alt: '',
   activation_time: null,
@@ -176,12 +187,14 @@ const buildPayload = (values: BannerFormValues): BannerPayload => ({
   active: values.active,
   title: values.title,
   text: values.text,
-  text_color: values.text_color,
+  text_color: values.text_color.trim() || '#000000',
   background: values.background,
   cta_1_url: values.cta_1_url,
   cta_1_text: values.cta_1_text,
+  cta_1_color: values.cta_1_color.trim(),
   cta_2_url: values.cta_2_url,
   cta_2_text: values.cta_2_text,
+  cta_2_color: values.cta_2_color.trim(),
   type: values.type,
   image_alt: values.image_alt,
   activation_time: values.activation_time || null,
@@ -208,6 +221,8 @@ function EditBanner() {
   const [backgroundObjectUrl, setBackgroundObjectUrl] = useState<string | null>(
     null,
   );
+  const [clearBannerImage, setClearBannerImage] = useState(false);
+  const [clearBackground, setClearBackground] = useState(false);
 
   const { data, isLoading, error } = useSWR<ApiBanner>(
     numericId ? `${ADMIN_BANNERS_ENDPOINT}${numericId}/` : null,
@@ -242,6 +257,8 @@ function EditBanner() {
       bannerImageFile: null,
       backgroundImageFile: null,
     });
+    setClearBannerImage(false);
+    setClearBackground(false);
   }, [isNew, data, reset]);
 
   const customFilterOptions = useMemo(
@@ -259,7 +276,11 @@ function EditBanner() {
   const backgroundImageFile = watch('backgroundImageFile');
 
   const hasBannerImage =
-    Boolean(previewValues.bannerImageFile) || Boolean(data?.image);
+    Boolean(previewValues.bannerImageFile) ||
+    (Boolean(data?.image) && !clearBannerImage);
+  const hasBackgroundImage =
+    Boolean(backgroundImageFile) ||
+    (isCssUrlBackground(previewValues.background) && !clearBackground);
   const cta1NeedsUrl = Boolean(previewValues.cta_1_text?.trim());
   const cta2NeedsUrl = Boolean(previewValues.cta_2_text?.trim());
   const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
@@ -288,10 +309,25 @@ function EditBanner() {
     };
   }, [backgroundImageFile]);
 
-  const previewImage = localPreviewUrl || resolveBannerImageUrl(data?.image);
+  const previewImage =
+    localPreviewUrl ||
+    (clearBannerImage ? null : resolveBannerImageUrl(data?.image));
   const previewBackgroundCss = backgroundObjectUrl
     ? `url(${backgroundObjectUrl})`
-    : getSafePreviewBackground(previewValues.background);
+    : clearBackground
+      ? undefined
+      : getSafePreviewBackground(
+          resolveBannerBackgroundCss(previewValues.background),
+        );
+
+  const clearBackgroundImage = () => {
+    setValue('backgroundImageFile', null, { shouldDirty: true });
+    setValue('background', '', { shouldDirty: true });
+    setClearBackground(true);
+    if (backgroundFileInputRef.current) {
+      backgroundFileInputRef.current.value = '';
+    }
+  };
 
   const pageTitle = isNew
     ? 'Create Banner'
@@ -305,9 +341,18 @@ function EditBanner() {
       const payload = buildPayload(values);
       const image = values.bannerImageFile ?? undefined;
       const backgroundImage = values.backgroundImageFile ?? undefined;
+      const imageOptions = {
+        clearImage: clearBannerImage && !image,
+        clearBackground: clearBackground && !backgroundImage,
+      };
 
       if (isNew) {
-        const created = await createBanner(payload, image, backgroundImage);
+        const created = await createBanner(
+          payload,
+          image,
+          backgroundImage,
+          imageOptions,
+        );
         await mutate(ADMIN_BANNERS_ENDPOINT);
         setSaveToast({
           id: Date.now(),
@@ -323,6 +368,7 @@ function EditBanner() {
         payload,
         image,
         backgroundImage,
+        imageOptions,
       );
       await mutate(ADMIN_BANNERS_ENDPOINT);
       await mutate(`${ADMIN_BANNERS_ENDPOINT}${numericId}/`);
@@ -331,6 +377,8 @@ function EditBanner() {
         headline: 'Success',
         title: 'Banner saved successfully.',
       });
+      setClearBannerImage(false);
+      setClearBackground(false);
       reset({
         ...defaultValues,
         ...updated,
@@ -414,8 +462,10 @@ function EditBanner() {
               imageAlt={previewValues.image_alt || 'Banner image preview'}
               primaryCtaText={previewValues.cta_1_text || undefined}
               primaryCtaUrl={previewValues.cta_1_url || undefined}
+              primaryCtaColor={previewValues.cta_1_color || undefined}
               secondaryCtaText={previewValues.cta_2_text || undefined}
               secondaryCtaUrl={previewValues.cta_2_url || undefined}
+              secondaryCtaColor={previewValues.cta_2_color || undefined}
             />
           </PreviewBannerFrame>
 
@@ -493,7 +543,7 @@ function EditBanner() {
                     />
                     <TextInput
                       label="Text color"
-                      placeholder="#000000"
+                      placeholder="#000 / rgba() / red"
                       width={InputWidth.Small}
                       {...registerInput({ register, name: 'text_color' })}
                     />
@@ -508,52 +558,72 @@ function EditBanner() {
                 </TitleTextBlockRow>
 
                 <CtaGrid>
-                  <TextInput
-                    label="CTA 1 text"
-                    {...registerInput({ register, name: 'cta_1_text' })}
-                  />
-                  <TextInput
-                    label="CTA 1 URL"
-                    required={cta1NeedsUrl}
-                    error={errors?.cta_1_url?.message}
-                    {...registerInput({
-                      register,
-                      name: 'cta_1_url',
-                      options: {
-                        deps: ['cta_1_text'],
-                        validate: (url: string) => {
-                          const t = getValues('cta_1_text');
-                          if (t?.trim() && !url?.trim()) {
-                            return 'Required when CTA 1 text is set';
-                          }
-                          return true;
+                  <CtaColumn>
+                    <CtaTextColorRow>
+                      <TextInput
+                        label="CTA 1 text"
+                        {...registerInput({ register, name: 'cta_1_text' })}
+                      />
+                      <TextInput
+                        label="CTA 1 color"
+                        placeholder="#000 / rgba() / red"
+                        width={InputWidth.Small}
+                        {...registerInput({ register, name: 'cta_1_color' })}
+                      />
+                    </CtaTextColorRow>
+                    <TextInput
+                      label="CTA 1 URL"
+                      required={cta1NeedsUrl}
+                      error={errors?.cta_1_url?.message}
+                      {...registerInput({
+                        register,
+                        name: 'cta_1_url',
+                        options: {
+                          deps: ['cta_1_text'],
+                          validate: (url: string) => {
+                            const t = getValues('cta_1_text');
+                            if (t?.trim() && !url?.trim()) {
+                              return 'Required when CTA 1 text is set';
+                            }
+                            return true;
+                          },
                         },
-                      },
-                    })}
-                  />
-                  <TextInput
-                    label="CTA 2 text"
-                    {...registerInput({ register, name: 'cta_2_text' })}
-                  />
-                  <TextInput
-                    label="CTA 2 URL"
-                    required={cta2NeedsUrl}
-                    error={errors?.cta_2_url?.message}
-                    {...registerInput({
-                      register,
-                      name: 'cta_2_url',
-                      options: {
-                        deps: ['cta_2_text'],
-                        validate: (url: string) => {
-                          const t = getValues('cta_2_text');
-                          if (t?.trim() && !url?.trim()) {
-                            return 'Required when CTA 2 text is set';
-                          }
-                          return true;
+                      })}
+                    />
+                  </CtaColumn>
+                  <CtaColumn>
+                    <CtaTextColorRow>
+                      <TextInput
+                        label="CTA 2 text"
+                        {...registerInput({ register, name: 'cta_2_text' })}
+                      />
+                      <TextInput
+                        label="CTA 2 color"
+                        placeholder="#000 / rgba() / red"
+                        width={InputWidth.Small}
+                        {...registerInput({ register, name: 'cta_2_color' })}
+                      />
+                    </CtaTextColorRow>
+                    <TextInput
+                      label="CTA 2 URL"
+                      required={cta2NeedsUrl}
+                      error={errors?.cta_2_url?.message}
+                      {...registerInput({
+                        register,
+                        name: 'cta_2_url',
+                        options: {
+                          deps: ['cta_2_text'],
+                          validate: (url: string) => {
+                            const t = getValues('cta_2_text');
+                            if (t?.trim() && !url?.trim()) {
+                              return 'Required when CTA 2 text is set';
+                            }
+                            return true;
+                          },
                         },
-                      },
-                    })}
-                  />
+                      })}
+                    />
+                  </CtaColumn>
                 </CtaGrid>
 
                 <DatesRow>
@@ -596,7 +666,16 @@ function EditBanner() {
                         label="Background"
                         placeholder="Color, gradient, or url..."
                         labelTooltip="Can be any valid CSS background value, e.g. color (#000000), gradient (linear-gradient(#e66465, #9198e5)), or image URL (url(PATH_OF_IMAGE))."
-                        {...registerInput({ register, name: 'background' })}
+                        {...registerInput({
+                          register,
+                          name: 'background',
+                          options: {
+                            onChange: () => {
+                              // Manual CSS edits supersede a pending clear/upload.
+                              setClearBackground(false);
+                            },
+                          },
+                        })}
                       />
                       <HiddenFileInput
                         ref={backgroundFileInputRef}
@@ -607,6 +686,7 @@ function EditBanner() {
                           setValue('backgroundImageFile', file, {
                             shouldDirty: true,
                           });
+                          if (file) setClearBackground(false);
                         }}
                       />
                       <AddBackgroundImageButton
@@ -624,6 +704,21 @@ function EditBanner() {
                           label="add background image"
                         />
                       </AddBackgroundImageButton>
+                      {hasBackgroundImage && (
+                        <ClearBackgroundImageButton
+                          variation={ButtonVariations.Circle}
+                          size={ButtonSizes.Medium}
+                          backgroundColor={theme.color.text.error}
+                          disabled={saving}
+                          onClick={clearBackgroundImage}
+                        >
+                          <CloseIcon
+                            width={16}
+                            height={16}
+                            label="remove background image"
+                          />
+                        </ClearBackgroundImageButton>
+                      )}
                     </BackgroundInputRow>
                     <TextInput
                       label="Image alt text"
@@ -638,7 +733,8 @@ function EditBanner() {
                           validate: (alt: string) => {
                             const file = getValues('bannerImageFile');
                             const hasImage =
-                              Boolean(file) || Boolean(data?.image);
+                              Boolean(file) ||
+                              (Boolean(data?.image) && !clearBannerImage);
                             if (hasImage && !alt?.trim()) {
                               return 'Required when a banner image is set';
                             }
@@ -656,8 +752,16 @@ function EditBanner() {
                         id="bannerImage"
                         label="Banner image"
                         file={value}
-                        onFileChange={onChange}
-                        existingImageUrl={resolveBannerImageUrl(data?.image)}
+                        onFileChange={file => {
+                          onChange(file);
+                          if (file) setClearBannerImage(false);
+                          else if (data?.image) setClearBannerImage(true);
+                        }}
+                        existingImageUrl={
+                          clearBannerImage
+                            ? null
+                            : resolveBannerImageUrl(data?.image)
+                        }
                         disabled={saving}
                         compact
                         helperText="JPEG, PNG, WebP, or GIF"

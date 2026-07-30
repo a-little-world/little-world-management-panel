@@ -31,17 +31,17 @@ export const USER_SIGNUP_FUNNEL_BUCKET_META: Record<string, BucketDisplayMeta> =
       label: 'Total registered users',
     },
     signup__stage_active_adjusted: {
-      label: 'Active registered users',
-      description: 'Active accounts that are not deleted (may still be unverified).',
+      label: 'Adjusted registered users',
+      description: 'Excludes accounts that have been deleted or deactivated.',
     },
     signup__stage_email_verified: {
       label: 'Email verified',
-      description: 'Active, non-deleted users who verified their email.',
+      description: 'Non-deleted users who verified their email.',
     },
     signup__stage_form_completed: {
       label: 'Form completed',
       description:
-        'Users who completed the registration form (includes A0 / outside-DE).',
+        'Users who completed the registration form (incl. learners with A1/A2 / outside-DE).',
     },
     signup__stage_eligible_for_onboarding: {
       label: 'Eligible for onboarding',

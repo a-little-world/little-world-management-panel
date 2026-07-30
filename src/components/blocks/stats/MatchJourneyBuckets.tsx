@@ -6,7 +6,6 @@ import { BucketOverview } from './UserJourneyBuckets';
 import { matchJourneyBucketsV4 } from './buckets';
 
 export function MatchJourneyOverview() {
-  const [detailsVisible, setDetailsVisible] = React.useState(false);
   const allBuckets = matchJourneyBucketsV4.flatMap(
     bucket => bucket.sub_buckets,
   );
@@ -14,7 +13,8 @@ export function MatchJourneyOverview() {
   const extraBucketIds = [
     'match_journey_v2__match_ongoing',
     'match_journey_v2__match_free_play',
-    'match_journey_v2__completed_match',
+    'EXTRA__suggestion_match_completed_on_plattform',
+    'EXTRA__suggestion_match_completed_off_plattform',
   ];
 
   const random = React.useRef(Date.now() + Math.random());
@@ -30,7 +30,6 @@ export function MatchJourneyOverview() {
   );
 
   const userListCounts = _userListCounts?.buckets;
-  const intersectingLists = _userListCounts?.intersecting_ids_lists;
 
   let extraCounts = {};
   if (userListCounts) {

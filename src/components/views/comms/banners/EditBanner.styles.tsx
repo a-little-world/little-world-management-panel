@@ -173,7 +173,7 @@ export const TextBodyColumn = styled.div`
 export const CtaGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr;
-  gap: 0 ${({ theme }) => theme.spacing.medium};
+  gap: ${({ theme }) => theme.spacing.medium};
   width: 100%;
 
   ${({ theme }) => css`
@@ -181,6 +181,24 @@ export const CtaGrid = styled.div`
       grid-template-columns: 1fr 1fr;
     }
   `}
+`;
+
+export const CtaColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+`;
+
+export const CtaTextColorRow = styled.div`
+  display: flex;
+  align-items: flex-end;
+  gap: ${({ theme }) => theme.spacing.medium};
+  min-width: 0;
+
+  > *:first-child {
+    flex: 1;
+    min-width: 0;
+  }
 `;
 
 export const ImagesRow = styled.div`
@@ -222,5 +240,9 @@ export const DateField = styled.div`
 `;
 
 export const AddBackgroundImageButton = styled(Button)`
+  margin-bottom: ${({ theme }) => `calc(${theme.spacing.small} + 3px)`};
+`;
+
+export const ClearBackgroundImageButton = styled(Button)`
   margin-bottom: ${({ theme }) => `calc(${theme.spacing.small} + 3px)`};
 `;
