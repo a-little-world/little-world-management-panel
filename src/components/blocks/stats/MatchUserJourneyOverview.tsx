@@ -8,9 +8,7 @@ import {
 import { isNumber } from 'lodash';
 import React from 'react';
 import styled from 'styled-components';
-import useSWR from 'swr';
 
-import { cratePostFetcher } from '../../../store';
 import {
   HoverCard,
   HoverCardContent,
@@ -20,7 +18,6 @@ import LoadingSpinner from '../../atoms/LoadingSpinner';
 import { MatchJourneyOverview } from './MatchJourneyBuckets';
 import { UserJourneyBucketsOverview } from './UserJourneyBuckets';
 import { UserSignUpLossStatistic } from './UserSignUpLossStatistic';
-import { matchJourneyBuckets, userJourneyBuckets } from './buckets';
 
 export const SectionTitle = styled(Text)`
   font-weight: bold;
@@ -152,151 +149,7 @@ export function DetailsOpenLink({ title, description, onClick = () => {} }) {
   );
 }
 
-export function DynamicBucketsV2({
-  buckets,
-  listCounts,
-  intersectingLists,
-  bucketLink,
-  title,
-  description,
-  showStatus,
-  excludeBucketsTotalSum = [],
-}) {
-  const [detailsVisible, setDetailsVisible] = React.useState(false);
-  const categorieTotalCounts = {};
-  var totalCount = 0;
-  for (let bucket of buckets) {
-    let bucketTotalCount = 0;
-    for (let sub_bucket of bucket.sub_buckets) {
-      const count = listCounts?.find(
-        item => item.name === sub_bucket.id,
-      )?.count;
-      if (count && !excludeBucketsTotalSum.includes(sub_bucket.id)) {
-        bucketTotalCount += count;
-        totalCount += count;
-      }
-    }
-    categorieTotalCounts[bucket.id] = bucketTotalCount;
-  }
-  return (
-    <Section $fullWidth>
-      <SectionTitle type={TextTypes.Body4} tag="h2">
-        {title}
-      </SectionTitle>
-      <SectionCard>
-        <Text>{description}</Text>
-        <BucketsContainer>
-          {buckets.map((bucket, index) => {
-            return (
-              <>
-                <Bucket key={bucket.id}>
-                  <Text bold>{`${index + 1} ${bucket.title}: (total: ${
-                    categorieTotalCounts[bucket.id]
-                  })`}</Text>
-                  {bucket.sub_buckets.map(sub_bucket => {
-                    const count = listCounts?.find(
-                      item => item.name === sub_bucket.id,
-                    )?.count;
-                    return (
-                      <SubBucket>
-                        •
-                        <HoverableLiveListDescription
-                          title={`${sub_bucket.title}`}
-                          description={sub_bucket.description}
-                          linkTo={`${bucketLink}=${sub_bucket.id}`}
-                          count={count}
-                        />
-                      </SubBucket>
-                    );
-                  })}
-                </Bucket>
-                {userJourneyBuckets.length !== index + 1 && <StyledChevron />}
-              </>
-            );
-          })}
-        </BucketsContainer>
-        <Text bold>Total summed: {totalCount}</Text>
-        {detailsVisible && <></>}
-      </SectionCard>
-    </Section>
-  );
-}
-
 export function MatchUserJourneyOverview() {
-  const allBuckets = userJourneyBuckets.flatMap(bucket => bucket.sub_buckets);
-  const allBucketIds = allBuckets.map(bucket => bucket.id);
-  const extraBucketIds = [
-    'needs_matching',
-    'needs_matching_volunteers',
-    'all',
-    'journey_v2__active_matching',
-  ];
-
-  const random = React.useRef(Date.now() + Math.random());
-
-  const { data: userListCounts } = useSWR(
-    '/api/matching/users/statistics/user_journey_buckets/' +
-      '?random=' +
-      random.current,
-    cratePostFetcher({
-      selected_filters: allBucketIds.concat(extraBucketIds),
-    }),
-    {},
-  );
-
-  const allMatchBuckets = matchJourneyBuckets.flatMap(
-    bucket => bucket.sub_buckets,
-  );
-  const allMatchBucketIds = allMatchBuckets.map(bucket => bucket.id);
-  const extraMatchBucketIds = [
-    'match_journey_v2__match_ongoing',
-    'match_journey_v2__match_free_play',
-    'match_journey_v2__completed_match',
-  ];
-
-  const { data: matchJourneyListCounts } = useSWR(
-    '/api/matching/users/statistics/match_journey_buckets/',
-    cratePostFetcher({
-      selected_filters: allMatchBucketIds.concat(extraMatchBucketIds),
-    }),
-    {},
-  );
-
-  let extraCounts = {};
-  if (userListCounts) {
-    for (let i = 0; i < userListCounts?.buckets.length; i++) {
-      if (extraBucketIds.includes(userListCounts?.buckets[i].name))
-        extraCounts[userListCounts?.buckets[i].name] =
-          userListCounts?.buckets[i];
-    }
-  }
-
-  let extraMatchCounts = {};
-  if (matchJourneyListCounts) {
-    for (let i = 0; i < matchJourneyListCounts?.buckets.length; i++) {
-      if (extraMatchBucketIds.includes(matchJourneyListCounts?.buckets[i].name))
-        extraMatchCounts[matchJourneyListCounts?.buckets[i].name] =
-          matchJourneyListCounts?.buckets[i];
-    }
-  }
-
-  const today = new Date();
-  const startDate = new Date(Date.now() - 12 * 7 * 24 * 60 * 60 * 1000); // 12 weeks ago
-  const {
-    mutate,
-    error,
-    data: userSignupsData,
-    isLoading,
-  } = useSWR(
-    `/api/matching/users/statistics/signups/?random=${random.current}`,
-    cratePostFetcher({
-      start_date: startDate.toISOString().split('T')[0],
-      end_date: today.toISOString().split('T')[0],
-      bucket_size: 7,
-    }),
-    {},
-  );
-
   return (
     <Container>
       <Text type={TextTypes.Body3} center bold tag="h1">
