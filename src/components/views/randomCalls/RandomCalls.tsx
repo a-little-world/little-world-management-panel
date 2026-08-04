@@ -2,6 +2,7 @@ import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../atoms/Tabs';
+import RandomCallAnalytics from './RandomCallAnalytics';
 import RandomCallHistory from './RandomCallHistory';
 import RandomCallManagement from './RandomCallManagement';
 import RandomCallSchedule from './RandomCallSchedule';
@@ -20,6 +21,7 @@ function RandomCalls() {
       <TabsList>
         <TabsTrigger value="manage">Manage</TabsTrigger>
         <TabsTrigger value="schedule">Schedule</TabsTrigger>
+        <TabsTrigger value="analytics">Analytics</TabsTrigger>
         <TabsTrigger value="history">History</TabsTrigger>
       </TabsList>
       {tab === 'manage' && (
@@ -30,6 +32,11 @@ function RandomCalls() {
       {tab === 'schedule' && (
         <TabsContent value="schedule">
           <RandomCallSchedule />
+        </TabsContent>
+      )}
+      {tab === 'analytics' && (
+        <TabsContent value="analytics">
+          <RandomCallAnalytics />
         </TabsContent>
       )}
       {tab === 'history' && (

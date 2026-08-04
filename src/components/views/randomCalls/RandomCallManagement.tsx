@@ -24,7 +24,7 @@ import {
   clearDanglingRandomCallMatches,
   clearUserRandomCallProposals,
   endLobby,
-  getLobbyOverviewEndpoint,
+  getLobbySessionEndpoint,
   getUpcomingLobbiesEndpoint,
   MatchProposal,
   resetLobby,
@@ -73,6 +73,12 @@ import {
 } from './RandomCalls.styles';
 
 interface LobbyData {
+  snapshot: {
+    first_time_users: number;
+    returning_users: number;
+    completed_calls: number;
+    total_users: number;
+  } | null;
   lobby: {
     name: string;
     uuid: string;
@@ -115,15 +121,13 @@ interface LobbyData {
       image: string | null;
     };
   }>;
-  statistics: {
+  proposal_statistics: {
     total_matches: number;
     pending_count: number;
     accepted_count: number;
     rejected_count: number;
     expired_count: number;
     dangling_count: number;
-    first_time_count: number;
-    returning_count: number;
   };
   schedule: Array<{
     uuid: string;
@@ -440,7 +444,7 @@ function RandomCallManagement() {
   const shouldPoll = autoRefresh;
 
   const { data, error, isValidating } = useSWR<LobbyData>(
-    getLobbyOverviewEndpoint(),
+    getLobbySessionEndpoint(),
     dataFetcher,
     {
       refreshInterval: shouldPoll ? 3000 : 0,
@@ -485,7 +489,7 @@ function RandomCallManagement() {
     resetLobby({
       onSuccess: () => {
         // Refresh the data
-        mutate(getLobbyOverviewEndpoint());
+        mutate(getLobbySessionEndpoint());
         setShowResetConfirm(false);
         setIsResetting(false);
       },
@@ -505,7 +509,7 @@ function RandomCallManagement() {
     setIsEndingLobby(true);
     endLobby({
       onSuccess: () => {
-        mutate(getLobbyOverviewEndpoint());
+        mutate(getLobbySessionEndpoint());
         mutate(getUpcomingLobbiesEndpoint());
         setShowEndConfirm(false);
         alert('Lobby ended successfully!');
@@ -528,7 +532,7 @@ function RandomCallManagement() {
       clearUserRandomCallProposals({
         userUuid,
         onSuccess: result => {
-          mutate(getLobbyOverviewEndpoint());
+          mutate(getLobbySessionEndpoint());
           setClearMatchesToast({
             id: Date.now(),
             title:
@@ -555,7 +559,7 @@ function RandomCallManagement() {
     setIsClearingDangling(true);
     clearDanglingRandomCallMatches({
       onSuccess: result => {
-        mutate(getLobbyOverviewEndpoint());
+        mutate(getLobbySessionEndpoint());
         setClearMatchesToast({
           id: Date.now(),
           title:
@@ -598,10 +602,11 @@ function RandomCallManagement() {
     active_users,
     match_proposals,
     lobby_participants,
-    statistics,
+    proposal_statistics,
+    snapshot,
   } = data;
   const danglingMatches = match_proposals.dangling ?? [];
-  const danglingCount = statistics.dangling_count ?? 0;
+  const danglingCount = proposal_statistics.dangling_count ?? 0;
 
   const lobbyPeriodLabel =
     lobby.start_time && lobby.end_time
@@ -796,16 +801,16 @@ function RandomCallManagement() {
               <BreakdownList>
                 <BreakdownRow>
                   <BreakdownLabel>First time</BreakdownLabel>
-                  <BreakdownValue>{statistics.first_time_count}</BreakdownValue>
+                  <BreakdownValue>{snapshot?.first_time_users ?? 0}</BreakdownValue>
                 </BreakdownRow>
                 <BreakdownRow>
                   <BreakdownLabel>Returning</BreakdownLabel>
-                  <BreakdownValue>{statistics.returning_count}</BreakdownValue>
+                  <BreakdownValue>{snapshot?.returning_users ?? 0}</BreakdownValue>
                 </BreakdownRow>
               </BreakdownList>
             </StatCard>
             <StatCard>
-              <StatValue>{statistics.total_matches}</StatValue>
+              <StatValue>{proposal_statistics.total_matches}</StatValue>
               <StatLabel>Total Matches</StatLabel>
             </StatCard>
           </StatCards>
@@ -816,19 +821,19 @@ function RandomCallManagement() {
           <SectionTitle>Proposal Statistics</SectionTitle>
           <StatCards>
             <StatCard>
-              <StatValue>{statistics.pending_count}</StatValue>
+              <StatValue>{proposal_statistics.pending_count}</StatValue>
               <StatLabel>Pending Proposals</StatLabel>
             </StatCard>
             <StatCard>
-              <StatValue>{statistics.accepted_count}</StatValue>
+              <StatValue>{proposal_statistics.accepted_count}</StatValue>
               <StatLabel>Accepted Proposals</StatLabel>
             </StatCard>
             <StatCard>
-              <StatValue>{statistics.rejected_count}</StatValue>
+              <StatValue>{proposal_statistics.rejected_count}</StatValue>
               <StatLabel>Rejected Proposals</StatLabel>
             </StatCard>
             <StatCard>
-              <StatValue>{statistics.expired_count}</StatValue>
+              <StatValue>{proposal_statistics.expired_count}</StatValue>
               <StatLabel>Expired Proposals</StatLabel>
             </StatCard>
             <StatCard>
@@ -870,16 +875,16 @@ function RandomCallManagement() {
           <Tabs defaultValue="pending">
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="pending">
-                Pending ({statistics.pending_count})
+                Pending ({proposal_statistics.pending_count})
               </TabsTrigger>
               <TabsTrigger value="accepted">
-                Accepted ({statistics.accepted_count})
+                Accepted ({proposal_statistics.accepted_count})
               </TabsTrigger>
               <TabsTrigger value="rejected">
-                Rejected ({statistics.rejected_count})
+                Rejected ({proposal_statistics.rejected_count})
               </TabsTrigger>
               <TabsTrigger value="expired">
-                Expired ({statistics.expired_count})
+                Expired ({proposal_statistics.expired_count})
               </TabsTrigger>
             </TabsList>
             <TabsContent value="pending">
