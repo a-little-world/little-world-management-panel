@@ -11,9 +11,9 @@ import useSWR from 'swr';
 
 import {
   getAllLobbies,
-  getLobbySessionEndpoint,
+  getLobbyInstanceEndpoint,
   LobbyListItem,
-  LobbySessionData,
+  LobbyInstanceData,
   TasksData,
 } from '../../../api/randomCalls';
 import { formatDate, formatEventTime } from '../../../helpers/date';
@@ -35,6 +35,7 @@ import MatchProposalsTable from '../../blocks/randomCalls/MatchProposalsTable';
 import {
   Description,
   DropdownContainer,
+  ProvisionalBucketStats,
   Section,
   SectionTitle,
   StatsGridTight,
@@ -78,9 +79,9 @@ function RandomCallHistory() {
   }, [selectedLobbyUuid, allLobbies]);
 
   // Fetch lobby overview data when a lobby is selected
-  const { data: lobbyData, error: lobbyError } = useSWR<LobbySessionData>(
+  const { data: lobbyData, error: lobbyError } = useSWR<LobbyInstanceData>(
     selectedLobbyName && selectedLobbyUuid
-      ? getLobbySessionEndpoint(selectedLobbyName, selectedLobbyUuid)
+      ? getLobbyInstanceEndpoint(selectedLobbyName, selectedLobbyUuid)
       : null,
     dataFetcher,
   );
@@ -117,6 +118,7 @@ function RandomCallHistory() {
   }
 
   const { lobby, snapshot, proposal_statistics } = lobbyData || {};
+  const proposalsAreFinal = snapshot?.proposals_are_final ?? !lobby?.is_active;
   const match_proposals = lobbyData?.match_proposals || {
     pending: [],
     accepted: [],
@@ -169,45 +171,70 @@ function RandomCallHistory() {
         </Text>
       )}
 
-      {lobbyData && lobby && snapshot && proposal_statistics && (
+      {lobbyData && lobby && proposal_statistics && (
         <>
-          {/* Key Stats */}
-          <Section>
-            <SectionTitle>Key Stats</SectionTitle>
-            <StatsGridTight>
-              <StatCard>
-                <StatValue>{snapshot.total_users}</StatValue>
-                <StatLabel>Total Users</StatLabel>
-                <BreakdownList>
-                  <BreakdownRow>
-                    <BreakdownLabel>First time</BreakdownLabel>
-                    <BreakdownValue>
-                      {snapshot.first_time_users}
-                    </BreakdownValue>
-                  </BreakdownRow>
-                  <BreakdownRow>
-                    <BreakdownLabel>Returning</BreakdownLabel>
-                    <BreakdownValue>
-                      {snapshot.returning_users}
-                    </BreakdownValue>
-                  </BreakdownRow>
-                </BreakdownList>
-              </StatCard>
-              <StatCard>
-                <StatValue>{snapshot.completed_calls}</StatValue>
-                <StatLabel>Total Calls</StatLabel>
-              </StatCard>
-              <StatCard>
-                <StatValue>{proposal_statistics.accepted_count}</StatValue>
-                <StatLabel>Matches Made</StatLabel>
-              </StatCard>
-            </StatsGridTight>
-          </Section>
+          {snapshot && (
+            <Section>
+              <SectionTitle>Instance statistics</SectionTitle>
+              <StatsGridTight>
+                <StatCard>
+                  <StatValue>{snapshot.total_users}</StatValue>
+                  <StatLabel>Total Users</StatLabel>
+                  <BreakdownList>
+                    <BreakdownRow>
+                      <BreakdownLabel>First time</BreakdownLabel>
+                      <BreakdownValue>
+                        {snapshot.first_time_users}
+                      </BreakdownValue>
+                    </BreakdownRow>
+                    <BreakdownRow>
+                      <BreakdownLabel>Returning</BreakdownLabel>
+                      <BreakdownValue>
+                        {snapshot.returning_users}
+                      </BreakdownValue>
+                    </BreakdownRow>
+                  </BreakdownList>
+                </StatCard>
+                <StatCard>
+                  <StatValue>{snapshot.completed_calls}</StatValue>
+                  <StatLabel>Total Calls</StatLabel>
+                </StatCard>
+                {proposalsAreFinal && (
+                  <StatCard>
+                    <StatValue>{snapshot.proposals_accepted}</StatValue>
+                    <StatLabel>Matches Made</StatLabel>
+                  </StatCard>
+                )}
+              </StatsGridTight>
+            </Section>
+          )}
 
-          {/* Proposal Statistics */}
           <Section>
-            <SectionTitle>Proposal Statistics</SectionTitle>
-            <StatCards>
+            <SectionTitle>
+              {proposalsAreFinal
+                ? 'Proposal statistics'
+                : 'Live proposal statistics'}
+            </SectionTitle>
+            {!proposalsAreFinal && (
+              <Description>
+                Operational counts — persisted bucket totals finalize when the
+                lobby ends.
+              </Description>
+            )}
+            {lobby.is_active && (
+              <StatsGridTight>
+                <StatCard>
+                  <StatValue>{lobby.active_users_count}</StatValue>
+                  <StatLabel>Active Users</StatLabel>
+                </StatCard>
+                <StatCard>
+                  <StatValue>{lobby.total_users_count}</StatValue>
+                  <StatLabel>Total Users</StatLabel>
+                </StatCard>
+              </StatsGridTight>
+            )}
+            <ProvisionalBucketStats $provisional={!proposalsAreFinal}>
+              <StatCards>
               <StatCard>
                 <StatValue>{proposal_statistics.pending_count}</StatValue>
                 <StatLabel>Pending Proposals</StatLabel>
@@ -225,6 +252,7 @@ function RandomCallHistory() {
                 <StatLabel>Expired Proposals</StatLabel>
               </StatCard>
             </StatCards>
+            </ProvisionalBucketStats>
           </Section>
 
           {/* Lobby Participants */}

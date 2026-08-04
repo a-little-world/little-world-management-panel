@@ -14,6 +14,7 @@ import styled from 'styled-components';
 import useSWR from 'swr';
 
 import {
+  displaySnapshotProposalsTotal,
   RANDOM_CALL_LOBBY_ANALYTICS_ENDPOINT,
   fetchLobbyAnalytics,
 } from '../../../api/randomCalls';
@@ -36,7 +37,7 @@ import {
 import { FiltersToolbar } from '../../blocks/FiltersToolbar';
 import { Description, Title } from './RandomCalls.styles';
 
-const SessionLink = styled(Link)`
+const InstanceLink = styled(Link)`
   color: ${({ theme }) => theme.color.text.link};
   font-weight: 500;
   text-decoration: none;
@@ -99,7 +100,7 @@ function RandomCallAnalytics() {
     updateSearchParam(key, value ? format(value, 'yyyy-MM-dd') : '');
   };
 
-  const sessionHistorySearch = (lobbyUuid: string) => {
+  const instanceHistorySearch = (lobbyUuid: string) => {
     const params = new URLSearchParams();
     params.set('tab', 'history');
     params.set('lobby_uuid', lobbyUuid);
@@ -110,7 +111,7 @@ function RandomCallAnalytics() {
     <PageContainer>
       <Title>Analytics</Title>
       <Description>
-        Paginated snapshot of each random call lobby occurrence.
+        Paginated snapshot of each random call lobby instance.
       </Description>
 
       <FiltersToolbar
@@ -154,7 +155,7 @@ function RandomCallAnalytics() {
           <ListScroll>
             {data.results.length === 0 ? (
               <NoResultsContainer>
-                <Text type={TextTypes.Body3}>No lobby occurrences found.</Text>
+                <Text type={TextTypes.Body3}>No lobby instances found.</Text>
               </NoResultsContainer>
             ) : (
               <Table>
@@ -187,7 +188,7 @@ function RandomCallAnalytics() {
                       <TableCell>
                         {row.first_time_users} / {row.returning_users}
                       </TableCell>
-                      <TableCell>{row.proposals_total}</TableCell>
+                      <TableCell>{displaySnapshotProposalsTotal(row)}</TableCell>
                       <TableCell>{row.proposals_accepted}</TableCell>
                       <TableCell>{row.proposals_rejected}</TableCell>
                       <TableCell>{row.proposals_expired}</TableCell>
@@ -195,9 +196,9 @@ function RandomCallAnalytics() {
                       <TableCell>{row.learner_count}</TableCell>
                       <TableCell>{row.volunteer_count}</TableCell>
                       <TableCell>
-                        <SessionLink to={sessionHistorySearch(row.lobby_uuid)}>
-                          View session
-                        </SessionLink>
+                        <InstanceLink to={instanceHistorySearch(row.lobby_uuid)}>
+                          View instance
+                        </InstanceLink>
                       </TableCell>
                     </TableRow>
                   ))}

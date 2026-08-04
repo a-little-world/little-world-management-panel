@@ -49,7 +49,7 @@ export interface LobbyListItem {
   active_users_count: number;
 }
 
-export interface LobbySessionSnapshot {
+export interface LobbyInstanceSnapshot {
   lobby_uuid: string;
   lobby_name: string;
   start_time: string | null;
@@ -68,13 +68,48 @@ export interface LobbySessionSnapshot {
   completed_calls: number;
   learner_count: number;
   volunteer_count: number;
+  bucket_mismatch: number;
+  /** False while lobby end_time is still in the future — persisted buckets may lag operational counts. */
+  proposals_are_final: boolean;
 }
 
-/** @deprecated Use LobbySessionSnapshot */
-export type LobbyOccurrenceSnapshot = LobbySessionSnapshot;
+type SnapshotProposalBucketFields = Pick<
+  LobbyInstanceSnapshot,
+  | 'proposals_accepted'
+  | 'proposals_rejected'
+  | 'proposals_expired'
+  | 'proposals_pending'
+  | 'proposals_dangling'
+>;
 
-export interface LobbySessionData {
-  snapshot: LobbySessionSnapshot | null;
+/** Sum of mutually exclusive proposal buckets (always consistent on screen). */
+export function snapshotProposalPartsTotal(
+  snapshot: SnapshotProposalBucketFields,
+): number {
+  return (
+    snapshot.proposals_accepted +
+    snapshot.proposals_rejected +
+    snapshot.proposals_expired +
+    snapshot.proposals_pending +
+    snapshot.proposals_dangling
+  );
+}
+
+/** Use bucket sum when persisted total does not reconcile (bucket_mismatch ≠ 0). */
+export function displaySnapshotProposalsTotal(
+  snapshot: SnapshotProposalBucketFields & {
+    proposals_total: number;
+    bucket_mismatch: number;
+  },
+): number {
+  if (snapshot.bucket_mismatch) {
+    return snapshotProposalPartsTotal(snapshot);
+  }
+  return snapshot.proposals_total;
+}
+
+export interface LobbyInstanceData {
+  snapshot: LobbyInstanceSnapshot | null;
   lobby: {
     name: string;
     uuid: string;
@@ -111,9 +146,6 @@ export interface LobbySessionData {
   };
 }
 
-/** @deprecated Use LobbySessionData */
-export type LobbyOverviewData = LobbySessionData;
-
 export interface TasksData {
   tasks: Array<{
     task_id: string;
@@ -147,7 +179,7 @@ export interface PaginatedLobbyAnalytics {
   page: number;
   next: string | null;
   previous: string | null;
-  results: LobbySessionSnapshot[];
+  results: LobbyInstanceSnapshot[];
   page_size: number;
   pages_total: number;
   next_page: number | null;
@@ -161,18 +193,14 @@ export interface PaginatedLobbyAnalytics {
 export const RANDOM_CALL_LOBBY_ANALYTICS_ENDPOINT =
   '/api/random_calls/analytics/lobbies';
 
-export const getLobbySessionEndpoint = (
+export const getLobbyInstanceEndpoint = (
   lobbyName = DEFAULT_LOBBY_NAME,
   lobbyUuid?: string,
 ) => {
-  const base = `/api/random_calls/analytics/lobby/${lobbyName}/session`;
+  const base = `/api/random_calls/analytics/lobby/${lobbyName}/instance`;
   if (!lobbyUuid) return base;
   return `${base}?lobby_uuid=${encodeURIComponent(lobbyUuid)}`;
 };
-
-/** @deprecated Use getLobbySessionEndpoint */
-export const getLobbyOverviewEndpoint = (lobbyName = DEFAULT_LOBBY_NAME) =>
-  getLobbySessionEndpoint(lobbyName);
 
 export const getUpcomingLobbiesEndpoint = (lobbyName = DEFAULT_LOBBY_NAME) =>
   `/api/random_calls/upcoming?name=${encodeURIComponent(lobbyName)}`;
@@ -183,7 +211,7 @@ export const fetchLobbyAnalytics = (queryString: string) =>
     { method: 'GET' },
   );
 
-export const getLobbySession = async ({
+export const getLobbyInstance = async ({
   lobbyName = DEFAULT_LOBBY_NAME,
   lobbyUuid,
   onError,
@@ -192,11 +220,11 @@ export const getLobbySession = async ({
   lobbyName?: string;
   lobbyUuid?: string;
   onError: (error: unknown) => void;
-  onSuccess: (result: LobbySessionData) => void;
+  onSuccess: (result: LobbyInstanceData) => void;
 }) => {
   try {
-    const result = await apiFetch<LobbySessionData>(
-      getLobbySessionEndpoint(lobbyName, lobbyUuid),
+    const result = await apiFetch<LobbyInstanceData>(
+      getLobbyInstanceEndpoint(lobbyName, lobbyUuid),
       { method: 'GET' },
     );
     onSuccess(result);
@@ -204,9 +232,6 @@ export const getLobbySession = async ({
     onError(error);
   }
 };
-
-/** @deprecated Use getLobbySession */
-export const getLobbyOverview = getLobbySession;
 
 export const getAllLobbies = async ({
   onError,
@@ -232,15 +257,15 @@ export const getLobbyByUuid = async ({
 }: {
   lobbyUuid: string;
   onError: (error: unknown) => void;
-  onSuccess: (result: LobbySessionData) => void;
+  onSuccess: (result: LobbyInstanceData) => void;
 }) => {
   try {
     const lobby = await apiFetch<LobbyListItem>(
       `/api/random_calls/lobby/${lobbyUuid}/`,
       { method: 'GET' },
     );
-    const result = await apiFetch<LobbySessionData>(
-      getLobbySessionEndpoint(lobby.name, lobbyUuid),
+    const result = await apiFetch<LobbyInstanceData>(
+      getLobbyInstanceEndpoint(lobby.name, lobbyUuid),
       { method: 'GET' },
     );
     onSuccess(result);

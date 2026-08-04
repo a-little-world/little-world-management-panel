@@ -24,8 +24,9 @@ import {
   clearDanglingRandomCallMatches,
   clearUserRandomCallProposals,
   endLobby,
-  getLobbySessionEndpoint,
+  getLobbyInstanceEndpoint,
   getUpcomingLobbiesEndpoint,
+  displaySnapshotProposalsTotal,
   MatchProposal,
   resetLobby,
 } from '../../../api/randomCalls';
@@ -55,12 +56,14 @@ import LobbyParticipantsTable from '../../blocks/randomCalls/LobbyParticipantsTa
 import MatchProposalsTable from '../../blocks/randomCalls/MatchProposalsTable';
 import {
   CollapsibleContent,
+  Description,
   Header,
   ScheduleDate,
   ScheduleItem,
   ScheduleItemInfo,
   ScheduleStatus,
   ScheduleTime,
+  ProvisionalBucketStats,
   Section,
   SectionHeaderRow,
   SectionTitle,
@@ -78,6 +81,14 @@ interface LobbyData {
     returning_users: number;
     completed_calls: number;
     total_users: number;
+    proposals_total: number;
+    proposals_accepted: number;
+    proposals_rejected: number;
+    proposals_expired: number;
+    proposals_pending: number;
+    proposals_dangling: number;
+    bucket_mismatch: number;
+    proposals_are_final: boolean;
   } | null;
   lobby: {
     name: string;
@@ -444,7 +455,7 @@ function RandomCallManagement() {
   const shouldPoll = autoRefresh;
 
   const { data, error, isValidating } = useSWR<LobbyData>(
-    getLobbySessionEndpoint(),
+    getLobbyInstanceEndpoint(),
     dataFetcher,
     {
       refreshInterval: shouldPoll ? 3000 : 0,
@@ -489,7 +500,7 @@ function RandomCallManagement() {
     resetLobby({
       onSuccess: () => {
         // Refresh the data
-        mutate(getLobbySessionEndpoint());
+        mutate(getLobbyInstanceEndpoint());
         setShowResetConfirm(false);
         setIsResetting(false);
       },
@@ -509,7 +520,7 @@ function RandomCallManagement() {
     setIsEndingLobby(true);
     endLobby({
       onSuccess: () => {
-        mutate(getLobbySessionEndpoint());
+        mutate(getLobbyInstanceEndpoint());
         mutate(getUpcomingLobbiesEndpoint());
         setShowEndConfirm(false);
         alert('Lobby ended successfully!');
@@ -532,7 +543,7 @@ function RandomCallManagement() {
       clearUserRandomCallProposals({
         userUuid,
         onSuccess: result => {
-          mutate(getLobbySessionEndpoint());
+          mutate(getLobbyInstanceEndpoint());
           setClearMatchesToast({
             id: Date.now(),
             title:
@@ -559,7 +570,7 @@ function RandomCallManagement() {
     setIsClearingDangling(true);
     clearDanglingRandomCallMatches({
       onSuccess: result => {
-        mutate(getLobbySessionEndpoint());
+        mutate(getLobbyInstanceEndpoint());
         setClearMatchesToast({
           id: Date.now(),
           title:
@@ -607,6 +618,7 @@ function RandomCallManagement() {
   } = data;
   const danglingMatches = match_proposals.dangling ?? [];
   const danglingCount = proposal_statistics.dangling_count ?? 0;
+  const proposalsAreFinal = snapshot?.proposals_are_final ?? !lobby.is_active;
 
   const lobbyPeriodLabel =
     lobby.start_time && lobby.end_time
@@ -798,28 +810,47 @@ function RandomCallManagement() {
             <StatCard>
               <StatValue>{lobby.total_users_count}</StatValue>
               <StatLabel>Total Users</StatLabel>
-              <BreakdownList>
-                <BreakdownRow>
-                  <BreakdownLabel>First time</BreakdownLabel>
-                  <BreakdownValue>{snapshot?.first_time_users ?? 0}</BreakdownValue>
-                </BreakdownRow>
-                <BreakdownRow>
-                  <BreakdownLabel>Returning</BreakdownLabel>
-                  <BreakdownValue>{snapshot?.returning_users ?? 0}</BreakdownValue>
-                </BreakdownRow>
-              </BreakdownList>
+              {snapshot && (
+                <BreakdownList>
+                  <BreakdownRow>
+                    <BreakdownLabel>First time</BreakdownLabel>
+                    <BreakdownValue>{snapshot.first_time_users}</BreakdownValue>
+                  </BreakdownRow>
+                  <BreakdownRow>
+                    <BreakdownLabel>Returning</BreakdownLabel>
+                    <BreakdownValue>{snapshot.returning_users}</BreakdownValue>
+                  </BreakdownRow>
+                </BreakdownList>
+              )}
             </StatCard>
             <StatCard>
-              <StatValue>{proposal_statistics.total_matches}</StatValue>
+              <StatValue>
+                {proposalsAreFinal && snapshot
+                  ? displaySnapshotProposalsTotal(snapshot)
+                  : proposal_statistics.total_matches}
+              </StatValue>
               <StatLabel>Total Matches</StatLabel>
             </StatCard>
+            {snapshot && (
+              <StatCard>
+                <StatValue>{snapshot.completed_calls}</StatValue>
+                <StatLabel>Completed Calls</StatLabel>
+              </StatCard>
+            )}
           </StatCards>
         </Section>
 
         {/* Proposal Statistics */}
         <Section>
           <SectionTitle>Proposal Statistics</SectionTitle>
-          <StatCards>
+          {!proposalsAreFinal && (
+            <Description>
+              Operational counts — persisted bucket totals finalize when the lobby
+              ends.
+            </Description>
+          )}
+          <ProvisionalBucketStats $provisional={!proposalsAreFinal}>
+            <StatCards>
             <StatCard>
               <StatValue>{proposal_statistics.pending_count}</StatValue>
               <StatLabel>Pending Proposals</StatLabel>
@@ -841,6 +872,7 @@ function RandomCallManagement() {
               <StatLabel>Dangling proposals</StatLabel>
             </StatCard>
           </StatCards>
+          </ProvisionalBucketStats>
         </Section>
 
         {/* Active Users */}
