@@ -27,6 +27,12 @@ import {
   ChartTooltipContent,
 } from '../../atoms/Chart';
 import { DatePicker } from '../../atoms/DatePicker';
+import {
+  StatCard,
+  StatCards,
+  StatLabel,
+  StatValue,
+} from '../../atoms/stats/StatCard';
 
 const DAY_LABELS: Record<string, string> = {
   mo: 'Mon',
@@ -344,7 +350,13 @@ function getTopSlotsLearner(
 
 const DEFAULT_START_DATE = '2024-01-01';
 
-const AvailabilityOverview = () => {
+type UserPreferencesData = {
+  phone_mobile_provided_count: number;
+  user_form_filled_count: number;
+  phone_mobile_provided_percentage: number;
+};
+
+const UserPreferencesOverview = () => {
   const topSlotsSwitchRef = useRef<HTMLButtonElement>(null);
   const overviewSwitchRef = useRef<HTMLButtonElement>(null);
   const [splitByUserTypeTopSlots, setSplitByUserTypeTopSlots] = useState(false);
@@ -366,7 +378,18 @@ const AvailabilityOverview = () => {
     return `${base}?${params.toString()}`;
   }, [startDateString, endDateString]);
 
+  const preferencesApiUrl = useMemo(() => {
+    const base = '/api/matching/users/statistics/user_preferences/';
+    const params = new URLSearchParams();
+    params.set('start_date', startDateString);
+    params.set('end_date', endDateString);
+    return `${base}?${params.toString()}`;
+  }, [startDateString, endDateString]);
+
   const { data, isLoading } = useSWR(apiUrl, dataFetcher);
+  const { data: preferencesData, isLoading: isPreferencesLoading } = useSWR<
+    UserPreferencesData
+  >(preferencesApiUrl, dataFetcher);
 
   const handleStartDateChange = useCallback((date: Date | string | null) => {
     if (date == null) return;
@@ -421,6 +444,22 @@ const AvailabilityOverview = () => {
           <DatePicker date={endDate} setDate={handleEndDateChange} />
         </DatePickerContainer>
       </DateRangeSection>
+      <StatCards>
+        <StatCard>
+          <StatValue>
+            {isPreferencesLoading
+              ? '—'
+              : `${preferencesData?.phone_mobile_provided_percentage ?? 0}%`}
+          </StatValue>
+          <StatLabel>Phone number provided (user form filled)</StatLabel>
+          {!isPreferencesLoading && preferencesData && (
+            <StatLabel>
+              {preferencesData.phone_mobile_provided_count} of{' '}
+              {preferencesData.user_form_filled_count} users
+            </StatLabel>
+          )}
+        </StatCard>
+      </StatCards>
       <Card center={false}>
         <CardHeader>
           <ChartHeaderRow>
@@ -700,4 +739,4 @@ const AvailabilityOverview = () => {
   );
 };
 
-export default AvailabilityOverview;
+export default UserPreferencesOverview;

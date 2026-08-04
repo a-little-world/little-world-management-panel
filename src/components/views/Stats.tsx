@@ -2,7 +2,7 @@ import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../atoms/Tabs';
-import AvailabilityOverview from '../blocks/stats/AvailabilityOverview';
+import UserPreferencesOverview from '../blocks/stats/UserPreferencesOverview';
 import Highlights from '../blocks/stats/Highlights';
 import KPIsDashboard from '../blocks/stats/KPIsDashboard';
 import MatchesStats from '../blocks/stats/MatchesStats';
@@ -13,7 +13,8 @@ import ReportsDashboard from '../blocks/stats/reports/ReportsDashboard';
 
 function Stats() {
   let [searchParams, setSearchParams] = useSearchParams();
-  const tab = searchParams.get('tab') || 'kpis';
+  const rawTab = searchParams.get('tab') || 'kpis';
+  const tab = rawTab === 'availability' ? 'user_preferences' : rawTab;
 
   const onTabChange = (value: string) => {
     searchParams.set('tab', value);
@@ -30,7 +31,7 @@ function Stats() {
         <TabsTrigger value="overview">User & Match Journey</TabsTrigger>
         <TabsTrigger value="graphs">Graphs</TabsTrigger>
         <TabsTrigger value="reports">Reports</TabsTrigger>
-        <TabsTrigger value="availability">Availability</TabsTrigger>
+        <TabsTrigger value="user_preferences">User Preferences</TabsTrigger>
       </TabsList>
       {tab === 'kpis' && (
         <TabsContent value="kpis">
@@ -70,9 +71,9 @@ function Stats() {
           <ReportsDashboard />
         </TabsContent>
       )}
-      {tab === 'availability' && (
-        <TabsContent value="availability">
-          <AvailabilityOverview />
+      {tab === 'user_preferences' && (
+        <TabsContent value="user_preferences">
+          <UserPreferencesOverview />
         </TabsContent>
       )}
     </Tabs>
