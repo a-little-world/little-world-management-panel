@@ -12,8 +12,8 @@ import useSWR from 'swr';
 import {
   getAllLobbies,
   getLobbyInstanceEndpoint,
-  LobbyListItem,
   LobbyInstanceData,
+  LobbyListItem,
   TasksData,
 } from '../../../api/randomCalls';
 import { formatDate, formatEventTime } from '../../../helpers/date';
@@ -175,7 +175,7 @@ function RandomCallHistory() {
         <>
           {snapshot && (
             <Section>
-              <SectionTitle>Instance statistics</SectionTitle>
+              <SectionTitle>Overview</SectionTitle>
               <StatsGridTight>
                 <StatCard>
                   <StatValue>{snapshot.total_users}</StatValue>
@@ -202,7 +202,7 @@ function RandomCallHistory() {
                 {proposalsAreFinal && (
                   <StatCard>
                     <StatValue>{snapshot.proposals_accepted}</StatValue>
-                    <StatLabel>Matches Made</StatLabel>
+                    <StatLabel>Accepted Proposals</StatLabel>
                   </StatCard>
                 )}
               </StatsGridTight>
@@ -235,23 +235,23 @@ function RandomCallHistory() {
             )}
             <ProvisionalBucketStats $provisional={!proposalsAreFinal}>
               <StatCards>
-              <StatCard>
-                <StatValue>{proposal_statistics.pending_count}</StatValue>
-                <StatLabel>Pending Proposals</StatLabel>
-              </StatCard>
-              <StatCard>
-                <StatValue>{proposal_statistics.accepted_count}</StatValue>
-                <StatLabel>Accepted Proposals</StatLabel>
-              </StatCard>
-              <StatCard>
-                <StatValue>{proposal_statistics.rejected_count}</StatValue>
-                <StatLabel>Rejected Proposals</StatLabel>
-              </StatCard>
-              <StatCard>
-                <StatValue>{proposal_statistics.expired_count}</StatValue>
-                <StatLabel>Expired Proposals</StatLabel>
-              </StatCard>
-            </StatCards>
+                <StatCard>
+                  <StatValue>{proposal_statistics.pending_count}</StatValue>
+                  <StatLabel>Pending Proposals</StatLabel>
+                </StatCard>
+                <StatCard>
+                  <StatValue>{proposal_statistics.accepted_count}</StatValue>
+                  <StatLabel>Accepted Proposals</StatLabel>
+                </StatCard>
+                <StatCard>
+                  <StatValue>{proposal_statistics.rejected_count}</StatValue>
+                  <StatLabel>Rejected Proposals</StatLabel>
+                </StatCard>
+                <StatCard>
+                  <StatValue>{proposal_statistics.expired_count}</StatValue>
+                  <StatLabel>Expired Proposals</StatLabel>
+                </StatCard>
+              </StatCards>
             </ProvisionalBucketStats>
           </Section>
 
