@@ -6,12 +6,14 @@ import {
 } from '@a-little-world/little-world-design-system';
 import { isEmpty } from 'lodash';
 import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import useSWR from 'swr';
 
 import {
   getAllLobbies,
+  getLobbyInstanceEndpoint,
   LobbyListItem,
-  LobbyOverviewData,
+  LobbyInstanceData,
   TasksData,
 } from '../../../api/randomCalls';
 import { formatDate, formatEventTime } from '../../../helpers/date';
@@ -33,6 +35,7 @@ import MatchProposalsTable from '../../blocks/randomCalls/MatchProposalsTable';
 import {
   Description,
   DropdownContainer,
+  ProvisionalBucketStats,
   Section,
   SectionTitle,
   StatsGridTight,
@@ -40,9 +43,8 @@ import {
 } from './RandomCalls.styles';
 
 function RandomCallHistory() {
-  const [selectedLobbyUuid, setSelectedLobbyUuid] = useState<string | null>(
-    null,
-  );
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedLobbyUuid = searchParams.get('lobby_uuid');
   const [allLobbies, setAllLobbies] = useState<LobbyListItem[]>([]);
   const [selectedLobbyName, setSelectedLobbyName] = useState<string | null>(
     null,
@@ -68,18 +70,18 @@ function RandomCallHistory() {
 
   // Get lobby name from UUID
   useEffect(() => {
-    if (selectedLobbyUuid) {
-      const lobby = allLobbies.find(l => l.uuid === selectedLobbyUuid);
-      if (lobby) {
-        setSelectedLobbyName(lobby.name);
-      }
+    if (!selectedLobbyUuid) {
+      setSelectedLobbyName(null);
+      return;
     }
+    const lobby = allLobbies.find(l => l.uuid === selectedLobbyUuid);
+    setSelectedLobbyName(lobby?.name ?? null);
   }, [selectedLobbyUuid, allLobbies]);
 
   // Fetch lobby overview data when a lobby is selected
-  const { data: lobbyData, error: lobbyError } = useSWR<LobbyOverviewData>(
+  const { data: lobbyData, error: lobbyError } = useSWR<LobbyInstanceData>(
     selectedLobbyName && selectedLobbyUuid
-      ? `/api/random_calls/lobby/${selectedLobbyName}/management/overview?lobby_uuid=${selectedLobbyUuid}`
+      ? getLobbyInstanceEndpoint(selectedLobbyName, selectedLobbyUuid)
       : null,
     dataFetcher,
   );
@@ -93,7 +95,14 @@ function RandomCallHistory() {
   );
 
   const handleLobbyChange = (value: string) => {
-    setSelectedLobbyUuid(value || null);
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.set('tab', 'history');
+    if (value) {
+      nextParams.set('lobby_uuid', value);
+    } else {
+      nextParams.delete('lobby_uuid');
+    }
+    setSearchParams(nextParams);
   };
 
   if (isEmpty(allLobbies)) {
@@ -108,7 +117,8 @@ function RandomCallHistory() {
     );
   }
 
-  const { lobby, statistics } = lobbyData || {};
+  const { lobby, snapshot, proposal_statistics } = lobbyData || {};
+  const proposalsAreFinal = snapshot?.proposals_are_final ?? !lobby?.is_active;
   const match_proposals = lobbyData?.match_proposals || {
     pending: [],
     accepted: [],
@@ -161,62 +171,88 @@ function RandomCallHistory() {
         </Text>
       )}
 
-      {lobbyData && lobby && statistics && (
+      {lobbyData && lobby && proposal_statistics && (
         <>
-          {/* Key Stats */}
-          <Section>
-            <SectionTitle>Key Stats</SectionTitle>
-            <StatsGridTight>
-              <StatCard>
-                <StatValue>{lobby.total_users_count}</StatValue>
-                <StatLabel>Total Users</StatLabel>
-                <BreakdownList>
-                  <BreakdownRow>
-                    <BreakdownLabel>First time</BreakdownLabel>
-                    <BreakdownValue>
-                      {statistics.first_time_count}
-                    </BreakdownValue>
-                  </BreakdownRow>
-                  <BreakdownRow>
-                    <BreakdownLabel>Returning</BreakdownLabel>
-                    <BreakdownValue>
-                      {statistics.returning_count}
-                    </BreakdownValue>
-                  </BreakdownRow>
-                </BreakdownList>
-              </StatCard>
-              <StatCard>
-                <StatValue>{match_proposals.accepted.length}</StatValue>
-                <StatLabel>Total Calls</StatLabel>
-              </StatCard>
-              <StatCard>
-                <StatValue>{statistics.accepted_count}</StatValue>
-                <StatLabel>Matches Made</StatLabel>
-              </StatCard>
-            </StatsGridTight>
-          </Section>
+          {snapshot && (
+            <Section>
+              <SectionTitle>Instance statistics</SectionTitle>
+              <StatsGridTight>
+                <StatCard>
+                  <StatValue>{snapshot.total_users}</StatValue>
+                  <StatLabel>Total Users</StatLabel>
+                  <BreakdownList>
+                    <BreakdownRow>
+                      <BreakdownLabel>First time</BreakdownLabel>
+                      <BreakdownValue>
+                        {snapshot.first_time_users}
+                      </BreakdownValue>
+                    </BreakdownRow>
+                    <BreakdownRow>
+                      <BreakdownLabel>Returning</BreakdownLabel>
+                      <BreakdownValue>
+                        {snapshot.returning_users}
+                      </BreakdownValue>
+                    </BreakdownRow>
+                  </BreakdownList>
+                </StatCard>
+                <StatCard>
+                  <StatValue>{snapshot.completed_calls}</StatValue>
+                  <StatLabel>Total Calls</StatLabel>
+                </StatCard>
+                {proposalsAreFinal && (
+                  <StatCard>
+                    <StatValue>{snapshot.proposals_accepted}</StatValue>
+                    <StatLabel>Matches Made</StatLabel>
+                  </StatCard>
+                )}
+              </StatsGridTight>
+            </Section>
+          )}
 
-          {/* Proposal Statistics */}
           <Section>
-            <SectionTitle>Proposal Statistics</SectionTitle>
-            <StatCards>
+            <SectionTitle>
+              {proposalsAreFinal
+                ? 'Proposal statistics'
+                : 'Live proposal statistics'}
+            </SectionTitle>
+            {!proposalsAreFinal && (
+              <Description>
+                Operational counts — persisted bucket totals finalize when the
+                lobby ends.
+              </Description>
+            )}
+            {lobby.is_active && (
+              <StatsGridTight>
+                <StatCard>
+                  <StatValue>{lobby.active_users_count}</StatValue>
+                  <StatLabel>Active Users</StatLabel>
+                </StatCard>
+                <StatCard>
+                  <StatValue>{lobby.total_users_count}</StatValue>
+                  <StatLabel>Total Users</StatLabel>
+                </StatCard>
+              </StatsGridTight>
+            )}
+            <ProvisionalBucketStats $provisional={!proposalsAreFinal}>
+              <StatCards>
               <StatCard>
-                <StatValue>{statistics.pending_count}</StatValue>
+                <StatValue>{proposal_statistics.pending_count}</StatValue>
                 <StatLabel>Pending Proposals</StatLabel>
               </StatCard>
               <StatCard>
-                <StatValue>{statistics.accepted_count}</StatValue>
+                <StatValue>{proposal_statistics.accepted_count}</StatValue>
                 <StatLabel>Accepted Proposals</StatLabel>
               </StatCard>
               <StatCard>
-                <StatValue>{statistics.rejected_count}</StatValue>
+                <StatValue>{proposal_statistics.rejected_count}</StatValue>
                 <StatLabel>Rejected Proposals</StatLabel>
               </StatCard>
               <StatCard>
-                <StatValue>{statistics.expired_count}</StatValue>
+                <StatValue>{proposal_statistics.expired_count}</StatValue>
                 <StatLabel>Expired Proposals</StatLabel>
               </StatCard>
             </StatCards>
+            </ProvisionalBucketStats>
           </Section>
 
           {/* Lobby Participants */}
@@ -234,16 +270,16 @@ function RandomCallHistory() {
             <Tabs defaultValue="pending">
               <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="pending">
-                  Pending ({statistics.pending_count})
+                  Pending ({proposal_statistics.pending_count})
                 </TabsTrigger>
                 <TabsTrigger value="accepted">
-                  Accepted ({statistics.accepted_count})
+                  Accepted ({proposal_statistics.accepted_count})
                 </TabsTrigger>
                 <TabsTrigger value="rejected">
-                  Rejected ({statistics.rejected_count})
+                  Rejected ({proposal_statistics.rejected_count})
                 </TabsTrigger>
                 <TabsTrigger value="expired">
-                  Expired ({statistics.expired_count})
+                  Expired ({proposal_statistics.expired_count})
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="pending">

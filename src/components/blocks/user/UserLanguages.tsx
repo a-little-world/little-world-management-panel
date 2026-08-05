@@ -32,8 +32,6 @@ const firstDropdownProps = {
   dataField: 'lang',
   ariaLabel: 'Language',
   placeholder: 'Select a language',
-  // options: formatDataField(formOptions?.lang_skill.lang, trans),
-  // values: profile?.lang_skill?.map(el => el.lang),
 };
 
 const secondDropdownProps = {
@@ -56,19 +54,23 @@ const UserLanguages = ({ langSkill }: UserLanguagesProps) => {
         ...firstDropdownProps,
         errors: [],
         values: langSkill?.map(el => el.lang) ?? [],
-        options: languageOptions.profile.lang_skill.lang.map(({ tag, value }) => ({
-          label: translations.en[tag],
-          value,
-        })),
+        options: languageOptions.profile.lang_skill.lang.map(
+          ({ tag, value }) => ({
+            label: translations.en[tag],
+            value,
+          }),
+        ),
       }}
       secondSelect={{
         ...secondDropdownProps,
         errors: [],
         values: langSkill?.map(el => el.level) ?? [],
-        options: languageOptions.profile.lang_skill.level.map(({ tag, value }) => ({
-          label: translations.en[tag],
-          value,
-        })),
+        options: languageOptions.profile.lang_skill.level.map(
+          ({ tag, value }) => ({
+            label: translations.en[tag],
+            value,
+          }),
+        ),
       }}
     />
   );

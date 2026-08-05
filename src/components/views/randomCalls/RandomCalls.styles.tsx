@@ -86,6 +86,10 @@ export const StatsGridTight = styled(StatCards)`
   margin-bottom: ${({ theme }) => theme.spacing.small};
 `;
 
+export const ProvisionalBucketStats = styled.div<{ $provisional: boolean }>`
+  opacity: ${({ $provisional }) => ($provisional ? 0.55 : 1)};
+`;
+
 // Schedule (Schedule tab)
 export const ScheduleList = styled.div`
   display: flex;
