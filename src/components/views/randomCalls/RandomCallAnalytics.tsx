@@ -15,8 +15,8 @@ import useSWR from 'swr';
 
 import {
   displaySnapshotProposalsTotal,
-  RANDOM_CALL_LOBBY_ANALYTICS_ENDPOINT,
   fetchLobbyAnalytics,
+  RANDOM_CALL_LOBBY_ANALYTICS_ENDPOINT,
 } from '../../../api/randomCalls';
 import { formatEventTime } from '../../../helpers/date';
 import { DatePicker } from '../../atoms/DatePicker';
@@ -188,7 +188,9 @@ function RandomCallAnalytics() {
                       <TableCell>
                         {row.first_time_users} / {row.returning_users}
                       </TableCell>
-                      <TableCell>{displaySnapshotProposalsTotal(row)}</TableCell>
+                      <TableCell>
+                        {displaySnapshotProposalsTotal(row)}
+                      </TableCell>
                       <TableCell>{row.proposals_accepted}</TableCell>
                       <TableCell>{row.proposals_rejected}</TableCell>
                       <TableCell>{row.proposals_expired}</TableCell>
@@ -196,8 +198,10 @@ function RandomCallAnalytics() {
                       <TableCell>{row.learner_count}</TableCell>
                       <TableCell>{row.volunteer_count}</TableCell>
                       <TableCell>
-                        <InstanceLink to={instanceHistorySearch(row.lobby_uuid)}>
-                          View instance
+                        <InstanceLink
+                          to={instanceHistorySearch(row.lobby_uuid)}
+                        >
+                          View Session
                         </InstanceLink>
                       </TableCell>
                     </TableRow>

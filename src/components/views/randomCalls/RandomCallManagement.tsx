@@ -23,10 +23,10 @@ import useSWR, { mutate } from 'swr';
 import {
   clearDanglingRandomCallMatches,
   clearUserRandomCallProposals,
+  displaySnapshotProposalsTotal,
   endLobby,
   getLobbyInstanceEndpoint,
   getUpcomingLobbiesEndpoint,
-  displaySnapshotProposalsTotal,
   MatchProposal,
   resetLobby,
 } from '../../../api/randomCalls';
@@ -58,12 +58,12 @@ import {
   CollapsibleContent,
   Description,
   Header,
+  ProvisionalBucketStats,
   ScheduleDate,
   ScheduleItem,
   ScheduleItemInfo,
   ScheduleStatus,
   ScheduleTime,
-  ProvisionalBucketStats,
   Section,
   SectionHeaderRow,
   SectionTitle,
@@ -829,7 +829,7 @@ function RandomCallManagement() {
                   ? displaySnapshotProposalsTotal(snapshot)
                   : proposal_statistics.total_matches}
               </StatValue>
-              <StatLabel>Total Matches</StatLabel>
+              <StatLabel>Accepted Proposals</StatLabel>
             </StatCard>
             {snapshot && (
               <StatCard>
@@ -845,33 +845,33 @@ function RandomCallManagement() {
           <SectionTitle>Proposal Statistics</SectionTitle>
           {!proposalsAreFinal && (
             <Description>
-              Operational counts — persisted bucket totals finalize when the lobby
-              ends.
+              Operational counts — persisted bucket totals finalize when the
+              lobby ends.
             </Description>
           )}
           <ProvisionalBucketStats $provisional={!proposalsAreFinal}>
             <StatCards>
-            <StatCard>
-              <StatValue>{proposal_statistics.pending_count}</StatValue>
-              <StatLabel>Pending Proposals</StatLabel>
-            </StatCard>
-            <StatCard>
-              <StatValue>{proposal_statistics.accepted_count}</StatValue>
-              <StatLabel>Accepted Proposals</StatLabel>
-            </StatCard>
-            <StatCard>
-              <StatValue>{proposal_statistics.rejected_count}</StatValue>
-              <StatLabel>Rejected Proposals</StatLabel>
-            </StatCard>
-            <StatCard>
-              <StatValue>{proposal_statistics.expired_count}</StatValue>
-              <StatLabel>Expired Proposals</StatLabel>
-            </StatCard>
-            <StatCard>
-              <StatValue>{danglingCount}</StatValue>
-              <StatLabel>Dangling proposals</StatLabel>
-            </StatCard>
-          </StatCards>
+              <StatCard>
+                <StatValue>{proposal_statistics.pending_count}</StatValue>
+                <StatLabel>Pending Proposals</StatLabel>
+              </StatCard>
+              <StatCard>
+                <StatValue>{proposal_statistics.accepted_count}</StatValue>
+                <StatLabel>Accepted Proposals</StatLabel>
+              </StatCard>
+              <StatCard>
+                <StatValue>{proposal_statistics.rejected_count}</StatValue>
+                <StatLabel>Rejected Proposals</StatLabel>
+              </StatCard>
+              <StatCard>
+                <StatValue>{proposal_statistics.expired_count}</StatValue>
+                <StatLabel>Expired Proposals</StatLabel>
+              </StatCard>
+              <StatCard>
+                <StatValue>{danglingCount}</StatValue>
+                <StatLabel>Dangling proposals</StatLabel>
+              </StatCard>
+            </StatCards>
           </ProvisionalBucketStats>
         </Section>
 
