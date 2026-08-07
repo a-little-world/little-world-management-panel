@@ -9,6 +9,7 @@ import * as React from 'react';
 import useSWR from 'swr';
 
 import { cratePostFetcher } from '../../../store';
+import { userJourneyBuckets, userJourneyBucketsV4 } from './buckets';
 import {
   Bucket,
   BucketsContainer,
@@ -19,8 +20,7 @@ import {
   SectionTitle,
   StyledChevron,
   SubBucket,
-} from './MatchUserJourneyOverview';
-import { userJourneyBuckets, userJourneyBucketsV4 } from './buckets';
+} from './JourneyStyles';
 
 export function DetailsDialog({
   open,
@@ -147,7 +147,9 @@ export function BucketOverview({
                       );
                     })}
                   </Bucket>
-                  {userJourneyBuckets.length !== index + 1 && <StyledChevron />}
+                  {userJourneyBuckets.length !== index + 1 && (
+                    <StyledChevron label="Show details" />
+                  )}
                 </>
               );
             })}
@@ -173,8 +175,7 @@ export function BucketOverview({
   );
 }
 
-export function UserJourneyBucketsOverview() {
-  const [detailsVisible, setDetailsVisible] = React.useState(false);
+export function UserJourneyBuckets() {
   const allBuckets = userJourneyBucketsV4.flatMap(bucket => bucket.sub_buckets);
   const allBucketIds = allBuckets.map(bucket => bucket.id);
   const extraBucketIds = ['all'];
@@ -215,3 +216,5 @@ export function UserJourneyBucketsOverview() {
     />
   );
 }
+
+export default UserJourneyBuckets;
