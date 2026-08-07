@@ -6,10 +6,11 @@ import AvailabilityOverview from '../blocks/stats/AvailabilityOverview';
 import Highlights from '../blocks/stats/Highlights';
 import KPIsDashboard from '../blocks/stats/KPIsDashboard';
 import MatchesStats from '../blocks/stats/MatchesStats';
-import { MatchUserJourneyOverview } from '../blocks/stats/MatchUserJourneyOverview';
+import { MatchJourneyOverview } from '../blocks/stats/MatchJourneyOverview';
 import ProposalStats from '../blocks/stats/ProposalStats';
 import { RangedDataGraph } from '../blocks/stats/RangedDataGraph';
 import ReportsDashboard from '../blocks/stats/reports/ReportsDashboard';
+import { UserJourneyOverview } from '../blocks/stats/UserJourneyOverview';
 
 function Stats() {
   let [searchParams, setSearchParams] = useSearchParams();
@@ -27,7 +28,8 @@ function Stats() {
         <TabsTrigger value="highlights">Highlights</TabsTrigger>
         <TabsTrigger value="matches">Matches</TabsTrigger>
         <TabsTrigger value="proposals">Proposals</TabsTrigger>
-        <TabsTrigger value="overview">User & Match Journey</TabsTrigger>
+        <TabsTrigger value="user-journey">User Journey</TabsTrigger>
+        <TabsTrigger value="match-journey">Match Journey</TabsTrigger>
         <TabsTrigger value="graphs">Graphs</TabsTrigger>
         <TabsTrigger value="reports">Reports</TabsTrigger>
         <TabsTrigger value="availability">Availability</TabsTrigger>
@@ -37,9 +39,14 @@ function Stats() {
           <KPIsDashboard />
         </TabsContent>
       )}
-      {tab === 'overview' && (
-        <TabsContent value="overview">
-          <MatchUserJourneyOverview />
+      {tab === 'user-journey' && (
+        <TabsContent value="user-journey">
+          <UserJourneyOverview />
+        </TabsContent>
+      )}
+      {tab === 'match-journey' && (
+        <TabsContent value="match-journey">
+          <MatchJourneyOverview />
         </TabsContent>
       )}
       {tab === 'highlights' && (

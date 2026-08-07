@@ -5,7 +5,7 @@ import { cratePostFetcher } from '../../../store';
 import { BucketOverview } from './UserJourneyBuckets';
 import { matchJourneyBucketsV4 } from './buckets';
 
-export function MatchJourneyOverview() {
+function MatchJourneyBuckets() {
   const allBuckets = matchJourneyBucketsV4.flatMap(
     bucket => bucket.sub_buckets,
   );
@@ -56,3 +56,5 @@ export function MatchJourneyOverview() {
     />
   );
 }
+
+export default MatchJourneyBuckets;

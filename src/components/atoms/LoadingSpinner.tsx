@@ -2,8 +2,11 @@ import React from 'react';
 
 import { cn } from '../../lib/utils';
 
-const LoadingSpinner = React.forwardRef((props, ref) => {
-  const { className = '', inline, ...rest } = props;
+export const LoadingSpinner = React.forwardRef<
+  SVGSVGElement,
+  React.SVGProps<SVGSVGElement> & { inline?: boolean }
+>((props: React.SVGProps<SVGSVGElement> & { inline?: boolean }, ref) => {
+  const { className = '', inline } = props;
   const size = '1em';
   return (
     <svg

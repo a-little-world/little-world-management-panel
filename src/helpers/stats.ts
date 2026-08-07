@@ -172,13 +172,20 @@ function modifyStageData(
 
 export function modifyDataToPercentages(data: RawBucket[]) {
   const modifiedData: Array<Record<string, unknown>> = [];
-  const topCount = data.find(item => item.name === 'all')?.count;
+  const baseline =
+    data.find(item => item.name === 'funnel__all') ??
+    data.find(item => item.name === 'all');
+  const topCount = baseline?.count;
   if (topCount == null) return [];
   //console.log("TOP COUNT", topCount);
   var summed = 0;
   data.forEach((item, index) => {
     //console.log("ITEM", item);
-    if (item.name !== 'all' && item.name !== 'match_journey_v2__all') {
+    if (
+      item.name !== 'all' &&
+      item.name !== 'funnel__all' &&
+      item.name !== 'match_journey_v2__all'
+    ) {
       modifiedData.push({
         name: item.name,
         count: parseFloat(((item.count / topCount) * 100).toFixed(2)),
@@ -192,7 +199,7 @@ export function modifyDataToPercentages(data: RawBucket[]) {
   });
 
   modifiedData.push({
-    name: 'all',
+    name: baseline?.name ?? 'all',
     count: parseFloat((((topCount - summed) / topCount) * 100).toFixed(2)),
     description: `sum (${summed}) = ${Math.round((summed / topCount) * 100)}%`,
   });

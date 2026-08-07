@@ -3,21 +3,17 @@ import {
   ChevronRightIcon,
   Link,
   Text,
-  TextTypes,
 } from '@a-little-world/little-world-design-system';
 import { isNumber } from 'lodash';
 import React from 'react';
-import styled from 'styled-components';
+import { styled } from 'styled-components';
+import LoadingSpinner from '../../atoms/LoadingSpinner';
 
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from '../../atoms/HoverCard';
-import LoadingSpinner from '../../atoms/LoadingSpinner';
-import { MatchJourneyOverview } from './MatchJourneyBuckets';
-import { UserJourneyBucketsOverview } from './UserJourneyBuckets';
-import { UserSignUpLossStatistic } from './UserSignUpLossStatistic';
 
 export const SectionTitle = styled(Text)`
   font-weight: bold;
@@ -90,17 +86,24 @@ export const StyledChevron = styled(ChevronRightIcon)`
   color: ${({ theme }) => theme.color.text.accent};
 `;
 
-const Count = ({ count, label }) => (
-  <>
-    {isNumber(count) ? (
+// `count` is optional on purpose: these overviews render their structure before the
+// counts arrive, and an absent number shows an inline spinner in place of that one value.
+export const Count = ({
+  count,
+  label,
+}: {
+  count?: number;
+  label?: string;
+}) => {
+  if (isNumber(count))
+    return (
       <Text tag="span" bold={!!label}>
         {label ? `${label}: ${count}` : `(${count})`}
       </Text>
-    ) : (
-      <LoadingSpinner inline="true" />
-    )}
-  </>
-);
+    );
+
+  return <LoadingSpinner inline />;
+};
 
 export function HoverableLiveListDescription({
   title,
@@ -108,6 +111,12 @@ export function HoverableLiveListDescription({
   linkTo,
   count,
   showCount = true,
+}: {
+  title: string;
+  description: string;
+  linkTo: string;
+  count?: number;
+  showCount?: boolean;
 }) {
   return (
     <HoverCard>
@@ -132,7 +141,15 @@ export function HoverableLiveListDescription({
   );
 }
 
-export function DetailsOpenLink({ title, description, onClick = () => {} }) {
+export function DetailsOpenLink({
+  title,
+  description,
+  onClick = () => {},
+}: {
+  title: string;
+  description: string;
+  onClick: () => void;
+}) {
   return (
     <HoverCard>
       <HoverCardTrigger asChild>
@@ -146,25 +163,5 @@ export function DetailsOpenLink({ title, description, onClick = () => {} }) {
         <Text>{description}</Text>
       </HoverCardContent>
     </HoverCard>
-  );
-}
-
-export function MatchUserJourneyOverview() {
-  return (
-    <Container>
-      <Text type={TextTypes.Body3} center bold tag="h1">
-        User & Match Journey Overview
-      </Text>
-      <Description center>
-        {`All the numbers in these overviews <bold>are live statistics</bold> and are <bold>filtered down to the current users access</bold>.`}
-      </Description>
-      <Sections>
-        <UserJourneyBucketsOverview />
-        <MatchJourneyOverview />
-      </Sections>
-      <SectionR>
-        <UserSignUpLossStatistic />
-      </SectionR>
-    </Container>
   );
 }
