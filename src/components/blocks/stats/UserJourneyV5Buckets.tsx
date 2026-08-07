@@ -5,13 +5,16 @@ import { styled } from 'styled-components';
 
 import {
   fetchUserJourneyV5,
+  fetchUserJourneyV5Definition,
   type PartitionRollup,
+  type UserJourneyV5DefinitionResponse,
   type UserJourneyV5Response,
 } from '../../../api/userJourney';
 import LoadingSpinner from '../../atoms/LoadingSpinner';
 import {
   Bucket,
   BucketsContainer,
+  Count,
   HoverableLiveListDescription,
   Section,
   SectionCard,
@@ -38,27 +41,49 @@ function rollupsForPhase(
   return rollups.filter(rollup => rollup.members.every(id => cells.has(id)));
 }
 
+/**
+ * Counting all 29 buckets takes tens of seconds, so the definition and the counts are
+ * fetched separately: the journey renders as soon as its shape arrives and each number
+ * fills in when the counts land. Holding a single spinner for the whole request is what
+ * made this feel slower than V4, which paints instantly from a client-side copy of the
+ * definition — the duplication this chart deliberately does not have.
+ *
+ * Counts are live partition membership, so the SWR key is cache-busted per mount the
+ * same way V4's `?random=` does — a stable key would paint yesterday's numbers while a
+ * fresh 18s request runs. The definition is shape only and may stay cached.
+ */
 function UserJourneyV5Buckets() {
-  const { data, error, isLoading } = useSWR<UserJourneyV5Response>(
-    'user-journey-v5',
+  const countsCacheBust = React.useRef(Date.now() + Math.random());
+
+  const { data: definitionData, error: definitionError } =
+    useSWR<UserJourneyV5DefinitionResponse>(
+      'user-journey-v5-definition',
+      fetchUserJourneyV5Definition,
+    );
+
+  const { data, error } = useSWR<UserJourneyV5Response>(
+    ['user-journey-v5', countsCacheBust.current],
     () => fetchUserJourneyV5({ start_date: '2022-01-01' }),
   );
 
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
+  const definition = definitionData?.definition ?? data?.definition;
+  const loadError = definitionError ?? error;
 
-  if (error || !data) {
+  if (loadError) {
     return (
       <Section $fullWidth>
-        <Text>Could not load User Journey V5: {String(error ?? 'no data')}</Text>
+        <Text>Could not load User Journey V5: {String(loadError)}</Text>
       </Section>
     );
   }
 
-  const { definition, counts, rollup_counts, baseline_count, summed_count, balanced } =
-    data;
-  const overlapPairs = Object.keys(data.overlap_counts ?? {}).length;
+  if (!definition) {
+    return <LoadingSpinner />;
+  }
+
+  const counts = data?.counts;
+  const rollupCounts = data?.rollup_counts;
+  const overlapPairs = Object.keys(data?.overlap_counts ?? {}).length;
 
   return (
     <Section $fullWidth>
@@ -67,7 +92,7 @@ function UserJourneyV5Buckets() {
       </SectionTitle>
       <SectionCard>
         <Text>{definition.description}</Text>
-        {!balanced && (
+        {data && !data.balanced && (
           <BalanceWarning>
             Partition does not balance — {data.uncovered_count} uncovered,{' '}
             {data.outside_baseline_count} outside baseline, {overlapPairs} overlapping
@@ -77,10 +102,12 @@ function UserJourneyV5Buckets() {
         )}
         <BucketsContainer>
           {definition.phases.map((phase, index) => {
-            const phaseTotal = phase.buckets.reduce(
-              (sum, bucket) => sum + (counts[bucket.list_id] ?? 0),
-              0,
-            );
+            const phaseTotal = counts
+              ? phase.buckets.reduce(
+                  (sum, bucket) => sum + (counts[bucket.list_id] ?? 0),
+                  0,
+                )
+              : undefined;
             const phaseRollups = rollupsForPhase(
               phase.buckets.map(bucket => bucket.list_id),
               definition.rollups,
@@ -89,7 +116,10 @@ function UserJourneyV5Buckets() {
             return (
               <React.Fragment key={phase.id}>
                 <Bucket>
-                  <Text bold>{`${index + 1} ${phase.title}: (total: ${phaseTotal})`}</Text>
+                  <Text bold>
+                    {`${index + 1} ${phase.title}: `}
+                    <Count count={phaseTotal} label="total" />
+                  </Text>
                   {phase.buckets.map(bucket => (
                     <SubBucket key={bucket.list_id}>
                       •
@@ -97,13 +127,14 @@ function UserJourneyV5Buckets() {
                         title={bucket.label}
                         description={bucket.description}
                         linkTo={`/users/?list=${bucket.list_id}`}
-                        count={counts[bucket.list_id]}
+                        count={counts?.[bucket.list_id]}
                       />
                     </SubBucket>
                   ))}
                   {phaseRollups.map(rollup => (
                     <RollupLine key={rollup.list_id}>
-                      Σ {rollup.label}: {rollup_counts?.[rollup.list_id] ?? 0}
+                      Σ {rollup.label}:{' '}
+                      <Count count={rollupCounts?.[rollup.list_id]} />
                     </RollupLine>
                   ))}
                 </Bucket>
@@ -115,8 +146,9 @@ function UserJourneyV5Buckets() {
           })}
         </BucketsContainer>
         <Text bold>
-          Total summed users: {summed_count} / baseline {baseline_count}
-          {balanced ? '' : ' (unbalanced)'}
+          Total summed users: <Count count={data?.summed_count} /> / baseline{' '}
+          <Count count={data?.baseline_count} />
+          {data && !data.balanced ? ' (unbalanced)' : ''}
         </Text>
       </SectionCard>
     </Section>

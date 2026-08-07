@@ -33,7 +33,8 @@ export const USER_SIGNUP_FUNNEL_BUCKET_META: Record<string, BucketDisplayMeta> =
   {
     funnel__all: {
       label: 'Total registered users',
-      description: 'All users in the pre-filtered cohort (ordered by date joined).',
+      description:
+        'All users in the pre-filtered cohort (ordered by date joined).',
     },
     funnel__active_adjusted: {
       label: 'Adjusted registered users',

@@ -86,7 +86,15 @@ export const StyledChevron = styled(ChevronRightIcon)`
   color: ${({ theme }) => theme.color.text.accent};
 `;
 
-export const Count = ({ count, label }: { count: number; label?: string }) => {
+// `count` is optional on purpose: these overviews render their structure before the
+// counts arrive, and an absent number shows an inline spinner in place of that one value.
+export const Count = ({
+  count,
+  label,
+}: {
+  count?: number;
+  label?: string;
+}) => {
   if (isNumber(count))
     return (
       <Text tag="span" bold={!!label}>
@@ -107,7 +115,7 @@ export function HoverableLiveListDescription({
   title: string;
   description: string;
   linkTo: string;
-  count: number;
+  count?: number;
   showCount?: boolean;
 }) {
   return (

@@ -53,6 +53,24 @@ export type UserJourneyV5Request = {
   volunteers_only?: boolean;
 };
 
+export type UserJourneyV5DefinitionResponse = {
+  definition: PartitionDefinitionPayload;
+};
+
+/**
+ * The journey shape only — no counting, so it returns immediately.
+ *
+ * Fetched separately from the counts so the page can paint the whole journey while the
+ * bucket queries are still running. The definition still comes from the server; keeping
+ * a copy in the client is what let V4's `buckets.ts` drift from the queries.
+ */
+export function fetchUserJourneyV5Definition(): Promise<UserJourneyV5DefinitionResponse> {
+  return apiFetch<UserJourneyV5DefinitionResponse>(
+    '/api/matching/users/statistics/user_journey_v5/definition/',
+    { method: 'GET' },
+  );
+}
+
 export function fetchUserJourneyV5(
   body: UserJourneyV5Request = {},
 ): Promise<UserJourneyV5Response> {
