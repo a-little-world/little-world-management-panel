@@ -25,7 +25,7 @@ const MATCHES_FIELDS = [
   { key: 'status', label: 'Status' },
   { key: 'match_type', label: 'Type' },
   { key: 'uuid', label: 'Match ID (click to view)' },
-  { key: 'video_call_success_units', label: 'Video Success Units' },
+  { key: 'match_tokens', label: 'Match Tokens' },
   { key: 'user1', label: 'User 1' },
   { key: 'user2', label: 'User 2' },
   { key: 'bucket', label: 'Bucket' },
@@ -103,7 +103,7 @@ export function MatchesTable({ matchList, list }) {
                     );
                   }
 
-                  if (key === 'video_call_success_units') {
+                  if (key === 'match_tokens') {
                     const participants = `${match.user1.id},${match.user2.id}`;
                     const query = createSearchParams({
                       list: 'all',
@@ -112,7 +112,7 @@ export function MatchesTable({ matchList, list }) {
                     return (
                       <TableCell key={match.uuid + key}>
                         <Link to={`/video-calls/?${query}`}>
-                          {match.video_call_success_units ?? 0}
+                          {match.match_tokens ?? 0}
                         </Link>
                       </TableCell>
                     );

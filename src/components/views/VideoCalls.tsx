@@ -38,7 +38,7 @@ const DEFAULT_VIDEO_CALL_FIELDS = [
   { key: 'status', label: 'Status' },
   { key: 'both_have_been_active', label: 'Both Active?' },
   { key: 'duration', label: 'Duration' },
-  { key: 'success_units', label: 'Success Units' },
+  { key: 'call_minutes', label: 'Call Minutes' },
 ];
 
 export function VideoCallsTable({ videoCallsList }) {
