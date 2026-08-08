@@ -49,6 +49,7 @@ const MATCH_EXPORT_HEADERS = [
   'status',
   'match_type',
   'bucket',
+  'bucket_label',
   'created_at',
   'updated_at',
   'latest_interaction_at',

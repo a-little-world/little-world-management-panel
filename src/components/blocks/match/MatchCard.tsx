@@ -269,6 +269,7 @@ const MatchCard = (props: MatchCardProps) => {
         />
       </InfoSection>
       <StatsRow $variant={variant}>
+        <Stat label="Tokens" stat={match.match_tokens ?? 0} />
         <Stat label="Messages" stat={match.total_messages_counter} />
         <Stat
           label="Video Calls"
@@ -351,6 +352,10 @@ const MatchCard = (props: MatchCardProps) => {
             />
           </TimestampSection>
           <MatchStatsCards>
+            <StatCard>
+              <StatValue>{match.match_tokens ?? 0}</StatValue>
+              <StatLabel>Match tokens</StatLabel>
+            </StatCard>
             <StatCard>
               <StatValue>{match.total_messages_counter}</StatValue>
               <StatLabel>Total messages</StatLabel>

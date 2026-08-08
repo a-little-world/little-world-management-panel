@@ -105,6 +105,7 @@ interface User {
   state: UserState;
   matches: UserMatches;
   bucket?: string;
+  bucket_label?: string;
   random_call_lobby_count?: number;
 }
 
@@ -409,7 +410,7 @@ export const UserCard: React.FC<UserCardProps> = ({
           </Tag>
           {user.bucket && (
             <Tag bold color="#000000">
-              {user.bucket}
+              {user.bucket_label ?? user.bucket}
             </Tag>
           )}
         </HeaderContainer>
@@ -470,7 +471,7 @@ export const UserCard: React.FC<UserCardProps> = ({
           </Tag>
           {user.bucket && (
             <BucketTag bold color="#000000" $horizontal={horizontal}>
-              {user.bucket}
+              {user.bucket_label ?? user.bucket}
             </BucketTag>
           )}
           {partial && (
