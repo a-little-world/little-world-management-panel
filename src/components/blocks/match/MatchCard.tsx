@@ -16,8 +16,8 @@ import { LANGUAGES, MATCH_STATUS } from '../../../constants';
 import {
   formatDate,
   formatDurationSeconds,
-  formatTimeDistance,
   formatRoundedDuration,
+  formatTimeDistance,
 } from '../../../helpers/date';
 import DataField from '../../atoms/DataField';
 import MatchReport, { getMatchReportProps } from '../../atoms/MatchReport';
@@ -47,8 +47,12 @@ const CardRoot = styled.div<{ $variant: 'full' | 'compact' }>`
           gap: ${theme.spacing.medium};
           border: ${theme.color.border.subtle} solid 1px;
           border-radius: ${theme.radius.small};
-          padding: ${theme.spacing.large} ${theme.spacing.xxlarge};
+          padding: ${theme.spacing.large} ${theme.spacing.medium};
           background: ${theme.color.surface.primary};
+
+          @media (min-width: ${({ theme }) => theme.breakpoints.large}) {
+            padding: ${theme.spacing.large} ${theme.spacing.xxlarge};
+          }
         `
       : css`
           padding: 10px;
@@ -171,6 +175,11 @@ const ViewDetailsButton = styled(Button)`
   margin-top: 10px;
 `;
 
+const PlatformLinkWrap = styled.div`
+  display: flex;
+  justify-content: center;
+`;
+
 const StyledMatchReport = styled(MatchReport)`
   margin-bottom: ${({ theme }) => theme.spacing.xxsmall};
 `;
@@ -222,13 +231,10 @@ export type MatchCardProps = MatchCardPropsFull | MatchCardPropsCompact;
 const formatPanelInstant = (iso: string | null | undefined, locale: string) =>
   iso ? formatDate(new Date(iso), 'dd.MM.yy HH:mm', locale) : 'n/a';
 
-const formatAverageVideoCallDuration = (
-  seconds: number | null | undefined,
-) => (seconds != null ? formatDurationSeconds(seconds) : 'n/a');
+const formatAverageVideoCallDuration = (seconds: number | null | undefined) =>
+  seconds != null ? formatDurationSeconds(seconds) : 'n/a';
 
-const formatTotalVideoCallDuration = (
-  seconds: number | null | undefined,
-) =>
+const formatTotalVideoCallDuration = (seconds: number | null | undefined) =>
   seconds != null ? formatRoundedDuration(seconds) : 'n/a';
 
 const MatchCard = (props: MatchCardProps) => {
@@ -241,6 +247,7 @@ const MatchCard = (props: MatchCardProps) => {
 
   const isProposed = match.status === MATCH_STATUS.proposed;
   const timeLocale = isCompact ? LANGUAGES.de : LANGUAGES.en;
+  const matchUuid = String(match.uuid ?? match.id);
 
   const compactCard = (
     <CardRoot $variant={variant}>
@@ -273,7 +280,12 @@ const MatchCard = (props: MatchCardProps) => {
         <Stat label="Messages" stat={match.total_messages_counter} />
         <Stat
           label="Video Calls"
-          stat={match.total_mutal_video_calls_counter}
+          // Qualifying calls where the retrieve payload has them, so this agrees with the
+          // durations beside it. List rows only carry the stored counter.
+          stat={
+            match.qualifying_video_call_count ??
+            match.total_mutal_video_calls_counter
+          }
         />
         <Stat
           label="Avg. call duration"
@@ -305,6 +317,11 @@ const MatchCard = (props: MatchCardProps) => {
         <Logo label="Little World Logo" width="64px" />
         <UserInfo user={match.user2} match={match} />
       </MatchUsersRow>
+      <PlatformLinkWrap>
+        <Link href={`/app/match/${matchUuid}`} target="_blank">
+          View on platform
+        </Link>
+      </PlatformLinkWrap>
       {!match.active && (
         <StyledMatchReport {...getMatchReportProps(match, isProposed)} />
       )}
@@ -361,7 +378,10 @@ const MatchCard = (props: MatchCardProps) => {
               <StatLabel>Total messages</StatLabel>
             </StatCard>
             <StatCard>
-              <StatValue>{match.total_mutal_video_calls_counter}</StatValue>
+              <StatValue>
+                {match.qualifying_video_call_count ??
+                  match.total_mutal_video_calls_counter}
+              </StatValue>
               <StatLabel>Total video calls</StatLabel>
             </StatCard>
             <StatCard>
