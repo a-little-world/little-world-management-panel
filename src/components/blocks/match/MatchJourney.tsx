@@ -35,6 +35,20 @@ type WeeklyActivity = {
   is_free_play_week: boolean;
 };
 
+type JourneyStreak = {
+  current: number;
+  record: number;
+  record_start_week: number | null;
+  record_end_week: number | null;
+};
+
+const EMPTY_STREAK: JourneyStreak = {
+  current: 0,
+  record: 0,
+  record_start_week: null,
+  record_end_week: null,
+};
+
 const JourneyGrid = styled.div`
   display: flex;
   flex-direction: column;
@@ -278,52 +292,6 @@ const formatBestRun = (startWeek: number | null, endWeek: number | null) => {
   return `Weeks ${startWeek} to ${endWeek}`;
 };
 
-const getStreakStats = (
-  weeklyActivity: WeeklyActivity[],
-  predicate: (week: WeeklyActivity) => boolean,
-  currentWeek: number,
-) => {
-  const elapsedWeeks = weeklyActivity
-    .filter(week => week.week <= currentWeek)
-    .sort((a, b) => a.week - b.week);
-  let runningRecord = 0;
-  let record = 0;
-  let recordStartWeek: number | null = null;
-  let recordEndWeek: number | null = null;
-  let runningStartWeek: number | null = null;
-
-  elapsedWeeks.forEach(week => {
-    if (predicate(week)) {
-      if (runningRecord === 0) {
-        runningStartWeek = week.week;
-      }
-      runningRecord += 1;
-      if (runningRecord > record) {
-        record = runningRecord;
-        recordStartWeek = runningStartWeek;
-        recordEndWeek = week.week;
-      }
-      return;
-    }
-
-    runningRecord = 0;
-    runningStartWeek = null;
-  });
-
-  let current = 0;
-  for (let i = elapsedWeeks.length - 1; i >= 0; i--) {
-    const week = elapsedWeeks[i];
-    if (predicate(week)) {
-      current += 1;
-      continue;
-    }
-
-    break;
-  }
-
-  return { current, record, recordStartWeek, recordEndWeek };
-};
-
 const hasActivity = (week: WeeklyActivity) =>
   week.messages > 0 || week.video_calls > 0;
 
@@ -349,16 +317,10 @@ const getVisibleWeeklyActivity = (
 
 const StreakSummaryRow = ({
   label,
-  current,
-  record,
-  recordStartWeek,
-  recordEndWeek,
+  streak,
 }: {
   label: string;
-  current: number;
-  record: number;
-  recordStartWeek: number | null;
-  recordEndWeek: number | null;
+  streak: JourneyStreak;
 }) => (
   <StreakRow>
     <Text type={TextTypes.Body7} bold>
@@ -368,21 +330,21 @@ const StreakSummaryRow = ({
       <div>
         <Text type={TextTypes.Body7}>Current</Text>
         <Text type={TextTypes.Body4} bold>
-          {current}
+          {streak.current}
         </Text>
       </div>
       <div>
         <Text type={TextTypes.Body7}>Record</Text>
         <Text type={TextTypes.Body4} bold>
-          {record}
+          {streak.record}
         </Text>
       </div>
     </StreakStats>
     <Text type={TextTypes.Body7}>
-      {record > 0
-        ? `Best run: ${pluralizeWeeks(record)} in a row (${formatBestRun(
-            recordStartWeek,
-            recordEndWeek,
+      {streak.record > 0
+        ? `Best run: ${pluralizeWeeks(streak.record)} in a row (${formatBestRun(
+            streak.record_start_week,
+            streak.record_end_week,
           )})`
         : 'No streak yet'}
     </Text>
@@ -407,21 +369,10 @@ const MatchJourney = ({ match }: { match: any }) => {
     1,
     ...weeklyActivity.flatMap(week => [week.messages, week.video_calls]),
   );
-  const messageStreak = getStreakStats(
-    weeklyActivity,
-    week => week.messages > 0,
-    currentWeek,
-  );
-  const videoCallStreak = getStreakStats(
-    weeklyActivity,
-    week => week.video_calls > 0,
-    currentWeek,
-  );
-  const activeStreak = getStreakStats(
-    weeklyActivity,
-    week => week.messages > 0 || week.video_calls > 0,
-    currentWeek,
-  );
+  const streaks = match?.journey?.streaks;
+  const messageStreak: JourneyStreak = streaks?.messages ?? EMPTY_STREAK;
+  const videoCallStreak: JourneyStreak = streaks?.video_calls ?? EMPTY_STREAK;
+  const activeStreak: JourneyStreak = streaks?.any_activity ?? EMPTY_STREAK;
   const {
     lastActivityWeek,
     weeks: visibleWeeklyActivity,
@@ -497,27 +448,9 @@ const MatchJourney = ({ match }: { match: any }) => {
         <SummaryCard>
           <Text type={TextTypes.Body7}>Weekly streaks</Text>
           <StreakRows>
-            <StreakSummaryRow
-              label="Messages"
-              current={messageStreak.current}
-              record={messageStreak.record}
-              recordStartWeek={messageStreak.recordStartWeek}
-              recordEndWeek={messageStreak.recordEndWeek}
-            />
-            <StreakSummaryRow
-              label="Video calls"
-              current={videoCallStreak.current}
-              record={videoCallStreak.record}
-              recordStartWeek={videoCallStreak.recordStartWeek}
-              recordEndWeek={videoCallStreak.recordEndWeek}
-            />
-            <StreakSummaryRow
-              label="Any activity"
-              current={activeStreak.current}
-              record={activeStreak.record}
-              recordStartWeek={activeStreak.recordStartWeek}
-              recordEndWeek={activeStreak.recordEndWeek}
-            />
+            <StreakSummaryRow label="Messages" streak={messageStreak} />
+            <StreakSummaryRow label="Video calls" streak={videoCallStreak} />
+            <StreakSummaryRow label="Any activity" streak={activeStreak} />
           </StreakRows>
         </SummaryCard>
       </SummaryGrid>
