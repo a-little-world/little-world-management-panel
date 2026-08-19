@@ -236,10 +236,6 @@ function RandomCallHistory() {
             <ProvisionalBucketStats $provisional={!proposalsAreFinal}>
               <StatCards>
                 <StatCard>
-                  <StatValue>{proposal_statistics.pending_count}</StatValue>
-                  <StatLabel>Pending Proposals</StatLabel>
-                </StatCard>
-                <StatCard>
                   <StatValue>{proposal_statistics.accepted_count}</StatValue>
                   <StatLabel>Accepted Proposals</StatLabel>
                 </StatCard>
@@ -267,11 +263,8 @@ function RandomCallHistory() {
           {/* Proposals */}
           <Section>
             <SectionTitle>Proposals</SectionTitle>
-            <Tabs defaultValue="pending">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="pending">
-                  Pending ({proposal_statistics.pending_count})
-                </TabsTrigger>
+            <Tabs defaultValue="accepted">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="accepted">
                   Accepted ({proposal_statistics.accepted_count})
                 </TabsTrigger>
@@ -282,9 +275,7 @@ function RandomCallHistory() {
                   Expired ({proposal_statistics.expired_count})
                 </TabsTrigger>
               </TabsList>
-              <TabsContent value="pending">
-                <MatchProposalsTable matches={match_proposals.pending} />
-              </TabsContent>
+
               <TabsContent value="accepted">
                 <MatchProposalsTable
                   matches={match_proposals.accepted}

@@ -9,6 +9,7 @@ import {
   CardFooter,
   CardHeader,
   CardSizes,
+  CopyIcon,
   Loading,
   LoadingSizes,
   Modal,
@@ -25,7 +26,7 @@ import {
 import React, { useDeferredValue, useMemo, useState } from 'react';
 import useSWR, { mutate } from 'swr';
 
-import { useTheme } from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 import {
   ADMIN_SHORT_LINKS_ENDPOINT,
   AdminShortLink,
@@ -51,6 +52,27 @@ import {
 } from '../../../atoms/Table';
 import { usePageHeader } from '../../../blocks/LayoutHeaderContext';
 import LinkForm, { LinkFormValues } from './EditShortLink';
+
+/**
+ * The public URL a short link redirects from. Built here rather than read off the
+ * record: the backend stores only the tag, and `links/<tag>/` is the route the
+ * redirect view is registered at. The admin panel is served by that same Django app,
+ * so its origin is the right host in every environment.
+ */
+const shortLinkUrl = (tag: string) => `${window.location.origin}/links/${tag}/`;
+
+const LinkCell = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xxsmall};
+`;
+
+const ShortLinkAnchor = styled.a`
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: ${({ theme }) => theme.color.text.accent};
+`;
 
 const getDefaultFormValues = (): LinkFormValues => ({
   tag: '',
@@ -179,6 +201,27 @@ function Links() {
     }
   };
 
+  const copyShortLink = async (tag: string) => {
+    const url = shortLinkUrl(tag);
+    try {
+      await navigator.clipboard.writeText(url);
+      setLinksToast({
+        id: Date.now(),
+        headline: 'Copied',
+        title: url,
+      });
+    } catch {
+      // Clipboard access needs a secure context, and `navigator.clipboard` is simply
+      // absent without one — the link is on screen either way, so say so.
+      setLinksToast({
+        id: Date.now(),
+        headline: 'Error',
+        title:
+          'Could not reach the clipboard. Select the link and copy it manually.',
+      });
+    }
+  };
+
   const openArchiveModal = (link: AdminShortLink) => {
     setArchivingLink(link);
     setArchiveOpen(true);
@@ -283,7 +326,8 @@ function Links() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Tag</TableHead>
-                  <TableHead>Destination</TableHead>
+                  <TableHead>Link</TableHead>
+                  <TableHead>Redirects to</TableHead>
                   <TableHead className="w-44 text-center">Clicks</TableHead>
                   <TableHead className="w-28 text-center">Home root</TableHead>
                   <TableHead className="w-28 text-center">Tracking</TableHead>
@@ -296,6 +340,31 @@ function Links() {
                 {(data ?? []).map((link: AdminShortLink) => (
                   <TableRow key={link.id}>
                     <TableCell className="font-medium">{link.tag}</TableCell>
+                    <TableCell className="max-w-[20rem]">
+                      <LinkCell>
+                        <ShortLinkAnchor
+                          href={shortLinkUrl(link.tag)}
+                          title={shortLinkUrl(link.tag)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {shortLinkUrl(link.tag)}
+                        </ShortLinkAnchor>
+                        <Button
+                          variation={ButtonVariations.Circle}
+                          appearance={ButtonAppearance.Secondary}
+                          size={ButtonSizes.Small}
+                          onClick={() => copyShortLink(link.tag)}
+                          title={`Copy the link for “${link.tag}”`}
+                        >
+                          <CopyIcon
+                            label={`copy link for ${link.tag}`}
+                            width={16}
+                            height={16}
+                          />
+                        </Button>
+                      </LinkCell>
+                    </TableCell>
                     <TableCell
                       className="max-w-[18rem] truncate"
                       title={link.url}

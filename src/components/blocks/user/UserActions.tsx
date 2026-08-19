@@ -34,7 +34,6 @@ import {
   setHadPrematchingCall,
   setHasMatchPriority,
   setNewsletterSubscribed,
-  setRandomCallsAccess,
   setUserManagementPermission,
   setUserSearching,
   setUserUnresponsive,
@@ -501,8 +500,6 @@ const UserActions = ({
           func = setUserSearching;
         } else if (key === 'priority') {
           func = setHasMatchPriority;
-        } else if (key === 'randomCallsAccess') {
-          func = setRandomCallsAccess;
         } else if (key === 'user_type' || key === 'country_of_residence') {
           func = updateUserProfileFields;
         } else {
@@ -553,9 +550,6 @@ const UserActions = ({
     });
   };
 
-  const hasRandomCallsAccess = (
-    user.state.extra_user_permissions || []
-  ).includes('use-random-calls');
   const permissionsStatus = (
     permissionsError as { status?: number } | undefined
   )?.status;
@@ -807,30 +801,6 @@ const UserActions = ({
                         defaultChecked={value}
                         error={error?.message}
                         label={'Should the user be given match priority?'}
-                        required={false}
-                      />
-                    )}
-                  />
-                  <Controller
-                    defaultValue={hasRandomCallsAccess}
-                    name="randomCallsAccess"
-                    control={control}
-                    render={({
-                      field: { onChange, onBlur, value, name, ref },
-                      fieldState: { error },
-                    }) => (
-                      <Checkbox
-                        id="randomCallsAccess"
-                        name={name}
-                        inputRef={ref}
-                        onCheckedChange={val =>
-                          onChange({ target: { value: val } })
-                        }
-                        onBlur={onBlur}
-                        value={value}
-                        defaultChecked={value}
-                        error={error?.message}
-                        label={'Random Calls Access'}
                         required={false}
                       />
                     )}
