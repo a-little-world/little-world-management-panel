@@ -1,9 +1,9 @@
 import {
   Loading,
   LoadingSizes,
+  Select,
   StatusMessage,
   StatusTypes,
-  Select,
   Text,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
@@ -244,7 +244,9 @@ function CourseStats() {
                         <TableHead className="text-right">
                           Currently here
                         </TableHead>
-                        <TableHead className="text-right">Drop-off</TableHead>
+                        <TableHead className="text-right">
+                          Still on chapter
+                        </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
