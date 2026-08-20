@@ -23,6 +23,7 @@ import {
 } from '../../api/index';
 import { LANGUAGES } from '../../constants';
 import { formatDate, formatTime } from '../../helpers/date';
+import { toListSelectOptions } from '../../helpers/filterLists';
 import {
   dataFetcher,
   useFilterOptions,
@@ -408,12 +409,7 @@ export function Scores() {
                 value={scoringList}
                 options={[
                   { label: 'Default', value: 'default' },
-                  ...(userFilterOptions?.lists?.map(
-                    ({ name, description }: any) => ({
-                      value: name,
-                      label: description,
-                    }),
-                  ) ?? []),
+                  ...toListSelectOptions(userFilterOptions?.lists),
                 ]}
                 onValueChange={setScoringList}
                 placeholder="Select a scoring list..."

@@ -11,6 +11,7 @@ import { Link, createSearchParams, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { formatDate } from '../../helpers/date';
+import { toListSelectOptions } from '../../helpers/filterLists';
 import { useVideoCallsFilterOptions, useVideoCallsListData } from '../../store';
 import Pagination from '../atoms/Pagination';
 import {
@@ -172,10 +173,7 @@ function VideoCalls() {
         {/* Assuming you have filter options similarly set up like in Users component */}
         <StyledDropdown
           value={list}
-          options={filterOptions.lists.map(({ name, description }) => ({
-            value: name,
-            label: description,
-          }))}
+          options={toListSelectOptions(filterOptions.lists)}
           onValueChange={val => changeList(val)}
           placeholder="Select a video calls list..."
           cannotError

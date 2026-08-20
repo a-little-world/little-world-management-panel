@@ -12,6 +12,7 @@ import { Controller, useForm } from 'react-hook-form';
 import styled from 'styled-components';
 
 import { sendBulkEmail } from '../../api/index';
+import { toListSelectOptions } from '../../helpers/filterLists';
 import { onFormError, useFilterOptions, useUserListData } from '../../store';
 import {
   Sheet,
@@ -126,12 +127,7 @@ export function SendEmailSheet({
                         error={error?.message}
                         label={'User List'}
                         placeholder="Select a user list..."
-                        options={optionsWithoutAll.map(
-                          ({ name, description }) => ({
-                            value: name,
-                            label: description,
-                          }),
-                        )}
+                        options={toListSelectOptions(optionsWithoutAll)}
                         inModal
                       />
                     )}

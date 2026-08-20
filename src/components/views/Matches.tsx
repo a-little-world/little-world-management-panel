@@ -7,6 +7,7 @@ import {
   getMatchesExportPage,
   getMatchesListPaginationMeta,
 } from '../../api/index';
+import { toListSelectOptions } from '../../helpers/filterLists';
 import { useMatchListData, useMatchesFilterOptions } from '../../store';
 import {
   DownloadSettingsModal,
@@ -152,12 +153,7 @@ export function Matches() {
       >
         <StyledDropdown
           value={list}
-          options={filterOptions?.lists?.map(
-            ({ name, description }: { name: string; description: string }) => ({
-              value: name,
-              label: description,
-            }),
-          )}
+          options={toListSelectOptions(filterOptions?.lists)}
           onValueChange={changeList}
           placeholder="Select a match list..."
           cannotError
