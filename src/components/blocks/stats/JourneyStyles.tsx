@@ -7,13 +7,15 @@ import {
 import { isNumber } from 'lodash';
 import React from 'react';
 import { styled } from 'styled-components';
-import LoadingSpinner from '../../atoms/LoadingSpinner';
 
+import { MATCH_SUCCESS_DOCUMENTATION_ROUTE } from '../../../router/routes';
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from '../../atoms/HoverCard';
+import LoadingSpinner from '../../atoms/LoadingSpinner';
+import { usePageHeader } from '../LayoutHeaderContext';
 
 export const SectionTitle = styled(Text)`
   font-weight: bold;
@@ -164,4 +166,26 @@ export function DetailsOpenLink({
       </HoverCardContent>
     </HoverCard>
   );
+}
+
+const HeaderDocsLink = styled(Link).attrs({
+  textDecoration: false,
+})`
+  color: ${({ theme }) => theme.color.text.info};
+  white-space: nowrap;
+
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
+export function useMatchSuccessPageHeader() {
+  usePageHeader({
+    showMenu: true,
+    actions: (
+      <HeaderDocsLink to={MATCH_SUCCESS_DOCUMENTATION_ROUTE}>
+        How match success is measured
+      </HeaderDocsLink>
+    ),
+  });
 }

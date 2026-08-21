@@ -13,16 +13,7 @@ import {
   DateRangePicker,
   formatLocalDateYmd,
 } from '../../atoms/DateRangePicker';
-import {
-  BreakdownLabel,
-  BreakdownList,
-  BreakdownRow,
-  BreakdownValue,
-  StatCard,
-  StatCards,
-  StatLabel,
-  StatValue,
-} from '../../atoms/stats/StatCard';
+import Stat, { StatCards, type StatBreakdownItem } from '../../atoms/stats/Stat';
 import { DataGraphStackedPercentages } from '../DataGraph';
 
 type MatchProposalType = 'all' | 'standard' | 'random_call';
@@ -173,71 +164,49 @@ const formatCountWithPercentage = (
 const formatDays = (value: number | null | undefined) =>
   value === null || value === undefined ? '-' : `${value} days`;
 
-const OutcomeWaitingTimeBreakdown = ({
-  summary,
-  isLoading,
-}: {
-  summary?: OutcomeWaitingTimeSummary;
-  isLoading: boolean;
-}) => (
-  <BreakdownList>
-    <BreakdownRow>
-      <BreakdownLabel>Average</BreakdownLabel>
-      <BreakdownValue>
-        {isLoading ? '-' : formatDays(summary?.average_days)}
-      </BreakdownValue>
-    </BreakdownRow>
-    <BreakdownRow>
-      <BreakdownLabel>Median</BreakdownLabel>
-      <BreakdownValue>
-        {isLoading ? '-' : formatDays(summary?.median_days)}
-      </BreakdownValue>
-    </BreakdownRow>
-    <BreakdownRow>
-      <BreakdownLabel>First proposals</BreakdownLabel>
-      <BreakdownValue>{isLoading ? '-' : (summary?.count ?? 0)}</BreakdownValue>
-    </BreakdownRow>
-  </BreakdownList>
-);
+const outcomeWaitingTimeBreakdown = (
+  summary: OutcomeWaitingTimeSummary | undefined,
+  isLoading: boolean,
+): StatBreakdownItem[] => [
+  {
+    label: 'Average',
+    value: isLoading ? '-' : formatDays(summary?.average_days),
+  },
+  {
+    label: 'Median',
+    value: isLoading ? '-' : formatDays(summary?.median_days),
+  },
+  {
+    label: 'First proposals',
+    value: isLoading ? '-' : (summary?.count ?? 0),
+  },
+];
 
-const WaitingTimeBreakdown = ({
-  summary,
-  isLoading,
-}: {
-  summary?: WaitingTimeSummary;
-  isLoading: boolean;
-}) => (
-  <BreakdownList>
-    <BreakdownRow>
-      <BreakdownLabel>Average</BreakdownLabel>
-      <BreakdownValue>
-        {isLoading ? '-' : formatDays(summary?.average_days)}
-      </BreakdownValue>
-    </BreakdownRow>
-    <BreakdownRow>
-      <BreakdownLabel>Median</BreakdownLabel>
-      <BreakdownValue>
-        {isLoading ? '-' : formatDays(summary?.median_days)}
-      </BreakdownValue>
-    </BreakdownRow>
-    <BreakdownRow>
-      <BreakdownLabel>Still waiting</BreakdownLabel>
-      <BreakdownValue>
-        {isLoading ? '-' : (summary?.still_waiting_count ?? 0)}
-      </BreakdownValue>
-    </BreakdownRow>
-    <BreakdownRow>
-      <BreakdownLabel>Received</BreakdownLabel>
-      <BreakdownValue>
-        {isLoading ? '-' : (summary?.completed_count ?? 0)}
-      </BreakdownValue>
-    </BreakdownRow>
-    <BreakdownRow>
-      <BreakdownLabel>Onboarded in range</BreakdownLabel>
-      <BreakdownValue>{isLoading ? '-' : (summary?.count ?? 0)}</BreakdownValue>
-    </BreakdownRow>
-  </BreakdownList>
-);
+const waitingTimeBreakdown = (
+  summary: WaitingTimeSummary | undefined,
+  isLoading: boolean,
+): StatBreakdownItem[] => [
+  {
+    label: 'Average',
+    value: isLoading ? '-' : formatDays(summary?.average_days),
+  },
+  {
+    label: 'Median',
+    value: isLoading ? '-' : formatDays(summary?.median_days),
+  },
+  {
+    label: 'Still waiting',
+    value: isLoading ? '-' : (summary?.still_waiting_count ?? 0),
+  },
+  {
+    label: 'Received',
+    value: isLoading ? '-' : (summary?.completed_count ?? 0),
+  },
+  {
+    label: 'Onboarded in range',
+    value: isLoading ? '-' : (summary?.count ?? 0),
+  },
+];
 
 const getDefaultStartDate = () => {
   const date = new Date();
@@ -381,58 +350,54 @@ const ProposalStats = () => {
       )}
 
       <StatCards>
-        <StatCard>
-          <StatValue>
-            {isLoading ? '-' : (data?.total_proposals ?? 0)}
-          </StatValue>
-          <StatLabel>Total proposals</StatLabel>
-          <BreakdownList>
-            <BreakdownRow>
-              <BreakdownLabel>Still pending</BreakdownLabel>
-              <BreakdownValue>
-                {isLoading
-                  ? '-'
-                  : formatCountWithPercentage(
-                      data?.pending_count,
-                      data?.pending_percentage,
-                    )}
-              </BreakdownValue>
-            </BreakdownRow>
-          </BreakdownList>
-        </StatCard>
-        <StatCard>
-          <StatValue>
-            {isLoading
+        <Stat
+          label="Total proposals"
+          stat={isLoading ? '-' : (data?.total_proposals ?? 0)}
+          breakdown={[
+            {
+              label: 'Still pending',
+              value: isLoading
+                ? '-'
+                : formatCountWithPercentage(
+                    data?.pending_count,
+                    data?.pending_percentage,
+                  ),
+            },
+          ]}
+        />
+        <Stat
+          label="Accepted"
+          stat={
+            isLoading
               ? '-'
               : formatCountWithPercentage(
                   data?.accepted_count,
                   data?.accepted_percentage,
-                )}
-          </StatValue>
-          <StatLabel>Accepted</StatLabel>
-        </StatCard>
-        <StatCard>
-          <StatValue>
-            {isLoading
+                )
+          }
+        />
+        <Stat
+          label="Expired"
+          stat={
+            isLoading
               ? '-'
               : formatCountWithPercentage(
                   data?.expired_count,
                   data?.expired_percentage,
-                )}
-          </StatValue>
-          <StatLabel>Expired</StatLabel>
-        </StatCard>
-        <StatCard>
-          <StatValue>
-            {isLoading
+                )
+          }
+        />
+        <Stat
+          label="Rejected"
+          stat={
+            isLoading
               ? '-'
               : formatCountWithPercentage(
                   data?.rejected_count,
                   data?.rejected_percentage,
-                )}
-          </StatValue>
-          <StatLabel>Rejected</StatLabel>
-        </StatCard>
+                )
+          }
+        />
       </StatCards>
 
       <WaitingTimeSection>
@@ -447,48 +412,48 @@ const ProposalStats = () => {
           </MutedText>
         </HeaderText>
         <StatCards>
-          <StatCard>
-            <StatValue>
-              {isLoading
+          <Stat
+            label="First proposal (learners)"
+            stat={
+              isLoading
                 ? '-'
                 : formatDays(
                     data?.waiting_time?.first_proposal_learners?.median_days,
-                  )}
-            </StatValue>
-            <StatLabel>First proposal (learners)</StatLabel>
-            <WaitingTimeBreakdown
-              isLoading={isLoading}
-              summary={data?.waiting_time?.first_proposal_learners}
-            />
-          </StatCard>
-          <StatCard>
-            <StatValue>
-              {isLoading
+                  )
+            }
+            breakdown={waitingTimeBreakdown(
+              data?.waiting_time?.first_proposal_learners,
+              isLoading,
+            )}
+          />
+          <Stat
+            label="First match (learners)"
+            stat={
+              isLoading
                 ? '-'
                 : formatDays(
                     data?.waiting_time?.first_match_learners?.median_days,
-                  )}
-            </StatValue>
-            <StatLabel>First match (learners)</StatLabel>
-            <WaitingTimeBreakdown
-              isLoading={isLoading}
-              summary={data?.waiting_time?.first_match_learners}
-            />
-          </StatCard>
-          <StatCard>
-            <StatValue>
-              {isLoading
+                  )
+            }
+            breakdown={waitingTimeBreakdown(
+              data?.waiting_time?.first_match_learners,
+              isLoading,
+            )}
+          />
+          <Stat
+            label="First match (volunteers)"
+            stat={
+              isLoading
                 ? '-'
                 : formatDays(
                     data?.waiting_time?.first_match_volunteers?.median_days,
-                  )}
-            </StatValue>
-            <StatLabel>First match (volunteers)</StatLabel>
-            <WaitingTimeBreakdown
-              isLoading={isLoading}
-              summary={data?.waiting_time?.first_match_volunteers}
-            />
-          </StatCard>
+                  )
+            }
+            breakdown={waitingTimeBreakdown(
+              data?.waiting_time?.first_match_volunteers,
+              isLoading,
+            )}
+          />
         </StatCards>
       </WaitingTimeSection>
 
@@ -504,51 +469,51 @@ const ProposalStats = () => {
           </MutedText>
         </HeaderText>
         <StatCards>
-          <StatCard>
-            <StatValue>
-              {isLoading
+          <Stat
+            label="Accepted first proposals"
+            stat={
+              isLoading
                 ? '-'
                 : formatDays(
                     data?.first_proposal_outcome_waiting_time?.accepted
                       ?.median_days,
-                  )}
-            </StatValue>
-            <StatLabel>Accepted first proposals</StatLabel>
-            <OutcomeWaitingTimeBreakdown
-              isLoading={isLoading}
-              summary={data?.first_proposal_outcome_waiting_time?.accepted}
-            />
-          </StatCard>
-          <StatCard>
-            <StatValue>
-              {isLoading
+                  )
+            }
+            breakdown={outcomeWaitingTimeBreakdown(
+              data?.first_proposal_outcome_waiting_time?.accepted,
+              isLoading,
+            )}
+          />
+          <Stat
+            label="Expired first proposals"
+            stat={
+              isLoading
                 ? '-'
                 : formatDays(
                     data?.first_proposal_outcome_waiting_time?.expired
                       ?.median_days,
-                  )}
-            </StatValue>
-            <StatLabel>Expired first proposals</StatLabel>
-            <OutcomeWaitingTimeBreakdown
-              isLoading={isLoading}
-              summary={data?.first_proposal_outcome_waiting_time?.expired}
-            />
-          </StatCard>
-          <StatCard>
-            <StatValue>
-              {isLoading
+                  )
+            }
+            breakdown={outcomeWaitingTimeBreakdown(
+              data?.first_proposal_outcome_waiting_time?.expired,
+              isLoading,
+            )}
+          />
+          <Stat
+            label="Rejected first proposals"
+            stat={
+              isLoading
                 ? '-'
                 : formatDays(
                     data?.first_proposal_outcome_waiting_time?.rejected
                       ?.median_days,
-                  )}
-            </StatValue>
-            <StatLabel>Rejected first proposals</StatLabel>
-            <OutcomeWaitingTimeBreakdown
-              isLoading={isLoading}
-              summary={data?.first_proposal_outcome_waiting_time?.rejected}
-            />
-          </StatCard>
+                  )
+            }
+            breakdown={outcomeWaitingTimeBreakdown(
+              data?.first_proposal_outcome_waiting_time?.rejected,
+              isLoading,
+            )}
+          />
         </StatCards>
       </WaitingTimeSection>
 

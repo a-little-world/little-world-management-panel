@@ -27,6 +27,7 @@ import {
   JOURNEY_OVERVIEW_DOCUMENTATION_ROUTE,
   JOURNEY_OVERVIEW_ROUTE,
   MATCH_JOURNEY_DOCUMENTATION_ROUTE,
+  MATCH_SUCCESS_DOCUMENTATION_ROUTE,
   MULTI_USER_MANAGEMENT_DOCUMENTATION_ROUTE,
   PRE_MATCHING_CHECKOFFS_DOCUMENTATION_ROUTE,
   PREMATCH_APPOINTMENTS_ROUTE,
@@ -881,6 +882,13 @@ const documentationLinks: DocumentationLink[] = [
     route: MATCH_JOURNEY_DOCUMENTATION_ROUTE,
   },
   {
+    id: 'match-success',
+    title: 'Match Success',
+    description:
+      'How we measure a successful match and how the token scale works, including every registered version. Content is served from the live match-success code, so it stays in sync when versions change.',
+    route: MATCH_SUCCESS_DOCUMENTATION_ROUTE,
+  },
+  {
     id: 'reporting-bugs-and-issues',
     title: 'Reporting Bugs and Issues',
     description:
@@ -1175,6 +1183,8 @@ export const ReportingBugsAndIssuesDocumentation: React.FC = () => {
 };
 
 export default Documentation;
+
+export { MatchSuccessDocumentation } from './MatchSuccessDocumentation';
 
 export const MultiUserManagementDocumentation: React.FC = () => {
   return (

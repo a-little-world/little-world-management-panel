@@ -6,9 +6,7 @@ import {
   FormField as BaseFormField,
   FormLabel as BaseFormLabel,
 } from '../../atoms/FormLayout';
-import { StatCards } from '../../atoms/stats/StatCard';
-
-export { StatCard, StatLabel, StatValue } from '../../atoms/stats/StatCard';
+import { StatCards } from '../../atoms/stats/Stat';
 
 // Shared layout
 export const Header = styled.div`

@@ -2,8 +2,11 @@ import {
   Button,
   ButtonAppearance,
   ButtonSizes,
+  InfoIcon,
   Link,
   Logo,
+  ProgressRing,
+  ProgressRingTones,
   Tag,
   TagSizes,
   Text,
@@ -11,27 +14,24 @@ import {
 } from '@a-little-world/little-world-design-system';
 import React from 'react';
 import styled, { css } from 'styled-components';
+import useSWR from 'swr';
 
+import {
+  activeSuccessTokenThreshold,
+  MATCH_SUCCESS_DOCS_URL,
+  type MatchSuccessDocumentation,
+} from '../../../api/matchSuccess';
 import { LANGUAGES, MATCH_STATUS } from '../../../constants';
 import {
-  formatDate,
+  formatDateTime,
   formatDurationSeconds,
-  formatRoundedDuration,
   formatTimeDistance,
 } from '../../../helpers/date';
+import { MATCH_SUCCESS_DOCUMENTATION_ROUTE } from '../../../router/routes';
+import { dataFetcher } from '../../../store';
 import DataField from '../../atoms/DataField';
 import MatchReport, { getMatchReportProps } from '../../atoms/MatchReport';
-import Stat from '../../atoms/stats/Stat';
-import {
-  BreakdownLabel,
-  BreakdownList,
-  BreakdownRow,
-  BreakdownValue,
-  StatCard,
-  StatCards,
-  StatLabel,
-  StatValue,
-} from '../../atoms/stats/StatCard';
+import Stat, { StatRow } from '../../atoms/stats/Stat';
 import UserImage from '../../atoms/UserImage';
 import MatchProgress from './MatchProgress';
 
@@ -146,14 +146,46 @@ const StatsRow = styled.div<{ $variant: 'full' | 'compact' }>`
         `}
 `;
 
-const MatchStatsCards = styled(StatCards)`
+const MatchStatsCards = styled(StatRow)`
   padding: 0;
   width: 100%;
 `;
 
-const DurationStatValue = styled(StatValue)`
-  font-size: 1.25rem;
-  line-height: 1.2;
+const TokenDocsLink = styled(Link).attrs({
+  textDecoration: false,
+})`
+  display: inline-flex;
+  align-items: center;
+  color: ${({ theme }) => theme.color.text.secondary};
+
+  &:hover {
+    color: ${({ theme }) => theme.color.text.primary};
+  }
+`;
+
+const TokenRingFraction = styled.span`
+  display: inline-flex;
+  align-items: baseline;
+  line-height: 1;
+`;
+
+const TokenRingValue = styled(Text).attrs({
+  tag: 'span' as const,
+  bold: true,
+  type: TextTypes.Body3,
+})`
+  color: ${({ theme }) => theme.color.text.heading};
+  line-height: 1;
+  margin-right: ${({ theme }) => theme.spacing.xxxsmall};
+`;
+
+const TokenRingRest = styled(Text).attrs({
+  tag: 'span' as const,
+  bold: true,
+  type: TextTypes.Body5,
+})`
+  color: ${({ theme }) => theme.color.text.secondary};
+  line-height: 1;
 `;
 
 const StyledTag = styled(Tag)`
@@ -228,15 +260,6 @@ interface MatchCardPropsCompact {
 
 export type MatchCardProps = MatchCardPropsFull | MatchCardPropsCompact;
 
-const formatPanelInstant = (iso: string | null | undefined, locale: string) =>
-  iso ? formatDate(new Date(iso), 'dd.MM.yy HH:mm', locale) : 'n/a';
-
-const formatAverageVideoCallDuration = (seconds: number | null | undefined) =>
-  seconds != null ? formatDurationSeconds(seconds) : 'n/a';
-
-const formatTotalVideoCallDuration = (seconds: number | null | undefined) =>
-  seconds != null ? formatRoundedDuration(seconds) : 'n/a';
-
 const MatchCard = (props: MatchCardProps) => {
   const { match } = props;
   const variant = props.variant ?? 'full';
@@ -244,6 +267,13 @@ const MatchCard = (props: MatchCardProps) => {
   const onViewDetails = isCompact
     ? (props as MatchCardPropsCompact).onViewDetails
     : undefined;
+
+  const { data: matchSuccessDocs } = useSWR<MatchSuccessDocumentation>(
+    MATCH_SUCCESS_DOCS_URL,
+    dataFetcher,
+  );
+  const successTokenThreshold = activeSuccessTokenThreshold(matchSuccessDocs);
+  const matchTokens = match.match_tokens ?? 0;
 
   const isProposed = match.status === MATCH_STATUS.proposed;
   const timeLocale = isCompact ? LANGUAGES.de : LANGUAGES.en;
@@ -276,7 +306,7 @@ const MatchCard = (props: MatchCardProps) => {
         />
       </InfoSection>
       <StatsRow $variant={variant}>
-        <Stat label="Tokens" stat={match.match_tokens ?? 0} />
+        <Stat label="Tokens" stat={matchTokens} />
         <Stat label="Messages" stat={match.total_messages_counter} />
         <Stat
           label="Video Calls"
@@ -289,15 +319,13 @@ const MatchCard = (props: MatchCardProps) => {
         />
         <Stat
           label="Avg. call duration"
-          stat={formatAverageVideoCallDuration(
+          stat={formatDurationSeconds(
             match.average_video_call_duration_seconds,
           )}
         />
         <Stat
           label="Median call duration"
-          stat={formatAverageVideoCallDuration(
-            match.median_video_call_duration_seconds,
-          )}
+          stat={formatDurationSeconds(match.median_video_call_duration_seconds)}
         />
       </StatsRow>
       <ViewDetailsButton
@@ -351,65 +379,84 @@ const MatchCard = (props: MatchCardProps) => {
             <SectionLabel>Recent activity</SectionLabel>
             <DataField
               title="Last video call"
-              value={formatPanelInstant(match.last_video_call_at, timeLocale)}
+              value={formatDateTime(match.last_video_call_at, timeLocale)}
             />
             <DataField
               title={`Last message by ${match.user1.profile.first_name} at`}
-              value={formatPanelInstant(
-                match.user1_last_message_at,
-                timeLocale,
-              )}
+              value={formatDateTime(match.user1_last_message_at, timeLocale)}
             />
             <DataField
               title={`Last message sent by ${match.user2.profile.first_name} at`}
-              value={formatPanelInstant(
-                match.user2_last_message_at,
-                timeLocale,
-              )}
+              value={formatDateTime(match.user2_last_message_at, timeLocale)}
             />
           </TimestampSection>
           <MatchStatsCards>
-            <StatCard>
-              <StatValue>{match.match_tokens ?? 0}</StatValue>
-              <StatLabel>Match tokens</StatLabel>
-            </StatCard>
-            <StatCard>
-              <StatValue>{match.total_messages_counter}</StatValue>
-              <StatLabel>Total messages</StatLabel>
-            </StatCard>
-            <StatCard>
-              <StatValue>
-                {match.qualifying_video_call_count ??
-                  match.total_mutal_video_calls_counter}
-              </StatValue>
-              <StatLabel>Total video calls</StatLabel>
-            </StatCard>
-            <StatCard>
-              <DurationStatValue>
-                {formatTotalVideoCallDuration(
-                  match.total_video_call_duration_seconds,
-                )}
-              </DurationStatValue>
-              <StatLabel>Total video call duration</StatLabel>
-              <BreakdownList>
-                <BreakdownRow>
-                  <BreakdownLabel>Average</BreakdownLabel>
-                  <BreakdownValue>
-                    {formatAverageVideoCallDuration(
-                      match.average_video_call_duration_seconds,
-                    )}
-                  </BreakdownValue>
-                </BreakdownRow>
-                <BreakdownRow>
-                  <BreakdownLabel>Median</BreakdownLabel>
-                  <BreakdownValue>
-                    {formatAverageVideoCallDuration(
-                      match.median_video_call_duration_seconds,
-                    )}
-                  </BreakdownValue>
-                </BreakdownRow>
-              </BreakdownList>
-            </StatCard>
+            <Stat
+              label="Match tokens"
+              stat={
+                successTokenThreshold != null ? (
+                  <ProgressRing
+                    value={matchTokens}
+                    max={successTokenThreshold}
+                    label={`${matchTokens} of ${successTokenThreshold} match tokens`}
+                    tone={
+                      matchTokens >= successTokenThreshold
+                        ? ProgressRingTones.Success
+                        : ProgressRingTones.Accent
+                    }
+                  >
+                    <TokenRingFraction>
+                      <TokenRingValue>{matchTokens}</TokenRingValue>
+                      <TokenRingRest>/</TokenRingRest>
+                      <TokenRingRest>{successTokenThreshold}</TokenRingRest>
+                    </TokenRingFraction>
+                  </ProgressRing>
+                ) : (
+                  matchTokens
+                )
+              }
+              labelAccessory={
+                <TokenDocsLink
+                  to={MATCH_SUCCESS_DOCUMENTATION_ROUTE}
+                  aria-label="How match success is measured"
+                >
+                  <InfoIcon
+                    width={12}
+                    height={12}
+                    label="How match success is measured"
+                  />
+                </TokenDocsLink>
+              }
+            />
+            <Stat label="Total messages" stat={match.total_messages_counter} />
+            <Stat
+              label="Total video calls"
+              stat={
+                match.qualifying_video_call_count ??
+                match.total_mutal_video_calls_counter
+              }
+            />
+            <Stat
+              label="Total video call duration"
+              stat={formatDurationSeconds(
+                match.total_video_call_duration_seconds,
+                { includeSeconds: false },
+              )}
+              breakdown={[
+                {
+                  label: 'Average',
+                  value: formatDurationSeconds(
+                    match.average_video_call_duration_seconds,
+                  ),
+                },
+                {
+                  label: 'Median',
+                  value: formatDurationSeconds(
+                    match.median_video_call_duration_seconds,
+                  ),
+                },
+              ]}
+            />
           </MatchStatsCards>
         </MatchDetailsColumn>
         <MatchProgress match={match} />

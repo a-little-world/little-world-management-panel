@@ -64,9 +64,7 @@ const MatchProgress = ({ match }: { match: any }) => {
         <Text type={TextTypes.Body4} bold>
           Progress
         </Text>
-        {match.bucket_label && (
-          <Text type={TextTypes.Body7}>{match.bucket_label}</Text>
-        )}
+        {match.bucket_label && <Text>{match.bucket_label}</Text>}
       </ProgressHeader>
       <Stepper
         steps={buildStepperSteps(stages)}

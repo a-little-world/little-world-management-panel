@@ -12,6 +12,10 @@ import {
 import type { PartitionRollup } from '../../../api/userJourney';
 import LoadingSpinner from '../../atoms/LoadingSpinner';
 import {
+  JourneyCohortRangePicker,
+  useJourneyCohortRange,
+} from './JourneyCohortRange';
+import {
   Bucket,
   BucketsContainer,
   Count,
@@ -47,6 +51,7 @@ function rollupsForPhase(
  */
 function MatchJourneyV5Buckets() {
   const countsCacheBust = React.useRef(Date.now() + Math.random());
+  const { range, setRange, cohort } = useJourneyCohortRange(null);
 
   const { data: definitionData, error: definitionError } =
     useSWR<MatchJourneyV5DefinitionResponse>(
@@ -55,8 +60,13 @@ function MatchJourneyV5Buckets() {
     );
 
   const { data, error } = useSWR<MatchJourneyV5Response>(
-    ['match-journey-v5', countsCacheBust.current],
-    () => fetchMatchJourneyV5({}),
+    [
+      'match-journey-v5',
+      countsCacheBust.current,
+      cohort?.start_date ?? null,
+      cohort?.end_date ?? null,
+    ],
+    () => fetchMatchJourneyV5(cohort ?? {}),
   );
 
   const definition = definitionData?.definition ?? data?.definition;
@@ -85,6 +95,13 @@ function MatchJourneyV5Buckets() {
       </SectionTitle>
       <SectionCard>
         <Text>{definition.description}</Text>
+        <JourneyCohortRangePicker
+          label="Match created between"
+          tooltipText="Matches created in this range. Leave empty, or choose All time, for every match. Buckets show current state, not state on those dates."
+          range={range}
+          setRange={setRange}
+          clearLabel="Reset to all time data"
+        />
         {data && !data.balanced && (
           <BalanceWarning>
             Partition does not balance — {data.uncovered_count} uncovered,{' '}

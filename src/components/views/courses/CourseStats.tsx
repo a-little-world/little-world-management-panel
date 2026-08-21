@@ -28,12 +28,7 @@ import {
   PageHeader,
   Title,
 } from '../../atoms/PageLayout';
-import {
-  StatCard,
-  StatCards,
-  StatLabel,
-  StatValue,
-} from '../../atoms/stats/StatCard';
+import Stat, { StatCards } from '../../atoms/stats/Stat';
 import {
   Table,
   TableBody,
@@ -200,26 +195,20 @@ function CourseStats() {
         stats && (
           <>
             <StatCards>
-              <StatCard>
-                <StatValue>{stats.total_started}</StatValue>
-                <StatLabel>Total started</StatLabel>
-              </StatCard>
-              <StatCard>
-                <StatValue>{stats.total_completed}</StatValue>
-                <StatLabel>Total completed</StatLabel>
-              </StatCard>
-              <StatCard>
-                <StatValue>{stats.completion_rate}%</StatValue>
-                <StatLabel>Completion rate</StatLabel>
-              </StatCard>
-              <StatCard>
-                <StatValue>
-                  {stats.avg_days_to_complete !== null
+              <Stat label="Total started" stat={stats.total_started} />
+              <Stat label="Total completed" stat={stats.total_completed} />
+              <Stat
+                label="Completion rate"
+                stat={`${stats.completion_rate}%`}
+              />
+              <Stat
+                label="Avg days to complete"
+                stat={
+                  stats.avg_days_to_complete !== null
                     ? `${stats.avg_days_to_complete}`
-                    : '—'}
-                </StatValue>
-                <StatLabel>Avg days to complete</StatLabel>
-              </StatCard>
+                    : '—'
+                }
+              />
             </StatCards>
 
             <ListPanel>

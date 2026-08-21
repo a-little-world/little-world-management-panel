@@ -10,16 +10,7 @@ import {
   DateRangePicker,
   formatLocalDateYmd,
 } from '../../atoms/DateRangePicker';
-import {
-  BreakdownLabel,
-  BreakdownList,
-  BreakdownRow,
-  BreakdownValue,
-  StatCard,
-  StatCards,
-  StatLabel,
-  StatValue,
-} from '../../atoms/stats/StatCard';
+import Stat, { StatCards } from '../../atoms/stats/Stat';
 import DataGraph, { DataGraphCohortSuccess } from '../DataGraph';
 
 type MatchTimingStatisticsResponse = {
@@ -265,134 +256,106 @@ const MatchesStats = () => {
       )}
 
       <StatCards>
-        <StatCard>
-          <StatValue>
-            {isLoading ? '-' : formatDays(data?.median_days_to_first_call)}
-          </StatValue>
-          <StatLabel>No. of days till first call</StatLabel>
-          <BreakdownList>
-            <BreakdownRow>
-              <BreakdownLabel>Average</BreakdownLabel>
-              <BreakdownValue>
-                {isLoading
-                  ? '-'
-                  : formatDays(data?.average_days_to_first_call)}
-              </BreakdownValue>
-            </BreakdownRow>
-            <BreakdownRow>
-              <BreakdownLabel>Median</BreakdownLabel>
-              <BreakdownValue>
-                {isLoading
-                  ? '-'
-                  : formatDays(data?.median_days_to_first_call)}
-              </BreakdownValue>
-            </BreakdownRow>
-            <BreakdownRow>
-              <BreakdownLabel>Matches with a mutual call</BreakdownLabel>
-              <BreakdownValue>
-                {isLoading
-                  ? '-'
-                  : formatCountWithPercentage(
-                      data?.first_call_match_count,
-                      data?.first_call_match_percentage,
-                    )}
-              </BreakdownValue>
-            </BreakdownRow>
-            <BreakdownRow>
-              <BreakdownLabel>Matches with one-sided calls</BreakdownLabel>
-              <BreakdownValue>
-                {isLoading
-                  ? '-'
-                  : formatCountWithPercentage(
-                      data?.one_way_call_match_count,
-                      data?.one_way_call_match_percentage,
-                    )}
-              </BreakdownValue>
-            </BreakdownRow>
-            <BreakdownRow>
-              <BreakdownLabel>Matches with no calls</BreakdownLabel>
-              <BreakdownValue>
-                {isLoading
-                  ? '-'
-                  : formatCountWithPercentage(
-                      data?.no_call_match_count,
-                      data?.no_call_match_percentage,
-                    )}
-              </BreakdownValue>
-            </BreakdownRow>
-            <BreakdownRow>
-              <BreakdownLabel>Total matches</BreakdownLabel>
-              <BreakdownValue>
-                {isLoading ? '-' : (data?.total_matches ?? 0)}
-              </BreakdownValue>
-            </BreakdownRow>
-          </BreakdownList>
-        </StatCard>
-        <StatCard>
-          <StatValue>
-            {isLoading
-              ? '-'
-              : formatDays(data?.median_days_until_both_messaged)}
-          </StatValue>
-          <StatLabel>No. of days till both users have messaged</StatLabel>
-          <BreakdownList>
-            <BreakdownRow>
-              <BreakdownLabel>Average</BreakdownLabel>
-              <BreakdownValue>
-                {isLoading
-                  ? '-'
-                  : formatDays(data?.average_days_until_both_messaged)}
-              </BreakdownValue>
-            </BreakdownRow>
-            <BreakdownRow>
-              <BreakdownLabel>Median</BreakdownLabel>
-              <BreakdownValue>
-                {isLoading
-                  ? '-'
-                  : formatDays(data?.median_days_until_both_messaged)}
-              </BreakdownValue>
-            </BreakdownRow>
-            <BreakdownRow>
-              <BreakdownLabel>Matches with messages both ways</BreakdownLabel>
-              <BreakdownValue>
-                {isLoading
-                  ? '-'
-                  : formatCountWithPercentage(
-                      data?.both_messaged_match_count,
-                      data?.both_messaged_match_percentage,
-                    )}
-              </BreakdownValue>
-            </BreakdownRow>
-            <BreakdownRow>
-              <BreakdownLabel>Matches with one-way messages</BreakdownLabel>
-              <BreakdownValue>
-                {isLoading
-                  ? '-'
-                  : formatCountWithPercentage(
-                      data?.one_way_message_match_count,
-                      data?.one_way_message_match_percentage,
-                    )}
-              </BreakdownValue>
-            </BreakdownRow>
-            <BreakdownRow>
-              <BreakdownLabel>Matches with no messages</BreakdownLabel>
-              <BreakdownValue>
-                {isLoading
-                  ? '-'
-                  : formatCountWithPercentage(
-                      data?.no_message_match_count,
-                      data?.no_message_match_percentage,
-                    )}
-              </BreakdownValue>
-            </BreakdownRow>
-            <BreakdownRow>
-              <BreakdownLabel>Total matches</BreakdownLabel>
-              <BreakdownValue>
-                {isLoading ? '-' : (data?.total_matches ?? 0)}
-              </BreakdownValue>
-            </BreakdownRow>
-          </BreakdownList>
-        </StatCard>
+        <Stat
+          label="No. of days till first call"
+          stat={isLoading ? '-' : formatDays(data?.median_days_to_first_call)}
+          breakdown={[
+            {
+              label: 'Average',
+              value: isLoading
+                ? '-'
+                : formatDays(data?.average_days_to_first_call),
+            },
+            {
+              label: 'Median',
+              value: isLoading
+                ? '-'
+                : formatDays(data?.median_days_to_first_call),
+            },
+            {
+              label: 'Matches with a mutual call',
+              value: isLoading
+                ? '-'
+                : formatCountWithPercentage(
+                    data?.first_call_match_count,
+                    data?.first_call_match_percentage,
+                  ),
+            },
+            {
+              label: 'Matches with one-sided calls',
+              value: isLoading
+                ? '-'
+                : formatCountWithPercentage(
+                    data?.one_way_call_match_count,
+                    data?.one_way_call_match_percentage,
+                  ),
+            },
+            {
+              label: 'Matches with no calls',
+              value: isLoading
+                ? '-'
+                : formatCountWithPercentage(
+                    data?.no_call_match_count,
+                    data?.no_call_match_percentage,
+                  ),
+            },
+            {
+              label: 'Total matches',
+              value: isLoading ? '-' : (data?.total_matches ?? 0),
+            },
+          ]}
+        />
+        <Stat
+          label="No. of days till both users have messaged"
+          stat={
+            isLoading ? '-' : formatDays(data?.median_days_until_both_messaged)
+          }
+          breakdown={[
+            {
+              label: 'Average',
+              value: isLoading
+                ? '-'
+                : formatDays(data?.average_days_until_both_messaged),
+            },
+            {
+              label: 'Median',
+              value: isLoading
+                ? '-'
+                : formatDays(data?.median_days_until_both_messaged),
+            },
+            {
+              label: 'Matches with messages both ways',
+              value: isLoading
+                ? '-'
+                : formatCountWithPercentage(
+                    data?.both_messaged_match_count,
+                    data?.both_messaged_match_percentage,
+                  ),
+            },
+            {
+              label: 'Matches with one-way messages',
+              value: isLoading
+                ? '-'
+                : formatCountWithPercentage(
+                    data?.one_way_message_match_count,
+                    data?.one_way_message_match_percentage,
+                  ),
+            },
+            {
+              label: 'Matches with no messages',
+              value: isLoading
+                ? '-'
+                : formatCountWithPercentage(
+                    data?.no_message_match_count,
+                    data?.no_message_match_percentage,
+                  ),
+            },
+            {
+              label: 'Total matches',
+              value: isLoading ? '-' : (data?.total_matches ?? 0),
+            },
+          ]}
+        />
       </StatCards>
 
       <GraphCard>
