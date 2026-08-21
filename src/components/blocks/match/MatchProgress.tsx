@@ -17,6 +17,8 @@ type JourneyStage = {
   description?: string;
   achieved: boolean;
   achieved_at: string | null;
+  failed?: boolean;
+  failed_at?: string | null;
 };
 
 const ProgressAside = styled.aside`
@@ -40,15 +42,33 @@ const ProgressHeader = styled.div`
   border-bottom: ${({ theme }) => theme.color.border.subtle} solid 1px;
 `;
 
+const formatDay = (iso: string) =>
+  formatDate(new Date(iso), 'dd MMM yyyy', LANGUAGES.en);
+
+/**
+ * The DS Stepper has no failed state, so a match that stopped short says so in the step
+ * it stopped at — the backend marks that one stage rather than adding a step of its own.
+ */
 const buildStepperSteps = (stages: JourneyStage[]) =>
-  stages.map(stage => ({
-    id: stage.id,
-    label: stage.label,
-    description:
-      stage.achieved && stage.achieved_at
-        ? formatDate(new Date(stage.achieved_at), 'dd MMM yyyy', LANGUAGES.en)
-        : stage.description,
-  }));
+  stages.map(stage => {
+    if (stage.failed) {
+      return {
+        id: stage.id,
+        label: `${stage.label} — not reached`,
+        description: stage.failed_at
+          ? `${stage.description} (${formatDay(stage.failed_at)})`
+          : stage.description,
+      };
+    }
+    return {
+      id: stage.id,
+      label: stage.label,
+      description:
+        stage.achieved && stage.achieved_at
+          ? formatDay(stage.achieved_at)
+          : stage.description,
+    };
+  });
 
 const MatchProgress = ({ match }: { match: any }) => {
   const stages: JourneyStage[] = match.journey?.stages ?? [];

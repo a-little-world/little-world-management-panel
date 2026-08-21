@@ -51,7 +51,8 @@ function rollupsForPhase(
  */
 function MatchJourneyV5Buckets() {
   const countsCacheBust = React.useRef(Date.now() + Math.random());
-  const { range, setRange, cohort } = useJourneyCohortRange(null);
+  const { range, setRange, cohort, isPartialRange } =
+    useJourneyCohortRange(null);
 
   const { data: definitionData, error: definitionError } =
     useSWR<MatchJourneyV5DefinitionResponse>(
@@ -101,6 +102,7 @@ function MatchJourneyV5Buckets() {
           range={range}
           setRange={setRange}
           clearLabel="Reset to all time data"
+          isPartialRange={isPartialRange}
         />
         {data && !data.balanced && (
           <BalanceWarning>

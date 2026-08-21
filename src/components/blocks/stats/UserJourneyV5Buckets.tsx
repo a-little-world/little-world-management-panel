@@ -60,17 +60,12 @@ function rollupsForPhase(
  */
 function UserJourneyV5Buckets() {
   const countsCacheBust = React.useRef(Date.now() + Math.random());
-  const { range, setRange, cohort } = useJourneyCohortRange(
-    {
-      start_date: USER_JOURNEY_DEFAULT_START,
-      end_date: localTodayYmd(),
-    },
-    { allowEmpty: false },
-  );
-  const request = cohort ?? {
+  const { range, setRange, cohort, isPartialRange } = useJourneyCohortRange({
     start_date: USER_JOURNEY_DEFAULT_START,
     end_date: localTodayYmd(),
-  };
+  });
+  // No cohort means no date filter — what "all time" on the clear action says.
+  const request = cohort ?? {};
 
   const { data: definitionData, error: definitionError } =
     useSWR<UserJourneyV5DefinitionResponse>(
@@ -82,8 +77,8 @@ function UserJourneyV5Buckets() {
     [
       'user-journey-v5',
       countsCacheBust.current,
-      request.start_date,
-      request.end_date,
+      cohort?.start_date ?? null,
+      cohort?.end_date ?? null,
     ],
     () => fetchUserJourneyV5(request),
   );
@@ -120,6 +115,7 @@ function UserJourneyV5Buckets() {
           range={range}
           setRange={setRange}
           clearLabel="Reset to all time data"
+          isPartialRange={isPartialRange}
         />
         {data && !data.balanced && (
           <BalanceWarning>
