@@ -8,16 +8,7 @@ import styled from 'styled-components';
 import useSWR from 'swr';
 
 import { apiFetch } from '../../../api/helpers';
-import {
-  BreakdownLabel,
-  BreakdownList,
-  BreakdownRow,
-  BreakdownValue,
-  StatCard,
-  StatCards,
-  StatLabel,
-  StatValue,
-} from '../../atoms/stats/StatCard';
+import Stat, { StatCards } from '../../atoms/stats/Stat';
 
 type HighlightsPeriod = 'daily' | 'weekly' | 'monthly' | 'yearly';
 
@@ -331,22 +322,17 @@ function Highlights() {
 
       <StatCards>
         {cards.map(card => (
-          <StatCard key={card.label}>
-            <StatValue>{isLoading ? '-' : formatCardValue(card)}</StatValue>
-            <StatLabel>{card.label}</StatLabel>
-            {card.breakdown && (
-              <BreakdownList>
-                {card.breakdown.map(item => (
-                  <BreakdownRow key={item.label}>
-                    <BreakdownLabel>{item.label}</BreakdownLabel>
-                    <BreakdownValue>
-                      {isLoading ? '-' : formatBreakdownValue(item)}
-                    </BreakdownValue>
-                  </BreakdownRow>
-                ))}
-              </BreakdownList>
-            )}
-          </StatCard>
+          <Stat
+            key={card.label}
+            label={card.label}
+            stat={isLoading ? '-' : formatCardValue(card)}
+            breakdown={
+              card.breakdown?.map(item => ({
+                label: item.label,
+                value: isLoading ? '-' : formatBreakdownValue(item),
+              }))
+            }
+          />
         ))}
       </StatCards>
     </Container>

@@ -104,11 +104,39 @@ export const stringToDate = (dateString: string): Date => parseISO(dateString);
 /** Formats Date to YYYY-MM-DD string. */
 export const dateToString = (date: Date): string => format(date, 'yyyy-MM-dd');
 
-export const formatDurationSeconds = (seconds: number): string => {
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const remainingSeconds = seconds % 60;
-  return `${hours}h ${minutes}m ${remainingSeconds}s`;
+/** Compact timestamp for admin panels, e.g. `21.08.26 12:44`. */
+export const formatDateTime = (
+  value: string | Date | null | undefined,
+  locale?: string,
+  formatStr = 'dd.MM.yy HH:mm',
+) => {
+  if (value == null || value === '') return 'n/a';
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return 'n/a';
+  return formatDate(date, formatStr, locale);
+};
+
+/**
+ * Formats a duration in seconds as `4h 35m 12s`.
+ * Pass `{ includeSeconds: false }` for totals (`4h 35m`, rounded to the nearest minute).
+ */
+export const formatDurationSeconds = (
+  seconds: number | null | undefined,
+  { includeSeconds = true }: { includeSeconds?: boolean } = {},
+): string => {
+  if (seconds == null) return 'n/a';
+
+  const totalSeconds = includeSeconds
+    ? Math.max(0, Math.floor(seconds))
+    : Math.max(0, Math.round(seconds / 60) * 60);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const remainingSeconds = totalSeconds % 60;
+
+  if (includeSeconds) {
+    return `${hours}h ${minutes}m ${remainingSeconds}s`;
+  }
+  return `${hours}h ${minutes}m`;
 };
 
 /**

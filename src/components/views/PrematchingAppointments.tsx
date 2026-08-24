@@ -3,6 +3,7 @@ import React from 'react';
 import { createSearchParams, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 
+import { toListSelectOptions } from '../../helpers/filterLists';
 import {
   useGlobalState,
   usePrematchAppointmentsListData,
@@ -74,12 +75,7 @@ export function PrematchingAppointments() {
       >
         <StyledDropdown
           value={list}
-          options={
-            filterOptions?.lists?.map(({ name, description }) => ({
-              value: name,
-              label: description,
-            })) || []
-          }
+          options={toListSelectOptions(filterOptions?.lists)}
           onValueChange={changeList}
           placeholder="Select a match list..."
           cannotError

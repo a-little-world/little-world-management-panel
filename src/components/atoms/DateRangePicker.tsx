@@ -68,6 +68,7 @@ export function DateRangePicker({
   setRange,
   inModal = false,
   numberOfMonths = 1,
+  clearLabel,
 }: {
   label?: string;
   tooltipText?: string;
@@ -76,10 +77,12 @@ export function DateRangePicker({
   setRange: (range: DateRange | undefined) => void;
   inModal?: boolean;
   numberOfMonths?: number;
+  clearLabel?: string;
 }) {
   const { from, to } = range ?? {};
   const fromValue = from ? formatDisplayDate(from) : '';
   const toValue = to ? formatDisplayDate(to) : '';
+  const canClear = Boolean(clearLabel && (from || to));
 
   const [fromText, setFromText] = React.useState(fromValue);
   const [toText, setToText] = React.useState(toValue);
@@ -171,6 +174,15 @@ export function DateRangePicker({
             numberOfMonths={numberOfMonths}
           />
         </Popover>
+        {canClear && (
+          <Button
+            variation={ButtonVariations.Inline}
+            disabled={disabled}
+            onClick={() => setRange(undefined)}
+          >
+            {clearLabel}
+          </Button>
+        )}
       </RangeRow>
     </DatePickerContainer>
   );

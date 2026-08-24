@@ -1,12 +1,19 @@
 import { Text, TextTypes } from '@a-little-world/little-world-design-system';
 import React from 'react';
 
-import { Container, Description, SectionR, Sections } from './JourneyStyles';
+import {
+  Container,
+  Description,
+  SectionR,
+  Sections,
+  useMatchSuccessPageHeader,
+} from './JourneyStyles';
 import MatchJourneyBuckets from './MatchJourneyBuckets';
 import MatchJourneyV5Buckets from './MatchJourneyV5Buckets';
 import { UserSignUpLossStatistic } from './UserSignUpLossStatistic';
 
 export function MatchJourneyOverview() {
+  useMatchSuccessPageHeader();
   return (
     <Container>
       <Text type={TextTypes.Body3} center bold tag="h1">

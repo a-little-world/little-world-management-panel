@@ -19,16 +19,7 @@ import {
 import { formatDate, formatEventTime } from '../../../helpers/date';
 import { dataFetcher } from '../../../store';
 import { PageContainer } from '../../atoms/PageLayout';
-import {
-  BreakdownLabel,
-  BreakdownList,
-  BreakdownRow,
-  BreakdownValue,
-  StatCard,
-  StatCards,
-  StatLabel,
-  StatValue,
-} from '../../atoms/stats/StatCard';
+import Stat, { StatCards } from '../../atoms/stats/Stat';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../atoms/Tabs';
 import LobbyParticipantsTable from '../../blocks/randomCalls/LobbyParticipantsTable';
 import MatchProposalsTable from '../../blocks/randomCalls/MatchProposalsTable';
@@ -177,33 +168,26 @@ function RandomCallHistory() {
             <Section>
               <SectionTitle>Overview</SectionTitle>
               <StatsGridTight>
-                <StatCard>
-                  <StatValue>{snapshot.total_users}</StatValue>
-                  <StatLabel>Total Users</StatLabel>
-                  <BreakdownList>
-                    <BreakdownRow>
-                      <BreakdownLabel>First time</BreakdownLabel>
-                      <BreakdownValue>
-                        {snapshot.first_time_users}
-                      </BreakdownValue>
-                    </BreakdownRow>
-                    <BreakdownRow>
-                      <BreakdownLabel>Returning</BreakdownLabel>
-                      <BreakdownValue>
-                        {snapshot.returning_users}
-                      </BreakdownValue>
-                    </BreakdownRow>
-                  </BreakdownList>
-                </StatCard>
-                <StatCard>
-                  <StatValue>{snapshot.completed_calls}</StatValue>
-                  <StatLabel>Total Calls</StatLabel>
-                </StatCard>
+                <Stat
+                  label="Total Users"
+                  stat={snapshot.total_users}
+                  breakdown={[
+                    {
+                      label: 'First time',
+                      value: snapshot.first_time_users,
+                    },
+                    {
+                      label: 'Returning',
+                      value: snapshot.returning_users,
+                    },
+                  ]}
+                />
+                <Stat label="Total Calls" stat={snapshot.completed_calls} />
                 {proposalsAreFinal && (
-                  <StatCard>
-                    <StatValue>{snapshot.proposals_accepted}</StatValue>
-                    <StatLabel>Accepted Proposals</StatLabel>
-                  </StatCard>
+                  <Stat
+                    label="Accepted Proposals"
+                    stat={snapshot.proposals_accepted}
+                  />
                 )}
               </StatsGridTight>
             </Section>
@@ -223,30 +207,30 @@ function RandomCallHistory() {
             )}
             {lobby.is_active && (
               <StatsGridTight>
-                <StatCard>
-                  <StatValue>{lobby.active_users_count}</StatValue>
-                  <StatLabel>Active Users</StatLabel>
-                </StatCard>
-                <StatCard>
-                  <StatValue>{lobby.total_users_count}</StatValue>
-                  <StatLabel>Total Users</StatLabel>
-                </StatCard>
+                <Stat
+                  label="Active Users"
+                  stat={lobby.active_users_count}
+                />
+                <Stat
+                  label="Total Users"
+                  stat={lobby.total_users_count}
+                />
               </StatsGridTight>
             )}
             <ProvisionalBucketStats $provisional={!proposalsAreFinal}>
               <StatCards>
-                <StatCard>
-                  <StatValue>{proposal_statistics.accepted_count}</StatValue>
-                  <StatLabel>Accepted Proposals</StatLabel>
-                </StatCard>
-                <StatCard>
-                  <StatValue>{proposal_statistics.rejected_count}</StatValue>
-                  <StatLabel>Rejected Proposals</StatLabel>
-                </StatCard>
-                <StatCard>
-                  <StatValue>{proposal_statistics.expired_count}</StatValue>
-                  <StatLabel>Expired Proposals</StatLabel>
-                </StatCard>
+                <Stat
+                  label="Accepted Proposals"
+                  stat={proposal_statistics.accepted_count}
+                />
+                <Stat
+                  label="Rejected Proposals"
+                  stat={proposal_statistics.rejected_count}
+                />
+                <Stat
+                  label="Expired Proposals"
+                  stat={proposal_statistics.expired_count}
+                />
               </StatCards>
             </ProvisionalBucketStats>
           </Section>
@@ -296,22 +280,13 @@ function RandomCallHistory() {
             <Section>
               <SectionTitle>Celery Tasks</SectionTitle>
               <StatCards>
-                <StatCard>
-                  <StatValue>{tasksData.statistics.total}</StatValue>
-                  <StatLabel>Total Tasks</StatLabel>
-                </StatCard>
-                <StatCard>
-                  <StatValue>{tasksData.statistics.success}</StatValue>
-                  <StatLabel>Successful</StatLabel>
-                </StatCard>
-                <StatCard>
-                  <StatValue>{tasksData.statistics.failure}</StatValue>
-                  <StatLabel>Failed</StatLabel>
-                </StatCard>
-                <StatCard>
-                  <StatValue>{tasksData.statistics.pending}</StatValue>
-                  <StatLabel>Pending</StatLabel>
-                </StatCard>
+                <Stat label="Total Tasks" stat={tasksData.statistics.total} />
+                <Stat
+                  label="Successful"
+                  stat={tasksData.statistics.success}
+                />
+                <Stat label="Failed" stat={tasksData.statistics.failure} />
+                <Stat label="Pending" stat={tasksData.statistics.pending} />
               </StatCards>
             </Section>
           )}

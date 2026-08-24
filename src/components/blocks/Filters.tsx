@@ -19,6 +19,7 @@ import type { DateRange } from 'react-day-picker';
 import styled from 'styled-components';
 
 import { USER_GROUPS } from '../../constants';
+import { toListSelectOptions } from '../../helpers/filterLists';
 import { useFilterOptions } from '../../store';
 import {
   DateRangePicker,
@@ -274,12 +275,7 @@ const Filters: React.FC<FiltersProps> = ({
                 key={FilterKeys.UserList + filters[FilterKeys.UserList]}
                 label={'User List'}
                 value={filters[FilterKeys.UserList]}
-                options={
-                  filterOptions?.lists?.map(({ name, description }: any) => ({
-                    value: name,
-                    label: description,
-                  })) ?? []
-                }
+                options={toListSelectOptions(filterOptions?.lists)}
                 onValueChange={val => onUpdateFilters(FilterKeys.UserList, val)}
                 placeholder="Select a user list..."
                 inModal

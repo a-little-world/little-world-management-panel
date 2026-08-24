@@ -1,7 +1,7 @@
 import { Text, TextTypes } from '@a-little-world/little-world-design-system';
 import * as React from 'react';
-import useSWR from 'swr';
 import { styled } from 'styled-components';
+import useSWR from 'swr';
 
 import {
   fetchUserJourneyV5,
@@ -11,6 +11,12 @@ import {
   type UserJourneyV5Response,
 } from '../../../api/userJourney';
 import LoadingSpinner from '../../atoms/LoadingSpinner';
+import {
+  JourneyCohortRangePicker,
+  USER_JOURNEY_DEFAULT_START,
+  localTodayYmd,
+  useJourneyCohortRange,
+} from './JourneyCohortRange';
 import {
   Bucket,
   BucketsContainer,
@@ -54,6 +60,12 @@ function rollupsForPhase(
  */
 function UserJourneyV5Buckets() {
   const countsCacheBust = React.useRef(Date.now() + Math.random());
+  const { range, setRange, cohort, isPartialRange } = useJourneyCohortRange({
+    start_date: USER_JOURNEY_DEFAULT_START,
+    end_date: localTodayYmd(),
+  });
+  // No cohort means no date filter — what "all time" on the clear action says.
+  const request = cohort ?? {};
 
   const { data: definitionData, error: definitionError } =
     useSWR<UserJourneyV5DefinitionResponse>(
@@ -62,8 +74,13 @@ function UserJourneyV5Buckets() {
     );
 
   const { data, error } = useSWR<UserJourneyV5Response>(
-    ['user-journey-v5', countsCacheBust.current],
-    () => fetchUserJourneyV5({ start_date: '2022-01-01' }),
+    [
+      'user-journey-v5',
+      countsCacheBust.current,
+      cohort?.start_date ?? null,
+      cohort?.end_date ?? null,
+    ],
+    () => fetchUserJourneyV5(request),
   );
 
   const definition = definitionData?.definition ?? data?.definition;
@@ -92,12 +109,20 @@ function UserJourneyV5Buckets() {
       </SectionTitle>
       <SectionCard>
         <Text>{definition.description}</Text>
+        <JourneyCohortRangePicker
+          label="Signed up between"
+          tooltipText="Users who joined in this range. Buckets show their current state, not their state on those dates."
+          range={range}
+          setRange={setRange}
+          clearLabel="Reset to all time data"
+          isPartialRange={isPartialRange}
+        />
         {data && !data.balanced && (
           <BalanceWarning>
             Partition does not balance — {data.uncovered_count} uncovered,{' '}
-            {data.outside_baseline_count} outside baseline, {overlapPairs} overlapping
-            pairs. Counts still render; dig into the overlap samples before trusting the
-            totals.
+            {data.outside_baseline_count} outside baseline, {overlapPairs}{' '}
+            overlapping pairs. Counts still render; dig into the overlap samples
+            before trusting the totals.
           </BalanceWarning>
         )}
         <BucketsContainer>

@@ -18,6 +18,7 @@ import Algorithm from './components/views/Algorithm';
 import Documentation, {
   JourneyOverviewDocumentation,
   MatchJourneyDocumentation,
+  MatchSuccessDocumentation,
   MultiUserManagementDocumentation,
   PreMatchingCheckoffsDocumentation,
   ReportingBugsAndIssuesDocumentation,
@@ -82,6 +83,7 @@ import {
   MATCHING_ROUTE,
   MATCHING_USERS_ROUTE,
   MATCH_JOURNEY_DOCUMENTATION_ROUTE,
+  MATCH_SUCCESS_DOCUMENTATION_ROUTE,
   MULTI_USER_MANAGEMENT_DOCUMENTATION_ROUTE,
   MATCH_ROUTE,
   OPEN_CHAT_CONFIGURATION_ROUTE,
@@ -252,6 +254,11 @@ const router = createBrowserRouter(
         {
           path: MATCH_JOURNEY_DOCUMENTATION_ROUTE,
           element: <MatchJourneyDocumentation />,
+        },
+        {
+          path: MATCH_SUCCESS_DOCUMENTATION_ROUTE,
+          element: <MatchSuccessDocumentation />,
+          ...routeTitle('Match Success'),
         },
         {
           path: REPORTING_BUGS_DOCUMENTATION_ROUTE,

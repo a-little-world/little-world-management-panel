@@ -33,16 +33,7 @@ import {
 import { formatDate, formatEventTime } from '../../../helpers/date';
 import { dataFetcher } from '../../../store';
 import { PageContainer } from '../../atoms/PageLayout';
-import {
-  BreakdownLabel,
-  BreakdownList,
-  BreakdownRow,
-  BreakdownValue,
-  StatCard,
-  StatCards,
-  StatLabel,
-  StatValue,
-} from '../../atoms/stats/StatCard';
+import Stat, { StatCards } from '../../atoms/stats/Stat';
 import {
   Table,
   TableBody,
@@ -803,39 +794,38 @@ function RandomCallManagement() {
         <Section>
           <SectionTitle>{lobbyPeriodLabel}</SectionTitle>
           <StatCards>
-            <StatCard>
-              <StatValue>{lobby.active_users_count}</StatValue>
-              <StatLabel>Active Users</StatLabel>
-            </StatCard>
-            <StatCard>
-              <StatValue>{lobby.total_users_count}</StatValue>
-              <StatLabel>Total Users</StatLabel>
-              {snapshot && (
-                <BreakdownList>
-                  <BreakdownRow>
-                    <BreakdownLabel>First time</BreakdownLabel>
-                    <BreakdownValue>{snapshot.first_time_users}</BreakdownValue>
-                  </BreakdownRow>
-                  <BreakdownRow>
-                    <BreakdownLabel>Returning</BreakdownLabel>
-                    <BreakdownValue>{snapshot.returning_users}</BreakdownValue>
-                  </BreakdownRow>
-                </BreakdownList>
-              )}
-            </StatCard>
-            <StatCard>
-              <StatValue>
-                {proposalsAreFinal && snapshot
+            <Stat label="Active Users" stat={lobby.active_users_count} />
+            <Stat
+              label="Total Users"
+              stat={lobby.total_users_count}
+              breakdown={
+                snapshot
+                  ? [
+                      {
+                        label: 'First time',
+                        value: snapshot.first_time_users,
+                      },
+                      {
+                        label: 'Returning',
+                        value: snapshot.returning_users,
+                      },
+                    ]
+                  : undefined
+              }
+            />
+            <Stat
+              label="Accepted Proposals"
+              stat={
+                proposalsAreFinal && snapshot
                   ? displaySnapshotProposalsTotal(snapshot)
-                  : proposal_statistics.total_matches}
-              </StatValue>
-              <StatLabel>Accepted Proposals</StatLabel>
-            </StatCard>
+                  : proposal_statistics.total_matches
+              }
+            />
             {snapshot && (
-              <StatCard>
-                <StatValue>{snapshot.completed_calls}</StatValue>
-                <StatLabel>Completed Calls</StatLabel>
-              </StatCard>
+              <Stat
+                label="Completed Calls"
+                stat={snapshot.completed_calls}
+              />
             )}
           </StatCards>
         </Section>
@@ -851,26 +841,23 @@ function RandomCallManagement() {
           )}
           <ProvisionalBucketStats $provisional={!proposalsAreFinal}>
             <StatCards>
-              <StatCard>
-                <StatValue>{proposal_statistics.pending_count}</StatValue>
-                <StatLabel>Pending Proposals</StatLabel>
-              </StatCard>
-              <StatCard>
-                <StatValue>{proposal_statistics.accepted_count}</StatValue>
-                <StatLabel>Accepted Proposals</StatLabel>
-              </StatCard>
-              <StatCard>
-                <StatValue>{proposal_statistics.rejected_count}</StatValue>
-                <StatLabel>Rejected Proposals</StatLabel>
-              </StatCard>
-              <StatCard>
-                <StatValue>{proposal_statistics.expired_count}</StatValue>
-                <StatLabel>Expired Proposals</StatLabel>
-              </StatCard>
-              <StatCard>
-                <StatValue>{danglingCount}</StatValue>
-                <StatLabel>Dangling proposals</StatLabel>
-              </StatCard>
+              <Stat
+                label="Pending Proposals"
+                stat={proposal_statistics.pending_count}
+              />
+              <Stat
+                label="Accepted Proposals"
+                stat={proposal_statistics.accepted_count}
+              />
+              <Stat
+                label="Rejected Proposals"
+                stat={proposal_statistics.rejected_count}
+              />
+              <Stat
+                label="Expired Proposals"
+                stat={proposal_statistics.expired_count}
+              />
+              <Stat label="Dangling proposals" stat={danglingCount} />
             </StatCards>
           </ProvisionalBucketStats>
         </Section>
@@ -956,43 +943,43 @@ function RandomCallManagement() {
             ) : tasksData ? (
               <>
                 <StatCards>
-                  <StatCard>
-                    <StatValue>{tasksData.statistics.total}</StatValue>
-                    <StatLabel>Total Tasks</StatLabel>
-                  </StatCard>
-                  <StatCard>
-                    <StatValue>
+                  <Stat
+                    label="Total Tasks"
+                    stat={tasksData.statistics.total}
+                  />
+                  <Stat
+                    label="Successful"
+                    stat={
                       <Tag
                         appearance={TagAppearance.success}
                         size={TagSizes.small}
                       >
                         {tasksData.statistics.success}
                       </Tag>
-                    </StatValue>
-                    <StatLabel>Successful</StatLabel>
-                  </StatCard>
-                  <StatCard>
-                    <StatValue>
+                    }
+                  />
+                  <Stat
+                    label="Failed"
+                    stat={
                       <Tag
                         appearance={TagAppearance.error}
                         size={TagSizes.small}
                       >
                         {tasksData.statistics.failure}
                       </Tag>
-                    </StatValue>
-                    <StatLabel>Failed</StatLabel>
-                  </StatCard>
-                  <StatCard>
-                    <StatValue>
+                    }
+                  />
+                  <Stat
+                    label="Pending"
+                    stat={
                       <Tag
                         appearance={TagAppearance.error}
                         size={TagSizes.small}
                       >
                         {tasksData.statistics.pending}
                       </Tag>
-                    </StatValue>
-                    <StatLabel>Pending</StatLabel>
-                  </StatCard>
+                    }
+                  />
                 </StatCards>
                 <div style={{ marginTop: '1.5rem' }}>
                   <TasksTable tasks={tasksData.tasks} />

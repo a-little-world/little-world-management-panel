@@ -20,6 +20,7 @@ import { useNavigate } from 'react-router-dom';
 import useSWR from 'swr';
 
 import type { MatchingPanelUser } from '../../../api/index';
+import { LANGUAGES } from '../../../constants';
 import { MANAGEMENT_PERMISSION_IS_MAIN_SUPPORT_ACCOUNT } from '../../../constants/managementPermissions';
 import { formatDate, formatTimeDistance } from '../../../helpers/date';
 import { hasManagementPermission } from '../../../helpers/managementPermissions';
@@ -107,6 +108,16 @@ interface User {
   bucket?: string;
   bucket_label?: string;
   random_call_lobby_count?: number;
+  journey?: {
+    stages: Array<{
+      id: string;
+      label: string;
+      description?: string;
+      achieved: boolean;
+      achieved_at: string | null;
+    }>;
+    active_stage_index: number;
+  };
 }
 
 interface UserCardProps {
@@ -118,83 +129,19 @@ interface UserCardProps {
   tiny?: boolean;
 }
 
-const UserStatus: React.FC<{ user: User; appointment?: any }> = ({
-  user,
-  appointment,
-}) => {
-  const hasOnboardingPath =
-    !!appointment || Boolean(user.state.self_onboarding_step_id);
-
-  const stepsWithCompletion = [
-    {
-      id: 'register',
-      label: `Register ${new Date(user.date_joined).toDateString()}`,
-      isCompleted: true,
-    },
-    {
-      id: 'email-auth',
-      label: 'Email Authenticated',
-      isCompleted: user.state.email_authenticated,
-    },
-    {
-      id: 'user-form',
-      label: 'User Form',
-      isCompleted: user.state.user_form_state === 'filled',
-    },
-    {
-      id: 'onboarding-selected',
-      label: 'Onboarding selected',
-      description: appointment
-        ? `Booked: ${new Date(appointment.start_time).toLocaleDateString()}`
-        : user.state.self_onboarding_step_id
-          ? 'Self onboarding'
-          : 'Not selected',
-      isCompleted: hasOnboardingPath,
-    },
-    {
-      id: 'onboarded',
-      label: 'Onboarded',
-      isCompleted: user.state.is_onboarded,
-    },
-    ...(user.matches.unconfirmed.results.length > 0 &&
-    user.matches.confirmed.results.length === 0
-      ? [
-          {
-            id: 'pending-match-1',
-            label: 'Has pending match',
-            isCompleted: false,
-          },
-        ]
-      : []),
-    {
-      id: 'first-match',
-      label: 'First Match',
-      isCompleted: user.matches.confirmed.results.length > 0,
-    },
-    ...(user.matches.unconfirmed.results.length > 0 &&
-    user.matches.confirmed.results.length > 0
-      ? [
-          {
-            id: 'pending-match-2',
-            label: 'Has pending match',
-            isCompleted: false,
-          },
-        ]
-      : []),
-  ];
-
-  let lastCompletedIndex = -1;
-  for (let i = 0; i < stepsWithCompletion.length; i++) {
-    if (stepsWithCompletion[i].isCompleted) {
-      lastCompletedIndex = i;
-    }
+const UserStatus: React.FC<{ user: User }> = ({ user }) => {
+  const stages = user.journey?.stages ?? [];
+  if (stages.length === 0) {
+    return null;
   }
-  const activeStepIndex = lastCompletedIndex + 1;
 
-  const steps = stepsWithCompletion.map(({ id, label, description }) => ({
-    id,
-    label,
-    ...(description !== undefined ? { description } : {}),
+  const steps = stages.map(stage => ({
+    id: stage.id,
+    label: stage.label,
+    description:
+      stage.achieved && stage.achieved_at
+        ? formatDate(new Date(stage.achieved_at), 'dd MMM yyyy', LANGUAGES.en)
+        : undefined,
   }));
 
   return (
@@ -202,7 +149,7 @@ const UserStatus: React.FC<{ user: User; appointment?: any }> = ({
       <SectionLabel>Current status</SectionLabel>
       <Stepper
         steps={steps}
-        activeStepIndex={activeStepIndex}
+        activeStepIndex={user.journey?.active_stage_index ?? 0}
         orientation={StepperOrientations.Vertical}
         size={StepperSizes.Medium}
       />
@@ -237,9 +184,8 @@ const MatchEligibility: React.FC<{ userId: string }> = ({ userId }) => {
 const UserDetailsFull: React.FC<{
   canViewProfile: boolean;
   user: User;
-  appointment?: any;
   isVolunteer: boolean;
-}> = ({ canViewProfile, user, appointment, isVolunteer }) => (
+}> = ({ canViewProfile, user, isVolunteer }) => (
   <FullContentGrid>
     <DetailsColumn>
       <InfoGrid>
@@ -343,7 +289,7 @@ const UserDetailsFull: React.FC<{
         <MatchEligibility userId={user.id} />
       </SidebarSection>
 
-      <UserStatus user={user} appointment={appointment} />
+      <UserStatus user={user} />
 
       <SidebarSection>
         <SectionLabel>Matches</SectionLabel>
@@ -368,7 +314,6 @@ const UserDetailsFull: React.FC<{
 
 export const UserCard: React.FC<UserCardProps> = ({
   user,
-  appointment,
   deselectUser,
   partial = true,
   tiny = false,
@@ -451,7 +396,6 @@ export const UserCard: React.FC<UserCardProps> = ({
         <UserDetailsFull
           canViewProfile={canViewProfile}
           user={user}
-          appointment={appointment}
           isVolunteer={isVolunteer}
         />
       </StyledCard>
