@@ -1,0 +1,1055 @@
+import {
+  Button,
+  ButtonAppearance,
+  ButtonSizes,
+  InputWidth,
+  Loading,
+  LoadingSizes,
+  Select,
+  StatusMessage,
+  StatusTypes,
+  Switch,
+  TextArea,
+  TextInput,
+  Toast,
+} from '@a-little-world/little-world-design-system';
+import { PlusIcon, TrashIcon } from '@heroicons/react/20/solid';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  Controller,
+  useFieldArray,
+  useForm,
+  UseFormRegister,
+  UseFormSetValue,
+} from 'react-hook-form';
+import { useNavigate, useParams } from 'react-router-dom';
+import useSWR, { mutate } from 'swr';
+
+import {
+  ADMIN_SURVEY_CAMPAIGNS_ENDPOINT,
+  createSurveyCampaign,
+  fetchSurveyAudienceOptions,
+  fetchSurveyCampaign,
+  SurveyAudienceOptions,
+  SurveyAudienceType,
+  SurveyCampaign,
+  SurveyCampaignPayload,
+  SurveyEligibleAfterEvent,
+  updateSurveyCampaign,
+} from '../../../../api/surveys';
+import {
+  parseIsoToDate,
+  toEndOfDayIso,
+  toStartOfDayIso,
+} from '../../../../helpers/berlinDates';
+import { SURVEYS_ROUTE } from '../../../../router/routes';
+import { registerInput } from '../../../../store';
+import { DatePicker } from '../../../atoms/DatePicker';
+import StructureRail from '../../../atoms/StructureRail';
+import { usePageHeader } from '../../../blocks/LayoutHeaderContext';
+import {
+  CopyRow,
+  DeleteSectionBtn,
+  Divider,
+  EditorRoot,
+  EmptyCallout,
+  EmptyCalloutBody,
+  EmptyCalloutText,
+  EmptyCalloutTitle,
+  FormStack,
+  LockedNotice,
+  MainPane,
+  PaneHeading,
+  PaneHint,
+  PaneRoot,
+  SectionMeta,
+  SectionMetaLabel,
+  SectionNumGradient,
+  SectionTitle,
+  TopBarDivider,
+  TwoCol,
+  TwoPaneLayout,
+} from './EditSurvey.styles';
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+/**
+ * The form mirrors the API shape rather than flattening it: `copy` and each question's label
+ * are `{de, en}` blocks, so a field path is `copy.title.de` and nothing has to be reassembled
+ * on save.
+ */
+type LocalizedValue = { de: string; en: string };
+
+type QuestionFormValues = {
+  id: string;
+  label: LocalizedValue;
+  placeholder: LocalizedValue;
+  required: boolean;
+};
+
+type SurveyFormValues = {
+  slug: string;
+  name: string;
+  copy: {
+    title: LocalizedValue;
+    description: LocalizedValue;
+    submit_button: LocalizedValue;
+  };
+  scale: number;
+  /** The rating question's label. Edited on the details pane, since the rating is implicit. */
+  ratingLabel: LocalizedValue;
+  questions: QuestionFormValues[];
+  audience_type: 'all' | 'company' | 'filter';
+  audience_value: string;
+  trigger: 'on_session' | 'event:call_ended';
+  eligible_after_event: SurveyEligibleAfterEvent;
+  eligible_after_since: string | null;
+  /** Preserved on edit so saving post-call cannot flatten it to once-per-user. */
+  repeat_scope: 'user' | 'context';
+  context_type: '' | 'live_session' | 'match';
+  active: boolean;
+  starts_at: string | null;
+  ends_at: string | null;
+  max_shows: number;
+};
+
+// ---------------------------------------------------------------------------
+// Constants + helpers
+// ---------------------------------------------------------------------------
+
+const TRIGGER_OPTIONS = [
+  { label: 'Next time they open the app', value: 'on_session' },
+  {
+    label: 'After a call (5 min+, both active; excludes random calls)',
+    value: 'event:call_ended',
+  },
+];
+
+const ELIGIBLE_AFTER_OPTIONS = [
+  { label: 'Immediately', value: 'none' },
+  { label: 'Onboarded', value: 'onboarded' },
+  {
+    label: 'First qualifying call (excludes random calls)',
+    value: 'first_qualifying_call',
+  },
+  { label: 'Match created', value: 'match_created' },
+  { label: 'Match success', value: 'match_success' },
+];
+
+const MIN_SCALE = 2;
+const MAX_SCALE = 10;
+
+/** The rating question is implicit: every campaign has one, so it is never in the rail. */
+const RATING_QUESTION_ID = 'rating';
+
+const AUDIENCE_PREFIX = {
+  company: 'company:',
+  filter: 'filter:',
+} as const;
+
+function encodeAudience(type: SurveyAudienceType, value: string) {
+  if (type === 'company') return `${AUDIENCE_PREFIX.company}${value}`;
+  if (type === 'filter') return `${AUDIENCE_PREFIX.filter}${value}`;
+  return 'all';
+}
+
+function decodeAudience(encoded: string): {
+  audience_type: SurveyAudienceType;
+  audience_value: string;
+} {
+  if (encoded.startsWith(AUDIENCE_PREFIX.company)) {
+    return {
+      audience_type: 'company',
+      audience_value: encoded.slice(AUDIENCE_PREFIX.company.length),
+    };
+  }
+  if (encoded.startsWith(AUDIENCE_PREFIX.filter)) {
+    return {
+      audience_type: 'filter',
+      audience_value: encoded.slice(AUDIENCE_PREFIX.filter.length),
+    };
+  }
+  return { audience_type: 'all', audience_value: '' };
+}
+
+function audienceSelectOptions(
+  options: SurveyAudienceOptions | undefined,
+  currentType: SurveyAudienceType,
+  currentValue: string,
+) {
+  const companies = new Set(options?.companies ?? []);
+  if (currentType === 'company' && currentValue) companies.add(currentValue);
+
+  const rows: { label: string; value: string }[] = [
+    { label: 'Everyone', value: 'all' },
+    ...[...companies].sort().map(company => ({
+      label: `Company · ${company}`,
+      value: encodeAudience('company', company),
+    })),
+    ...(options?.filters ?? []).map(filter => ({
+      label: filter.label,
+      value: encodeAudience('filter', filter.value),
+    })),
+  ];
+
+  // A stored filter that is no longer offered still has to appear, or the select
+  // would snap to Everyone on an unchanged save.
+  const encoded = encodeAudience(currentType, currentValue);
+  if (encoded !== 'all' && !rows.some(row => row.value === encoded)) {
+    rows.push({ label: currentValue, value: encoded });
+  }
+  return rows;
+}
+
+const emptyLocalized = (): LocalizedValue => ({ de: '', en: '' });
+
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9\s_-]/g, '')
+    .trim()
+    .replace(/[\s-]+/g, '-');
+}
+
+/** Question ids are frozen once answered and are the column names analytics will use. */
+function questionIdFrom(label: string, index: number) {
+  const candidate = slugify(label).slice(0, 40);
+  return /^[a-z]/.test(candidate) ? candidate : `question_${index + 1}`;
+}
+
+const localizedFrom = (value?: {
+  de?: string;
+  en?: string;
+}): LocalizedValue => ({
+  de: value?.de ?? '',
+  en: value?.en ?? '',
+});
+
+const defaultQuestion = (): QuestionFormValues => ({
+  id: '',
+  label: emptyLocalized(),
+  placeholder: emptyLocalized(),
+  required: false,
+});
+
+const defaultFormValues: SurveyFormValues = {
+  slug: '',
+  name: '',
+  copy: {
+    title: emptyLocalized(),
+    description: emptyLocalized(),
+    submit_button: emptyLocalized(),
+  },
+  scale: 5,
+  ratingLabel: emptyLocalized(),
+  questions: [],
+  audience_type: 'all',
+  audience_value: '',
+  trigger: 'on_session',
+  eligible_after_event: '',
+  eligible_after_since: null,
+  repeat_scope: 'user',
+  context_type: '',
+  active: false,
+  starts_at: null,
+  ends_at: null,
+  max_shows: 3,
+};
+
+function campaignToFormValues(campaign: SurveyCampaign): SurveyFormValues {
+  const ratingQuestion = campaign.questions.find(q => q.type === 'rating');
+  return {
+    slug: campaign.slug,
+    name: campaign.name,
+    copy: {
+      title: localizedFrom(campaign.copy?.title),
+      description: localizedFrom(campaign.copy?.description),
+      submit_button: localizedFrom(campaign.copy?.submit_button),
+    },
+    scale: campaign.scale,
+    ratingLabel: localizedFrom(ratingQuestion?.label),
+    questions: campaign.questions
+      .filter(q => q.type === 'text')
+      .map(q => ({
+        id: q.id,
+        label: localizedFrom(q.label),
+        placeholder: localizedFrom(q.placeholder),
+        required: q.required,
+      })),
+    audience_type: campaign.audience_type,
+    audience_value: campaign.audience_value,
+    trigger: campaign.trigger,
+    eligible_after_event: campaign.eligible_after_event,
+    eligible_after_since: campaign.eligible_after_since,
+    repeat_scope: campaign.repeat_scope,
+    context_type: campaign.context_type,
+    active: campaign.active,
+    starts_at: campaign.starts_at,
+    ends_at: campaign.ends_at,
+    max_shows: campaign.max_shows,
+  };
+}
+
+/** Drop a language that was left entirely blank so the backend sees "no English" cleanly. */
+function pruneLocalized(value?: LocalizedValue) {
+  const de = value?.de?.trim() ?? '';
+  const en = value?.en?.trim() ?? '';
+  const pruned: { de?: string; en?: string } = { de };
+  if (en) pruned.en = en;
+  return pruned;
+}
+
+function formValuesToPayload(values: SurveyFormValues): SurveyCampaignPayload {
+  const ratingLabel = values.ratingLabel ?? emptyLocalized();
+
+  return {
+    slug: values.slug.trim(),
+    name: values.name.trim(),
+    copy: {
+      title: pruneLocalized(values.copy.title),
+      description: pruneLocalized(values.copy.description),
+      submit_button: pruneLocalized(values.copy.submit_button),
+    },
+    scale: Math.min(MAX_SCALE, Math.max(MIN_SCALE, Number(values.scale) || 5)),
+    questions: [
+      {
+        id: RATING_QUESTION_ID,
+        type: 'rating' as const,
+        required: true,
+        label: pruneLocalized(ratingLabel),
+      },
+      ...values.questions.map((question, index) => ({
+        id: question.id || questionIdFrom(question.label.de, index),
+        type: 'text' as const,
+        required: question.required,
+        label: pruneLocalized(question.label),
+        placeholder: pruneLocalized(question.placeholder),
+      })),
+    ],
+    audience_type: values.audience_type,
+    audience_value:
+      values.audience_type === 'all' ? '' : values.audience_value.trim(),
+    trigger: values.trigger,
+    eligible_after_event: values.eligible_after_event,
+    eligible_after_since: values.eligible_after_event
+      ? values.eligible_after_since
+      : null,
+    // New campaigns are once-per-user. Existing ones (post-call) keep the scope they arrived with.
+    repeat_scope: values.repeat_scope,
+    context_type: values.context_type,
+    active: values.active,
+    starts_at: values.starts_at,
+    ends_at: values.ends_at,
+    max_shows: Number(values.max_shows) || 3,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// LocalizedField — the same string in both languages, side by side
+// ---------------------------------------------------------------------------
+
+function LocalizedField({
+  register,
+  name,
+  label,
+  placeholderDe,
+  placeholderEn,
+  required,
+  multiline,
+  disabled,
+}: {
+  register: UseFormRegister<any>;
+  name: string;
+  label: string;
+  placeholderDe?: string;
+  placeholderEn?: string;
+  required?: boolean;
+  multiline?: boolean;
+  disabled?: boolean;
+}) {
+  const Field = multiline ? TextArea : TextInput;
+  return (
+    <CopyRow>
+      <Field
+        label={`${label} (German)`}
+        required={required}
+        disabled={disabled}
+        placeholder={placeholderDe}
+        rows={multiline ? 3 : undefined}
+        width={InputWidth.Large}
+        {...registerInput({ register, name: `${name}.de` })}
+      />
+      <Field
+        label={`${label} (English)`}
+        disabled={disabled}
+        placeholder={placeholderEn}
+        rows={multiline ? 3 : undefined}
+        width={InputWidth.Large}
+        {...registerInput({ register, name: `${name}.en` })}
+      />
+    </CopyRow>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// DetailsPane — everything that is not a question
+// ---------------------------------------------------------------------------
+
+function DetailsPane({
+  register,
+  control,
+  errors,
+  setValue,
+  values,
+  isNew,
+  questionCount,
+  onAddQuestion,
+  saving,
+  scaleLocked,
+  audienceOptions,
+}: {
+  register: UseFormRegister<any>;
+  control: any;
+  errors: any;
+  setValue: UseFormSetValue<any>;
+  values: SurveyFormValues;
+  isNew: boolean;
+  questionCount: number;
+  onAddQuestion: () => void;
+  saving: boolean;
+  scaleLocked: boolean;
+  audienceOptions?: SurveyAudienceOptions;
+}) {
+  return (
+    <PaneRoot>
+      <div>
+        <PaneHeading>Survey details</PaneHeading>
+        <PaneHint>
+          Who sees this survey, when, and what the card says. German is
+          required; leave English blank and German is shown to everyone.
+        </PaneHint>
+      </div>
+
+      <FormStack>
+        <TwoCol>
+          <TextInput
+            label="Internal name"
+            required
+            placeholder="e.g. Acme service check-in"
+            width={InputWidth.Large}
+            error={errors.name?.message}
+            {...registerInput({
+              register,
+              name: 'name',
+              options: { required: 'Required' },
+            })}
+          />
+          <TextInput
+            label="Slug"
+            required
+            placeholder="auto-from-name"
+            labelTooltip="Stable identifier used by analytics. Cannot be changed once responses exist."
+            width={InputWidth.Large}
+            disabled={!isNew}
+            error={errors.slug?.message}
+            {...registerInput({
+              register,
+              name: 'slug',
+              options: { required: 'Required' },
+            })}
+          />
+        </TwoCol>
+        <TwoCol>
+          <Controller
+            name="starts_at"
+            control={control}
+            render={({ field: { value, onChange } }) => (
+              <DatePicker
+                date={parseIsoToDate(value)}
+                setDate={d => onChange(toStartOfDayIso(d))}
+                disabled={saving}
+                label="Campaign Start"
+                tooltipText="Start of the selected day, Europe/Berlin. Leave empty to start as soon as the survey is active."
+              />
+            )}
+          />
+          <Controller
+            name="ends_at"
+            control={control}
+            render={({ field: { value, onChange } }) => (
+              <DatePicker
+                date={parseIsoToDate(value)}
+                setDate={d => onChange(toEndOfDayIso(d))}
+                disabled={saving}
+                label="Campaing End"
+                tooltipText="End of the selected day, Europe/Berlin. After this, nobody is offered the survey — including people who would otherwise become eligible later. Leave empty to run until the survey is deactivated."
+              />
+            )}
+          />
+        </TwoCol>
+
+        <Divider />
+        <SectionTitle>Rating</SectionTitle>
+        <PaneHint>Every survey opens with a star rating.</PaneHint>
+
+        <TwoCol>
+          <Controller
+            name="scale"
+            control={control}
+            rules={{ required: 'Required' }}
+            render={({ field: { value, onChange, onBlur, name, ref } }) => (
+              <TextInput
+                label="Scale"
+                type="number"
+                required
+                min={MIN_SCALE}
+                max={MAX_SCALE}
+                step={1}
+                disabled={scaleLocked || saving}
+                labelTooltip={
+                  scaleLocked
+                    ? 'Scale is frozen because someone has already submitted a rating. Changing it would make existing scores mean something else.'
+                    : 'Sets the highest possible score that can be given'
+                }
+                width={InputWidth.Large}
+                id="survey_scale"
+                name={name}
+                value={value ?? ''}
+                inputRef={ref}
+                onBlur={() => {
+                  const n = Number(value);
+                  if (!Number.isFinite(n) || n < MIN_SCALE) {
+                    onChange(MIN_SCALE);
+                  } else if (n > MAX_SCALE) {
+                    onChange(MAX_SCALE);
+                  }
+                  onBlur();
+                }}
+                onChange={event => {
+                  const raw = event.target.value;
+                  if (raw === '') {
+                    onChange(raw);
+                    return;
+                  }
+                  const next = Number(raw);
+                  if (Number.isNaN(next)) return;
+                  onChange(Math.min(MAX_SCALE, next));
+                }}
+              />
+            )}
+          />
+        </TwoCol>
+        {scaleLocked && (
+          <LockedNotice>
+            Scale is frozen because someone has already submitted a rating.
+            Changing it would make existing scores mean something else.
+          </LockedNotice>
+        )}
+
+        <LocalizedField
+          register={register}
+          name="ratingLabel"
+          label="Rating question"
+          required
+          placeholderDe="Wie zufrieden bist du?"
+          placeholderEn="How satisfied are you?"
+          disabled={saving}
+        />
+
+        <Divider />
+        <SectionTitle>Audience and timing</SectionTitle>
+
+        <TwoCol>
+          <Controller
+            name="audience_type"
+            control={control}
+            render={() => (
+              <Select
+                key={`audience_${encodeAudience(values.audience_type, values.audience_value)}`}
+                id="survey_audience"
+                label="Audience"
+                labelTooltip="Everyone, a company already on the platform, or one of the filters used for banners and events."
+                placeholder="Select an audience"
+                value={encodeAudience(
+                  values.audience_type,
+                  values.audience_value,
+                )}
+                options={audienceSelectOptions(
+                  audienceOptions,
+                  values.audience_type,
+                  values.audience_value,
+                )}
+                onValueChange={next => {
+                  const decoded = decodeAudience(next);
+                  setValue('audience_type', decoded.audience_type, {
+                    shouldDirty: true,
+                  });
+                  setValue('audience_value', decoded.audience_value, {
+                    shouldDirty: true,
+                  });
+                }}
+                cannotError
+              />
+            )}
+          />
+        </TwoCol>
+
+        <TwoCol>
+          <Controller
+            name="trigger"
+            control={control}
+            render={({ field: { value, onChange } }) => (
+              <Select
+                key={`trigger_${String(value)}`}
+                id="survey_trigger"
+                label="When to offer it"
+                labelTooltip="When the card is presented. Eligibility is separate: a user who does not yet match Eligible after is skipped until they do, and after Ends nobody is offered it."
+                placeholder="Select a trigger"
+                value={value ?? 'on_session'}
+                options={TRIGGER_OPTIONS}
+                onValueChange={onChange}
+                cannotError
+              />
+            )}
+          />
+          <Controller
+            name="eligible_after_event"
+            control={control}
+            render={({ field: { value, onChange } }) => (
+              <Select
+                key={`eligible_after_${String(value || 'none')}`}
+                id="survey_eligible_after"
+                label="Eligible after"
+                labelTooltip="As soon as they match this condition they can be offered the survey. Match created and match success count if any tandem match qualifies — not the support chat. The survey is still once per user, so a second match does not produce a second offer. Use Only since to ignore people who reached this earlier."
+                placeholder="Select a condition"
+                value={value || 'none'}
+                options={ELIGIBLE_AFTER_OPTIONS}
+                onValueChange={next => {
+                  const event = next === 'none' ? '' : next;
+                  onChange(event);
+                  if (!event) {
+                    setValue('eligible_after_since', null, {
+                      shouldDirty: true,
+                    });
+                  }
+                }}
+                cannotError
+              />
+            )}
+          />
+        </TwoCol>
+
+        {!!values.eligible_after_event && (
+          <TwoCol>
+            <Controller
+              name="eligible_after_since"
+              control={control}
+              render={({ field: { value, onChange } }) => (
+                <DatePicker
+                  date={parseIsoToDate(value)}
+                  setDate={d => onChange(toStartOfDayIso(d))}
+                  disabled={saving}
+                  label="Only since"
+                  tooltipText="Start of the selected day, Europe/Berlin. Only people who reached Eligible after on or after this date are included. Leave empty to include everyone who ever has."
+                />
+              )}
+            />
+          </TwoCol>
+        )}
+
+        <TwoCol>
+          <TextInput
+            label="Times to re-ask"
+            type="number"
+            labelTooltip="How often an unanswered survey is shown again before it gives up."
+            width={InputWidth.Large}
+            {...registerInput({ register, name: 'max_shows' })}
+          />
+        </TwoCol>
+      </FormStack>
+      <Divider />
+      <SectionTitle>Card copy</SectionTitle>
+
+      <LocalizedField
+        register={register}
+        name="copy.title"
+        label="Title"
+        required
+        placeholderDe="Wie gefällt dir unser Angebot?"
+        placeholderEn="How are you finding the service?"
+        disabled={saving}
+      />
+      <LocalizedField
+        register={register}
+        name="copy.description"
+        label="Description"
+        multiline
+        disabled={saving}
+      />
+      <LocalizedField
+        register={register}
+        name="copy.submit_button"
+        label="Submit button"
+        required
+        placeholderDe="Feedback abgeben"
+        placeholderEn="Submit feedback"
+        disabled={saving}
+      />
+
+      {questionCount === 0 && (
+        <>
+          <EmptyCallout>
+            <EmptyCalloutText>
+              <EmptyCalloutTitle>No follow-up questions</EmptyCalloutTitle>
+              <EmptyCalloutBody>
+                The survey will ask for a star rating only. Add a written
+                question if you want more than a number.
+              </EmptyCalloutBody>
+            </EmptyCalloutText>
+            <Button
+              appearance={ButtonAppearance.Primary}
+              size={ButtonSizes.Small}
+              onClick={onAddQuestion}
+            >
+              <PlusIcon style={{ width: 12, height: 12, marginRight: 4 }} />
+              Add question
+            </Button>
+          </EmptyCallout>
+        </>
+      )}
+    </PaneRoot>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// QuestionPane — one written question
+// ---------------------------------------------------------------------------
+
+function QuestionPane({
+  index,
+  total,
+  register,
+  control,
+  locked,
+  onRemove,
+  saving,
+}: {
+  index: number;
+  total: number;
+  register: UseFormRegister<any>;
+  control: any;
+  locked: boolean;
+  onRemove: () => void;
+  saving: boolean;
+}) {
+  return (
+    <PaneRoot>
+      <SectionMeta>
+        <SectionMetaLabel>Question</SectionMetaLabel>
+        <SectionNumGradient>
+          {String(index + 1).padStart(2, '0')}
+        </SectionNumGradient>
+        <SectionMetaLabel>
+          · {index + 1} of {total}
+        </SectionMetaLabel>
+        <DeleteSectionBtn type="button" onClick={onRemove} disabled={locked}>
+          <TrashIcon style={{ width: 12, height: 12 }} />
+          {locked ? 'Answered — cannot delete' : 'Delete question'}
+        </DeleteSectionBtn>
+      </SectionMeta>
+
+      {locked && (
+        <LockedNotice>
+          People have already answered this question, so it cannot be removed or
+          renamed — their answers would stop meaning anything. The wording is
+          still editable, and you can add another question instead.
+        </LockedNotice>
+      )}
+
+      <FormStack>
+        <LocalizedField
+          register={register}
+          name={`questions.${index}.label`}
+          label="Question"
+          required
+          placeholderDe="Was können wir besser machen?"
+          placeholderEn="What could we do better?"
+          disabled={saving}
+        />
+        <LocalizedField
+          register={register}
+          name={`questions.${index}.placeholder`}
+          label="Placeholder"
+          placeholderDe="Schreib dein Feedback hier"
+          placeholderEn="Leave your feedback here"
+          disabled={saving}
+        />
+
+        <Controller
+          name={`questions.${index}.required`}
+          control={control}
+          render={({ field: { value, onChange } }) => (
+            <Switch
+              label={value ? 'Answer required' : 'Answer optional'}
+              labelInline
+              cannotError
+              checked={!!value}
+              onCheckedChange={onChange}
+              disabled={saving}
+            />
+          )}
+        />
+      </FormStack>
+    </PaneRoot>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// EditSurvey — main page
+// ---------------------------------------------------------------------------
+
+function EditSurvey() {
+  const { campaignId } = useParams<{ campaignId: string }>();
+  const navigate = useNavigate();
+  const isNew = campaignId === 'new';
+
+  const [selectedSection, setSelectedSection] = useState<'details' | number>(
+    'details',
+  );
+  const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState<{
+    id: number;
+    headline: string;
+    title: string;
+  } | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  const detailUrl = `${ADMIN_SURVEY_CAMPAIGNS_ENDPOINT}${campaignId}/`;
+  const { data, isLoading, error } = useSWR<SurveyCampaign>(
+    !isNew ? detailUrl : null,
+    () => fetchSurveyCampaign(Number(campaignId)),
+  );
+  const { data: audienceOptions } = useSWR(
+    `${ADMIN_SURVEY_CAMPAIGNS_ENDPOINT}options/`,
+    fetchSurveyAudienceOptions,
+  );
+
+  const {
+    register,
+    control,
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<SurveyFormValues>({ defaultValues: defaultFormValues });
+
+  const {
+    fields: questionFields,
+    append,
+    remove,
+    move,
+  } = useFieldArray({ control, name: 'questions' });
+
+  const hydratedIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (isNew || !data) return;
+    // Hydrate once per campaign so SWR revalidation cannot wipe in-progress edits.
+    if (hydratedIdRef.current === campaignId) return;
+    hydratedIdRef.current = campaignId ?? null;
+    reset(campaignToFormValues(data));
+  }, [isNew, data, reset, campaignId]);
+
+  const values = watch();
+  const watchedName = values.name;
+  const prevNameRef = useRef('');
+
+  useEffect(() => {
+    if (!isNew) return;
+    const autoSlug = slugify(watchedName ?? '');
+    const slugStillAuto =
+      !values.slug?.trim() || values.slug === slugify(prevNameRef.current);
+    if (slugStillAuto) setValue('slug', autoSlug);
+    prevNameRef.current = watchedName ?? '';
+  }, [isNew, watchedName, values.slug, setValue]);
+
+  const lockedQuestions = data?.locked_questions ?? [];
+  const questionTitles = (values.questions ?? []).map(
+    question => question.label?.de || question.label?.en || '',
+  );
+
+  const addQuestion = () => {
+    append(defaultQuestion());
+    setSelectedSection(questionFields.length);
+  };
+
+  const onSave = async (formValues: SurveyFormValues) => {
+    setSaving(true);
+    setSaveError(null);
+    try {
+      const payload = formValuesToPayload(formValues);
+      if (isNew) {
+        const created = await createSurveyCampaign(payload);
+        await mutate(ADMIN_SURVEY_CAMPAIGNS_ENDPOINT);
+        setToast({
+          id: Date.now(),
+          headline: 'Success',
+          title: 'Survey created.',
+        });
+        navigate(`${SURVEYS_ROUTE}${created.id}/`);
+        return;
+      }
+      const updated = await updateSurveyCampaign(Number(campaignId), payload);
+      await mutate(ADMIN_SURVEY_CAMPAIGNS_ENDPOINT);
+      await mutate(detailUrl);
+      reset(campaignToFormValues(updated));
+      setToast({
+        id: Date.now(),
+        headline: 'Success',
+        title: 'Survey saved.',
+      });
+    } catch (e: any) {
+      // The model refuses to activate a campaign with missing copy, among other rules; its
+      // message is more useful than anything this form could guess.
+      setSaveError(e?.message || 'Failed to save survey.');
+      setToast({
+        id: Date.now(),
+        headline: 'Error',
+        title: 'Survey not saved.',
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const pageTitle = isNew ? 'New survey' : values.name || data?.name || '…';
+
+  usePageHeader({
+    breadcrumbs: {
+      items: [{ label: 'Surveys', to: SURVEYS_ROUTE }],
+      current: pageTitle,
+    },
+    actions: (
+      <>
+        <Controller
+          name="active"
+          control={control}
+          render={({ field: { value, onChange } }) => (
+            <Switch
+              label={value ? 'Active' : 'Draft'}
+              labelInline
+              cannotError
+              checked={!!value}
+              onCheckedChange={onChange}
+              disabled={saving}
+            />
+          )}
+        />
+        <TopBarDivider />
+        <Button
+          appearance={ButtonAppearance.Primary}
+          size={ButtonSizes.Small}
+          onClick={handleSubmit(onSave)}
+          disabled={saving}
+          loading={saving}
+        >
+          Save changes
+        </Button>
+      </>
+    ),
+  });
+
+  return (
+    <EditorRoot>
+      {error && (
+        <StatusMessage type={StatusTypes.Error} visible>
+          Failed to load survey.
+        </StatusMessage>
+      )}
+      {saveError && (
+        <StatusMessage type={StatusTypes.Error} visible withBorder>
+          {saveError}
+        </StatusMessage>
+      )}
+      {!isNew && !!data?.missing_copy?.length && (
+        <StatusMessage type={StatusTypes.Warning} visible withBorder>
+          {`Cannot be activated yet — missing: ${data.missing_copy.join(', ')}.`}
+        </StatusMessage>
+      )}
+
+      {isLoading && !isNew ? (
+        <div
+          style={{ padding: '2rem', display: 'flex', justifyContent: 'center' }}
+        >
+          <Loading size={LoadingSizes.Medium} />
+        </div>
+      ) : (
+        <TwoPaneLayout>
+          <StructureRail
+            sectionTitles={questionTitles}
+            selectedSection={selectedSection}
+            onSelectDetails={() => setSelectedSection('details')}
+            onSelectSection={setSelectedSection}
+            onAddSection={addQuestion}
+            onMoveUp={idx => move(idx, idx - 1)}
+            onMoveDown={idx => move(idx, idx + 1)}
+            saving={saving}
+            detailsLabel="Survey details"
+            sectionsLabel="Written questions"
+            addLabel="Add question"
+            untitledLabel="Untitled question"
+            emptyLabel="Rating only."
+          />
+
+          <MainPane>
+            {selectedSection === 'details' ? (
+              <DetailsPane
+                register={register}
+                control={control}
+                errors={errors}
+                setValue={setValue}
+                values={values}
+                isNew={isNew}
+                questionCount={questionFields.length}
+                onAddQuestion={addQuestion}
+                saving={saving}
+                scaleLocked={!!data?.scale_locked}
+                audienceOptions={audienceOptions}
+              />
+            ) : (
+              <QuestionPane
+                key={selectedSection}
+                index={selectedSection as number}
+                total={questionFields.length}
+                register={register}
+                control={control}
+                locked={lockedQuestions.includes(
+                  values.questions?.[selectedSection as number]?.id ?? '',
+                )}
+                onRemove={() => {
+                  remove(selectedSection as number);
+                  setSelectedSection('details');
+                }}
+                saving={saving}
+              />
+            )}
+          </MainPane>
+        </TwoPaneLayout>
+      )}
+
+      {toast && (
+        <Toast
+          key={toast.id}
+          headline={toast.headline}
+          title={toast.title}
+          onClose={() => setToast(null)}
+        />
+      )}
+    </EditorRoot>
+  );
+}
+
+export default EditSurvey;

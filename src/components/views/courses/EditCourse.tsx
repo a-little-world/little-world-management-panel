@@ -1124,12 +1124,11 @@ function EditCourse() {
       ) : (
         <TwoPaneLayout>
           <StructureRail
-            chapterTitles={chapterTitles}
-            chapterCount={chapterFields.length}
+            sectionTitles={chapterTitles}
             selectedSection={selectedSection}
             onSelectDetails={() => setSelectedSection('details')}
-            onSelectChapter={(idx: number) => setSelectedSection(idx)}
-            onAddChapter={addChapter}
+            onSelectSection={(idx: number) => setSelectedSection(idx)}
+            onAddSection={addChapter}
             onMoveUp={(idx: number) => move(idx, idx - 1)}
             onMoveDown={(idx: number) => move(idx, idx + 1)}
             saving={saving}

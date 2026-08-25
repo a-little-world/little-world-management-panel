@@ -180,15 +180,20 @@ const RailFooterText = styled.div`
 /* ── Component ── */
 
 export type StructureRailProps = {
-  chapterTitles: string[];
-  chapterCount: number;
+  sectionTitles: string[];
   selectedSection: 'details' | number;
   onSelectDetails: () => void;
-  onSelectChapter: (idx: number) => void;
-  onAddChapter: () => void;
+  onSelectSection: (idx: number) => void;
+  onAddSection: () => void;
   onMoveUp: (idx: number) => void;
   onMoveDown: (idx: number) => void;
   saving: boolean;
+  /** Wording for the editor using the rail. Defaults suit a course. */
+  detailsLabel?: string;
+  sectionsLabel?: string;
+  addLabel?: string;
+  untitledLabel?: string;
+  emptyLabel?: string;
   /** Optional note shown in the footer. */
   footerNote?: string;
 };
@@ -199,15 +204,19 @@ export type StructureRailProps = {
  * add-section button. Generic enough to use across different editors on the platform.
  */
 const StructureRail = ({
-  chapterTitles,
-  chapterCount,
+  sectionTitles,
   selectedSection,
   onSelectDetails,
-  onSelectChapter,
-  onAddChapter,
+  onSelectSection,
+  onAddSection,
   onMoveUp,
   onMoveDown,
   saving,
+  detailsLabel = 'Course details',
+  sectionsLabel = 'Chapters',
+  addLabel = 'Add chapter',
+  untitledLabel = 'Untitled chapter',
+  emptyLabel = 'No chapters yet.',
   footerNote = 'Saves are manual — use Save changes above.',
 }: StructureRailProps) => (
   <RailPanel>
@@ -220,36 +229,36 @@ const StructureRail = ({
         onClick={onSelectDetails}
       >
         <RailNavItemTitle $selected={selectedSection === 'details'}>
-          Course details
+          {detailsLabel}
         </RailNavItemTitle>
       </RailNavItem>
 
       <RailChaptersMeta>
         <RailSectionLabel style={{ margin: 0 }}>
-          Chapters
-          {chapterCount > 0 && (
+          {sectionsLabel}
+          {sectionTitles.length > 0 && (
             <span style={{ color: '#a6a6a6', fontWeight: 400 }}>
               {' '}
-              · {chapterCount}
+              · {sectionTitles.length}
             </span>
           )}
         </RailSectionLabel>
         <RailHint>Reorder with ↑↓</RailHint>
       </RailChaptersMeta>
 
-      {chapterCount === 0 ? (
+      {sectionTitles.length === 0 ? (
         <RailEmptyDashed>
-          No chapters yet.
+          {emptyLabel}
           <br />
           Add one below.
         </RailEmptyDashed>
       ) : (
-        chapterTitles.map((title, idx) => (
+        sectionTitles.map((title, idx) => (
           <RailNavItem
             key={idx}
             type="button"
             $selected={selectedSection === idx}
-            onClick={() => onSelectChapter(idx)}
+            onClick={() => onSelectSection(idx)}
           >
             <RailChapterNum $selected={selectedSection === idx}>
               {String(idx + 1).padStart(2, '0')}
@@ -257,7 +266,7 @@ const StructureRail = ({
             <RailNavItemTitle $selected={selectedSection === idx}>
               {title || (
                 <span style={{ opacity: 0.5, fontStyle: 'italic' }}>
-                  Untitled chapter
+                  {untitledLabel}
                 </span>
               )}
             </RailNavItemTitle>
@@ -276,8 +285,10 @@ const StructureRail = ({
               <RailMoveBtn
                 type="button"
                 title="Move down"
-                disabled={idx === chapterCount - 1}
-                onClick={() => idx < chapterCount - 1 && onMoveDown(idx)}
+                disabled={idx === sectionTitles.length - 1}
+                onClick={() =>
+                  idx < sectionTitles.length - 1 && onMoveDown(idx)
+                }
               >
                 ↓
               </RailMoveBtn>
@@ -286,9 +297,9 @@ const StructureRail = ({
         ))
       )}
 
-      <RailAddChapterBtn type="button" onClick={onAddChapter} disabled={saving}>
+      <RailAddChapterBtn type="button" onClick={onAddSection} disabled={saving}>
         <span style={{ fontWeight: 800, marginRight: 2, fontSize: 16 }}>+</span>
-        Add chapter
+        {addLabel}
       </RailAddChapterBtn>
     </RailTop>
 

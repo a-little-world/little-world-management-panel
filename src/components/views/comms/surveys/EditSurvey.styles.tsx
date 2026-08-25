@@ -1,0 +1,180 @@
+import styled from 'styled-components';
+
+import { FormStack as BaseFormStack } from '../../../atoms/FormLayout';
+
+/* ── Brand colours — shared with the course editor, whose shell this mirrors ── */
+const BRAND_ORANGE = '#db590b';
+const BRAND_ORANGE_LIGHT = '#f39224';
+const BRAND_BLUE = '#0063af';
+
+export const EditorRoot = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  background: ${({ theme }) => theme.color.surface.primary};
+`;
+
+export const TopBarDivider = styled.span`
+  width: 1px;
+  height: 20px;
+  background: ${({ theme }) => theme.color.border.subtle};
+  flex-shrink: 0;
+`;
+
+export const TwoPaneLayout = styled.div`
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+`;
+
+export const MainPane = styled.div`
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  background: ${({ theme }) => theme.color.surface.primary};
+`;
+
+export const PaneRoot = styled.div`
+  padding: 24px 32px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.medium};
+  max-width: 820px;
+`;
+
+export const PaneHeading = styled.h2`
+  margin: 0;
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: ${BRAND_BLUE};
+`;
+
+export const PaneHint = styled.p`
+  margin: 4px 0 0;
+  font-size: 0.8125rem;
+  color: ${({ theme }) => theme.color.text.secondary};
+  line-height: 1.5;
+`;
+
+export const SectionMeta = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xsmall};
+`;
+
+export const SectionMetaLabel = styled.span`
+  font-size: 0.75rem;
+  color: ${({ theme }) => theme.color.text.secondary};
+`;
+
+export const SectionNumGradient = styled.span`
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, ${BRAND_ORANGE_LIGHT}, ${BRAND_ORANGE});
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  flex-shrink: 0;
+`;
+
+export const DeleteSectionBtn = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: ${({ theme }) => theme.color.text.secondary};
+  padding: 4px ${({ theme }) => theme.spacing.xsmall};
+  border-radius: ${({ theme }) => theme.radius.small};
+  transition:
+    color 0.1s,
+    background 0.1s;
+
+  &:hover:not(:disabled) {
+    color: ${({ theme }) => theme.color.status.error};
+    background: ${({ theme }) => theme.color.surface.secondary};
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+`;
+
+export const Divider = styled.div`
+  height: 1px;
+  background: ${({ theme }) => theme.color.surface.secondary};
+  margin: 4px 0;
+`;
+
+export const FormStack = styled(BaseFormStack)`
+  width: 100%;
+`;
+
+export const TwoCol = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: ${({ theme }) => theme.spacing.medium};
+`;
+
+/** German on the left, English on the right, so a gap is visible rather than implied. */
+export const CopyRow = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: ${({ theme }) => theme.spacing.medium};
+  align-items: start;
+`;
+
+export const SectionTitle = styled.span`
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: ${({ theme }) => theme.color.text.secondary};
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+`;
+
+export const EmptyCallout = styled.div`
+  padding: 24px;
+  background: ${({ theme }) => theme.color.surface.primary};
+  border: 1.5px dashed ${({ theme }) => theme.color.border.subtle};
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+`;
+
+export const EmptyCalloutText = styled.div`
+  flex: 1;
+`;
+
+export const EmptyCalloutTitle = styled.div`
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: ${BRAND_BLUE};
+`;
+
+export const EmptyCalloutBody = styled.div`
+  font-size: 0.8125rem;
+  color: ${({ theme }) => theme.color.text.secondary};
+  margin-top: 4px;
+  line-height: 1.5;
+`;
+
+export const LockedNotice = styled.div`
+  padding: ${({ theme }) => theme.spacing.small};
+  border-radius: 12px;
+  background: ${({ theme }) => theme.color.surface.secondary};
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: ${({ theme }) => theme.color.text.secondary};
+`;

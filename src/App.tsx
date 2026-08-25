@@ -41,6 +41,8 @@ import VideoCalls from './components/views/VideoCalls';
 import Communications from './components/views/comms/Communications';
 import Banners from './components/views/comms/banners/Banners';
 import EditBanner from './components/views/comms/banners/EditBanner';
+import EditSurvey from './components/views/comms/surveys/EditSurvey';
+import Surveys from './components/views/comms/surveys/Surveys';
 import Events from './components/views/comms/events/Events';
 import QuestionCards from './components/views/comms/questionCards/QuestionCards';
 import ShortLinks from './components/views/comms/shortLinks/ShortLinks';
@@ -63,6 +65,8 @@ import { routeTitle } from './router/routeHandle';
 import {
   ALGORITHM_ROUTE,
   BANNERS_ROUTE,
+  SURVEY_EDIT_ROUTE,
+  SURVEYS_ROUTE,
   BANNER_EDIT_ROUTE,
   BASE_ROUTE,
   COMMUNICATIONS_ROUTE,
@@ -324,6 +328,18 @@ const router = createBrowserRouter(
           element: <EditBanner />,
           ...routeTitle(({ bannerId }) =>
             bannerId === 'new' ? 'Create Banner' : 'Edit Banner',
+          ),
+        },
+        {
+          path: SURVEYS_ROUTE,
+          element: <Surveys />,
+          ...routeTitle('Surveys'),
+        },
+        {
+          path: SURVEY_EDIT_ROUTE,
+          element: <EditSurvey />,
+          ...routeTitle(({ campaignId }) =>
+            campaignId === 'new' ? 'New survey' : 'Edit survey',
           ),
         },
         {
