@@ -122,7 +122,8 @@ function SurveyCampaigns() {
           A survey is offered to anyone matching its audience while it is
           active, so switching a campaign on is what starts collecting answers.
           Retire a survey by deactivating it — campaigns with answers cannot be
-          deleted.
+          deleted. Note that once a user is shown a survey, they will not be
+          shown the same one or another one for 12 hours.
         </StatusMessage>
       </PageHeader>
 
@@ -141,12 +142,12 @@ function SurveyCampaigns() {
           <ListPanel>
             <ListScroll>
               {isLoading ? (
-                <div className="px-5 py-4">
+                <div className="px-5 py-8">
                   <Loading size={LoadingSizes.Medium} />
                 </div>
               ) : currentList.length === 0 ? (
-                <div className="px-5 py-4">
-                  <Text type={TextTypes.Body4}>
+                <div className="px-5 py-8">
+                  <Text type={TextTypes.Body5} center>
                     No surveys in this tab. Create one to start collecting
                     feedback.
                   </Text>

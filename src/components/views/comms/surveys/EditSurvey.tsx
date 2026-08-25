@@ -567,7 +567,7 @@ function DetailsPane({
                 labelTooltip={
                   scaleLocked
                     ? 'Scale is frozen because someone has already submitted a rating. Changing it would make existing scores mean something else.'
-                    : 'Sets the highest possible score that can be given'
+                    : 'Highest score a user can give. The star captions ("Terrible" … "Excellent") only fit a 5-star scale, so any other value shows bare stars.'
                 }
                 width={InputWidth.Large}
                 id="survey_scale"
