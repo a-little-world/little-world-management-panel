@@ -11,15 +11,18 @@ function Surveys() {
     searchParams.get('tab') === 'responses' ? 'responses' : 'campaigns';
 
   const onTabChange = (value: string) => {
-    searchParams.set('tab', value);
+    // Copied rather than mutated: the object the hook returns is shared state, and
+    // SurveyResponses already does it this way.
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.set('tab', value);
     if (value === 'responses') {
-      if (!searchParams.get('page_size')) {
-        searchParams.set('page_size', '50');
+      if (!nextParams.get('page_size')) {
+        nextParams.set('page_size', '50');
       }
     } else {
-      searchParams.delete('page');
+      nextParams.delete('page');
     }
-    setSearchParams(searchParams);
+    setSearchParams(nextParams);
   };
 
   return (

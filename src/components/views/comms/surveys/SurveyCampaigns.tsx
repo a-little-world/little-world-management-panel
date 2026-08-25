@@ -24,6 +24,7 @@ import {
   fetchSurveyCampaigns,
   SurveyCampaign,
 } from '../../../../api/surveys';
+import { formatBerlinDate } from '../../../../helpers/berlinDates';
 import {
   getSurveyEditRoute,
   getSurveyResponsesRoute,
@@ -47,12 +48,9 @@ import { usePageHeader } from '../../../blocks/LayoutHeaderContext';
 
 type SurveyTab = 'live' | 'draft';
 
-const formatDate = (value: string | null) =>
-  value ? new Date(value).toLocaleDateString('en-GB') : '—';
-
 const formatWindow = (campaign: SurveyCampaign) => {
   if (!campaign.starts_at && !campaign.ends_at) return 'Always';
-  return `${formatDate(campaign.starts_at)} → ${formatDate(campaign.ends_at)}`;
+  return `${formatBerlinDate(campaign.starts_at)} → ${formatBerlinDate(campaign.ends_at)}`;
 };
 
 const describeAudience = (campaign: SurveyCampaign) =>
@@ -68,15 +66,20 @@ const describeRepeat = (campaign: SurveyCampaign) =>
     ? `Once per ${campaign.context_type || 'context'}`
     : 'Once per user';
 
-/**
- * Response rate is the only way to see that delivery works at all. An offered count that
- * climbs while `rendered` stays at zero is a broken client — the exact failure that hid the
- * old post-call survey for a year.
- */
 const describeResponses = (campaign: SurveyCampaign) => {
   if (!campaign.offered) return '—';
   const rate = Math.round((campaign.answered / campaign.offered) * 100);
   return `${campaign.answered}/${campaign.offered} (${rate}%)`;
+};
+
+/**
+ * Offers the client confirmed it actually painted. An offered count that climbs while this
+ * stays at zero is a broken client — the exact failure that hid the old post-call survey for
+ * a year — so it gets its own column rather than being folded into the answer rate.
+ */
+const describeDelivery = (campaign: SurveyCampaign) => {
+  if (!campaign.offered) return '—';
+  return `${campaign.rendered}/${campaign.offered}`;
 };
 
 function SurveyCampaigns() {
@@ -164,6 +167,9 @@ function SurveyCampaigns() {
                         Repeats
                       </TableHead>
                       <TableHead className="w-36 text-center">
+                        Delivered
+                      </TableHead>
+                      <TableHead className="w-36 text-center">
                         Answered
                       </TableHead>
                       <TableHead className="w-28 text-center">Rating</TableHead>
@@ -189,6 +195,9 @@ function SurveyCampaigns() {
                         </TableCell>
                         <TableCell className="text-center">
                           {describeRepeat(campaign)}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {describeDelivery(campaign)}
                         </TableCell>
                         <TableCell className="text-center">
                           {describeResponses(campaign)}

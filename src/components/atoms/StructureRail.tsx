@@ -1,10 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-/* ── Brand colours (shared with the course editor) ── */
-const BRAND_ORANGE = '#db590b';
-const BRAND_ORANGE_LIGHT = '#f39224';
-const BRAND_ORANGE_TINT = '#fde5cf';
+import { ORANGE_10, ORANGE_30, ORANGE_40 } from '../../constants';
 
 /* ── Styled primitives ── */
 
@@ -44,17 +41,15 @@ const RailNavItem = styled.button<{ $selected?: boolean }>`
   border-radius: 10px;
   border: none;
   border-left: 3px solid
-    ${({ $selected }) => ($selected ? BRAND_ORANGE_LIGHT : 'transparent')};
-  background: ${({ $selected }) =>
-    $selected ? BRAND_ORANGE_TINT : 'transparent'};
+    ${({ $selected }) => ($selected ? ORANGE_30 : 'transparent')};
+  background: ${({ $selected }) => ($selected ? ORANGE_10 : 'transparent')};
   cursor: pointer;
   text-align: left;
   width: 100%;
   transition: background 0.1s;
 
   &:hover {
-    background: ${({ $selected }) =>
-      $selected ? BRAND_ORANGE_TINT : '#f4f5f7'};
+    background: ${({ $selected }) => ($selected ? ORANGE_10 : '#f4f5f7')};
   }
 `;
 
@@ -69,12 +64,12 @@ const RailNavItemTitle = styled.span<{ $selected?: boolean }>`
   text-overflow: ellipsis;
 `;
 
-const RailChapterNum = styled.span<{ $selected?: boolean }>`
+const RailSectionNum = styled.span<{ $selected?: boolean }>`
   width: 22px;
   height: 22px;
   border-radius: 6px;
   background: ${({ $selected }) => ($selected ? '#fff' : '#f4f5f7')};
-  color: ${({ $selected }) => ($selected ? BRAND_ORANGE : '#4b4c4f')};
+  color: ${({ $selected }) => ($selected ? ORANGE_40 : '#4b4c4f')};
   font-size: 0.6875rem;
   font-weight: 700;
   display: inline-flex;
@@ -83,12 +78,39 @@ const RailChapterNum = styled.span<{ $selected?: boolean }>`
   flex-shrink: 0;
 `;
 
-const RailChaptersMeta = styled.div`
+const RailSectionsMeta = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: ${({ theme }) =>
     `${theme.spacing.medium} ${theme.spacing.xsmall} 4px`};
+`;
+
+/** The label inside the meta row already has the row's padding, so it drops its own. */
+const RailMetaLabel = styled(RailSectionLabel)`
+  margin: 0;
+`;
+
+const RailSectionCount = styled.span`
+  color: ${({ theme }) => theme.color.text.tertiary};
+  font-weight: 400;
+`;
+
+const RailUntitled = styled.span`
+  opacity: 0.5;
+  font-style: italic;
+`;
+
+const RailMoveGroup = styled.span`
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+`;
+
+const RailAddGlyph = styled.span`
+  font-weight: 800;
+  margin-right: 2px;
+  font-size: 1rem;
 `;
 
 const RailHint = styled.span`
@@ -107,7 +129,7 @@ const RailEmptyDashed = styled.div`
   line-height: 1.4;
 `;
 
-const RailAddChapterBtn = styled.button`
+const RailAddSectionBtn = styled.button`
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -154,8 +176,8 @@ const RailMoveBtn = styled.button`
   flex-shrink: 0;
 
   &:hover:not(:disabled) {
-    background: ${BRAND_ORANGE_TINT};
-    color: ${BRAND_ORANGE};
+    background: ${ORANGE_10};
+    color: ${ORANGE_40};
   }
 
   &:disabled {
@@ -216,7 +238,7 @@ const StructureRail = ({
   sectionsLabel = 'Chapters',
   addLabel = 'Add chapter',
   untitledLabel = 'Untitled chapter',
-  emptyLabel = 'No chapters yet.',
+  emptyLabel = 'No chapters yet. Add one below.',
   footerNote = 'Saves are manual — use Save changes above.',
 }: StructureRailProps) => (
   <RailPanel>
@@ -233,25 +255,18 @@ const StructureRail = ({
         </RailNavItemTitle>
       </RailNavItem>
 
-      <RailChaptersMeta>
-        <RailSectionLabel style={{ margin: 0 }}>
+      <RailSectionsMeta>
+        <RailMetaLabel>
           {sectionsLabel}
           {sectionTitles.length > 0 && (
-            <span style={{ color: '#a6a6a6', fontWeight: 400 }}>
-              {' '}
-              · {sectionTitles.length}
-            </span>
+            <RailSectionCount> · {sectionTitles.length}</RailSectionCount>
           )}
-        </RailSectionLabel>
+        </RailMetaLabel>
         <RailHint>Reorder with ↑↓</RailHint>
-      </RailChaptersMeta>
+      </RailSectionsMeta>
 
       {sectionTitles.length === 0 ? (
-        <RailEmptyDashed>
-          {emptyLabel}
-          <br />
-          Add one below.
-        </RailEmptyDashed>
+        <RailEmptyDashed>{emptyLabel}</RailEmptyDashed>
       ) : (
         sectionTitles.map((title, idx) => (
           <RailNavItem
@@ -260,20 +275,13 @@ const StructureRail = ({
             $selected={selectedSection === idx}
             onClick={() => onSelectSection(idx)}
           >
-            <RailChapterNum $selected={selectedSection === idx}>
+            <RailSectionNum $selected={selectedSection === idx}>
               {String(idx + 1).padStart(2, '0')}
-            </RailChapterNum>
+            </RailSectionNum>
             <RailNavItemTitle $selected={selectedSection === idx}>
-              {title || (
-                <span style={{ opacity: 0.5, fontStyle: 'italic' }}>
-                  {untitledLabel}
-                </span>
-              )}
+              {title || <RailUntitled>{untitledLabel}</RailUntitled>}
             </RailNavItemTitle>
-            <span
-              style={{ display: 'flex', gap: 2, flexShrink: 0 }}
-              onClick={e => e.stopPropagation()}
-            >
+            <RailMoveGroup onClick={e => e.stopPropagation()}>
               <RailMoveBtn
                 type="button"
                 title="Move up"
@@ -292,15 +300,15 @@ const StructureRail = ({
               >
                 ↓
               </RailMoveBtn>
-            </span>
+            </RailMoveGroup>
           </RailNavItem>
         ))
       )}
 
-      <RailAddChapterBtn type="button" onClick={onAddSection} disabled={saving}>
-        <span style={{ fontWeight: 800, marginRight: 2, fontSize: 16 }}>+</span>
+      <RailAddSectionBtn type="button" onClick={onAddSection} disabled={saving}>
+        <RailAddGlyph>+</RailAddGlyph>
         {addLabel}
-      </RailAddChapterBtn>
+      </RailAddSectionBtn>
     </RailTop>
 
     {footerNote && (

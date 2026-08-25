@@ -13,6 +13,7 @@ import React from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import useSWR from 'swr';
 
+import { formatBerlinDateTime } from '../../../../helpers/berlinDates';
 import {
   ADMIN_SURVEY_RESPONSES_ENDPOINT,
   AdminSurveyResponse,
@@ -72,9 +73,6 @@ function SurveyResponses() {
     }
     setSearchParams(nextParams);
   };
-
-  const formatDateTime = (value: string | null) =>
-    value ? new Date(value).toLocaleString('en-GB') : '—';
 
   const campaignOptions = [
     { label: 'All campaigns', value: 'all' },
@@ -177,8 +175,12 @@ function SurveyResponses() {
                     <TableCell className="text-center">
                       {row.shown_count}
                     </TableCell>
-                    <TableCell>{formatDateTime(row.created_at)}</TableCell>
-                    <TableCell>{formatDateTime(row.submitted_at)}</TableCell>
+                    <TableCell>
+                      {formatBerlinDateTime(row.created_at)}
+                    </TableCell>
+                    <TableCell>
+                      {formatBerlinDateTime(row.submitted_at)}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

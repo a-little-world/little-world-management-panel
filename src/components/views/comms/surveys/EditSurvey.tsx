@@ -16,7 +16,9 @@ import {
 import { PlusIcon, TrashIcon } from '@heroicons/react/20/solid';
 import React, { useEffect, useRef, useState } from 'react';
 import {
+  Control,
   Controller,
+  FieldErrors,
   useFieldArray,
   useForm,
   UseFormRegister,
@@ -35,6 +37,7 @@ import {
   SurveyCampaign,
   SurveyCampaignPayload,
   SurveyEligibleAfterEvent,
+  SurveyQuestion,
   updateSurveyCampaign,
 } from '../../../../api/surveys';
 import {
@@ -48,7 +51,6 @@ import { DatePicker } from '../../../atoms/DatePicker';
 import StructureRail from '../../../atoms/StructureRail';
 import { usePageHeader } from '../../../blocks/LayoutHeaderContext';
 import {
-  CopyRow,
   DeleteSectionBtn,
   Divider,
   EditorRoot,
@@ -57,7 +59,6 @@ import {
   EmptyCalloutText,
   EmptyCalloutTitle,
   FormStack,
-  LockedNotice,
   MainPane,
   PaneHeading,
   PaneHint,
@@ -69,6 +70,12 @@ import {
   TopBarDivider,
   TwoCol,
   TwoPaneLayout,
+} from '../../../atoms/EditorShell.styles';
+import {
+  CopyRow,
+  InlineIcon,
+  LoadingWrap,
+  LockedNotice,
 } from './EditSurvey.styles';
 
 // ---------------------------------------------------------------------------
@@ -100,7 +107,20 @@ type SurveyFormValues = {
   scale: number;
   /** The rating question's label. Edited on the details pane, since the rating is implicit. */
   ratingLabel: LocalizedValue;
+  /**
+   * Id of the rating question as stored. Ids are frozen once answered, so a campaign whose
+   * rating is called something else must keep that name rather than be renamed to `rating`.
+   */
+  ratingId: string;
   questions: QuestionFormValues[];
+  /**
+   * Questions this editor cannot render — choice questions, or a second rating — carried
+   * through a save untouched. Without this, opening a campaign built in Django admin and
+   * saving it would silently delete them.
+   */
+  preservedQuestions: SurveyQuestion[];
+  /** Question ids in their stored order, so a round-trip does not reshuffle the card. */
+  questionOrder: string[];
   audience_type: 'all' | 'company' | 'filter';
   audience_value: string;
   trigger: 'on_session' | 'event:call_ended';
@@ -140,6 +160,11 @@ const ELIGIBLE_AFTER_OPTIONS = [
 
 const MIN_SCALE = 2;
 const MAX_SCALE = 10;
+
+/** An offer has to be shown at least once to be an offer at all. */
+const MIN_MAX_SHOWS = 1;
+const MAX_MAX_SHOWS = 10;
+const DEFAULT_MAX_SHOWS = 3;
 
 /** The rating question is implicit: every campaign has one, so it is never in the rail. */
 const RATING_QUESTION_ID = 'rating';
@@ -244,7 +269,10 @@ const defaultFormValues: SurveyFormValues = {
   },
   scale: 5,
   ratingLabel: emptyLocalized(),
+  ratingId: RATING_QUESTION_ID,
   questions: [],
+  preservedQuestions: [],
+  questionOrder: [],
   audience_type: 'all',
   audience_value: '',
   trigger: 'on_session',
@@ -255,11 +283,18 @@ const defaultFormValues: SurveyFormValues = {
   active: false,
   starts_at: null,
   ends_at: null,
-  max_shows: 3,
+  max_shows: DEFAULT_MAX_SHOWS,
 };
 
 function campaignToFormValues(campaign: SurveyCampaign): SurveyFormValues {
   const ratingQuestion = campaign.questions.find(q => q.type === 'rating');
+  const editable = new Set(
+    campaign.questions
+      .filter(
+        question => question === ratingQuestion || question.type === 'text',
+      )
+      .map(question => question.id),
+  );
   return {
     slug: campaign.slug,
     name: campaign.name,
@@ -270,6 +305,11 @@ function campaignToFormValues(campaign: SurveyCampaign): SurveyFormValues {
     },
     scale: campaign.scale,
     ratingLabel: localizedFrom(ratingQuestion?.label),
+    ratingId: ratingQuestion?.id || RATING_QUESTION_ID,
+    preservedQuestions: campaign.questions.filter(
+      question => !editable.has(question.id),
+    ),
+    questionOrder: campaign.questions.map(question => question.id),
     questions: campaign.questions
       .filter(q => q.type === 'text')
       .map(q => ({
@@ -303,6 +343,30 @@ function pruneLocalized(value?: LocalizedValue) {
 
 function formValuesToPayload(values: SurveyFormValues): SurveyCampaignPayload {
   const ratingLabel = values.ratingLabel ?? emptyLocalized();
+  const order = values.questionOrder ?? [];
+  // Anything the editor did not create keeps its stored position; new questions go last in
+  // the order they were added. `sort` is stable, so equal ranks preserve that order.
+  const rank = (question: SurveyQuestion) => {
+    const index = order.indexOf(question.id);
+    return index === -1 ? Number.MAX_SAFE_INTEGER : index;
+  };
+
+  const questions: SurveyQuestion[] = [
+    {
+      id: values.ratingId || RATING_QUESTION_ID,
+      type: 'rating' as const,
+      required: true,
+      label: pruneLocalized(ratingLabel),
+    },
+    ...values.questions.map((question, index) => ({
+      id: question.id || questionIdFrom(question.label.de, index),
+      type: 'text' as const,
+      required: question.required,
+      label: pruneLocalized(question.label),
+      placeholder: pruneLocalized(question.placeholder),
+    })),
+    ...(values.preservedQuestions ?? []),
+  ].sort((a, b) => rank(a) - rank(b));
 
   return {
     slug: values.slug.trim(),
@@ -313,21 +377,7 @@ function formValuesToPayload(values: SurveyFormValues): SurveyCampaignPayload {
       submit_button: pruneLocalized(values.copy.submit_button),
     },
     scale: Math.min(MAX_SCALE, Math.max(MIN_SCALE, Number(values.scale) || 5)),
-    questions: [
-      {
-        id: RATING_QUESTION_ID,
-        type: 'rating' as const,
-        required: true,
-        label: pruneLocalized(ratingLabel),
-      },
-      ...values.questions.map((question, index) => ({
-        id: question.id || questionIdFrom(question.label.de, index),
-        type: 'text' as const,
-        required: question.required,
-        label: pruneLocalized(question.label),
-        placeholder: pruneLocalized(question.placeholder),
-      })),
-    ],
+    questions,
     audience_type: values.audience_type,
     audience_value:
       values.audience_type === 'all' ? '' : values.audience_value.trim(),
@@ -342,7 +392,12 @@ function formValuesToPayload(values: SurveyFormValues): SurveyCampaignPayload {
     active: values.active,
     starts_at: values.starts_at,
     ends_at: values.ends_at,
-    max_shows: Number(values.max_shows) || 3,
+    // Clamped into range. A blank field falls back to the default; a typed 0 becomes the
+    // minimum rather than silently becoming 3, which is what `Number(x) || 3` used to do.
+    max_shows: Math.min(
+      MAX_MAX_SHOWS,
+      Math.max(MIN_MAX_SHOWS, Number(values.max_shows) || DEFAULT_MAX_SHOWS),
+    ),
   };
 }
 
@@ -360,7 +415,8 @@ function LocalizedField({
   multiline,
   disabled,
 }: {
-  register: UseFormRegister<any>;
+  register: UseFormRegister<SurveyFormValues>;
+  /** Path of the `{de, en}` block; the two inputs register `<name>.de` and `<name>.en`. */
   name: string;
   label: string;
   placeholderDe?: string;
@@ -410,10 +466,10 @@ function DetailsPane({
   scaleLocked,
   audienceOptions,
 }: {
-  register: UseFormRegister<any>;
-  control: any;
-  errors: any;
-  setValue: UseFormSetValue<any>;
+  register: UseFormRegister<SurveyFormValues>;
+  control: Control<SurveyFormValues>;
+  errors: FieldErrors<SurveyFormValues>;
+  setValue: UseFormSetValue<SurveyFormValues>;
   values: SurveyFormValues;
   isNew: boolean;
   questionCount: number;
@@ -470,7 +526,7 @@ function DetailsPane({
                 date={parseIsoToDate(value)}
                 setDate={d => onChange(toStartOfDayIso(d))}
                 disabled={saving}
-                label="Campaign Start"
+                label="Campaign start"
                 tooltipText="Start of the selected day, Europe/Berlin. Leave empty to start as soon as the survey is active."
               />
             )}
@@ -483,7 +539,7 @@ function DetailsPane({
                 date={parseIsoToDate(value)}
                 setDate={d => onChange(toEndOfDayIso(d))}
                 disabled={saving}
-                label="Campaing End"
+                label="Campaign end"
                 tooltipText="End of the selected day, Europe/Berlin. After this, nobody is offered the survey — including people who would otherwise become eligible later. Leave empty to run until the survey is deactivated."
               />
             )}
@@ -517,7 +573,7 @@ function DetailsPane({
                 id="survey_scale"
                 name={name}
                 value={value ?? ''}
-                inputRef={ref}
+                inputRef={ref as unknown as React.RefObject<HTMLInputElement>}
                 onBlur={() => {
                   const n = Number(value);
                   if (!Number.isFinite(n) || n < MIN_SCALE) {
@@ -663,9 +719,27 @@ function DetailsPane({
           <TextInput
             label="Times to re-ask"
             type="number"
+            min={MIN_MAX_SHOWS}
+            max={MAX_MAX_SHOWS}
+            step={1}
             labelTooltip="How often an unanswered survey is shown again before it gives up."
             width={InputWidth.Large}
-            {...registerInput({ register, name: 'max_shows' })}
+            error={errors.max_shows?.message}
+            {...registerInput({
+              register,
+              name: 'max_shows',
+              options: {
+                valueAsNumber: true,
+                min: {
+                  value: MIN_MAX_SHOWS,
+                  message: `At least ${MIN_MAX_SHOWS}`,
+                },
+                max: {
+                  value: MAX_MAX_SHOWS,
+                  message: `At most ${MAX_MAX_SHOWS}`,
+                },
+              },
+            })}
           />
         </TwoCol>
       </FormStack>
@@ -698,26 +772,34 @@ function DetailsPane({
         disabled={saving}
       />
 
+      {!!values.preservedQuestions?.length && (
+        <LockedNotice>
+          {`This survey has ${values.preservedQuestions.length} question(s) this editor cannot show — `}
+          {values.preservedQuestions.map(question => question.id).join(', ')}
+          {`. They are kept exactly as they are when you save; edit them in Django admin.`}
+        </LockedNotice>
+      )}
+
       {questionCount === 0 && (
-        <>
-          <EmptyCallout>
-            <EmptyCalloutText>
-              <EmptyCalloutTitle>No follow-up questions</EmptyCalloutTitle>
-              <EmptyCalloutBody>
-                The survey will ask for a star rating only. Add a written
-                question if you want more than a number.
-              </EmptyCalloutBody>
-            </EmptyCalloutText>
-            <Button
-              appearance={ButtonAppearance.Primary}
-              size={ButtonSizes.Small}
-              onClick={onAddQuestion}
-            >
-              <PlusIcon style={{ width: 12, height: 12, marginRight: 4 }} />
-              Add question
-            </Button>
-          </EmptyCallout>
-        </>
+        <EmptyCallout>
+          <EmptyCalloutText>
+            <EmptyCalloutTitle>No follow-up questions</EmptyCalloutTitle>
+            <EmptyCalloutBody>
+              The survey will ask for a star rating only. Add a written question
+              if you want more than a number.
+            </EmptyCalloutBody>
+          </EmptyCalloutText>
+          <Button
+            appearance={ButtonAppearance.Primary}
+            size={ButtonSizes.Small}
+            onClick={onAddQuestion}
+          >
+            <InlineIcon>
+              <PlusIcon />
+            </InlineIcon>
+            Add question
+          </Button>
+        </EmptyCallout>
       )}
     </PaneRoot>
   );
@@ -738,8 +820,8 @@ function QuestionPane({
 }: {
   index: number;
   total: number;
-  register: UseFormRegister<any>;
-  control: any;
+  register: UseFormRegister<SurveyFormValues>;
+  control: Control<SurveyFormValues>;
   locked: boolean;
   onRemove: () => void;
   saving: boolean;
@@ -755,7 +837,9 @@ function QuestionPane({
           · {index + 1} of {total}
         </SectionMetaLabel>
         <DeleteSectionBtn type="button" onClick={onRemove} disabled={locked}>
-          <TrashIcon style={{ width: 12, height: 12 }} />
+          <InlineIcon>
+            <TrashIcon />
+          </InlineIcon>
           {locked ? 'Answered — cannot delete' : 'Delete question'}
         </DeleteSectionBtn>
       </SectionMeta>
@@ -981,11 +1065,9 @@ function EditSurvey() {
       )}
 
       {isLoading && !isNew ? (
-        <div
-          style={{ padding: '2rem', display: 'flex', justifyContent: 'center' }}
-        >
+        <LoadingWrap>
           <Loading size={LoadingSizes.Medium} />
-        </div>
+        </LoadingWrap>
       ) : (
         <TwoPaneLayout>
           <StructureRail
@@ -1001,7 +1083,7 @@ function EditSurvey() {
             sectionsLabel="Written questions"
             addLabel="Add question"
             untitledLabel="Untitled question"
-            emptyLabel="Rating only."
+            emptyLabel="Rating only. Add one to ask more."
           />
 
           <MainPane>

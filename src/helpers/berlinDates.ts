@@ -86,3 +86,24 @@ export function toEndOfDayIso(date: Date | null): string | null {
     999,
   );
 }
+
+/**
+ * Display formatting for the same instants the pickers above produce. Anchored to Berlin
+ * too: a window stored as 23:59:59.999 Berlin would otherwise render as the previous day
+ * for anyone whose browser is west of it.
+ */
+const BERLIN_DATE_OPTIONS: Intl.DateTimeFormatOptions = { timeZone: BERLIN_TZ };
+
+export function formatBerlinDate(value: string | null | undefined): string {
+  if (!value) return '—';
+  const parsed = parseISO(value);
+  if (!isValid(parsed)) return '—';
+  return parsed.toLocaleDateString('en-GB', BERLIN_DATE_OPTIONS);
+}
+
+export function formatBerlinDateTime(value: string | null | undefined): string {
+  if (!value) return '—';
+  const parsed = parseISO(value);
+  if (!isValid(parsed)) return '—';
+  return parsed.toLocaleString('en-GB', BERLIN_DATE_OPTIONS);
+}

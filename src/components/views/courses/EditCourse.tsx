@@ -2,10 +2,10 @@ import {
   Button,
   ButtonAppearance,
   ButtonSizes,
-  Select,
   InputWidth,
   Loading,
   LoadingSizes,
+  Select,
   StatusMessage,
   StatusTypes,
   Switch,
@@ -18,7 +18,7 @@ import {
   PlusIcon,
   TrashIcon,
 } from '@heroicons/react/20/solid';
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Controller,
   useFieldArray,
@@ -46,6 +46,27 @@ import {
 } from '../../../api/courses';
 import { COURSES_ROUTE } from '../../../router/routes';
 import { registerInput } from '../../../store';
+import {
+  DeleteSectionBtn,
+  Divider,
+  EditorRoot,
+  EmptyCallout,
+  EmptyCalloutBody,
+  EmptyCalloutText,
+  EmptyCalloutTitle,
+  FormStack,
+  MainPane,
+  PaneHeading,
+  PaneHint,
+  PaneRoot,
+  SectionMeta,
+  SectionMetaLabel,
+  SectionNumGradient,
+  SectionTitle,
+  TopBarDivider,
+  TwoCol,
+  TwoPaneLayout,
+} from '../../atoms/EditorShell.styles';
 import { ImageUploadField } from '../../atoms/ImageUploadField';
 import StructureRail from '../../atoms/StructureRail';
 import { usePageHeader } from '../../blocks/LayoutHeaderContext';
@@ -55,10 +76,6 @@ import {
   AnswerListHeader,
   AnswerRadio,
   AnswerRowHighlight,
-  ChapterEditorMeta,
-  ChapterEditorMetaLabel,
-  ChapterEditorRoot,
-  ChapterNumGradient,
   CompletionCollapseBtn,
   CompletionIconBadge,
   CompletionOptionalBadge,
@@ -71,23 +88,10 @@ import {
   CompletionToggleHint,
   CompletionToggleLabel,
   CorrectAnswerBadge,
-  CourseDetailsHeading,
-  CourseDetailsHint,
-  CourseDetailsRoot,
-  DeleteChapterBtn,
-  Divider,
-  EditorRoot,
-  EmptyChaptersBody,
-  EmptyChaptersCallout,
-  EmptyChaptersText,
-  EmptyChaptersTitle,
-  FormStack,
   IconButton,
   InlineTitleInput,
-  MainPane,
   QuizEmptyCallout,
   QuizEmptyText,
-  QuizSectionTitle,
   QuizStepCollapsedMeta,
   QuizStepCollapsedNum,
   QuizStepCollapsedQuestion,
@@ -101,9 +105,6 @@ import {
   QuizStepsHeader,
   QuizStepsTitle,
   QuizStepsTitleRow,
-  TopBarDivider,
-  TwoCol,
-  TwoPaneLayout,
 } from './EditCourse.styles';
 
 // ---------------------------------------------------------------------------
@@ -365,7 +366,7 @@ function QuizStepCard({
 
         <AnswerList>
           <AnswerListHeader>
-            <QuizSectionTitle>Answers</QuizSectionTitle>
+            <SectionTitle>Answers</SectionTitle>
             <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <AnswerInstructionHint>
                 ● Select the correct one
@@ -624,21 +625,21 @@ function ChapterEditorPane({
   const hasQuizSteps = (quizSteps?.length ?? 0) > 0;
 
   return (
-    <ChapterEditorRoot>
+    <PaneRoot>
       {/* ── Meta row ── */}
-      <ChapterEditorMeta>
-        <ChapterEditorMetaLabel>Chapter</ChapterEditorMetaLabel>
-        <ChapterNumGradient>
+      <SectionMeta>
+        <SectionMetaLabel>Chapter</SectionMetaLabel>
+        <SectionNumGradient>
           {String(chapterIndex + 1).padStart(2, '0')}
-        </ChapterNumGradient>
-        <ChapterEditorMetaLabel>
+        </SectionNumGradient>
+        <SectionMetaLabel>
           · position {chapterIndex + 1} of {totalChapters}
-        </ChapterEditorMetaLabel>
-        <DeleteChapterBtn type="button" onClick={onRemove}>
+        </SectionMetaLabel>
+        <DeleteSectionBtn type="button" onClick={onRemove}>
           <TrashIcon style={{ width: 12, height: 12 }} />
           Delete chapter
-        </DeleteChapterBtn>
-      </ChapterEditorMeta>
+        </DeleteSectionBtn>
+      </SectionMeta>
 
       {/* ── Inline title ── */}
       <InlineTitleInput
@@ -726,7 +727,7 @@ function ChapterEditorPane({
         errors={errors}
       />
 
-      {/* ── Completion messaging — only reachable when the chapter has a quiz ── */}
+      {/* ── Completion messaging ── */}
       {hasQuizSteps && (
         <>
           <Divider />
@@ -738,7 +739,7 @@ function ChapterEditorPane({
           />
         </>
       )}
-    </ChapterEditorRoot>
+    </PaneRoot>
   );
 }
 
@@ -768,13 +769,13 @@ function CourseDetailsPane({
   isSelfOnboardingCourse: boolean;
 }) {
   return (
-    <CourseDetailsRoot>
+    <PaneRoot $maxWidth="720px">
       <div>
-        <CourseDetailsHeading>Course details</CourseDetailsHeading>
-        <CourseDetailsHint>
+        <PaneHeading>Course details</PaneHeading>
+        <PaneHint>
           Title, slug, and audience apply to the whole course. Chapters inherit
           unless overridden.
-        </CourseDetailsHint>
+        </PaneHint>
       </div>
 
       <FormStack>
@@ -848,14 +849,14 @@ function CourseDetailsPane({
       <Divider />
 
       {chapterCount === 0 && (
-        <EmptyChaptersCallout>
-          <EmptyChaptersText>
-            <EmptyChaptersTitle>No chapters yet</EmptyChaptersTitle>
-            <EmptyChaptersBody>
+        <EmptyCallout>
+          <EmptyCalloutText>
+            <EmptyCalloutTitle>No chapters yet</EmptyCalloutTitle>
+            <EmptyCalloutBody>
               A course needs at least one chapter. Add chapters from the
               sidebar, or get started below.
-            </EmptyChaptersBody>
-          </EmptyChaptersText>
+            </EmptyCalloutBody>
+          </EmptyCalloutText>
           <Button
             appearance={ButtonAppearance.Primary}
             size={ButtonSizes.Small}
@@ -864,9 +865,9 @@ function CourseDetailsPane({
             <PlusIcon style={{ width: 12, height: 12, marginRight: 4 }} />
             Add first chapter
           </Button>
-        </EmptyChaptersCallout>
+        </EmptyCallout>
       )}
-    </CourseDetailsRoot>
+    </PaneRoot>
   );
 }
 

@@ -126,11 +126,6 @@ export const updateSurveyCampaign = (
     body: payload,
   });
 
-export const deleteSurveyCampaign = (id: number) =>
-  apiFetch<void>(`${ADMIN_SURVEY_CAMPAIGNS_ENDPOINT}${id}/`, {
-    method: 'DELETE',
-  });
-
 export const ADMIN_SURVEY_RESPONSES_ENDPOINT = '/api/admin/survey_responses/';
 
 export interface SurveyFilterOption {
