@@ -163,31 +163,6 @@ const TokenDocsLink = styled(Link).attrs({
   }
 `;
 
-const TokenRingFraction = styled.span`
-  display: inline-flex;
-  align-items: baseline;
-  line-height: 1;
-`;
-
-const TokenRingValue = styled(Text).attrs({
-  tag: 'span' as const,
-  bold: true,
-  type: TextTypes.Body3,
-})`
-  color: ${({ theme }) => theme.color.text.heading};
-  line-height: 1;
-  margin-right: ${({ theme }) => theme.spacing.xxxsmall};
-`;
-
-const TokenRingRest = styled(Text).attrs({
-  tag: 'span' as const,
-  bold: true,
-  type: TextTypes.Body5,
-})`
-  color: ${({ theme }) => theme.color.text.secondary};
-  line-height: 1;
-`;
-
 const StyledTag = styled(Tag)`
   position: absolute;
   top: -6px;
@@ -404,13 +379,7 @@ const MatchCard = (props: MatchCardProps) => {
                         ? ProgressRingTones.Success
                         : ProgressRingTones.Accent
                     }
-                  >
-                    <TokenRingFraction>
-                      <TokenRingValue>{matchTokens}</TokenRingValue>
-                      <TokenRingRest>/</TokenRingRest>
-                      <TokenRingRest>{successTokenThreshold}</TokenRingRest>
-                    </TokenRingFraction>
-                  </ProgressRing>
+                  />
                 ) : (
                   matchTokens
                 )

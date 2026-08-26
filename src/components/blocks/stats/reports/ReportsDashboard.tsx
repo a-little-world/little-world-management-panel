@@ -28,7 +28,7 @@ function MatchQualityStatisticDownloadBlock() {
   return (
     <ReportDownloadSection
       title="Match Quality Statistic"
-      description="This data is cleaned and buckets should be 'distinct' there is a duplication check performed by the backend, found duplicates would be outputted in 'intersecting_ids_lists' some lists maybe be ignored like 'all' they are also listed."
+      description="Match outcomes under the active match-success version: successful, in flight, kickoff, and did not succeed. Standard and Random Call matches only."
       apiEndpoint="/api/matching/users/statistics/match_quality/"
       downloadFilename="match_quality.json"
       downloadMimeType="application/json"

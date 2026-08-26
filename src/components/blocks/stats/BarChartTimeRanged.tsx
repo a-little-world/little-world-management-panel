@@ -1,11 +1,5 @@
-import {
-  Text as DSText,
-  Select,
-  TextTypes,
-} from '@a-little-world/little-world-design-system';
+import { Select } from '@a-little-world/little-world-design-system';
 import React from 'react';
-import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
-import styled from 'styled-components';
 import useSWR from 'swr';
 
 import {
@@ -19,11 +13,6 @@ import {
 import { FunnelMergeGroup, modifyData } from '../../../helpers/stats';
 import { cratePostFetcher } from '../../../store';
 import { Card, CardContent, CardHeader } from '../../atoms/Card';
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from '../../atoms/Chart';
 import { DatePicker } from '../../atoms/DatePicker';
 import {
   DateRangePicker,
@@ -31,19 +20,6 @@ import {
   parseYmdToLocalDate,
 } from '../../atoms/DateRangePicker';
 import HorizontalBarChart from '../../atoms/stats/HorizontalBarChart';
-
-const matchJourneyChartCategories = [
-  {
-    id: 'match-journey',
-    title: 'Match Journey',
-    filters: [
-      'all',
-      'match_journey_v2__ongoing_matches',
-      //'match_journey_v2__failed_matches',
-      'match_journey_v2__sucess_matches',
-    ],
-  },
-];
 
 const chartCategories: Array<{
   id: string;
@@ -103,261 +79,11 @@ const chartCategories: Array<{
   },
 ];
 
-const StyledChartContainer = styled(ChartContainer)<{
-  $minHeight?: string;
-  $maxHeight?: string;
-}>`
-  aspect-ratio: unset !important;
-  max-height: ${({ $maxHeight }) => $maxHeight || '640px'};
-  min-height: ${({ $minHeight }) => $minHeight || '400px'};
-  height: auto;
-`;
-
-export function DataGraphSingupFunnelEvolution({
-  filters,
-  data,
-  chartConfig,
-  maxHeight,
-  minHeight,
-}) {
-  return (
-    <StyledChartContainer
-      config={chartConfig}
-      $maxHeight={maxHeight}
-      $minHeight={minHeight}
-    >
-      <BarChart accessibilityLayer data={data}>
-        <CartesianGrid vertical={false} />
-        <XAxis
-          dataKey="monthTag"
-          tickLine={true}
-          tickMargin={0}
-          axisLine={true}
-          angle={-20}
-          textAnchor="end"
-          interval={0}
-          tickFormatter={(value: string) => value.slice(0, 20)}
-        />
-        <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-        {filters.map((item, index) => (
-          <Bar
-            dataKey={item}
-            fill={chartConfig[item].color}
-            radius={[0, 0, 0, 0]}
-            stackId={'a'}
-          />
-        ))}
-      </BarChart>
-    </StyledChartContainer>
-  );
-}
-
-export function MatchingFunnelEvolution({
-  dataModFunc = modifyData,
-  dataset = 'match-journey',
-}) {
-  const today = new Date();
-  const thisYear = today.getFullYear();
-  const currentMonth = today.getMonth(); // 0-11
-  const months = [];
-
-  for (let i = 0; i < 12; i++) {
-    const monthIndex = (currentMonth - i + 12) % 12; // Wrap around to previous year
-    const year = currentMonth - i >= 0 ? thisYear : thisYear - 1;
-    const monthNames = [
-      'january',
-      'february',
-      'march',
-      'april',
-      'may',
-      'june',
-      'july',
-      'august',
-      'september',
-      'october',
-      'november',
-      'december',
-    ];
-
-    const daysInMonth = new Date(year, monthIndex + 1, 0).getDate(); // Get last day of month
-
-    months.push({
-      key: `${monthNames[monthIndex]} (${year})`,
-      dates: [
-        `${year}-${String(monthIndex + 1).padStart(2, '0')}-01`,
-        `${year}-${String(monthIndex + 1).padStart(2, '0')}-${daysInMonth}`,
-      ],
-    });
-  }
-  const monthToDatesMap = {
-    all: ['2021-01-01', today.toISOString().split('T')[0]],
-    ...Object.fromEntries(months.reverse().map(m => [m.key, m.dates])),
-  };
-  const monthToDatesKeys = Object.keys(monthToDatesMap);
-  const filters =
-    matchJourneyChartCategories.find(cat => cat.id === dataset)?.filters || [];
-
-  // const tag1Data = useMonthData(filters, monthToDatesKeys[0], monthToDatesMap) we don't need 'all'
-  const tag2Data = useMonthDataMatching(
-    filters,
-    monthToDatesKeys[1],
-    monthToDatesMap,
-  );
-  const tag3Data = useMonthDataMatching(
-    filters,
-    monthToDatesKeys[2],
-    monthToDatesMap,
-  );
-  const tag4Data = useMonthDataMatching(
-    filters,
-    monthToDatesKeys[3],
-    monthToDatesMap,
-  );
-  const tag5Data = useMonthDataMatching(
-    filters,
-    monthToDatesKeys[4],
-    monthToDatesMap,
-  );
-  const tag6Data = useMonthDataMatching(
-    filters,
-    monthToDatesKeys[5],
-    monthToDatesMap,
-  );
-  const tag7Data = useMonthDataMatching(
-    filters,
-    monthToDatesKeys[6],
-    monthToDatesMap,
-  );
-  const tag8Data = useMonthDataMatching(
-    filters,
-    monthToDatesKeys[7],
-    monthToDatesMap,
-  );
-  const tag9Data = useMonthDataMatching(
-    filters,
-    monthToDatesKeys[8],
-    monthToDatesMap,
-  );
-  const tag10Data = useMonthDataMatching(
-    filters,
-    monthToDatesKeys[9],
-    monthToDatesMap,
-  );
-  const tag11Data = useMonthDataMatching(
-    filters,
-    monthToDatesKeys[10],
-    monthToDatesMap,
-  );
-  const tag12Data = useMonthDataMatching(
-    filters,
-    monthToDatesKeys[11],
-    monthToDatesMap,
-  );
-  const tag13Data = useMonthDataMatching(
-    filters,
-    monthToDatesKeys[12],
-    monthToDatesMap,
-  );
-
-  const data = [
-    tag2Data,
-    tag3Data,
-    tag4Data,
-    tag5Data,
-    tag6Data,
-    tag7Data,
-    tag8Data,
-    tag9Data,
-    tag10Data,
-    tag11Data,
-    tag12Data,
-    tag13Data,
-  ];
-  const isLoading = data.some(item => item.isLoading);
-  const errorItem = data.find(item => item.error);
-  const isError = !!errorItem;
-  const errorMessage = errorItem?.error
-    ? errorItem.error instanceof Error
-      ? errorItem.error.message
-      : String(errorItem.error)
-    : null;
-
-  const pureData =
-    !isLoading && !isError
-      ? data.map(item => {
-          console.log('item', item);
-          const modifiedData = dataModFunc(item.data.buckets);
-          const bucketsMap = modifiedData.reduce((acc, bucket) => {
-            acc[bucket.name] = bucket.count;
-            return acc;
-          }, {});
-
-          return {
-            monthTag: item.monthTag,
-            ...bucketsMap,
-          };
-        })
-      : [];
-
-  // now we need to transfer all the data into the form [{time: monthTag, count1: 222, count2 ....}]
-  const chartConfig = {};
-  filters.forEach((item, index) => {
-    // @ts-ignore
-    chartConfig[item] = {
-      label: item === 'all' ? 'All' : `- (minus) ${item}`,
-      description: item,
-      color: `hsl(var(--chart-${index + 1}))`,
-    };
-  });
-
-  return (
-    <div>
-      <DSText type={TextTypes.Body3} tag="h3">
-        Match Journey Evolution
-      </DSText>
-      {isLoading && <div>Loading...</div>}
-      {isError && <div>Error: {errorMessage || 'An error occurred'}</div>}
-      <DataGraphSingupFunnelEvolution
-        filters={filters}
-        data={pureData}
-        chartConfig={chartConfig}
-        maxHeight="640px"
-        minHeight="400px"
-      />
-    </div>
-  );
-}
-
 function getMonthDateRange(
   monthTag: string,
   monthToDatesMap: Record<string, string[]>,
 ) {
   return monthToDatesMap[monthTag];
-}
-
-function useMonthDataMatching(
-  filters: string[],
-  monthTag: string,
-  monthToDatesMap: Record<string, string[]>,
-) {
-  const [startDate, endDate] = getMonthDateRange(monthTag, monthToDatesMap);
-  const random = React.useRef(Date.now() + Math.random());
-  const { mutate, error, data, isLoading } = useSWR(
-    `/api/matching/users/statistics/match_journey_buckets/?random=${random.current}`,
-    cratePostFetcher({
-      selected_filters: filters,
-      start_date: startDate,
-      end_date: endDate,
-    }),
-    {},
-  );
-
-  return {
-    data: data,
-    monthTag: monthTag,
-    isLoading,
-    error,
-  };
 }
 
 export function ExactTimeSelector({
