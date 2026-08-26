@@ -3,9 +3,15 @@ import React from 'react';
 import styled from 'styled-components';
 import useSWR from 'swr';
 
+import {
+  AMBER_40,
+  BLUE_40,
+  GRAY_40,
+  GREEN_40,
+  RED_40,
+} from '../../../constants';
 import { cratePostFetcher } from '../../../store';
 import { PieChart } from './PieChart';
-import { matchJourneyBucketsV4 } from './buckets';
 
 const StyledDropdown = styled(Select)`
   div[data-radix-popper-content-wrapper] {
@@ -14,11 +20,31 @@ const StyledDropdown = styled(Select)`
   width: 100%;
 `;
 
+const SLICE_COLORS: Record<string, string> = {
+  successful: GREEN_40,
+  in_flight: BLUE_40,
+  kickoff: AMBER_40,
+  did_not_succeed: RED_40,
+  other: GRAY_40,
+};
+
+type QualitySlice = {
+  id: string;
+  title: string;
+  count: number;
+};
+
+type MatchQualityResponse = {
+  success_version_title?: string;
+  success_version_description?: string;
+  distribution?: QualitySlice[];
+};
+
 export function MatchQuality() {
   const today = new Date();
   const thisYear = today.getFullYear();
   const currentMonth = today.getMonth(); // 0-11
-  const monthToDatesMap = {
+  const monthToDatesMap: Record<string, [string, string]> = {
     all: ['2021-01-01', today.toISOString().split('T')[0]],
     [`january (${currentMonth >= 0 ? thisYear : thisYear - 1})`]: [
       `${currentMonth >= 0 ? thisYear : thisYear - 1}-01-01`,
@@ -70,93 +96,41 @@ export function MatchQuality() {
     ],
   };
 
-  const [startDate, setStartDate] = React.useState('2021-01-01');
-  const [endDate, setEndDate] = React.useState(
-    today.toISOString().split('T')[0],
-  );
-  const allBuckets = matchJourneyBucketsV4.flatMap(
-    bucket => bucket.sub_buckets,
-  );
-  const random = React.useRef(Date.now() + Math.random());
-  const excludeBuckets = [
-    'match_journey_v2__proposed_matches',
-    'match_journey_v2__expired_proposals',
-  ];
-  const selectedBuckets = allBuckets
-    .filter(bucket => !excludeBuckets.includes(bucket.id))
-    .map(bucket => bucket.id);
-  const { data, mutate } = useSWR(
-    '/api/matching/users/statistics/match_journey_buckets/' +
-      '?random=' +
-      random.current,
+  const [selectedMonth, setSelectedMonth] = React.useState('all');
+  const [startDate, endDate] = monthToDatesMap[selectedMonth];
+  const { data } = useSWR<MatchQualityResponse>(
+    `/api/matching/users/statistics/match_quality/?start_date=${startDate}&end_date=${endDate}`,
     cratePostFetcher({
-      selected_filters: selectedBuckets,
       start_date: startDate,
       end_date: endDate,
     }),
-    {},
   );
-
-  console.log('selectedBuckets', selectedBuckets);
 
   if (!data) return <div>Loading...</div>;
 
-  const categorieTotalCounts = {};
-  var totalCount = 0;
-  for (let bucket of matchJourneyBucketsV4) {
-    let bucketTotalCount = 0;
-    for (let sub_bucket of bucket.sub_buckets) {
-      const count = data?.buckets?.find(
-        item => item.name === sub_bucket.id,
-      )?.count;
-      if (count && !excludeBuckets.includes(sub_bucket.id)) {
-        bucketTotalCount += count;
-        totalCount += count;
-      }
-    }
-    categorieTotalCounts[bucket.id] = bucketTotalCount;
-  }
+  const chartData = (data.distribution ?? [])
+    .filter(slice => slice.count > 0)
+    .map(slice => ({
+      tag: slice.title,
+      count: slice.count,
+      fill: SLICE_COLORS[slice.id] ?? GRAY_40,
+    }));
 
-  categorieTotalCounts['ongoing_plus_finished'] =
-    categorieTotalCounts['finished-matching'] +
-    categorieTotalCounts['ongoing-matching'];
-
-  let chartData = [
-    //{ tag: 'ongoing_plus_finished', count: categorieTotalCounts["ongoing_plus_finished"], fill: '#3498db' },
-    {
-      tag: 'ongoing-matching',
-      count: categorieTotalCounts['ongoing-matching'],
-      fill: '#3498db',
-    },
-    {
-      tag: 'finished-matching',
-      count: categorieTotalCounts['finished-matching'],
-      fill: '#2ecc71',
-    },
-    {
-      tag: 'failed-matching',
-      count: categorieTotalCounts['failed-matching'],
-      fill: '#e74c3c',
-    },
-    {
-      tag: 'pre-matching',
-      count: categorieTotalCounts['pre-matching'],
-      fill: '#f1c40f',
-    },
-  ];
-
-  let chartConfig = {
+  const chartConfig: Record<string, { label: string; color?: string }> = {
     count: {
       label: 'Count',
     },
   };
-
-  chartData.forEach((dp, i) => {
+  chartData.forEach(dp => {
     chartConfig[dp.tag] = {
       label: dp.tag,
       color: dp.fill,
     };
   });
+
+  const successBlurb = [data.success_version_title, data.success_version_description]
+    .filter(Boolean)
+    .join(' — ');
 
   return (
     <div>
@@ -164,26 +138,26 @@ export function MatchQuality() {
         extraHeader={
           <>
             <StyledDropdown
-              value={'all'}
+              value={selectedMonth}
               options={Object.keys(monthToDatesMap).map(val => ({
                 value: val.toString(),
                 label: val,
               }))}
               onValueChange={val => {
-                setStartDate(monthToDatesMap[val][0]);
-                setEndDate(monthToDatesMap[val][1]);
-                setTimeout(() => {
-                  mutate();
-                }, 500);
+                setSelectedMonth(val);
               }}
-              placeholder="Select a user list..."
+              placeholder="Select a month..."
               cannotError
             />
           </>
         }
         label="Matches Created"
         title="Match Quality"
-        description="Shows the distribution of our matches in each stage."
+        description={
+          successBlurb
+            ? `Distribution of matches by the active success rule. ${successBlurb}`
+            : 'Distribution of matches by the active success rule.'
+        }
         chartData={chartData}
         chartConfig={chartConfig}
       />

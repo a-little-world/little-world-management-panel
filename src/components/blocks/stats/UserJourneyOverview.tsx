@@ -4,13 +4,11 @@ import React from 'react';
 import {
   Container,
   Description,
-  SectionR,
   Sections,
   useMatchSuccessPageHeader,
 } from './JourneyStyles';
 import UserJourneyBuckets from './UserJourneyBuckets';
 import UserJourneyV5Buckets from './UserJourneyV5Buckets';
-import { UserSignUpLossStatistic } from './UserSignUpLossStatistic';
 
 export function UserJourneyOverview() {
   useMatchSuccessPageHeader();
@@ -26,9 +24,6 @@ export function UserJourneyOverview() {
         <UserJourneyBuckets />
         <UserJourneyV5Buckets />
       </Sections>
-      <SectionR>
-        <UserSignUpLossStatistic />
-      </SectionR>
     </Container>
   );
 }

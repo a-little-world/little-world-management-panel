@@ -8,13 +8,9 @@ import React from 'react';
 import styled from 'styled-components';
 import useSWR from 'swr';
 
-import { modifyDataToPercentages } from '../../../helpers/stats';
 import { dataFetcher } from '../../../store';
 import Matrix, { MatrixData } from '../../atoms/stats/Matrix';
-import {
-  BarChartTimeRanged,
-  MatchingFunnelEvolution,
-} from './BarChartTimeRanged';
+import { BarChartTimeRanged } from './BarChartTimeRanged';
 import { MatchQuality } from './MatchQualityStatistic';
 
 const Container = styled.div`
@@ -224,20 +220,24 @@ const KPIs: React.FC = () => {
           ],
           [
             {
-              label: '% failed vs ongoing+finished Matches (total)',
-              value: `${kpiDataMatches?.failed_vs_ongoing_finished_matches_percentage}%`,
+              label: '% successful matches (total)',
+              value: `${kpiDataMatches?.successful_matches_percentage}%`,
             },
             {
               label: 'Matches gestartet vor 6 bis 12 Wochen',
               value: kpiDataMatches?.matches_started_6_12_weeks_ago,
             },
             {
-              label: '% failed vs ongoing+finished Matches (6-12 Wochen)',
-              value: `${kpiDataMatches?.matches_6_12_weeks_ago_failed_vs_ongoing_finished_percentage}%`,
+              label: '% successful matches (6-12 Wochen)',
+              value: `${kpiDataMatches?.matches_6_12_weeks_ago_successful_percentage}%`,
             },
           ],
         ]}
-        footnote="% failed vs ongoing+finished Matches = 100.0 - (% failed / Matches (total, ongoing+finished+failed+(in-progress)))"
+        footnote={
+          kpiDataMatches
+            ? `Successful = ${kpiDataMatches.success_version_title}. ${kpiDataMatches.success_version_description} Denominator is all Standard and Random Call matches.`
+            : undefined
+        }
         color="#ED8936"
       />
       <KPI
@@ -290,10 +290,6 @@ function KPIsDashboard() {
       <Sections>
         <KPIs />
         <BarChartTimeRanged />
-        <MatchingFunnelEvolution
-          dataModFunc={modifyDataToPercentages}
-          dataset="match-journey"
-        />
         <MatchSection>
           <MatchQuality />
         </MatchSection>
