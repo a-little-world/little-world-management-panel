@@ -1,4 +1,5 @@
 import {
+  CheckIcon,
   ChevronDownIcon,
   Label,
   Popover,
@@ -6,16 +7,14 @@ import {
   Text,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
-import * as RadixPopover from '@radix-ui/react-popover';
 import React from 'react';
 import styled from 'styled-components';
 
-import type { StaffUser } from '../../api/supportTasks';
+import type { AssigneeUser } from '../../api/supportTasks';
 import type { UserProfile } from './ObjectHistory';
 import UserImage from '../atoms/UserImage';
 
-const UNASSIGNED = 'UNASSIGNED';
-const PICKER_WIDTH = '11rem';
+const PICKER_WIDTH = '16rem';
 
 const Field = styled.div`
   display: flex;
@@ -110,7 +109,7 @@ const OptionLabel = styled(Text).attrs({
   flex: 1;
 `;
 
-function staffUserToProfile(user: StaffUser): UserProfile {
+function assigneeUserToProfile(user: AssigneeUser): UserProfile {
   return {
     id: user.id,
     first_name: user.first_name,
@@ -121,57 +120,44 @@ function staffUserToProfile(user: StaffUser): UserProfile {
   };
 }
 
-function getAssigneeProfile(
-  value: string,
-  staffUsers: StaffUser[],
-  assignedProfile: UserProfile | null | undefined,
-): UserProfile | null {
-  if (value === UNASSIGNED) {
-    return null;
-  }
-  if (assignedProfile && String(assignedProfile.id) === value) {
-    return assignedProfile;
-  }
-  const staffUser = staffUsers.find(user => String(user.id) === value);
-  return staffUser ? staffUserToProfile(staffUser) : null;
-}
-
 type SupportTaskAssigneePickerProps = {
-  value: string;
-  staffUsers: StaffUser[];
-  assignedProfile?: UserProfile | null;
-  onValueChange: (value: string) => void;
+  value: number[];
+  assigneeUsers: AssigneeUser[];
+  assignedProfiles?: UserProfile[];
+  onValueChange: (value: number[]) => void;
 };
 
 export default function SupportTaskAssigneePicker({
   value,
-  staffUsers,
-  assignedProfile = null,
+  assigneeUsers,
+  assignedProfiles = [],
   onValueChange,
 }: SupportTaskAssigneePickerProps) {
-  const selectedProfile = getAssigneeProfile(value, staffUsers, assignedProfile);
-  const options = [
-    { value: UNASSIGNED, label: 'Unassigned', profile: null as UserProfile | null },
-    ...staffUsers.map(user => ({
-      value: String(user.id),
-      label: `${user.first_name} ${user.last_name}`,
-      profile: staffUserToProfile(user),
-    })),
-  ];
+  const options = assigneeUsers.map(user => ({
+    value: user.id,
+    label: `${user.first_name} ${user.last_name}`,
+    profile: assigneeUserToProfile(user),
+  }));
 
-  if (
-    assignedProfile &&
-    !options.some(option => option.value === String(assignedProfile.id))
-  ) {
-    options.push({
-      value: String(assignedProfile.id),
-      label: `${assignedProfile.first_name} ${assignedProfile.second_name}`,
-      profile: assignedProfile,
-    });
+  for (const profile of assignedProfiles) {
+    if (!options.some(option => option.value === profile.id)) {
+      options.push({
+        value: profile.id,
+        label: `${profile.first_name} ${profile.second_name}`,
+        profile,
+      });
+    }
   }
 
-  const handleSelect = (nextValue: string) => {
-    onValueChange(nextValue);
+  const selectedProfile = options.find(option =>
+    value.includes(option.value),
+  )?.profile;
+  const handleSelect = (userId: number) => {
+    onValueChange(
+      value.includes(userId)
+        ? value.filter(id => id !== userId)
+        : [...value, userId],
+    );
   };
 
   return (
@@ -192,12 +178,14 @@ export default function SupportTaskAssigneePicker({
                     dimensions={{ width: 24, height: 24 }}
                   />
                   <Text type={TextTypes.Body6} tag="span">
-                    {selectedProfile.first_name} {selectedProfile.second_name}
+                    {value.length === 1
+                      ? `${selectedProfile.first_name} ${selectedProfile.second_name}`
+                      : `${value.length} users`}
                   </Text>
                 </>
               ) : (
                 <Text type={TextTypes.Body6} tag="span">
-                  Unassigned
+                  No assignees
                 </Text>
               )}
             </TriggerContent>
@@ -206,28 +194,33 @@ export default function SupportTaskAssigneePicker({
         }
       >
         <OptionList>
+          <OptionButton
+            type="button"
+            $selected={value.length === 0}
+            onClick={() => onValueChange([])}
+          >
+            <OptionLabel>Clear all</OptionLabel>
+          </OptionButton>
           {options.map(option => (
-            <RadixPopover.Close asChild key={option.value}>
-              <OptionButton
-                type="button"
-                $selected={option.value === value}
-                onClick={() => handleSelect(option.value)}
-              >
-                {option.profile && (
-                  <UserImage
-                    alt={option.label}
-                    user={option.profile}
-                    dimensions={{ width: 24, height: 24 }}
-                  />
-                )}
-                <OptionLabel>{option.label}</OptionLabel>
-              </OptionButton>
-            </RadixPopover.Close>
+            <OptionButton
+              key={option.value}
+              type="button"
+              $selected={value.includes(option.value)}
+              onClick={() => handleSelect(option.value)}
+            >
+              <UserImage
+                alt={option.label}
+                user={option.profile}
+                dimensions={{ width: 24, height: 24 }}
+              />
+              <OptionLabel>{option.label}</OptionLabel>
+              {value.includes(option.value) && (
+                <CheckIcon label="Assigned" width="14px" />
+              )}
+            </OptionButton>
           ))}
         </OptionList>
       </Popover>
     </Field>
   );
 }
-
-export { UNASSIGNED as SUPPORT_TASK_UNASSIGNED_ASSIGNEE };

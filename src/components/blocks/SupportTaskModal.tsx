@@ -13,14 +13,14 @@ import {
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import styled from 'styled-components';
-import { StaffUser } from '../../api/supportTasks';
+import { AssigneeUser } from '../../api/supportTasks';
 import { useTaskPriorities } from '../../hooks/useTaskPriorities';
 import { registerInput } from '../../store';
 import { DropdownRow } from './Filters';
 
 interface SupportTaskModalParams {
   open: boolean;
-  staffUsers: StaffUser[];
+  assigneeUsers: AssigneeUser[];
   onCreated?: () => void;
   onClose?: () => void;
 }
@@ -28,7 +28,7 @@ const TaskForm = styled.form``;
 
 export default function SupportTaskModal({
   open,
-  staffUsers,
+  assigneeUsers,
   onCreated,
   onClose,
 }: SupportTaskModalParams) {

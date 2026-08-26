@@ -33,7 +33,7 @@ import {
   TaskPriority,
   TaskStatus,
   bulkSupportTasks,
-  fetchStaffUsers,
+  fetchAssigneeUsers,
   fetchSupportTaskStats,
   fetchSupportTasks,
   getActionTypeConfig,
@@ -229,9 +229,7 @@ const TASK_EXPORT_HEADERS = [
   'related_user_profile.id',
   'related_user_profile.first_name',
   'related_user_profile.second_name',
-  'assigned_to_profile.id',
-  'assigned_to_profile.first_name',
-  'assigned_to_profile.second_name',
+  'assignee_profiles',
   'created_by_profile.id',
   'created_by_profile.first_name',
   'created_by_profile.second_name',
@@ -433,8 +431,10 @@ function buildColumns(
       id: 'assigned_to',
       header: 'Assigned to',
       cell: ({ row }) => {
-        const profile = row.original.assigned_to_profile;
-        if (!profile) return <UnassignedText>— Unassigned</UnassignedText>;
+        const profiles = row.original.assignee_profiles;
+        if (!profiles.length)
+          return <UnassignedText>— Unassigned</UnassignedText>;
+        const profile = profiles[0];
         return (
           <UserCell>
             <UserImage
@@ -444,6 +444,7 @@ function buildColumns(
             />
             <UserName>
               {profile.first_name} {profile.second_name}
+              {profiles.length > 1 ? ` +${profiles.length - 1}` : ''}
             </UserName>
           </UserCell>
         );
@@ -629,7 +630,10 @@ export default function SupportTasksOverview() {
     COMPLETED: stats?.COMPLETED ?? 0,
   };
 
-  const { data: staffUsers = [] } = useSWR('staff_users', fetchStaffUsers);
+  const { data: assigneeUsers = [] } = useSWR(
+    'support_task_assignee_users',
+    fetchAssigneeUsers,
+  );
 
   const showNew = effectiveStatusFilters.includes('NEW');
   const showInProgress = effectiveStatusFilters.includes('IN_PROGRESS');
@@ -893,7 +897,7 @@ export default function SupportTasksOverview() {
         defaultValues={currentFilters}
         onUpdateFilters={updateSearchParam}
         onRemoveFilter={removeSearchParam}
-        staffUsers={staffUsers}
+        assigneeUsers={assigneeUsers}
       />
 
       <DownloadSettingsModal
@@ -912,13 +916,13 @@ export default function SupportTasksOverview() {
       {/* <SupportTaskModal
         open={createOpen}
         onClose={() => setCreateOpen(false)}
-        staffUsers={staffUsers}
+        assigneeUsers={assigneeUsers}
         onCreated={() => mutate}
       /> */}
       <CreateSupportTaskModal
         open={createOpen}
         onClose={() => setCreateOpen(false)}
-        staffUsers={staffUsers}
+        assigneeUsers={assigneeUsers}
         onCreated={() => {
           mutateTasks();
           mutateTaskStats();

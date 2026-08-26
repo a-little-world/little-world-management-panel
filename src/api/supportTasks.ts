@@ -48,7 +48,7 @@ export interface SupportTask {
   status: TaskStatus;
   priority: TaskPriority;
   related_user_profile: RelatedUserProfile | null;
-  assigned_to_profile: UserProfile | null;
+  assignee_profiles: UserProfile[];
   created_by_profile: UserProfile | null;
   created_at: string;
   updated_at: string;
@@ -56,7 +56,7 @@ export interface SupportTask {
   history?: ObjectHistory[];
 }
 
-export interface StaffUser {
+export interface AssigneeUser {
   id: number;
   email: string;
   first_name: string;
@@ -114,13 +114,13 @@ export const fetchSupportTask = (id: number): Promise<SupportTask> =>
 export const patchSupportTask = (
   id: number,
   data: Partial<
-    Pick<SupportTask, 'status' | 'priority'> & { assigned_to_id: number | null }
+    Pick<SupportTask, 'status' | 'priority'> & { assignee_ids: number[] }
   >,
 ): Promise<SupportTask> =>
   apiFetch(`/api/support_task/${id}/update/`, { method: 'PATCH', body: data });
 
-export const fetchStaffUsers = (): Promise<StaffUser[]> =>
-  apiFetch('/api/support_task/staff_users/');
+export const fetchAssigneeUsers = (): Promise<AssigneeUser[]> =>
+  apiFetch('/api/support_task/assignee_users/');
 
 export const patchAction = (
   taskId: number,
@@ -167,7 +167,7 @@ export interface CreateManualTaskPayload {
   description?: string;
   priority: TaskPriority;
   related_user_id?: number | null;
-  assigned_to_id?: number | null;
+  assignee_ids?: number[];
 }
 
 export const createManualSupportTask = (

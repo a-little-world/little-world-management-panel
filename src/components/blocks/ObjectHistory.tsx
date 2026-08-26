@@ -163,6 +163,12 @@ const ProfileChip = styled.div`
   color: ${({ theme }) => theme.color.text.primary};
 `;
 
+const ProfileList = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${({ theme }) => theme.spacing.xxsmall};
+`;
+
 const DiffSign = styled.span`
   font-family: source-code-pro, Menlo, Monaco, monospace;
   font-size: 14px;
@@ -234,6 +240,25 @@ function formatValue(value: unknown): string {
 }
 
 function renderDiffValue(value: unknown): React.ReactNode {
+  if (Array.isArray(value) && value.every(isUserProfile)) {
+    if (!value.length) {
+      return <DiffValue $empty>empty</DiffValue>;
+    }
+    return (
+      <ProfileList>
+        {value.map(profile => (
+          <ProfileChip key={profile.id}>
+            <UserImage
+              alt={`${profile.first_name} ${profile.second_name}`}
+              user={profile}
+              dimensions={{ width: 20, height: 20 }}
+            />
+            {profile.first_name} {profile.second_name}
+          </ProfileChip>
+        ))}
+      </ProfileList>
+    );
+  }
   if (isUserProfile(value)) {
     return (
       <ProfileChip>

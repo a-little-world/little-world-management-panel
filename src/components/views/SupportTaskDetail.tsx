@@ -17,7 +17,7 @@ import {
   STATUS_CONFIG,
   TaskPriority,
   TaskStatus,
-  fetchStaffUsers,
+  fetchAssigneeUsers,
   fetchSupportTask,
   getActionTypeConfig,
   patchSupportTask,
@@ -33,9 +33,7 @@ import { PageContainer } from '../atoms/PageLayout';
 import UserImage from '../atoms/UserImage';
 import { usePageHeader } from '../blocks/LayoutHeaderContext';
 import ObjectHistoryList, { ObjectHistory } from '../blocks/ObjectHistory';
-import SupportTaskAssigneePicker, {
-  SUPPORT_TASK_UNASSIGNED_ASSIGNEE,
-} from '../blocks/SupportTaskAssigneePicker';
+import SupportTaskAssigneePicker from '../blocks/SupportTaskAssigneePicker';
 import SupportTaskActionCard from '../blocks/SupportTaskActionCard';
 import UserChat from '../blocks/user/UserChat';
 
@@ -45,8 +43,6 @@ const STATUS_OPTIONS = Object.entries(STATUS_CONFIG).map(([value, cfg]) => ({
   value,
   label: cfg.label,
 }));
-
-const UNASSIGNED = SUPPORT_TASK_UNASSIGNED_ASSIGNEE;
 
 const OverviewTopRow = styled.div`
   display: flex;
@@ -124,7 +120,8 @@ const MetaGrid = styled.div`
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
-  gap: ${({ theme }) => theme.spacing.medium} ${({ theme }) => theme.spacing.large};
+  gap: ${({ theme }) => theme.spacing.medium}
+    ${({ theme }) => theme.spacing.large};
 `;
 
 const MetaField = styled.div`
@@ -286,7 +283,10 @@ const ContextLabel = styled(Text).attrs({
   font-weight: 600;
 `;
 
-function getStaticString(staticParameters: Record<string, unknown>, key: string): string | null {
+function getStaticString(
+  staticParameters: Record<string, unknown>,
+  key: string,
+): string | null {
   const value = staticParameters[key];
   return typeof value === 'string' && value.trim() ? value.trim() : null;
 }
@@ -310,14 +310,19 @@ export default function SupportTaskDetail() {
     isLoading,
     error,
     mutate,
-  } = useSWR(taskId ? ['support_task_detail', id] : null, () =>
-    fetchSupportTask(id), {
+  } = useSWR(
+    taskId ? ['support_task_detail', id] : null,
+    () => fetchSupportTask(id),
+    {
       refreshInterval: 5000,
       revalidateOnFocus: true,
-    }
+    },
   );
 
-  const { data: staffUsers = [] } = useSWR('staff_users', fetchStaffUsers);
+  const { data: assigneeUsers = [] } = useSWR(
+    'support_task_assignee_users',
+    fetchAssigneeUsers,
+  );
 
   const { data: relatedUserDetail } = useSWR(
     task?.related_user_profile
@@ -388,9 +393,7 @@ export default function SupportTaskDetail() {
 
   const description = task.description;
 
-  const currentAssignee = task.assigned_to_profile
-    ? String(task.assigned_to_profile.id)
-    : UNASSIGNED;
+  const currentAssigneeIds = task.assignee_profiles.map(profile => profile.id);
 
   const action = task.action;
   const actionStaticParameters = action?.static_parameters ?? {};
@@ -398,8 +401,13 @@ export default function SupportTaskDetail() {
   const isSupportReplyAction = action?.action_type === 'support_reply';
   const isSupportReplyExecuted = action?.status === 'EXECUTED';
   const supportReplyDraftMessage =
-    typeof actionParameters.message === 'string' ? actionParameters.message : '';
-  const interactionId = getStaticString(actionStaticParameters, 'interaction_id');
+    typeof actionParameters.message === 'string'
+      ? actionParameters.message
+      : '';
+  const interactionId = getStaticString(
+    actionStaticParameters,
+    'interaction_id',
+  );
   const interactionInternalRoute = interactionId
     ? `${getOpenChatChatRoute(interactionId)}?tab=interactions`
     : null;
@@ -453,7 +461,10 @@ export default function SupportTaskDetail() {
                     value={task.status}
                     options={STATUS_OPTIONS}
                     onValueChange={v =>
-                      patch({ status: v as TaskStatus }, { status: v as TaskStatus })
+                      patch(
+                        { status: v as TaskStatus },
+                        { status: v as TaskStatus },
+                      )
                     }
                     placeholder="Status"
                     cannotError
@@ -477,33 +488,34 @@ export default function SupportTaskDetail() {
                 </MetaField>
 
                 <SupportTaskAssigneePicker
-                  value={currentAssignee}
-                  staffUsers={staffUsers}
-                  assignedProfile={task.assigned_to_profile}
-                  onValueChange={v =>
+                  value={currentAssigneeIds}
+                  assigneeUsers={assigneeUsers}
+                  assignedProfiles={task.assignee_profiles}
+                  onValueChange={ids =>
                     patch(
-                      { assigned_to_id: v === UNASSIGNED ? null : Number(v) },
+                      { assignee_ids: ids },
                       {
-                        assigned_to_profile:
-                          v === UNASSIGNED
-                            ? null
-                            : staffUsers.find(u => String(u.id) === v)
-                              ? {
-                                  id: Number(v),
-                                  first_name:
-                                    staffUsers.find(u => String(u.id) === v)
-                                      ?.first_name ?? '',
-                                  second_name:
-                                    staffUsers.find(u => String(u.id) === v)
-                                      ?.last_name ?? '',
+                        assignee_profiles: ids.flatMap(userId => {
+                          const existing = task.assignee_profiles.find(
+                            profile => profile.id === userId,
+                          );
+                          if (existing) return [existing];
+                          const candidate = assigneeUsers.find(
+                            user => user.id === userId,
+                          );
+                          return candidate
+                            ? [
+                                {
+                                  id: candidate.id,
+                                  first_name: candidate.first_name,
+                                  second_name: candidate.last_name,
                                   image: null,
-                                  avatar_config: {},
+                                  avatar_config: { seed: candidate.email },
                                   image_type: 'avatar' as const,
-                                }
-                              : task.assigned_to_profile &&
-                                  String(task.assigned_to_profile.id) === v
-                                ? task.assigned_to_profile
-                                : null,
+                                },
+                              ]
+                            : [];
+                        }),
                       },
                     )
                   }
@@ -567,7 +579,9 @@ export default function SupportTaskDetail() {
             {description && (
               <DescriptionSection>
                 <MetaLabel>Description</MetaLabel>
-                <DescriptionText>{resolveAttachmentWidgetText(description)}</DescriptionText>
+                <DescriptionText>
+                  {resolveAttachmentWidgetText(description)}
+                </DescriptionText>
               </DescriptionSection>
             )}
           </OverviewCardContent>
@@ -584,7 +598,11 @@ export default function SupportTaskDetail() {
                   {action && (
                     <>
                       <ContextLabel>Action</ContextLabel>
-                      <SupportTaskActionCard action={action} taskId={id} onResolved={mutate} />
+                      <SupportTaskActionCard
+                        action={action}
+                        taskId={id}
+                        onResolved={mutate}
+                      />
                     </>
                   )}
                   {relatedUserDetail && (
@@ -601,16 +619,21 @@ export default function SupportTaskDetail() {
                         </CollapsibleHeader>
                         {chatOpen && (
                           <ChatWrapper>
-                            {isSupportReplyExecuted && supportReplyDraftMessage && (
-                              <>
-                                <ContextLabel>Sent message</ContextLabel>
-                                <SentMessageQuote>{supportReplyDraftMessage}</SentMessageQuote>
-                              </>
-                            )}
+                            {isSupportReplyExecuted &&
+                              supportReplyDraftMessage && (
+                                <>
+                                  <ContextLabel>Sent message</ContextLabel>
+                                  <SentMessageQuote>
+                                    {supportReplyDraftMessage}
+                                  </SentMessageQuote>
+                                </>
+                              )}
                             <UserChat
                               user={relatedUserDetail}
                               initialDraftMessage={
-                                isSupportReplyExecuted ? '' : supportReplyDraftMessage
+                                isSupportReplyExecuted
+                                  ? ''
+                                  : supportReplyDraftMessage
                               }
                               sendViaSupportReplyApi
                               hideComposer={isSupportReplyExecuted}
@@ -625,7 +648,8 @@ export default function SupportTaskDetail() {
                                             ...current.action,
                                             status: 'EXECUTED',
                                             parameters: {
-                                              ...(current.action?.parameters ?? {}),
+                                              ...(current.action?.parameters ??
+                                                {}),
                                               message,
                                             },
                                           },

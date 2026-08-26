@@ -13,7 +13,7 @@ import {
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
-import { ACTION_TYPE_CONFIG, StaffUser } from '../../api/supportTasks';
+import { ACTION_TYPE_CONFIG, AssigneeUser } from '../../api/supportTasks';
 import { useTaskPriorityList } from '../../hooks/useTaskPriorities';
 
 // ─── Filter keys ──────────────────────────────────────────────────────────────
@@ -64,7 +64,7 @@ interface SupportTaskFiltersProps {
   defaultValues?: Record<string, any>;
   onUpdateFilters: (key: string, val: string | string[]) => void;
   onRemoveFilter: (key: string) => void;
-  staffUsers: StaffUser[];
+  assigneeUsers: AssigneeUser[];
 }
 
 const SupportTaskFilters: React.FC<SupportTaskFiltersProps> = ({
@@ -73,7 +73,7 @@ const SupportTaskFilters: React.FC<SupportTaskFiltersProps> = ({
   defaultValues,
   onUpdateFilters,
   onRemoveFilter,
-  staffUsers,
+  assigneeUsers,
 }) => {
   const priorityList = useTaskPriorityList();
   const priorityOptions = priorityList.map(({ priority, label }) => ({
@@ -93,7 +93,7 @@ const SupportTaskFilters: React.FC<SupportTaskFiltersProps> = ({
 
   const assignedToOptions = [
     { value: 'unassigned', label: '— Unassigned' },
-    ...staffUsers.map(u => ({
+    ...assigneeUsers.map(u => ({
       value: String(u.id),
       label: `${u.first_name} ${u.last_name}`,
     })),
