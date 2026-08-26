@@ -142,7 +142,7 @@ type SurveyFormValues = {
 const TRIGGER_OPTIONS = [
   { label: 'Next time they open the app', value: 'on_session' },
   {
-    label: 'After a call (5 min+, both active; excludes random calls)',
+    label: 'After a call (under 10 min, both active; excludes random calls)',
     value: 'event:call_ended',
   },
 ];
@@ -151,7 +151,7 @@ const ELIGIBLE_AFTER_OPTIONS = [
   { label: 'Immediately', value: 'none' },
   { label: 'Onboarded', value: 'onboarded' },
   {
-    label: 'First qualifying call (excludes random calls)',
+    label: 'First qualifying call (under 10 min; excludes random calls)',
     value: 'first_qualifying_call',
   },
   { label: 'Match created', value: 'match_created' },
