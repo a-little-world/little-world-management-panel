@@ -31,6 +31,7 @@ import {
   fetchOpenChatAccessUsers,
   fetchOpenChatConfiguration,
   fetchOpenChatIdempotentActions,
+  resolveOpenChatBrowserHost,
   clearOpenChatIdempotentAction,
   syncOpenChatRestTools,
   testOpenChatConnection,
@@ -233,11 +234,7 @@ function OpenChatMatchingCell({
   return (
     <div className="flex flex-col gap-2 min-w-[10rem]">
       <MatchingStatusTag matchingExists={user.matching_exists} />
-      {user.matching_exists && (
-        <Link to={OPEN_CHAT_ROUTE}>
-          Open chat
-        </Link>
-      )}
+      {user.matching_exists && <Link to={OPEN_CHAT_ROUTE}>Open chat</Link>}
       {!user.matching_exists && (
         <>
           {actionError && (
@@ -278,7 +275,9 @@ function OpenChatUserConfigurationEditor({
 
   useEffect(() => {
     setOpenChatUser(user.configuration?.open_chat_user ?? '');
-    setOpenChatHost(user.configuration?.open_chat_host ?? DEFAULT_OPEN_CHAT_HOST);
+    setOpenChatHost(
+      user.configuration?.open_chat_host ?? DEFAULT_OPEN_CHAT_HOST,
+    );
     setStoredApiKey(user.configuration?.open_chat_api_key ?? '');
     setApiKeyInput('');
     setIsEditing(false);
@@ -339,7 +338,10 @@ function OpenChatUserConfigurationEditor({
 
   if (isEditing) {
     return (
-      <form className="flex flex-col gap-3 min-w-[18rem]" onSubmit={handleSubmit}>
+      <form
+        className="flex flex-col gap-3 min-w-[18rem]"
+        onSubmit={handleSubmit}
+      >
         {formError && (
           <Text type={TextTypes.Body4} className="text-red-600">
             {formError}
@@ -451,11 +453,14 @@ function OpenChatUserConfigurationEditor({
 }
 
 function OpenChatAccessUsersPanel() {
-  const { data, error, isLoading, mutate: refreshUsers } = useSWR(
-    OPEN_CHAT_ACCESS_USERS_ENDPOINT,
-    fetchOpenChatAccessUsers,
-    { revalidateOnFocus: true },
-  );
+  const {
+    data,
+    error,
+    isLoading,
+    mutate: refreshUsers,
+  } = useSWR(OPEN_CHAT_ACCESS_USERS_ENDPOINT, fetchOpenChatAccessUsers, {
+    revalidateOnFocus: true,
+  });
 
   const columns = useMemo(
     () =>
@@ -548,11 +553,15 @@ function OpenChatAccessUsersPanel() {
 function OpenChatActionsPanel({
   configuration,
   configurationOwnerUserUuid,
+  botConfiguration,
+  botConfigurationOwnerUserUuid,
   automationTargetUserUuid,
   canEdit,
 }: {
   configuration: OpenChatConfiguration | null;
   configurationOwnerUserUuid: string;
+  botConfiguration?: OpenChatConfiguration | null;
+  botConfigurationOwnerUserUuid?: string;
   automationTargetUserUuid: string;
   canEdit: boolean;
 }) {
@@ -560,13 +569,21 @@ function OpenChatActionsPanel({
   const hasConfiguration = configuration !== null;
   const hasConfigurationOwner = configurationOwnerUserUuid.trim().length > 0;
   const hasAutomationTarget = automationTargetUserUuid.trim().length > 0;
+  const resolvedBotConfiguration =
+    botConfiguration === undefined ? configuration : botConfiguration;
+  const resolvedBotOwnerUserUuid =
+    botConfigurationOwnerUserUuid ?? configurationOwnerUserUuid;
   const [isTesting, setIsTesting] = useState(false);
   const [testError, setTestError] = useState<string | null>(null);
   const [testSuccess, setTestSuccess] = useState<string | null>(null);
-  const [triggeringActionId, setTriggeringActionId] = useState<string | null>(null);
+  const [triggeringActionId, setTriggeringActionId] = useState<string | null>(
+    null,
+  );
   const [clearingActionId, setClearingActionId] = useState<string | null>(null);
   const [actionErrors, setActionErrors] = useState<Record<string, string>>({});
-  const [actionSuccess, setActionSuccess] = useState<Record<string, string>>({});
+  const [actionSuccess, setActionSuccess] = useState<Record<string, string>>(
+    {},
+  );
   const [isSyncingRestTools, setIsSyncingRestTools] = useState(false);
   const [isReloadingRestTools, setIsReloadingRestTools] = useState(false);
   const [restToolsError, setRestToolsError] = useState<string | null>(null);
@@ -601,11 +618,12 @@ function OpenChatActionsPanel({
         setTestError(result.detail ?? 'Connection test failed.');
       }
     } catch (error) {
-      const apiError = error as { message?: string; data?: { detail?: string } };
+      const apiError = error as {
+        message?: string;
+        data?: { detail?: string };
+      };
       const message =
-        apiError.data?.detail ||
-        apiError.message ||
-        'Connection test failed.';
+        apiError.data?.detail || apiError.message || 'Connection test failed.';
       setTestError(message);
     } finally {
       setIsTesting(false);
@@ -626,7 +644,9 @@ function OpenChatActionsPanel({
     );
   };
 
-  const handleTriggerIdempotentAction = async (action: OpenChatIdempotentAction) => {
+  const handleTriggerIdempotentAction = async (
+    action: OpenChatIdempotentAction,
+  ) => {
     if (!hasAutomationTarget || triggeringActionId || clearingActionId) {
       return;
     }
@@ -650,13 +670,18 @@ function OpenChatActionsPanel({
         error instanceof Error
           ? error.message
           : 'Could not trigger automation task.';
-      setActionErrors(prev => ({ ...prev, [action.idempotent_action]: message }));
+      setActionErrors(prev => ({
+        ...prev,
+        [action.idempotent_action]: message,
+      }));
     } finally {
       setTriggeringActionId(null);
     }
   };
 
-  const handleClearIdempotentActionTasks = async (action: OpenChatIdempotentAction) => {
+  const handleClearIdempotentActionTasks = async (
+    action: OpenChatIdempotentAction,
+  ) => {
     if (!hasAutomationTarget || triggeringActionId || clearingActionId) {
       return;
     }
@@ -679,7 +704,10 @@ function OpenChatActionsPanel({
         error instanceof Error
           ? error.message
           : 'Could not clear related support tasks.';
-      setActionErrors(prev => ({ ...prev, [action.idempotent_action]: message }));
+      setActionErrors(prev => ({
+        ...prev,
+        [action.idempotent_action]: message,
+      }));
     } finally {
       setClearingActionId(null);
     }
@@ -706,10 +734,18 @@ function OpenChatActionsPanel({
         configurationOwnerUserUuid,
         reload,
       );
-      const created = result.created.length ? ` created ${result.created.join(', ')}` : '';
-      const updated = result.updated.length ? ` updated ${result.updated.join(', ')}` : '';
-      const deleted = result.deleted.length ? ` deleted ${result.deleted.join(', ')}` : '';
-      setRestToolsSuccess(`${result.detail}${created}${updated}${deleted}`.trim());
+      const created = result.created.length
+        ? ` created ${result.created.join(', ')}`
+        : '';
+      const updated = result.updated.length
+        ? ` updated ${result.updated.join(', ')}`
+        : '';
+      const deleted = result.deleted.length
+        ? ` deleted ${result.deleted.join(', ')}`
+        : '';
+      setRestToolsSuccess(
+        `${result.detail}${created}${updated}${deleted}`.trim(),
+      );
     } catch (error) {
       const message =
         error instanceof Error
@@ -731,8 +767,11 @@ function OpenChatActionsPanel({
           content: (
             <div className="pt-2">
               <OpenChatBotsPanel
-                configurationOwnerUserUuid={configurationOwnerUserUuid}
-                hasConfiguration={hasConfiguration}
+                configurationOwnerUserUuid={resolvedBotOwnerUserUuid}
+                openChatBrowserOrigin={resolveOpenChatBrowserHost(
+                  resolvedBotConfiguration,
+                )}
+                hasConfiguration={resolvedBotConfiguration !== null}
                 canEdit={canEdit}
               />
             </div>
@@ -949,14 +988,19 @@ export function OpenChatConfigurationPanel({
   canManage,
   embedded = false,
   automationTargetUserUuid,
+  botConfiguration,
+  botConfigurationOwnerUserUuid,
 }: {
   canEdit: boolean;
   canManage: boolean;
   embedded?: boolean;
   automationTargetUserUuid?: string;
+  botConfiguration?: OpenChatConfiguration | null;
+  botConfigurationOwnerUserUuid?: string;
 }) {
   const { panelUser } = useGlobalState();
-  const configurationOwnerUserUuid = (panelUser as MatchingPanelUser | undefined)?.uuid?.trim() ?? '';
+  const configurationOwnerUserUuid =
+    (panelUser as MatchingPanelUser | undefined)?.uuid?.trim() ?? '';
   const { data, error, isLoading } = useSWR(
     OPEN_CHAT_CONFIGURATION_ENDPOINT,
     fetchOpenChatConfiguration,
@@ -1180,13 +1224,20 @@ export function OpenChatConfigurationPanel({
         <HomeSection>
           <ConfigConnectionCard>
             <ConfigConnectionCardHeader>
-              <ConfigConnectionCardTitle>Open Chat connection</ConfigConnectionCardTitle>
+              <ConfigConnectionCardTitle>
+                Open Chat connection
+              </ConfigConnectionCardTitle>
               {renderConfigHeaderActions()}
             </ConfigConnectionCardHeader>
             <ConfigConnectionCardBody>
               {isEditingConfig ? (
-                <CompactConfigForm id="open-chat-configuration-form" onSubmit={handleSubmit}>
-                  <CompactConfigFormGrid>{renderConfigFormFields(true)}</CompactConfigFormGrid>
+                <CompactConfigForm
+                  id="open-chat-configuration-form"
+                  onSubmit={handleSubmit}
+                >
+                  <CompactConfigFormGrid>
+                    {renderConfigFormFields(true)}
+                  </CompactConfigFormGrid>
                 </CompactConfigForm>
               ) : isCreate ? (
                 <Text type={TextTypes.Body6} tag="p">
@@ -1348,7 +1399,11 @@ export function OpenChatConfigurationPanel({
         </StatusMessage>
       )}
 
-      <div className={embedded ? 'flex flex-col gap-4' : 'w-full flex flex-col gap-4'}>
+      <div
+        className={
+          embedded ? 'flex flex-col gap-4' : 'w-full flex flex-col gap-4'
+        }
+      >
         {renderConfigurationSection()}
 
         {embedded ? (
@@ -1357,6 +1412,8 @@ export function OpenChatConfigurationPanel({
             <OpenChatActionsPanel
               configuration={data ?? null}
               configurationOwnerUserUuid={configurationOwnerUserUuid}
+              botConfiguration={botConfiguration}
+              botConfigurationOwnerUserUuid={botConfigurationOwnerUserUuid}
               automationTargetUserUuid={resolvedAutomationTargetUserUuid}
               canEdit={canEdit}
             />
@@ -1369,6 +1426,8 @@ export function OpenChatConfigurationPanel({
             <OpenChatActionsPanel
               configuration={data ?? null}
               configurationOwnerUserUuid={configurationOwnerUserUuid}
+              botConfiguration={botConfiguration}
+              botConfigurationOwnerUserUuid={botConfigurationOwnerUserUuid}
               automationTargetUserUuid={resolvedAutomationTargetUserUuid}
               canEdit={canEdit}
             />

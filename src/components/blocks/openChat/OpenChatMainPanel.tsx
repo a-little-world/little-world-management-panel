@@ -31,9 +31,12 @@ import {
 type OpenChatMainPanelProps = Pick<
   OpenChatWorkspaceState,
   | 'selectedTab'
+  | 'configuration'
+  | 'selectedUser'
   | 'selectedChat'
   | 'selectedChatUuid'
   | 'selectedInteractionDetail'
+  | 'interactionClient'
   | 'interactionFrameUrl'
   | 'orderedMessages'
   | 'messagesError'
@@ -55,9 +58,12 @@ type OpenChatMainPanelProps = Pick<
 
 export function OpenChatMainPanel({
   selectedTab,
+  configuration,
+  selectedUser,
   selectedChat,
   selectedChatUuid,
   selectedInteractionDetail,
+  interactionClient,
   interactionFrameUrl,
   orderedMessages,
   messagesError,
@@ -132,6 +138,7 @@ export function OpenChatMainPanel({
                 messages={orderedMessages}
                 currentUser={currentUser}
                 openChatUserUuid={openChatUserUuid}
+                openChatClient={interactionClient}
                 isLoading={isMessagesLoading}
                 error={messagesError}
                 onOpenInteraction={navigateToInteraction}
@@ -169,6 +176,10 @@ export function OpenChatMainPanel({
               canManage={canManageOpenChatAccess}
               embedded
               automationTargetUserUuid={openChatUserUuid || ''}
+              botConfiguration={
+                selectedUser ? selectedUser.configuration : configuration
+              }
+              botConfigurationOwnerUserUuid={openChatUserUuid}
             />
           </HomeCardContent>
         )}

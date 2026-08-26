@@ -1,20 +1,23 @@
+import { Text, TextTypes } from '@a-little-world/little-world-design-system';
+import type { OpenChatClient } from '@open-chat-go/client';
 import {
-  Text,
-  TextTypes,
-} from '@a-little-world/little-world-design-system';
-import { ChevronDownIcon, ChevronUpIcon, ExternalLink, XIcon } from 'lucide-react';
+  ChevronDownIcon,
+  ChevronUpIcon,
+  ExternalLink,
+  XIcon,
+} from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import styled, { css } from 'styled-components';
 import useSWR from 'swr';
 
-import {
-  fetchOpenChatInteractionState,
-  type OpenChatInteractionState,
-} from '../../../api/openChat';
+import type { OpenChatInteractionState } from '../../../api/openChat';
+import { fetchOpenChatInteractionStateDirect } from '../../../api/openChatBrowserClient';
 import { OPEN_CHAT_INTERACTION_STATE_POLL_INTERVAL_MS } from './openChatConstants';
 import { OpenChatInteractionWidget } from '../user/UserChat.styles';
 
-const WidgetShell = styled(OpenChatInteractionWidget)<{ $collapsedPreview: boolean }>`
+const WidgetShell = styled(OpenChatInteractionWidget)<{
+  $collapsedPreview: boolean;
+}>`
   position: relative;
   overflow: hidden;
   isolation: isolate;
@@ -41,7 +44,8 @@ const WidgetHeader = styled.div`
   gap: ${({ theme }) => theme.spacing.xsmall};
   background: ${({ theme }) => theme.color.surface.primary};
   border-radius: ${({ theme }) => theme.radius.xxxsmall};
-  padding: ${({ theme }) => `${theme.spacing.xxsmall} ${theme.spacing.xxxsmall}`};
+  padding: ${({ theme }) =>
+    `${theme.spacing.xxsmall} ${theme.spacing.xxxsmall}`};
 `;
 
 const WidgetTitleBlock = styled.div`
@@ -162,7 +166,9 @@ const InteractionFrame = styled.iframe<{ $expanded: boolean }>`
   border-radius: ${({ theme }) => theme.radius.xxxsmall};
   display: block;
   background: ${({ theme }) => theme.color.surface.primary};
-  transition: height 0.2s ease, width 0.2s ease;
+  transition:
+    height 0.2s ease,
+    width 0.2s ease;
 
   ${({ $expanded }) =>
     $expanded
@@ -195,6 +201,7 @@ type OpenChatInteractionEmbedProps = {
   interactionId?: string;
   interactionShareUuid?: string | null;
   configurationOwnerUserUuid?: string;
+  openChatClient?: OpenChatClient | null;
   onOpenInteraction?: (interactionId: string) => void;
 };
 
@@ -256,7 +263,15 @@ function normalizeLiveToolCalls(value: unknown): LiveToolCall[] {
       if (!id && !name) {
         return null;
       }
-      return { id: id || `${name}-${Math.random()}`, name, status, error };
+      const toolCall: LiveToolCall = {
+        id: id || `${name}-${Math.random()}`,
+        name,
+        status,
+      };
+      if (error) {
+        toolCall.error = error;
+      }
+      return toolCall;
     })
     .filter((item): item is LiveToolCall => item !== null);
 }
@@ -277,25 +292,27 @@ export function OpenChatInteractionEmbed({
   interactionId,
   interactionShareUuid,
   configurationOwnerUserUuid,
+  openChatClient,
   onOpenInteraction,
 }: OpenChatInteractionEmbedProps) {
   const [isVisible, setIsVisible] = useState(true);
   const [manualExpanded, setManualExpanded] = useState<boolean | null>(null);
   const [liveToolCalls, setLiveToolCalls] = useState<LiveToolCall[]>([]);
-  const canPollState = Boolean(
-    interactionShareUuid?.trim() && configurationOwnerUserUuid?.trim(),
-  );
+  const canPollState = Boolean(openChatClient && interactionId?.trim());
 
   const { data: interactionState } = useSWR(
     canPollState
       ? [
-          '/open-chat/interaction-state',
-          interactionShareUuid,
+          '/open-chat/interaction-state/direct',
+          interactionId,
           configurationOwnerUserUuid,
         ]
       : null,
-    ([, shareUuid, userUuid]) =>
-      fetchOpenChatInteractionState(shareUuid as string, userUuid as string),
+    () =>
+      fetchOpenChatInteractionStateDirect(
+        openChatClient!,
+        interactionId as string,
+      ),
     {
       refreshInterval: OPEN_CHAT_INTERACTION_STATE_POLL_INTERVAL_MS,
       revalidateOnFocus: true,
@@ -400,7 +417,11 @@ export function OpenChatInteractionEmbed({
               aria-label={isExpanded ? 'Collapse preview' : 'Expand preview'}
               title={isExpanded ? 'Collapse preview' : 'Expand preview'}
             >
-              {isExpanded ? <ChevronUpIcon size={14} /> : <ChevronDownIcon size={14} />}
+              {isExpanded ? (
+                <ChevronUpIcon size={14} />
+              ) : (
+                <ChevronDownIcon size={14} />
+              )}
             </WidgetIconButton>
           )}
           {frameUrl && (
@@ -431,9 +452,7 @@ export function OpenChatInteractionEmbed({
         </WidgetActions>
       </WidgetHeader>
 
-      {!frameUrl && (
-        <WidgetHint>Interaction preview unavailable.</WidgetHint>
-      )}
+      {!frameUrl && <WidgetHint>Interaction preview unavailable.</WidgetHint>}
 
       {frameUrl && !isVisible && (
         <WidgetHint>Preview hidden — use the arrow to show again.</WidgetHint>

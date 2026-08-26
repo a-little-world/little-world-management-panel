@@ -9,9 +9,6 @@ export const OPEN_CHAT_TEST_CONNECTION_ENDPOINT =
 export const OPEN_CHAT_ACCESS_USERS_ENDPOINT =
   '/api/matching/open-chat-access-users/';
 export const OPEN_CHAT_CHATS_ENDPOINT = '/api/chats/';
-export const OPEN_CHAT_BOTS_ENDPOINT = '/api/matching/open-chat/bots/';
-export const OPEN_CHAT_INTERACTIONS_ENDPOINT =
-  '/api/matching/open-chat/interactions/';
 export const OPEN_CHAT_IDEMPOTENT_ACTIONS_ENDPOINT =
   '/api/matching/open-chat/idempotent-actions/';
 export const OPEN_CHAT_AUTOMATION_GENERATE_MESSAGE_REPLIES_ENDPOINT =
@@ -152,23 +149,6 @@ type OpenChatMessagesResponse = {
   results: OpenChatMessage[];
 };
 
-export type OpenChatBot = {
-  uuid: string | null;
-  name: string | null;
-  description: string | null;
-  bot_username: string | null;
-  bot_user_uuid: string | null;
-  is_active: boolean | null;
-  is_public: boolean | null;
-  is_legacy_contact_bot: boolean;
-  model: string | null;
-  default_shared_config: Record<string, unknown> | null;
-};
-
-type OpenChatBotsResponse = {
-  results: OpenChatBot[];
-};
-
 export type OpenChatInteraction = {
   interaction_id: string;
   title: string | null;
@@ -177,10 +157,6 @@ export type OpenChatInteraction = {
   status: string | null;
   shared_interaction_url: string | null;
   raw?: Record<string, unknown>;
-};
-
-type OpenChatInteractionsResponse = {
-  results: OpenChatInteraction[];
 };
 
 export type OpenChatInteractionDetail = OpenChatInteraction;
@@ -275,61 +251,6 @@ export function fetchOpenChatMessages(chatUuid: string) {
   );
 }
 
-export type OpenChatBotUpdatePayload = {
-  name?: string;
-  description?: string;
-  is_active?: boolean;
-  is_public?: boolean;
-  default_shared_config?: Record<string, unknown>;
-};
-
-export function fetchOpenChatBots(userUuid: string) {
-  const query = new URLSearchParams({
-    user_uuid: userUuid,
-  });
-  return apiFetch<OpenChatBotsResponse>(
-    `${OPEN_CHAT_BOTS_ENDPOINT}?${query.toString()}`,
-  );
-}
-
-export function updateOpenChatBot(
-  botIdentifier: string,
-  userUuid: string,
-  payload: OpenChatBotUpdatePayload,
-) {
-  const query = new URLSearchParams({
-    user_uuid: userUuid,
-  });
-  return apiFetch<OpenChatBot>(
-    `${OPEN_CHAT_BOTS_ENDPOINT}${encodeURIComponent(botIdentifier)}/?${query.toString()}`,
-    {
-      method: 'PATCH',
-      body: payload,
-    },
-  );
-}
-
-export function fetchOpenChatInteractions(userUuid: string) {
-  const query = new URLSearchParams({
-    user_uuid: userUuid,
-  });
-  return apiFetch<OpenChatInteractionsResponse>(
-    `${OPEN_CHAT_INTERACTIONS_ENDPOINT}?${query.toString()}`,
-  );
-}
-
-export function fetchOpenChatInteractionDetail(
-  interactionUuid: string,
-  userUuid: string,
-) {
-  const query = new URLSearchParams({
-    user_uuid: userUuid,
-  });
-  return apiFetch<OpenChatInteractionDetail>(
-    `${OPEN_CHAT_INTERACTIONS_ENDPOINT}${interactionUuid}/?${query.toString()}`,
-  );
-}
-
 export type OpenChatInteractionState = {
   chat_uuid: string | null;
   is_active: boolean;
@@ -338,18 +259,6 @@ export type OpenChatInteractionState = {
   latest_message_finished: boolean | null;
   source: string | null;
 };
-
-export function fetchOpenChatInteractionState(
-  interactionShareUuid: string,
-  userUuid: string,
-) {
-  const query = new URLSearchParams({
-    user_uuid: userUuid,
-  });
-  return apiFetch<OpenChatInteractionState>(
-    `${OPEN_CHAT_INTERACTIONS_ENDPOINT}${encodeURIComponent(interactionShareUuid)}/state/?${query.toString()}`,
-  );
-}
 
 export function triggerOpenChatGenerateMessageReplies(userUuid: string) {
   const query = new URLSearchParams({
@@ -406,10 +315,7 @@ export type OpenChatRestToolsSyncResult = {
   detail: string;
 };
 
-export function syncOpenChatRestTools(
-  userUuid: string,
-  reload = false,
-) {
+export function syncOpenChatRestTools(userUuid: string, reload = false) {
   const query = new URLSearchParams({
     user_uuid: userUuid,
   });
@@ -454,9 +360,12 @@ export type OpenChatDeleteChatResult = {
 };
 
 export function deleteOpenChatChat(chatUuid: string) {
-  return apiFetch<OpenChatDeleteChatResult>(openChatDeleteChatEndpoint(chatUuid), {
-    method: 'DELETE',
-  });
+  return apiFetch<OpenChatDeleteChatResult>(
+    openChatDeleteChatEndpoint(chatUuid),
+    {
+      method: 'DELETE',
+    },
+  );
 }
 
 export function openChatUserConfigurationEndpoint(userId: number) {
@@ -517,8 +426,11 @@ export function openChatCreateChatEndpoint(userId: number) {
 }
 
 export function createOpenChatChat(userId: number) {
-  return apiFetch<OpenChatCreateChatResult>(openChatCreateChatEndpoint(userId), {
-    method: 'POST',
-    body: {},
-  });
+  return apiFetch<OpenChatCreateChatResult>(
+    openChatCreateChatEndpoint(userId),
+    {
+      method: 'POST',
+      body: {},
+    },
+  );
 }

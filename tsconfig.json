@@ -14,7 +14,10 @@
     "target": "ES6",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@open-chat-go/client/react": [
+        "./node_modules/@open-chat-go/client/dist/react.d.ts"
+      ]
     }
   },
   "include": ["src", "src/emails/templates/.tsx"],

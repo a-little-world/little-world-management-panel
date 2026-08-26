@@ -7,6 +7,7 @@
   "dependencies": {
     "@a-little-world/little-world-design-system": "^3.1.1",
     "@heroicons/react": "^2.0.18",
+    "@open-chat-go/client": "github:msgmate-io/open-chat-go-js-client#v0.1.1",
     "@radix-ui/react-dialog": "^1.1.14",
     "@radix-ui/react-hover-card": "^1.1.14",
     "@radix-ui/react-popover": "^1.1.14",

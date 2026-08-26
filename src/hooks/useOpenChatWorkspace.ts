@@ -10,8 +10,6 @@ import {
   deleteOpenChatChat,
   fetchOpenChatAccessUsers,
   fetchOpenChatConfiguration,
-  fetchOpenChatInteractionDetail,
-  fetchOpenChatInteractions,
   fetchOpenChatMessages,
   fetchOpenChatsForUser,
   normalizeOpenChatBrowserUrl,
@@ -23,6 +21,11 @@ import {
   type OpenChatMessage,
 } from '../api/openChat';
 import {
+  createAuthorizedOpenChatClient,
+  fetchOpenChatInteractionDetailDirect,
+  fetchOpenChatInteractionsDirect,
+} from '../api/openChatBrowserClient';
+import {
   MANAGEMENT_PERMISSION_EDIT_OPEN_CHAT_CONFIGURATION,
   MANAGEMENT_PERMISSION_MANAGE_OPEN_CHAT_ACCESS,
   MANAGEMENT_PERMISSION_OPEN_CHAT_ACCESS,
@@ -32,10 +35,7 @@ import {
   withOpenChatLightTheme,
 } from '../helpers/chat';
 import { hasManagementPermission } from '../helpers/managementPermissions';
-import {
-  getOpenChatChatRoute,
-  OPEN_CHAT_ROUTE,
-} from '../router/routes';
+import { getOpenChatChatRoute, OPEN_CHAT_ROUTE } from '../router/routes';
 import {
   LEGACY_OPEN_CHAT_TAB_CONFIGURATION,
   looksLikeUuid,
@@ -79,7 +79,9 @@ export function useOpenChatWorkspace(currentUser: MatchingPanelUser) {
   });
 
   const openChatUserUuid =
-    requestedOpenChatUserUuid || configuration?.matching_user_uuid?.trim() || '';
+    requestedOpenChatUserUuid ||
+    configuration?.matching_user_uuid?.trim() ||
+    '';
 
   const {
     data: users,
@@ -95,10 +97,26 @@ export function useOpenChatWorkspace(currentUser: MatchingPanelUser) {
     () => users?.find(user => user.uuid === openChatUserUuid),
     [users, openChatUserUuid],
   );
-  const targetUserId = selectedUser?.id ?? configuration?.matching_user_id ?? null;
+  const targetUserId =
+    selectedUser?.id ?? configuration?.matching_user_id ?? null;
   const actorDisplayName = selectedUser
     ? formatOpenChatAccessUserName(selectedUser)
     : configuration?.open_chat_user || 'Open Chat';
+  const interactionBrowserOrigin = useMemo(
+    () =>
+      resolveOpenChatBrowserHost(selectedUser?.configuration ?? configuration),
+    [selectedUser, configuration],
+  );
+  const interactionClient = useMemo(() => {
+    if (!openChatUserUuid || !interactionBrowserOrigin) {
+      return null;
+    }
+    return createAuthorizedOpenChatClient({
+      baseUrl: interactionBrowserOrigin,
+      userUuid: openChatUserUuid,
+      scopes: ['interactions:list', 'interactions:read'],
+    });
+  }, [interactionBrowserOrigin, openChatUserUuid]);
 
   const {
     data: chatsData,
@@ -115,27 +133,31 @@ export function useOpenChatWorkspace(currentUser: MatchingPanelUser) {
 
   const chats = chatsData?.results ?? [];
   const selectedChatUuid =
-    selectedTab === OPEN_CHAT_TAB_CHAT ? routeChatUuid ?? null : null;
+    selectedTab === OPEN_CHAT_TAB_CHAT ? (routeChatUuid ?? null) : null;
 
   const [createChatError, setCreateChatError] = useState<string | null>(null);
   const [deleteChatError, setDeleteChatError] = useState<string | null>(null);
   const [isCreatingChat, setIsCreatingChat] = useState(false);
   const [deletingChatUuid, setDeletingChatUuid] = useState<string | null>(null);
-  const [pendingCreatedChatUuid, setPendingCreatedChatUuid] = useState<string | null>(null);
+  const [pendingCreatedChatUuid, setPendingCreatedChatUuid] = useState<
+    string | null
+  >(null);
 
   const {
     data: interactionsData,
     error: interactionsError,
     isLoading: isInteractionsLoading,
   } = useSWR(
-    openChatUserUuid ? `/open-chat/interactions/${openChatUserUuid}` : null,
-    () => fetchOpenChatInteractions(openChatUserUuid),
+    interactionClient
+      ? `/open-chat/interactions/direct/${openChatUserUuid}`
+      : null,
+    () => fetchOpenChatInteractionsDirect(interactionClient!),
     { revalidateOnFocus: true },
   );
 
   const interactions = interactionsData?.results ?? [];
   const selectedInteractionUuid =
-    selectedTab === OPEN_CHAT_TAB_INTERACTIONS ? routeChatUuid ?? null : null;
+    selectedTab === OPEN_CHAT_TAB_INTERACTIONS ? (routeChatUuid ?? null) : null;
 
   const {
     data: interactionDetailData,
@@ -144,13 +166,13 @@ export function useOpenChatWorkspace(currentUser: MatchingPanelUser) {
   } = useSWR(
     selectedTab === OPEN_CHAT_TAB_INTERACTIONS &&
       selectedInteractionUuid &&
-      openChatUserUuid
-      ? `/open-chat/interactions/detail/${openChatUserUuid}/${selectedInteractionUuid}`
+      interactionClient
+      ? `/open-chat/interactions/direct/detail/${openChatUserUuid}/${selectedInteractionUuid}`
       : null,
     () =>
-      fetchOpenChatInteractionDetail(
+      fetchOpenChatInteractionDetailDirect(
+        interactionClient!,
         selectedInteractionUuid as string,
-        openChatUserUuid,
       ),
     { revalidateOnFocus: true },
   );
@@ -193,7 +215,10 @@ export function useOpenChatWorkspace(currentUser: MatchingPanelUser) {
   const navigateToInteraction = useCallback(
     (interactionUuid: string, replace = false) => {
       const nextSearchParams = new URLSearchParams(searchParams);
-      nextSearchParams.set(OPEN_CHAT_QUERY_PARAM_TAB, OPEN_CHAT_TAB_INTERACTIONS);
+      nextSearchParams.set(
+        OPEN_CHAT_QUERY_PARAM_TAB,
+        OPEN_CHAT_TAB_INTERACTIONS,
+      );
       const serializedSearchParams = nextSearchParams.toString();
       navigate(
         `${getOpenChatChatRoute(interactionUuid)}${
@@ -225,10 +250,9 @@ export function useOpenChatWorkspace(currentUser: MatchingPanelUser) {
     (userUuid: string) => {
       const nextSearchParams = new URLSearchParams(searchParams);
       nextSearchParams.set('user_uuid', userUuid);
-      navigate(
-        `${OPEN_CHAT_ROUTE}?${nextSearchParams.toString()}`,
-        { replace: true },
-      );
+      navigate(`${OPEN_CHAT_ROUTE}?${nextSearchParams.toString()}`, {
+        replace: true,
+      });
     },
     [navigate, searchParams],
   );
@@ -297,7 +321,12 @@ export function useOpenChatWorkspace(currentUser: MatchingPanelUser) {
     if (!selectedInteractionUuid || !routeInteractionExists) {
       navigateToInteraction(interactions[0].interaction_id, true);
     }
-  }, [interactions, selectedInteractionUuid, selectedTab, navigateToInteraction]);
+  }, [
+    interactions,
+    selectedInteractionUuid,
+    selectedTab,
+    navigateToInteraction,
+  ]);
 
   const selectedChat: OpenChatListItem | null =
     chats.find(chat => chat.uuid === selectedChatUuid) ?? null;
@@ -309,12 +338,6 @@ export function useOpenChatWorkspace(currentUser: MatchingPanelUser) {
 
   const selectedInteractionDetail: OpenChatInteractionDetail | null =
     interactionDetailData ?? selectedInteraction;
-
-  const interactionBrowserOrigin = useMemo(() => {
-    return resolveOpenChatBrowserHost(
-      selectedUser?.configuration ?? configuration,
-    );
-  }, [selectedUser, configuration]);
 
   const interactionFrameUrl = useMemo(() => {
     const sharedUrl = selectedInteractionDetail?.shared_interaction_url;
@@ -334,7 +357,11 @@ export function useOpenChatWorkspace(currentUser: MatchingPanelUser) {
       interactionBrowserOrigin,
       selectedInteractionUuid,
     );
-  }, [selectedInteractionDetail, interactionBrowserOrigin, selectedInteractionUuid]);
+  }, [
+    selectedInteractionDetail,
+    interactionBrowserOrigin,
+    selectedInteractionUuid,
+  ]);
 
   const orderedMessages: OpenChatMessage[] = useMemo(
     () => [...(messagesData?.results ?? [])].reverse(),
@@ -412,7 +439,9 @@ export function useOpenChatWorkspace(currentUser: MatchingPanelUser) {
       await refreshMessages();
       await refreshChats();
     } catch (error) {
-      setSendError(error instanceof Error ? error.message : 'Could not send message.');
+      setSendError(
+        error instanceof Error ? error.message : 'Could not send message.',
+      );
     } finally {
       setIsSending(false);
     }
@@ -468,6 +497,7 @@ export function useOpenChatWorkspace(currentUser: MatchingPanelUser) {
     interactions,
     selectedInteractionUuid,
     selectedInteractionDetail,
+    interactionClient,
     interactionFrameUrl,
     orderedMessages,
     messagesError,

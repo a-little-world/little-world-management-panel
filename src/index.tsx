@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import '@open-chat-go/client/styles.css';
 
 import { MatchingPannel } from './App';
 import { EmailHtmlRenderer } from './components/views/emails/EmailHtml';

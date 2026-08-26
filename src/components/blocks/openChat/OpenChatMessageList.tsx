@@ -9,6 +9,7 @@ import {
   TickIcon,
   textParser,
 } from '@a-little-world/little-world-design-system';
+import type { OpenChatClient } from '@open-chat-go/client';
 import { isSameDay } from 'date-fns';
 import React, { useEffect, useMemo, useRef } from 'react';
 import { useTheme } from 'styled-components';
@@ -40,6 +41,7 @@ type OpenChatMessageListProps = {
   messages: OpenChatMessage[];
   currentUser: MatchingPanelUser;
   openChatUserUuid: string;
+  openChatClient: OpenChatClient | null;
   isLoading: boolean;
   error: unknown;
   onOpenInteraction: (interactionId: string) => void;
@@ -73,13 +75,17 @@ export function OpenChatMessageList({
   messages,
   currentUser,
   openChatUserUuid,
+  openChatClient,
   isLoading,
   error,
   onOpenInteraction,
 }: OpenChatMessageListProps) {
   const theme = useTheme();
   const scrollRef = useRef<HTMLDivElement>(null);
-  const messageGroups = useMemo(() => groupMessagesByDate(messages), [messages]);
+  const messageGroups = useMemo(
+    () => groupMessagesByDate(messages),
+    [messages],
+  );
   const currentUserId = currentUser.uuid ?? currentUser.hash;
 
   useEffect(() => {
@@ -159,6 +165,7 @@ export function OpenChatMessageList({
                       interactionPayload.shared_interaction_url,
                     )}
                     configurationOwnerUserUuid={openChatUserUuid}
+                    openChatClient={openChatClient}
                     onOpenInteraction={onOpenInteraction}
                   />
                   <Time type={TextTypes.Body6}>
