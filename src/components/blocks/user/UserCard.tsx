@@ -22,7 +22,7 @@ import useSWR from 'swr';
 import type { MatchingPanelUser } from '../../../api/index';
 import { LANGUAGES } from '../../../constants';
 import { MANAGEMENT_PERMISSION_IS_MAIN_SUPPORT_ACCOUNT } from '../../../constants/managementPermissions';
-import { formatDate, formatTimeDistance } from '../../../helpers/date';
+import { formatDate, formatDateTime, formatTimeDistance } from '../../../helpers/date';
 import { hasManagementPermission } from '../../../helpers/managementPermissions';
 import { MATCHING_ROUTE } from '../../../router/routes';
 import { dataFetcher, useGlobalState } from '../../../store';
@@ -79,7 +79,8 @@ interface UserProfile {
 
 interface UserState {
   company?: string;
-  searching_state: 'searching' | 'matched';
+  searching_state: 'idle' | 'searching';
+  searching_state_last_updated?: string | null;
   email_authenticated: boolean;
   user_form_state: 'filled' | 'unfilled';
   had_prematching_call: boolean;
@@ -208,6 +209,10 @@ const UserDetailsFull: React.FC<{
             </Tag>
           </InfoGridRow>
         )}
+        <DataField
+          title="Searching state updated"
+          value={formatDateTime(user.state.searching_state_last_updated, 'en')}
+        />
         <DataField title="Id" value={user.id} />
         <DataField title="Email" value={user.email} />
         <DataField title="Company" value={user.state.company || '-'} />
