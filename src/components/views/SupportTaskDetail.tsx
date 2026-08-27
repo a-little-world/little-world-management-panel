@@ -22,7 +22,7 @@ import {
   getActionTypeConfig,
   patchSupportTask,
 } from '../../api/supportTasks';
-import { ORANGE_40, BLUE_40 } from '../../constants';
+import { BLUE_40, ORANGE_40 } from '../../constants';
 import { resolveAttachmentWidgetText } from '../../helpers/chat';
 import { formatTimeDistance } from '../../helpers/date';
 import { useTaskPriorityList } from '../../hooks/useTaskPriorities';
@@ -33,9 +33,15 @@ import { PageContainer } from '../atoms/PageLayout';
 import UserImage from '../atoms/UserImage';
 import { usePageHeader } from '../blocks/LayoutHeaderContext';
 import ObjectHistoryList, { ObjectHistory } from '../blocks/ObjectHistory';
-import SupportTaskAssigneePicker from '../blocks/SupportTaskAssigneePicker';
 import SupportTaskActionCard from '../blocks/SupportTaskActionCard';
+import SupportTaskAssigneePicker from '../blocks/SupportTaskAssigneePicker';
+import { SectionLabel, SidebarSection } from '../blocks/user/UserCard.styles';
 import UserChat from '../blocks/user/UserChat';
+import {
+  MatchEligibility,
+  UserJourneyStatus,
+  UserMatchesSummary,
+} from '../blocks/user/UserProfileSummary';
 
 // ─── Select options ─────────────────────────────────────────────────────────
 
@@ -189,6 +195,7 @@ const SideColumn = styled.aside`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.medium};
+  min-width: 0;
 `;
 
 const SentMessageQuote = styled.blockquote`
@@ -220,13 +227,14 @@ const StatGrid = styled.div`
   margin-bottom: ${({ theme }) => theme.spacing.xsmall};
 `;
 
-const StatBox = styled.div`
+const StatBox = styled.div<{ $full_width?: boolean }>`
   background: ${({ theme }) => theme.color.surface.secondary};
   border-radius: ${({ theme }) => theme.radius.medium};
   padding: ${({ theme }) => theme.spacing.xsmall};
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.xxxsmall};
+  grid-column: ${({ $full_width }) => ($full_width ? '1 / -1' : 'inherit')};
 `;
 
 const CollapsibleHeader = styled(CardHeader)`
@@ -238,6 +246,12 @@ const CollapsibleHeader = styled(CardHeader)`
   &:hover {
     background: ${({ theme }) => theme.color.surface.secondary};
   }
+`;
+
+const ProfileDetailsBody = styled(CardContent)`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.small};
 `;
 
 const ChatWrapper = styled.div`
@@ -304,6 +318,7 @@ export default function SupportTaskDetail() {
   const id = Number(taskId);
   const [chatOpen, setChatOpen] = useState(true);
   const [relatedUserOpen, setRelatedUserOpen] = useState(true);
+  const [profileDetailsOpen, setProfileDetailsOpen] = useState(true);
 
   const {
     data: task,
@@ -715,7 +730,7 @@ export default function SupportTaskDetail() {
                         user={relatedUser}
                         dimensions={{ width: 56, height: 56 }}
                       />
-                      <div>
+                      <MetaField>
                         <Text bold color={ORANGE_40} tag="div">
                           {relatedUser.first_name} {relatedUser.second_name}
                         </Text>
@@ -725,9 +740,19 @@ export default function SupportTaskDetail() {
                         <Text type={TextTypes.Body5} tag="div">
                           {relatedUser.email}
                         </Text>
-                      </div>
+                      </MetaField>
                     </UserInfoRow>
                     <StatGrid>
+                      {(relatedUserDetail?.bucket_label ??
+                        relatedUserDetail?.bucket) && (
+                        <StatBox $full_width>
+                          <MetaLabel>Bucket</MetaLabel>
+                          <Text bold tag="div">
+                            {relatedUserDetail?.bucket_label ??
+                              relatedUserDetail?.bucket}
+                          </Text>
+                        </StatBox>
+                      )}
                       <StatBox>
                         <MetaLabel>Member since</MetaLabel>
                         <Text bold tag="div">
@@ -744,16 +769,62 @@ export default function SupportTaskDetail() {
                         </Text>
                       </StatBox>
                     </StatGrid>
-                    <MetaField>
-                      <MetaLabel>Last active</MetaLabel>
-                      <Text type={TextTypes.Body6} tag="div">
-                        {formatLastActive(relatedUser.last_active)}
-                      </Text>
-                    </MetaField>
+                    <MetaGrid>
+                      <MetaField>
+                        <MetaLabel>Last active</MetaLabel>
+                        <Text type={TextTypes.Body6} tag="div">
+                          {formatLastActive(relatedUser.last_active)}
+                        </Text>
+                      </MetaField>
+                      <MetaField>
+                        <MetaLabel>Residence</MetaLabel>
+                        <Text type={TextTypes.Body6} tag="div">
+                          {relatedUserDetail?.profile?.country_of_residence ||
+                            '-'}
+                        </Text>
+                      </MetaField>
+                    </MetaGrid>
                     <ProfileLink to={`/user/${relatedUser.id}`}>
                       Open full profile →
                     </ProfileLink>
                   </CardContent>
+                )}
+              </Card>
+            )}
+
+            {relatedUser && (
+              <Card center={false}>
+                <CollapsibleHeader
+                  onClick={() => setProfileDetailsOpen(o => !o)}
+                >
+                  <CardTitle>Profile details</CardTitle>
+                  {profileDetailsOpen ? (
+                    <ChevronUpIcon size={16} />
+                  ) : (
+                    <ChevronDownIcon size={16} />
+                  )}
+                </CollapsibleHeader>
+                {profileDetailsOpen && (
+                  <ProfileDetailsBody>
+                    {relatedUserDetail ? (
+                      <>
+                        <SidebarSection>
+                          <SectionLabel>Match eligibility</SectionLabel>
+                          <MatchEligibility userId={String(relatedUser.id)} />
+                        </SidebarSection>
+                        <UserJourneyStatus
+                          journey={relatedUserDetail?.journey}
+                        />
+                        <UserMatchesSummary
+                          matches={relatedUserDetail?.matches}
+                        />
+                      </>
+                    ) : (
+                      <Text type={TextTypes.Body6} tag="div">
+                        Loading profile details…
+                      </Text>
+                    )}
+                  </ProfileDetailsBody>
                 )}
               </Card>
             )}
