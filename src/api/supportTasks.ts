@@ -86,6 +86,36 @@ export interface SupportTaskListParams {
   page_size?: number;
 }
 
+export enum TaskFilterKeys {
+  Priority = 'priority',
+  ActionType = 'action_type',
+  AssignedTo = 'assigned_to',
+}
+
+export const DEFAULT_STATUS_FILTERS: TaskStatus[] = ['NEW', 'IN_PROGRESS'];
+
+export const buildSupportTaskListParams = (
+  searchParams: URLSearchParams,
+): SupportTaskListParams => {
+  const statusFilters = searchParams.getAll('status');
+  return {
+    status: (statusFilters.length
+      ? statusFilters
+      : DEFAULT_STATUS_FILTERS) as TaskStatus[],
+    priority: searchParams.getAll(TaskFilterKeys.Priority),
+    action_type: searchParams.getAll(TaskFilterKeys.ActionType),
+    assigned_to: searchParams.get(TaskFilterKeys.AssignedTo) || undefined,
+    sort_by: searchParams.get('sort_by') || undefined,
+    sort_order: (searchParams.get('sort_order') || undefined) as
+      | 'asc'
+      | 'desc'
+      | undefined,
+    search: searchParams.get('search') || undefined,
+    page: Number(searchParams.get('page')) || undefined,
+    page_size: Number(searchParams.get('page_size')) || undefined,
+  };
+};
+
 export const fetchSupportTasks = (
   params: SupportTaskListParams = {},
 ): Promise<PaginatedSupportTaskList> => {

@@ -26,12 +26,14 @@ import useSWR from 'swr';
 
 import {
   BulkSupportTaskAction,
+  DEFAULT_STATUS_FILTERS,
   PaginatedSupportTaskList,
   STATUS_CONFIG,
   SupportTask,
-  SupportTaskListParams,
+  TaskFilterKeys,
   TaskPriority,
   TaskStatus,
+  buildSupportTaskListParams,
   bulkSupportTasks,
   fetchAssigneeUsers,
   fetchSupportTaskStats,
@@ -66,7 +68,6 @@ import {
 import FiltersToolbar from '../blocks/FiltersToolbar';
 import { usePageHeader } from '../blocks/LayoutHeaderContext';
 import SupportTaskFilters, {
-  TaskFilterKeys,
   containsTaskFilterKey,
 } from '../blocks/SupportTaskFilters';
 
@@ -244,8 +245,6 @@ const DEFAULT_EXPORT_HEADERS = [
   'priority',
   'created_at',
 ];
-
-const DEFAULT_STATUS_FILTERS: TaskStatus[] = ['NEW', 'IN_PROGRESS'];
 
 const EMPTY_TASKS: SupportTask[] = [];
 
@@ -537,21 +536,8 @@ export default function SupportTasksOverview() {
   const assignedToFilter = searchParams.get(TaskFilterKeys.AssignedTo) ?? '';
 
   const params = useMemo(
-    (): SupportTaskListParams => ({
-      status: effectiveStatusFilters,
-      priority: searchParams.getAll(TaskFilterKeys.Priority),
-      action_type: searchParams.getAll(TaskFilterKeys.ActionType),
-      assigned_to: searchParams.get(TaskFilterKeys.AssignedTo) || undefined,
-      sort_by: searchParams.get('sort_by') || undefined,
-      sort_order: (searchParams.get('sort_order') || undefined) as
-        | 'asc'
-        | 'desc'
-        | undefined,
-      search: searchParams.get('search') || undefined,
-      page: Number(searchParams.get('page')) || undefined,
-      page_size: Number(searchParams.get('page_size')) || undefined,
-    }),
-    [searchParams, effectiveStatusFilters],
+    () => buildSupportTaskListParams(searchParams),
+    [searchParams],
   );
 
   const {
@@ -887,7 +873,9 @@ export default function SupportTasksOverview() {
         <DataTable
           columns={columns}
           data={tasks}
-          getRowLink={task => getSupportTaskDetailRoute(task.id)}
+          getRowLink={task =>
+            getSupportTaskDetailRoute(task.id, searchParams.toString())
+          }
         />
       )}
 

@@ -1,4 +1,7 @@
 import {
+  Button,
+  ButtonAppearance,
+  ButtonSizes,
   Select,
   Tag,
   TagAppearance,
@@ -6,19 +9,32 @@ import {
   Text,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
-import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
-import React, { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import {
+  ChevronDownIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ChevronUpIcon,
+} from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import {
+  Link,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from 'react-router-dom';
 import styled from 'styled-components';
 import useSWR from 'swr';
 
 import { format, parseISO } from 'date-fns';
 import {
   STATUS_CONFIG,
+  SupportTask,
   TaskPriority,
   TaskStatus,
+  buildSupportTaskListParams,
   fetchAssigneeUsers,
   fetchSupportTask,
+  fetchSupportTasks,
   getActionTypeConfig,
   patchSupportTask,
 } from '../../api/supportTasks';
@@ -26,7 +42,11 @@ import { BLUE_40, ORANGE_40 } from '../../constants';
 import { resolveAttachmentWidgetText } from '../../helpers/chat';
 import { formatTimeDistance } from '../../helpers/date';
 import { useTaskPriorityList } from '../../hooks/useTaskPriorities';
-import { SUPPORT_TASKS_ROUTE, getOpenChatChatRoute } from '../../router/routes';
+import {
+  SUPPORT_TASKS_ROUTE,
+  getOpenChatChatRoute,
+  getSupportTaskDetailRoute,
+} from '../../router/routes';
 import { dataFetcher } from '../../store';
 import { Card, CardContent, CardHeader, CardTitle } from '../atoms/Card';
 import { PageContainer } from '../atoms/PageLayout';
@@ -113,6 +133,12 @@ const DetailBody = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.medium};
+`;
+
+const HeaderNav = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xxsmall};
 `;
 
 const HeaderTags = styled.div`
@@ -316,6 +342,8 @@ export default function SupportTaskDetail() {
 
   const { taskId } = useParams<{ taskId: string }>();
   const id = Number(taskId);
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [chatOpen, setChatOpen] = useState(true);
   const [relatedUserOpen, setRelatedUserOpen] = useState(true);
   const [profileDetailsOpen, setProfileDetailsOpen] = useState(true);
@@ -346,6 +374,46 @@ export default function SupportTaskDetail() {
     dataFetcher,
   );
 
+  const listParams = useMemo(
+    () => buildSupportTaskListParams(searchParams),
+    [searchParams],
+  );
+  const { data: list } = useSWR(listParams, fetchSupportTasks);
+
+  const results = list?.results ?? [];
+  const index = results.findIndex(t => t.id === id);
+  const previousPage = index === 0 ? list?.previous_page : null;
+  const nextPage =
+    index >= 0 && index === results.length - 1 ? list?.next_page : null;
+
+  const { data: previousPageList } = useSWR(
+    previousPage ? { ...listParams, page: previousPage } : null,
+    fetchSupportTasks,
+  );
+  const { data: nextPageList } = useSWR(
+    nextPage ? { ...listParams, page: nextPage } : null,
+    fetchSupportTasks,
+  );
+
+  const previousPageResults = previousPageList?.results ?? [];
+  const previousTask =
+    index > 0
+      ? results[index - 1]
+      : previousPageResults[previousPageResults.length - 1];
+  const nextTask =
+    index >= 0 && index < results.length - 1
+      ? results[index + 1]
+      : nextPageList?.results[0];
+
+  const goToNeighbouringTask = (
+    neighbour: SupportTask,
+    page?: number | null,
+  ) => {
+    const search = new URLSearchParams(searchParams);
+    if (page) search.set('page', String(page));
+    navigate(getSupportTaskDetailRoute(neighbour.id, search.toString()));
+  };
+
   const actionTypeCfg = getActionTypeConfig(task?.action?.action_type ?? '');
 
   usePageHeader({
@@ -354,24 +422,48 @@ export default function SupportTaskDetail() {
       current: task?.title ?? (isLoading ? 'Loading…' : 'Task not found'),
     },
     actions: task ? (
-      <HeaderTags>
-        <Tag
-          bold
-          size={TagSizes.small}
-          appearance={TagAppearance.outline}
-          color={STATUS_CONFIG[task.status].color}
-        >
-          {STATUS_CONFIG[task.status].label}
-        </Tag>
-        <Tag
-          bold
-          size={TagSizes.small}
-          appearance={TagAppearance.outline}
-          color={actionTypeCfg.color}
-        >
-          {actionTypeCfg.label}
-        </Tag>
-      </HeaderTags>
+      <>
+        <HeaderNav>
+          <Button
+            size={ButtonSizes.Small}
+            appearance={ButtonAppearance.Secondary}
+            disabled={!previousTask}
+            onClick={() =>
+              previousTask && goToNeighbouringTask(previousTask, previousPage)
+            }
+          >
+            <ChevronLeftIcon size={14} />
+            Previous request
+          </Button>
+          <Button
+            size={ButtonSizes.Small}
+            appearance={ButtonAppearance.Secondary}
+            disabled={!nextTask}
+            onClick={() => nextTask && goToNeighbouringTask(nextTask, nextPage)}
+          >
+            Next request
+            <ChevronRightIcon size={14} />
+          </Button>
+        </HeaderNav>
+        <HeaderTags>
+          <Tag
+            bold
+            size={TagSizes.small}
+            appearance={TagAppearance.outline}
+            color={STATUS_CONFIG[task.status].color}
+          >
+            {STATUS_CONFIG[task.status].label}
+          </Tag>
+          <Tag
+            bold
+            size={TagSizes.small}
+            appearance={TagAppearance.outline}
+            color={actionTypeCfg.color}
+          >
+            {actionTypeCfg.label}
+          </Tag>
+        </HeaderTags>
+      </>
     ) : undefined,
   });
 

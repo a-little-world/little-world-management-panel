@@ -56,8 +56,8 @@ export const getEditEmailRoute = (templateId: number) =>
 
 export const SUPPORT_TASKS_ROUTE = '/support-tasks/';
 export const SUPPORT_TASK_DETAIL_ROUTE = '/support-tasks/:taskId/';
-export const getSupportTaskDetailRoute = (taskId: number) =>
-  `/support-tasks/${taskId}/`;
+export const getSupportTaskDetailRoute = (taskId: number, search?: string) =>
+  `/support-tasks/${taskId}/` + (search ? `?${search.replace(/^\?/, '')}` : '');
 
 export const getOpenChatChatRoute = (chatUuid: string) =>
   `/open-chat/${chatUuid}/`;
