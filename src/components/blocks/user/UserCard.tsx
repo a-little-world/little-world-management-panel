@@ -4,10 +4,6 @@ import {
   ButtonSizes,
   ButtonVariations,
   Link,
-  Loading,
-  Stepper,
-  StepperOrientations,
-  StepperSizes,
   Tag,
   TagAppearance,
   TagSizes,
@@ -17,15 +13,13 @@ import {
 import { capitalize } from 'lodash';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import useSWR from 'swr';
 
 import type { MatchingPanelUser } from '../../../api/index';
-import { LANGUAGES } from '../../../constants';
 import { MANAGEMENT_PERMISSION_IS_MAIN_SUPPORT_ACCOUNT } from '../../../constants/managementPermissions';
 import { formatDate, formatTimeDistance } from '../../../helpers/date';
 import { hasManagementPermission } from '../../../helpers/managementPermissions';
 import { MATCHING_ROUTE } from '../../../router/routes';
-import { dataFetcher, useGlobalState } from '../../../store';
+import { useGlobalState } from '../../../store';
 import DataField from '../../atoms/DataField';
 import MatchesIcons from '../../atoms/MatchesIcons';
 import UserImage from '../../atoms/UserImage';
@@ -51,7 +45,6 @@ import {
   SectionLabel,
   SidebarColumn,
   SidebarSection,
-  StatusContainer,
   StyledCard,
   UnresponsiveWarning,
   UserInfoContainer,
@@ -59,6 +52,12 @@ import {
   ViewProfileLink,
 } from './UserCard.styles';
 import UserLanguages from './UserLanguages';
+import {
+  MatchEligibility,
+  UserJourneyStatus,
+  UserMatchesSummary,
+} from './UserProfileSummary';
+import type { UserJourney, UserMatches } from './UserProfileSummary';
 
 interface UserProfile {
   first_name: string;
@@ -89,12 +88,6 @@ interface UserState {
   has_match_priority?: boolean;
 }
 
-interface UserMatches {
-  confirmed: { results: any[] };
-  unconfirmed: { results: any[] };
-  proposed: { results: any[] };
-}
-
 interface User {
   id: string;
   uuid?: string;
@@ -108,16 +101,7 @@ interface User {
   bucket?: string;
   bucket_label?: string;
   random_call_lobby_count?: number;
-  journey?: {
-    stages: Array<{
-      id: string;
-      label: string;
-      description?: string;
-      achieved: boolean;
-      achieved_at: string | null;
-    }>;
-    active_stage_index: number;
-  };
+  journey?: UserJourney;
 }
 
 interface UserCardProps {
@@ -128,58 +112,6 @@ interface UserCardProps {
   horizontal?: boolean;
   tiny?: boolean;
 }
-
-const UserStatus: React.FC<{ user: User }> = ({ user }) => {
-  const stages = user.journey?.stages ?? [];
-  if (stages.length === 0) {
-    return null;
-  }
-
-  const steps = stages.map(stage => ({
-    id: stage.id,
-    label: stage.label,
-    description:
-      stage.achieved && stage.achieved_at
-        ? formatDate(new Date(stage.achieved_at), 'dd MMM yyyy', LANGUAGES.en)
-        : undefined,
-  }));
-
-  return (
-    <StatusContainer>
-      <SectionLabel>Current status</SectionLabel>
-      <Stepper
-        steps={steps}
-        activeStepIndex={user.journey?.active_stage_index ?? 0}
-        orientation={StepperOrientations.Vertical}
-        size={StepperSizes.Medium}
-      />
-    </StatusContainer>
-  );
-};
-
-const MatchEligibility: React.FC<{ userId: string }> = ({ userId }) => {
-  const {
-    data: waitingTime,
-    error: waitingTimeError,
-    isLoading,
-  } = useSWR(`/api/matching/users/${userId}/match_waiting_time/`, dataFetcher);
-
-  if (isLoading) return <Loading />;
-
-  if (waitingTimeError) return <Text>Error fetching</Text>;
-
-  return (
-    <Text
-      color={
-        waitingTime?.first_search && waitingTime?.number_of_days > 0
-          ? 'red'
-          : undefined
-      }
-    >
-      {waitingTime.waiting_time_string}
-    </Text>
-  );
-};
 
 const UserDetailsFull: React.FC<{
   canViewProfile: boolean;
@@ -289,25 +221,9 @@ const UserDetailsFull: React.FC<{
         <MatchEligibility userId={user.id} />
       </SidebarSection>
 
-      <UserStatus user={user} />
+      <UserJourneyStatus journey={user.journey} />
 
-      <SidebarSection>
-        <SectionLabel>Matches</SectionLabel>
-        <MatchesContainer>
-          <MatchesIcons
-            label="Confirmed"
-            matches={user.matches.confirmed?.results}
-          />
-          <MatchesIcons
-            label="Unconfirmed"
-            matches={user.matches.unconfirmed?.results}
-          />
-          <MatchesIcons
-            label="Proposed"
-            matches={user.matches.proposed?.results}
-          />
-        </MatchesContainer>
-      </SidebarSection>
+      <UserMatchesSummary matches={user.matches} />
     </SidebarColumn>
   </FullContentGrid>
 );
