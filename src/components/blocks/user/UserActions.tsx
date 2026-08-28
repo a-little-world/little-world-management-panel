@@ -756,9 +756,7 @@ const UserActions = ({
                     )}
                   />
                   <Controller
-                    defaultValue={
-                      user.state.searching_state === 'idle' ? false : true
-                    }
+                    defaultValue={user.state.searching_state === 'searching'}
                     name="searching"
                     control={control}
                     render={({
@@ -769,12 +767,9 @@ const UserActions = ({
                         id="searching"
                         name={name}
                         inputRef={ref}
-                        onCheckedChange={val =>
-                          onChange({ target: { value: val } })
-                        }
+                        checked={Boolean(value)}
+                        onCheckedChange={onChange}
                         onBlur={onBlur}
-                        value={value}
-                        defaultChecked={value}
                         error={error?.message}
                         label={'Is user searching for another match?'}
                         required={false}
