@@ -33,6 +33,16 @@ export interface SupportTaskAction {
   history?: ObjectHistory[];
 }
 
+export interface SupportTaskNote {
+  id: number;
+  text: string;
+  completed: boolean;
+  completed_at: string | null;
+  completed_by_profile: UserProfile | null;
+  created_at: string;
+  history?: ObjectHistory[];
+}
+
 export interface RelatedUserProfile extends UserProfile {
   email: string;
   date_joined: string;
@@ -54,6 +64,7 @@ export interface SupportTask {
   updated_at: string;
   action: SupportTaskAction;
   history?: ObjectHistory[];
+  notes: SupportTaskNote[];
 }
 
 export interface AssigneeUser {
@@ -148,6 +159,24 @@ export const patchSupportTask = (
   >,
 ): Promise<SupportTask> =>
   apiFetch(`/api/support_task/${id}/update/`, { method: 'PATCH', body: data });
+
+export const addSupportTaskNote = (
+  taskId: number,
+  text: string,
+): Promise<SupportTaskNote> =>
+  apiFetch(`/api/support_task/${taskId}/notes/`, {
+    method: 'POST',
+    body: { text },
+  });
+
+export const patchSupportTaskNote = (
+  noteId: number,
+  data: Partial<Pick<SupportTaskNote, 'text' | 'completed'>>,
+): Promise<SupportTaskNote> =>
+  apiFetch(`/api/support_task/notes/${noteId}/`, {
+    method: 'PATCH',
+    body: data,
+  });
 
 export const fetchAssigneeUsers = (): Promise<AssigneeUser[]> =>
   apiFetch('/api/support_task/assignee_users/');
