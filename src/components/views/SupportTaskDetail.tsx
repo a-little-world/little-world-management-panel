@@ -37,6 +37,7 @@ import {
   fetchSupportTasks,
   getActionTypeConfig,
   patchSupportTask,
+  patchSupportTaskNote,
 } from '../../api/supportTasks';
 import { BLUE_40, ORANGE_40 } from '../../constants';
 import { resolveAttachmentWidgetText } from '../../helpers/chat';
@@ -55,6 +56,7 @@ import { usePageHeader } from '../blocks/LayoutHeaderContext';
 import ObjectHistoryList, { ObjectHistory } from '../blocks/ObjectHistory';
 import SupportTaskActionCard from '../blocks/SupportTaskActionCard';
 import SupportTaskAssigneePicker from '../blocks/SupportTaskAssigneePicker';
+import SupportTaskNotes from '../blocks/SupportTaskNotes';
 import { SectionLabel, SidebarSection } from '../blocks/user/UserCard.styles';
 import UserChat from '../blocks/user/UserChat';
 import {
@@ -532,9 +534,29 @@ export default function SupportTaskDetail() {
     );
   };
 
+  const toggleNoteCompleted = async (noteId: number, completed: boolean) => {
+    const notes = (task.notes ?? []).map(note =>
+      note.id === noteId ? { ...note, completed } : note,
+    );
+    await mutate(
+      async () => {
+        const updated = await patchSupportTaskNote(noteId, { completed });
+        return {
+          ...task,
+          notes: notes.map(note => (note.id === updated.id ? updated : note)),
+        };
+      },
+      {
+        optimisticData: { ...task, notes },
+        rollbackOnError: true,
+      },
+    );
+  };
+
   const combined: ObjectHistory[] = [
     ...(task.history ?? []),
     ...(task.action?.history ?? []),
+    ...(task.notes ?? []).flatMap(note => note.history ?? []),
   ].sort(
     (a, b) =>
       new Date(b.changed_at).getTime() - new Date(a.changed_at).getTime(),
@@ -927,9 +949,17 @@ export default function SupportTaskDetail() {
                 labelByModelType={{
                   supporttask: 'Task',
                   supporttaskaction: 'Action',
+                  supporttasknote: 'Note',
                 }}
               />
             )}
+
+            <SupportTaskNotes
+              taskId={id}
+              notes={task.notes}
+              onChanged={mutate}
+              onToggleCompleted={toggleNoteCompleted}
+            />
           </SideColumn>
         </ContentGrid>
       </DetailBody>
