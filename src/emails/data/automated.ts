@@ -1794,16 +1794,21 @@ const automatedEmails = {
         href: '{{ group_calls_url }}',
       },
       {
-        type: ContentTypes.Paragraph,
+        type: ContentTypes.Link,
         text: automatedText['automatic-emails-u071.block-10'],
+        href: '{{ random_calls_url }}',
       },
       {
         type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-u071.block-11'],
       },
       {
-        type: ContentTypes.Link,
+        type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-u071.block-12'],
+      },
+      {
+        type: ContentTypes.Link,
+        text: automatedText['automatic-emails-u071.block-13'],
         href: '{{ newsletter_subscribe_url }}',
       },
     ],
