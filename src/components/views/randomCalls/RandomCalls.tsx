@@ -6,6 +6,7 @@ import RandomCallAnalytics from './RandomCallAnalytics';
 import RandomCallHistory from './RandomCallHistory';
 import RandomCallManagement from './RandomCallManagement';
 import RandomCallSchedule from './RandomCallSchedule';
+import RandomCallTrends from './RandomCallTrends';
 
 function RandomCalls() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -21,7 +22,8 @@ function RandomCalls() {
       <TabsList>
         <TabsTrigger value="manage">Manage</TabsTrigger>
         <TabsTrigger value="schedule">Schedule</TabsTrigger>
-        <TabsTrigger value="analytics">Analytics</TabsTrigger>
+        <TabsTrigger value="analytics">Session Stats</TabsTrigger>
+        <TabsTrigger value="trends">Trends</TabsTrigger>
         <TabsTrigger value="history">History</TabsTrigger>
       </TabsList>
       {tab === 'manage' && (
@@ -37,6 +39,11 @@ function RandomCalls() {
       {tab === 'analytics' && (
         <TabsContent value="analytics">
           <RandomCallAnalytics />
+        </TabsContent>
+      )}
+      {tab === 'trends' && (
+        <TabsContent value="trends">
+          <RandomCallTrends />
         </TabsContent>
       )}
       {tab === 'history' && (

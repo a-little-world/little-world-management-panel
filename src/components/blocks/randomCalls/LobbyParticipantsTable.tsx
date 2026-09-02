@@ -11,7 +11,7 @@ import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { LobbyParticipant } from '../../../api/randomCalls';
-import { formatDurationSeconds } from '../../../helpers/date';
+import { formatDateTime, formatDurationSeconds } from '../../../helpers/date';
 import UserImage from '../../atoms/UserImage';
 import {
   Table,
@@ -54,6 +54,7 @@ export default function LobbyParticipantsTable({
           <TableHead>User</TableHead>
           <TableHead>Type</TableHead>
           {showStatus && <TableHead>Status</TableHead>}
+          <TableHead>First joined</TableHead>
           <TableHead>Completed Calls</TableHead>
           <TableHead>Longest Call</TableHead>
           <TableHead>Accepted Proposals</TableHead>
@@ -93,6 +94,9 @@ export default function LobbyParticipantsTable({
                 </Tag>
               </TableCell>
             )}
+            <TableCell>
+              {formatDateTime(participant.first_joined_at, 'en')}
+            </TableCell>
             <TableCell>{participant.completed_calls}</TableCell>
             <TableCell>
               {formatDurationSeconds(participant.longest_call_duration_seconds)}
