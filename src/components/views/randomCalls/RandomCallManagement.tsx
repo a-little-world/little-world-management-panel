@@ -25,10 +25,12 @@ import {
   clearUserRandomCallProposals,
   displaySnapshotProposalsTotal,
   endLobby,
+  formatSuccessfulCallUserPct,
   getLobbyInstanceEndpoint,
   getUpcomingLobbiesEndpoint,
   MatchProposal,
   resetLobby,
+  usersWithoutSuccessfulCall,
 } from '../../../api/randomCalls';
 import { formatDate, formatEventTime } from '../../../helpers/date';
 import { dataFetcher } from '../../../store';
@@ -112,6 +114,7 @@ interface LobbyData {
     user_name: string;
     user_type: string;
     is_active: boolean;
+    first_joined_at: string | null;
     completed_calls: number;
     unsuccessful_proposals: number;
     accepted_proposals: number;
@@ -825,6 +828,22 @@ function RandomCallManagement() {
               <Stat
                 label="Completed Calls"
                 stat={snapshot.completed_calls}
+              />
+            )}
+            {snapshot && (
+              <Stat
+                label="Users with successful call"
+                stat={formatSuccessfulCallUserPct(snapshot)}
+                breakdown={[
+                  {
+                    label: 'With call',
+                    value: snapshot.users_with_successful_calls,
+                  },
+                  {
+                    label: 'Without call',
+                    value: usersWithoutSuccessfulCall(snapshot),
+                  },
+                ]}
               />
             )}
           </StatCards>

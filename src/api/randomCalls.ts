@@ -28,6 +28,7 @@ export interface LobbyParticipant {
   user_name: string;
   user_type?: string;
   is_active: boolean;
+  first_joined_at: string | null;
   completed_calls: number;
   unsuccessful_proposals: number;
   accepted_proposals: number;
@@ -66,6 +67,7 @@ export interface LobbyInstanceSnapshot {
   proposals_pending: number;
   proposals_dangling: number;
   completed_calls: number;
+  users_with_successful_calls: number;
   learner_count: number;
   volunteer_count: number;
   bucket_mismatch: number;
@@ -190,8 +192,35 @@ export interface PaginatedLobbyAnalytics {
   results_total: number;
 }
 
+/** Share of lobby participants who completed at least one call. */
+export function formatSuccessfulCallUserPct(snapshot: {
+  total_users: number;
+  users_with_successful_calls: number;
+}): string {
+  if (!snapshot.total_users) return '—';
+  const pct = Math.round(
+    (100 * snapshot.users_with_successful_calls) / snapshot.total_users,
+  );
+  return `${pct}%`;
+}
+
+export function usersWithoutSuccessfulCall(snapshot: {
+  total_users: number;
+  users_with_successful_calls: number;
+}): number {
+  return snapshot.total_users - snapshot.users_with_successful_calls;
+}
+
+export interface LobbyTrendsResponse {
+  count: number;
+  results: LobbyInstanceSnapshot[];
+}
+
 export const RANDOM_CALL_LOBBY_ANALYTICS_ENDPOINT =
   '/api/random_calls/analytics/lobbies';
+
+export const RANDOM_CALL_LOBBY_TRENDS_ENDPOINT =
+  '/api/random_calls/analytics/lobbies/trends';
 
 export const getLobbyInstanceEndpoint = (
   lobbyName = DEFAULT_LOBBY_NAME,
@@ -208,6 +237,12 @@ export const getUpcomingLobbiesEndpoint = (lobbyName = DEFAULT_LOBBY_NAME) =>
 export const fetchLobbyAnalytics = (queryString: string) =>
   apiFetch<PaginatedLobbyAnalytics>(
     `${RANDOM_CALL_LOBBY_ANALYTICS_ENDPOINT}?${queryString}`,
+    { method: 'GET' },
+  );
+
+export const fetchLobbyTrends = (queryString: string) =>
+  apiFetch<LobbyTrendsResponse>(
+    `${RANDOM_CALL_LOBBY_TRENDS_ENDPOINT}?${queryString}`,
     { method: 'GET' },
   );
 

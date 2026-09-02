@@ -10,11 +10,13 @@ import { useSearchParams } from 'react-router-dom';
 import useSWR from 'swr';
 
 import {
+  formatSuccessfulCallUserPct,
   getAllLobbies,
   getLobbyInstanceEndpoint,
   LobbyInstanceData,
   LobbyListItem,
   TasksData,
+  usersWithoutSuccessfulCall,
 } from '../../../api/randomCalls';
 import { formatDate, formatEventTime } from '../../../helpers/date';
 import { dataFetcher } from '../../../store';
@@ -183,6 +185,20 @@ function RandomCallHistory() {
                   ]}
                 />
                 <Stat label="Total Calls" stat={snapshot.completed_calls} />
+                <Stat
+                  label="Users with successful call"
+                  stat={formatSuccessfulCallUserPct(snapshot)}
+                  breakdown={[
+                    {
+                      label: 'With call',
+                      value: snapshot.users_with_successful_calls,
+                    },
+                    {
+                      label: 'Without call',
+                      value: usersWithoutSuccessfulCall(snapshot),
+                    },
+                  ]}
+                />
                 {proposalsAreFinal && (
                   <Stat
                     label="Accepted Proposals"
