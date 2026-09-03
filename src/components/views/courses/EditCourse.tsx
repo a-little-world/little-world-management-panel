@@ -85,6 +85,8 @@ import {
   IconButton,
   InlineTitleInput,
   MainPane,
+  QuizEmptyCallout,
+  QuizEmptyText,
   QuizSectionTitle,
   QuizStepCollapsedMeta,
   QuizStepCollapsedNum,
@@ -98,6 +100,7 @@ import {
   QuizStepsCount,
   QuizStepsHeader,
   QuizStepsTitle,
+  QuizStepsTitleRow,
   TopBarDivider,
   TwoCol,
   TwoPaneLayout,
@@ -453,12 +456,14 @@ function ChapterQuizSteps({
   return (
     <div>
       <QuizStepsHeader>
-        <QuizStepsTitle>
-          Quiz steps{' '}
-          {fields.length > 0 && (
+        <QuizStepsTitleRow>
+          <QuizStepsTitle>Quiz steps</QuizStepsTitle>
+          {fields.length > 0 ? (
             <QuizStepsCount>· {fields.length}</QuizStepsCount>
+          ) : (
+            <CompletionOptionalBadge>optional</CompletionOptionalBadge>
           )}
-        </QuizStepsTitle>
+        </QuizStepsTitleRow>
         <Button
           appearance={ButtonAppearance.Secondary}
           size={ButtonSizes.Small}
@@ -469,8 +474,16 @@ function ChapterQuizSteps({
         </Button>
       </QuizStepsHeader>
 
-      {fields.length > 0 && (
-        <QuizStepList style={{ marginTop: 12 }}>
+      {fields.length === 0 ? (
+        <QuizEmptyCallout>
+          <QuizEmptyText>
+            No questions needed. Leave this empty for a video-only chapter —
+            learners go straight to the next chapter after the video, with no
+            quiz and no completion screen.
+          </QuizEmptyText>
+        </QuizEmptyCallout>
+      ) : (
+        <QuizStepList>
           {fields.map((field, stepIdx) => (
             <QuizStepCard
               key={field.id}
@@ -602,6 +615,13 @@ function ChapterEditorPane({
   onRemove: () => void;
 }) {
   const [showCompletion, setShowCompletion] = useState(false);
+  // A chapter with no quiz steps is video-only, and a video-only chapter never reaches a
+  // completion screen — learners continue straight to the next chapter after the video.
+  const quizSteps = useWatch({
+    control,
+    name: `chapters.${chapterIndex}.quiz_steps`,
+  });
+  const hasQuizSteps = (quizSteps?.length ?? 0) > 0;
 
   return (
     <ChapterEditorRoot>
@@ -706,15 +726,18 @@ function ChapterEditorPane({
         errors={errors}
       />
 
-      <Divider />
-
-      {/* ── Completion messaging ── */}
-      <CompletionMessagingSection
-        chapterIndex={chapterIndex}
-        register={register}
-        open={showCompletion}
-        onToggle={() => setShowCompletion(v => !v)}
-      />
+      {/* ── Completion messaging — only reachable when the chapter has a quiz ── */}
+      {hasQuizSteps && (
+        <>
+          <Divider />
+          <CompletionMessagingSection
+            chapterIndex={chapterIndex}
+            register={register}
+            open={showCompletion}
+            onToggle={() => setShowCompletion(v => !v)}
+          />
+        </>
+      )}
     </ChapterEditorRoot>
   );
 }

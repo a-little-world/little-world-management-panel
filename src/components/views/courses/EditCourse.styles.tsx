@@ -177,6 +177,14 @@ export const QuizStepsHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.small};
+`;
+
+export const QuizStepsTitleRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xsmall};
+  min-width: 0;
 `;
 
 export const QuizStepsTitle = styled.h3`
@@ -196,6 +204,18 @@ export const QuizStepList = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.small};
+  margin-top: ${({ theme }) => theme.spacing.xsmall};
+`;
+
+export const QuizEmptyCallout = styled(EmptyChaptersCallout)`
+  margin-top: ${({ theme }) => theme.spacing.xsmall};
+  padding: ${({ theme }) => `${theme.spacing.small} ${theme.spacing.medium}`};
+  border-radius: 12px;
+`;
+
+export const QuizEmptyText = styled(CourseDetailsHint)`
+  margin: 0;
+  line-height: 1.5;
 `;
 
 /* Collapsed quiz step row */

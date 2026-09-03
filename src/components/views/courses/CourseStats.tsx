@@ -251,7 +251,8 @@ function CourseStats() {
                           </TableCell>
                           <TableCell>{row.title}</TableCell>
                           <TableCell className="text-right">
-                            {row.step_count}
+                            {/* 0 means a video-only chapter, not a missing value */}
+                            {row.step_count === 0 ? '—' : row.step_count}
                           </TableCell>
                           <TableCell className="text-right">
                             {row.reached}
