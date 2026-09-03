@@ -77,7 +77,8 @@ function TrendTooltip({
 
   const point = payload[0]?.payload;
   const tooltipLabel = point?.tooltipLabel ?? label;
-  const formatValue = yAxisTickFormatter ?? ((value: number) => value.toLocaleString());
+  const formatValue =
+    yAxisTickFormatter ?? ((value: number) => value.toLocaleString());
 
   return (
     <TooltipPanel>
@@ -234,54 +235,52 @@ export default function LineChart({
       )}
       <ChartArea $height={height}>
         <ResponsiveContainer width="100%" height="100%">
-        <RechartsLineChart
-          data={data}
-          margin={{ top: 8, right: 24, left: 0, bottom: 8 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis
-            dataKey="name"
-            interval="preserveStartEnd"
-            minTickGap={24}
-            tick={{ fontSize: 11 }}
-          />
-          <YAxis
-            domain={yAxisDomain}
-            tick={{ fontSize: 11 }}
-            tickFormatter={yAxisTickFormatter}
-          />
-          <Tooltip
-            content={
-              <TrendTooltip yAxisTickFormatter={yAxisTickFormatter} />
-            }
-          />
-          <Legend
-            verticalAlign="top"
-            iconType="line"
-            wrapperStyle={{ fontSize: '0.75rem', paddingBottom: '0.5rem' }}
-          />
-          {series.map(line => (
-            <Line
-              key={line.id}
-              type="monotone"
-              dataKey={line.id}
-              name={line.label}
-              stroke={line.color}
-              strokeWidth={2}
-              dot={
-                variableDotSize
-                  ? renderVariableDot
-                  : { r: DOT_RADIUS_DEFAULT }
-              }
-              activeDot={
-                variableDotSize
-                  ? renderVariableActiveDot
-                  : { r: DOT_RADIUS_DEFAULT + DOT_RADIUS_ACTIVE_EXTRA }
-              }
+          <RechartsLineChart
+            data={data}
+            margin={{ top: 8, right: 24, left: 0, bottom: 8 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis
+              dataKey="name"
+              interval="preserveStartEnd"
+              minTickGap={24}
+              tick={{ fontSize: 11 }}
             />
-          ))}
-        </RechartsLineChart>
-      </ResponsiveContainer>
+            <YAxis
+              domain={yAxisDomain}
+              tick={{ fontSize: 11 }}
+              tickFormatter={yAxisTickFormatter}
+            />
+            <Tooltip
+              content={<TrendTooltip yAxisTickFormatter={yAxisTickFormatter} />}
+            />
+            <Legend
+              verticalAlign="top"
+              iconType="line"
+              wrapperStyle={{ fontSize: '0.75rem', paddingBottom: '0.5rem' }}
+            />
+            {series.map(line => (
+              <Line
+                key={line.id}
+                type="monotone"
+                dataKey={line.id}
+                name={line.label}
+                stroke={line.color}
+                strokeWidth={2}
+                dot={
+                  variableDotSize
+                    ? renderVariableDot
+                    : { r: DOT_RADIUS_DEFAULT }
+                }
+                activeDot={
+                  variableDotSize
+                    ? renderVariableActiveDot
+                    : { r: DOT_RADIUS_DEFAULT + DOT_RADIUS_ACTIVE_EXTRA }
+                }
+              />
+            ))}
+          </RechartsLineChart>
+        </ResponsiveContainer>
       </ChartArea>
     </ChartWrapper>
   );

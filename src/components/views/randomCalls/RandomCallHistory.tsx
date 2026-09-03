@@ -10,15 +10,17 @@ import { useSearchParams } from 'react-router-dom';
 import useSWR from 'swr';
 
 import {
-  formatSuccessfulCallUserPct,
   getAllLobbies,
   getLobbyInstanceEndpoint,
   LobbyInstanceData,
   LobbyListItem,
   TasksData,
-  usersWithoutSuccessfulCall,
 } from '../../../api/randomCalls';
 import { formatDate, formatEventTime } from '../../../helpers/date';
+import {
+  formatSuccessfulCallUserPct,
+  usersWithoutSuccessfulCall,
+} from '../../../helpers/randomCallStats';
 import { dataFetcher } from '../../../store';
 import { PageContainer } from '../../atoms/PageLayout';
 import Stat, { StatCards } from '../../atoms/stats/Stat';

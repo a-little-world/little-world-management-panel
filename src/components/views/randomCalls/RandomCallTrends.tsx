@@ -5,7 +5,8 @@ import {
   StatusTypes,
   Text,
 } from '@a-little-world/little-world-design-system';
-import { format, subDays } from 'date-fns';
+import { subDays } from 'date-fns';
+import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import useSWR from 'swr';
@@ -17,12 +18,19 @@ import {
 } from '../../../api/randomCalls';
 import { BLUE_40, GREEN_40, ORANGE_40 } from '../../../constants';
 import {
+  formatDate,
+  formatDurationSeconds,
+  formatRoundedDuration,
+} from '../../../helpers/date';
+import {
   computeTrendOverviewStats,
   formatTrendCountStat,
   formatTrendFirstTimeReturningRatio,
   formatTrendPctStat,
   formatTrendRateStat,
-} from '../../../helpers/randomCallTrendStats';
+  ratioOrNull,
+  sharePct,
+} from '../../../helpers/randomCallStats';
 import { Card, CardContent, CardHeader } from '../../atoms/Card';
 import {
   DateRangePicker,
@@ -30,7 +38,7 @@ import {
   parseYmdToLocalDate,
 } from '../../atoms/DateRangePicker';
 import { PageContainer } from '../../atoms/PageLayout';
-import LineChart, { LineChartDataPoint } from '../../atoms/Stats/LineChart';
+import LineChart, { LineChartDataPoint } from '../../atoms/stats/LineChart';
 import Stat, { StatCards } from '../../atoms/stats/Stat';
 import {
   Description,
@@ -48,6 +56,11 @@ const ChartsGrid = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.large};
+  width: 100%;
+`;
+
+const ChartCard = styled(Card)`
+  max-width: none;
   width: 100%;
 `;
 
@@ -79,7 +92,7 @@ function parseDateParam(value: string | null, fallback: string): string {
 }
 
 function formatSessionTrendTooltip(start: Date): string {
-  return format(start, 'HH:mm, EEEE dd.MM.yy');
+  return formatDate(start, 'HH:mm, EEEE dd.MM.yy', 'de');
 }
 
 const ChartHint = styled(SummaryText)`
@@ -119,7 +132,7 @@ export function lobbySnapshotsToTrendPoints(
     .map(row => {
       const start = new Date(row.start_time!);
       return {
-        name: format(start, 'dd.MM.yy'),
+        name: formatDate(start, 'dd.MM.yy', 'de'),
         tooltipLabel: formatSessionTrendTooltip(start),
         learners: row.learner_count,
         volunteers: row.volunteer_count,
@@ -257,76 +270,227 @@ function RandomCallTrends() {
           </SummaryText>
 
           {overviewStats && overviewStats.sessionCount > 0 && (
-            <Section>
-              <SectionTitle>Overview</SectionTitle>
-              <OverviewStats>
-                <Stat
-                  label="Median participants"
-                  stat={formatTrendCountStat(overviewStats.medianParticipants)}
-                  breakdown={[
-                    {
-                      label: 'Learners',
-                      value: formatTrendCountStat(overviewStats.medianLearners),
-                    },
-                    {
-                      label: 'Volunteers',
-                      value: formatTrendCountStat(
-                        overviewStats.medianVolunteers,
-                      ),
-                    },
-                  ]}
-                />
-                <Stat
-                  label="Median first-time : returning"
-                  stat={formatTrendFirstTimeReturningRatio(
-                    overviewStats.medianFirstTimeUsers,
-                    overviewStats.medianReturningUsers,
-                  )}
-                  breakdown={[
-                    {
-                      label: 'First-time',
-                      value: formatTrendCountStat(
-                        overviewStats.medianFirstTimeUsers,
-                      ),
-                    },
-                    {
-                      label: 'Returning',
-                      value: formatTrendCountStat(
-                        overviewStats.medianReturningUsers,
-                      ),
-                    },
-                  ]}
-                />
-                <Stat
-                  label="Median calls per lobby"
-                  stat={formatTrendCountStat(overviewStats.medianCallsPerLobby)}
-                  breakdown={[
-                    {
-                      label: 'Avg calls per participant',
-                      value: formatTrendRateStat(
-                        overviewStats.meanCallsPerParticipant,
-                      ),
-                    },
-                    {
-                      label: 'Median calls per participant',
-                      value: formatTrendRateStat(
-                        overviewStats.medianCallsPerParticipant,
-                      ),
-                    },
-                  ]}
-                />
-                <Stat
-                  label="Median users with successful call"
-                  stat={formatTrendPctStat(
-                    overviewStats.medianSuccessfulCallPct,
-                  )}
-                />
-              </OverviewStats>
-            </Section>
+            <>
+              <Section>
+                <SectionTitle>Totals</SectionTitle>
+                <OverviewStats>
+                  <Stat
+                    label="Lobby sessions"
+                    stat={formatTrendCountStat(data.totals.lobby_count)}
+                  />
+                  <Stat
+                    label="Total participants"
+                    stat={formatTrendCountStat(data.totals.total_participants)}
+                    breakdown={[
+                      {
+                        label: 'Avg per session',
+                        value: formatTrendRateStat(
+                          ratioOrNull(
+                            data.totals.total_participants,
+                            data.totals.lobby_count,
+                          ),
+                        ),
+                      },
+                    ]}
+                  />
+                  <Stat
+                    label="Unique participants"
+                    stat={formatTrendCountStat(data.totals.unique_participants)}
+                    breakdown={[
+                      {
+                        label: 'Avg sessions each',
+                        value: formatTrendRateStat(
+                          ratioOrNull(
+                            data.totals.total_participants,
+                            data.totals.unique_participants,
+                          ),
+                        ),
+                      },
+                    ]}
+                  />
+                  <Stat
+                    label="Successful calls"
+                    stat={formatTrendCountStat(data.totals.successful_calls)}
+                    breakdown={[
+                      {
+                        label: 'Of completed',
+                        value: `${data.totals.successful_calls} of ${data.totals.completed_calls}`,
+                      },
+                      {
+                        label: 'Avg per session',
+                        value: formatTrendRateStat(
+                          ratioOrNull(
+                            data.totals.successful_calls,
+                            data.totals.lobby_count,
+                          ),
+                        ),
+                      },
+                    ]}
+                  />
+                  <Stat
+                    label="Total call time"
+                    stat={formatDurationSeconds(
+                      data.totals.total_call_duration_seconds,
+                      { includeSeconds: false },
+                    )}
+                    breakdown={[
+                      {
+                        label: 'Avg per session',
+                        value: formatDurationSeconds(
+                          (ratioOrNull(
+                            data.totals.total_call_duration_seconds,
+                            data.totals.lobby_count,
+                          ) ?? 0) as number,
+                          { includeSeconds: false },
+                        ),
+                      },
+                    ]}
+                  />
+                </OverviewStats>
+                {data.totals.successful_calls < data.totals.completed_calls && (
+                  <ChartHint tag="p">
+                    A call counts as successful once the pair talked for at
+                    least a minute.{' '}
+                    {(
+                      data.totals.completed_calls - data.totals.successful_calls
+                    ).toLocaleString()}{' '}
+                    of {data.totals.completed_calls.toLocaleString()} completed
+                    calls fall short of that or have no recorded session, and
+                    are excluded from call time and the median rather than
+                    counted as zero.
+                  </ChartHint>
+                )}
+              </Section>
+
+              <Section>
+                <SectionTitle>Medians per session</SectionTitle>
+                <OverviewStats>
+                  <Stat
+                    label="Median participants"
+                    stat={formatTrendCountStat(
+                      overviewStats.medianParticipants,
+                    )}
+                    breakdown={[
+                      {
+                        label: 'Learners',
+                        value: formatTrendCountStat(
+                          overviewStats.medianLearners,
+                        ),
+                      },
+                      {
+                        label: 'Volunteers',
+                        value: formatTrendCountStat(
+                          overviewStats.medianVolunteers,
+                        ),
+                      },
+                    ]}
+                  />
+                  <Stat
+                    label="First-time : returning (medians)"
+                    stat={formatTrendFirstTimeReturningRatio(
+                      overviewStats.medianFirstTimeUsers,
+                      overviewStats.medianReturningUsers,
+                    )}
+                    breakdown={[
+                      {
+                        label: 'First-time',
+                        value: formatTrendCountStat(
+                          overviewStats.medianFirstTimeUsers,
+                        ),
+                      },
+                      {
+                        label: 'Returning',
+                        value: formatTrendCountStat(
+                          overviewStats.medianReturningUsers,
+                        ),
+                      },
+                    ]}
+                  />
+                  <Stat
+                    label="Median calls per lobby"
+                    stat={formatTrendCountStat(
+                      overviewStats.medianCallsPerLobby,
+                    )}
+                    breakdown={[
+                      {
+                        label: 'Avg calls per participant',
+                        value: formatTrendRateStat(
+                          overviewStats.meanCallsPerParticipant,
+                        ),
+                      },
+                      {
+                        label: 'Median calls per participant',
+                        value: formatTrendRateStat(
+                          overviewStats.medianCallsPerParticipant,
+                        ),
+                      },
+                    ]}
+                  />
+                  <Stat
+                    label="Median users with successful call"
+                    stat={formatTrendPctStat(
+                      overviewStats.medianSuccessfulCallPct,
+                    )}
+                  />
+                  <Stat
+                    label="Median call duration"
+                    stat={
+                      data.totals.median_call_duration_seconds == null
+                        ? '—'
+                        : formatRoundedDuration(
+                            data.totals.median_call_duration_seconds,
+                          )
+                    }
+                  />
+                  <Stat
+                    label="Median proposals rejected"
+                    stat={formatTrendPctStat(overviewStats.medianRejectedPct)}
+                    breakdown={[
+                      {
+                        label: 'Learner–learner',
+                        value: formatTrendPctStat(
+                          sharePct(
+                            data.totals.rejected_learner_learner,
+                            data.totals.rejected_proposals,
+                          ),
+                        ),
+                      },
+                      {
+                        label: 'Learner–volunteer',
+                        value: formatTrendPctStat(
+                          sharePct(
+                            data.totals.rejected_learner_volunteer,
+                            data.totals.rejected_proposals,
+                          ),
+                        ),
+                      },
+                      ...(data.totals.rejected_other > 0
+                        ? [
+                            {
+                              label: 'Other pairing',
+                              value: formatTrendPctStat(
+                                sharePct(
+                                  data.totals.rejected_other,
+                                  data.totals.rejected_proposals,
+                                ),
+                              ),
+                            },
+                          ]
+                        : []),
+                    ]}
+                  />
+                </OverviewStats>
+                <ChartHint tag="p">
+                  Each figure is the median across sessions in range. The
+                  learner–learner and learner–volunteer split is the share of
+                  all rejected proposals in the range, not a median.
+                </ChartHint>
+              </Section>
+            </>
           )}
 
           <ChartsGrid>
-            <Card center={false} className="w-full max-w-none">
+            <ChartCard center={false}>
               <CardHeader>
                 <SummaryText tag="span">
                   Learners vs volunteers per session
@@ -341,9 +505,9 @@ function RandomCallTrends() {
                   ]}
                 />
               </ChartCardContent>
-            </Card>
+            </ChartCard>
 
-            <Card center={false} className="w-full max-w-none">
+            <ChartCard center={false}>
               <CardHeader>
                 <SummaryText tag="span">Participants per session</SummaryText>
               </CardHeader>
@@ -361,9 +525,9 @@ function RandomCallTrends() {
                   ]}
                 />
               </ChartCardContent>
-            </Card>
+            </ChartCard>
 
-            <Card center={false} className="w-full max-w-none">
+            <ChartCard center={false}>
               <CardHeader>
                 <SummaryText tag="span">
                   Participants with a successful call
@@ -387,7 +551,7 @@ function RandomCallTrends() {
                   variableDotSize
                 />
               </ChartCardContent>
-            </Card>
+            </ChartCard>
           </ChartsGrid>
         </>
       )}

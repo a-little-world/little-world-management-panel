@@ -16,10 +16,10 @@ import useSWR from 'swr';
 import {
   displaySnapshotProposalsTotal,
   fetchLobbyAnalytics,
-  formatSuccessfulCallUserPct,
   RANDOM_CALL_LOBBY_ANALYTICS_ENDPOINT,
 } from '../../../api/randomCalls';
 import { formatEventTime } from '../../../helpers/date';
+import { formatSuccessfulCallUserPct } from '../../../helpers/randomCallStats';
 import { DatePicker } from '../../atoms/DatePicker';
 import {
   ListPanel,
@@ -197,9 +197,7 @@ function RandomCallAnalytics() {
                       <TableCell>{row.proposals_rejected}</TableCell>
                       <TableCell>{row.proposals_expired}</TableCell>
                       <TableCell>{row.completed_calls}</TableCell>
-                      <TableCell>
-                        {formatSuccessfulCallUserPct(row)}
-                      </TableCell>
+                      <TableCell>{formatSuccessfulCallUserPct(row)}</TableCell>
                       <TableCell>{row.learner_count}</TableCell>
                       <TableCell>{row.volunteer_count}</TableCell>
                       <TableCell>

@@ -30,6 +30,7 @@ export interface LobbyParticipant {
   is_active: boolean;
   first_joined_at: string | null;
   completed_calls: number;
+  successful_calls: number;
   unsuccessful_proposals: number;
   accepted_proposals: number;
   longest_call_duration_seconds: number;
@@ -67,6 +68,8 @@ export interface LobbyInstanceSnapshot {
   proposals_pending: number;
   proposals_dangling: number;
   completed_calls: number;
+  /** Completed calls that ran at least MIN_SUCCESSFUL_CALL_SECONDS (server-side constant). */
+  successful_calls: number;
   users_with_successful_calls: number;
   learner_count: number;
   volunteer_count: number;
@@ -192,28 +195,26 @@ export interface PaginatedLobbyAnalytics {
   results_total: number;
 }
 
-/** Share of lobby participants who completed at least one call. */
-export function formatSuccessfulCallUserPct(snapshot: {
-  total_users: number;
-  users_with_successful_calls: number;
-}): string {
-  if (!snapshot.total_users) return '—';
-  const pct = Math.round(
-    (100 * snapshot.users_with_successful_calls) / snapshot.total_users,
-  );
-  return `${pct}%`;
-}
-
-export function usersWithoutSuccessfulCall(snapshot: {
-  total_users: number;
-  users_with_successful_calls: number;
-}): number {
-  return snapshot.total_users - snapshot.users_with_successful_calls;
+/** Aggregates over the whole date range, not per session. Computed server-side. */
+export interface LobbyRangeTotals {
+  lobby_count: number;
+  total_participants: number;
+  unique_participants: number;
+  completed_calls: number;
+  /** Completed calls that actually ran long enough to count as a conversation. */
+  successful_calls: number;
+  total_call_duration_seconds: number;
+  median_call_duration_seconds: number | null;
+  rejected_proposals: number;
+  rejected_learner_learner: number;
+  rejected_learner_volunteer: number;
+  rejected_other: number;
 }
 
 export interface LobbyTrendsResponse {
   count: number;
   results: LobbyInstanceSnapshot[];
+  totals: LobbyRangeTotals;
 }
 
 export const RANDOM_CALL_LOBBY_ANALYTICS_ENDPOINT =
@@ -434,13 +435,10 @@ export const clearUserRandomCallProposals = async ({
       message: string;
       updated_count: number;
       user_uuid: string;
-    }>(
-      `/api/random_calls/lobby/${lobbyName}/management/clear-user-proposals`,
-      {
-        method: 'POST',
-        body: { user_uuid: userUuid },
-      },
-    );
+    }>(`/api/random_calls/lobby/${lobbyName}/management/clear-user-proposals`, {
+      method: 'POST',
+      body: { user_uuid: userUuid },
+    });
     onSuccess(result);
   } catch (error) {
     onError(error);

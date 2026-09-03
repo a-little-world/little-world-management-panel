@@ -25,14 +25,18 @@ import {
   clearUserRandomCallProposals,
   displaySnapshotProposalsTotal,
   endLobby,
-  formatSuccessfulCallUserPct,
   getLobbyInstanceEndpoint,
   getUpcomingLobbiesEndpoint,
+  LobbyInstanceSnapshot,
+  LobbyParticipant,
   MatchProposal,
   resetLobby,
-  usersWithoutSuccessfulCall,
 } from '../../../api/randomCalls';
 import { formatDate, formatEventTime } from '../../../helpers/date';
+import {
+  formatSuccessfulCallUserPct,
+  usersWithoutSuccessfulCall,
+} from '../../../helpers/randomCallStats';
 import { dataFetcher } from '../../../store';
 import { PageContainer } from '../../atoms/PageLayout';
 import Stat, { StatCards } from '../../atoms/stats/Stat';
@@ -69,20 +73,7 @@ import {
 } from './RandomCalls.styles';
 
 interface LobbyData {
-  snapshot: {
-    first_time_users: number;
-    returning_users: number;
-    completed_calls: number;
-    total_users: number;
-    proposals_total: number;
-    proposals_accepted: number;
-    proposals_rejected: number;
-    proposals_expired: number;
-    proposals_pending: number;
-    proposals_dangling: number;
-    bucket_mismatch: number;
-    proposals_are_final: boolean;
-  } | null;
+  snapshot: LobbyInstanceSnapshot | null;
   lobby: {
     name: string;
     uuid: string;
@@ -108,24 +99,7 @@ interface LobbyData {
     expired: MatchProposal[];
     dangling: MatchProposal[];
   };
-  lobby_participants: Array<{
-    user_id: number;
-    user_uuid: string;
-    user_name: string;
-    user_type: string;
-    is_active: boolean;
-    first_joined_at: string | null;
-    completed_calls: number;
-    unsuccessful_proposals: number;
-    accepted_proposals: number;
-    longest_call_duration_seconds: number;
-    profile: {
-      first_name: string;
-      image_type: string;
-      avatar_config: Record<string, unknown>;
-      image: string | null;
-    };
-  }>;
+  lobby_participants: LobbyParticipant[];
   proposal_statistics: {
     total_matches: number;
     pending_count: number;
