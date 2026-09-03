@@ -478,7 +478,8 @@ function ChapterQuizSteps({
         <QuizEmptyCallout>
           <QuizEmptyText>
             No questions needed. Leave this empty for a video-only chapter —
-            learners go to the next chapter after the video.
+            learners go straight to the next chapter after the video, with no
+            quiz and no completion screen.
           </QuizEmptyText>
         </QuizEmptyCallout>
       ) : (
@@ -614,6 +615,13 @@ function ChapterEditorPane({
   onRemove: () => void;
 }) {
   const [showCompletion, setShowCompletion] = useState(false);
+  // A chapter with no quiz steps is video-only, and a video-only chapter never reaches a
+  // completion screen — learners continue straight to the next chapter after the video.
+  const quizSteps = useWatch({
+    control,
+    name: `chapters.${chapterIndex}.quiz_steps`,
+  });
+  const hasQuizSteps = (quizSteps?.length ?? 0) > 0;
 
   return (
     <ChapterEditorRoot>
@@ -718,15 +726,18 @@ function ChapterEditorPane({
         errors={errors}
       />
 
-      <Divider />
-
-      {/* ── Completion messaging ── */}
-      <CompletionMessagingSection
-        chapterIndex={chapterIndex}
-        register={register}
-        open={showCompletion}
-        onToggle={() => setShowCompletion(v => !v)}
-      />
+      {/* ── Completion messaging — only reachable when the chapter has a quiz ── */}
+      {hasQuizSteps && (
+        <>
+          <Divider />
+          <CompletionMessagingSection
+            chapterIndex={chapterIndex}
+            register={register}
+            open={showCompletion}
+            onToggle={() => setShowCompletion(v => !v)}
+          />
+        </>
+      )}
     </ChapterEditorRoot>
   );
 }

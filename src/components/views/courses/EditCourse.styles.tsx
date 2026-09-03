@@ -207,18 +207,14 @@ export const QuizStepList = styled.div`
   margin-top: ${({ theme }) => theme.spacing.xsmall};
 `;
 
-export const QuizEmptyCallout = styled.div`
+export const QuizEmptyCallout = styled(EmptyChaptersCallout)`
   margin-top: ${({ theme }) => theme.spacing.xsmall};
   padding: ${({ theme }) => `${theme.spacing.small} ${theme.spacing.medium}`};
-  border: 1.5px dashed ${({ theme }) => theme.color.border.subtle};
   border-radius: 12px;
-  background: ${({ theme }) => theme.color.surface.primary};
 `;
 
-export const QuizEmptyText = styled.p`
+export const QuizEmptyText = styled(CourseDetailsHint)`
   margin: 0;
-  font-size: 0.8125rem;
-  color: ${({ theme }) => theme.color.text.secondary};
   line-height: 1.5;
 `;
 
