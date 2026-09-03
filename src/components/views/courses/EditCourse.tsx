@@ -85,6 +85,8 @@ import {
   IconButton,
   InlineTitleInput,
   MainPane,
+  QuizEmptyCallout,
+  QuizEmptyText,
   QuizSectionTitle,
   QuizStepCollapsedMeta,
   QuizStepCollapsedNum,
@@ -98,6 +100,7 @@ import {
   QuizStepsCount,
   QuizStepsHeader,
   QuizStepsTitle,
+  QuizStepsTitleRow,
   TopBarDivider,
   TwoCol,
   TwoPaneLayout,
@@ -453,12 +456,14 @@ function ChapterQuizSteps({
   return (
     <div>
       <QuizStepsHeader>
-        <QuizStepsTitle>
-          Quiz steps{' '}
-          {fields.length > 0 && (
+        <QuizStepsTitleRow>
+          <QuizStepsTitle>Quiz steps</QuizStepsTitle>
+          {fields.length > 0 ? (
             <QuizStepsCount>· {fields.length}</QuizStepsCount>
+          ) : (
+            <CompletionOptionalBadge>optional</CompletionOptionalBadge>
           )}
-        </QuizStepsTitle>
+        </QuizStepsTitleRow>
         <Button
           appearance={ButtonAppearance.Secondary}
           size={ButtonSizes.Small}
@@ -469,8 +474,15 @@ function ChapterQuizSteps({
         </Button>
       </QuizStepsHeader>
 
-      {fields.length > 0 && (
-        <QuizStepList style={{ marginTop: 12 }}>
+      {fields.length === 0 ? (
+        <QuizEmptyCallout>
+          <QuizEmptyText>
+            No questions needed. Leave this empty for a video-only chapter —
+            learners go to the next chapter after the video.
+          </QuizEmptyText>
+        </QuizEmptyCallout>
+      ) : (
+        <QuizStepList>
           {fields.map((field, stepIdx) => (
             <QuizStepCard
               key={field.id}
