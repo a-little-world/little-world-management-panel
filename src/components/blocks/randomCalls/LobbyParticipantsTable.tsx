@@ -56,6 +56,7 @@ export default function LobbyParticipantsTable({
           {showStatus && <TableHead>Status</TableHead>}
           <TableHead>First joined</TableHead>
           <TableHead>Completed Calls</TableHead>
+          <TableHead>Successful</TableHead>
           <TableHead>Longest Call</TableHead>
           <TableHead>Accepted Proposals</TableHead>
           <TableHead>Unsuccessful Proposals</TableHead>
@@ -98,6 +99,7 @@ export default function LobbyParticipantsTable({
               {formatDateTime(participant.first_joined_at, 'en')}
             </TableCell>
             <TableCell>{participant.completed_calls}</TableCell>
+            <TableCell>{participant.successful_calls}</TableCell>
             <TableCell>
               {formatDurationSeconds(participant.longest_call_duration_seconds)}
             </TableCell>

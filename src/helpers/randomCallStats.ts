@@ -1,5 +1,46 @@
 import { LobbyInstanceSnapshot } from '../api/randomCalls';
 
+/** The pair of fields every successful-call figure on this feature is derived from. */
+type SuccessfulCallCounts = {
+  total_users: number;
+  users_with_successful_calls: number;
+};
+
+/** Share of lobby participants who completed at least one call; null for an empty lobby. */
+export function successfulCallUserPct(
+  snapshot: SuccessfulCallCounts,
+): number | null {
+  if (!snapshot.total_users) return null;
+  return (100 * snapshot.users_with_successful_calls) / snapshot.total_users;
+}
+
+export function formatSuccessfulCallUserPct(
+  snapshot: SuccessfulCallCounts,
+): string {
+  return formatTrendPctStat(successfulCallUserPct(snapshot));
+}
+
+/** Share of a whole as a percentage, or null when the whole is empty. */
+export function sharePct(part: number, whole: number): number | null {
+  if (!whole) return null;
+  return (100 * part) / whole;
+}
+
+/** Guarded division for derived overview figures; null when there is nothing to divide by. */
+export function ratioOrNull(
+  numerator: number,
+  denominator: number,
+): number | null {
+  if (!denominator) return null;
+  return numerator / denominator;
+}
+
+export function usersWithoutSuccessfulCall(
+  snapshot: SuccessfulCallCounts,
+): number {
+  return snapshot.total_users - snapshot.users_with_successful_calls;
+}
+
 export type TrendOverviewStats = {
   sessionCount: number;
   medianParticipants: number | null;
@@ -11,6 +52,7 @@ export type TrendOverviewStats = {
   meanCallsPerParticipant: number | null;
   medianCallsPerParticipant: number | null;
   medianSuccessfulCallPct: number | null;
+  medianRejectedPct: number | null;
 };
 
 function median(values: number[]): number | null {
@@ -49,6 +91,7 @@ export function computeTrendOverviewStats(
       meanCallsPerParticipant: null,
       medianCallsPerParticipant: null,
       medianSuccessfulCallPct: null,
+      medianRejectedPct: null,
     };
   }
 
@@ -58,12 +101,19 @@ export function computeTrendOverviewStats(
     row => row.completed_calls / row.total_users,
   );
   const successfulCallPcts = sessionsWithParticipants.map(
-    row => (100 * row.users_with_successful_calls) / row.total_users,
+    row => successfulCallUserPct(row) ?? 0,
   );
+  // Sessions with no proposals at all have no rejection rate to speak of; including them
+  // as 0% would pull the median toward a number no session actually had.
+  const rejectedPcts = snapshots
+    .filter(row => row.proposals_total > 0)
+    .map(row => (100 * row.proposals_rejected) / row.proposals_total);
 
   return {
     sessionCount: snapshots.length,
-    medianParticipants: roundStat(median(snapshots.map(row => row.total_users))),
+    medianParticipants: roundStat(
+      median(snapshots.map(row => row.total_users)),
+    ),
     medianLearners: roundStat(median(snapshots.map(row => row.learner_count))),
     medianVolunteers: roundStat(
       median(snapshots.map(row => row.volunteer_count)),
@@ -80,6 +130,7 @@ export function computeTrendOverviewStats(
     meanCallsPerParticipant: roundStat(mean(callsPerParticipant), 2),
     medianCallsPerParticipant: roundStat(median(callsPerParticipant), 2),
     medianSuccessfulCallPct: roundStat(median(successfulCallPcts)),
+    medianRejectedPct: roundStat(median(rejectedPcts)),
   };
 }
 
@@ -107,7 +158,12 @@ function gcd(a: number, b: number): number {
   return x;
 }
 
-/** Simplified first-time : returning ratio, e.g. `1 : 4`. */
+/**
+ * Simplified first-time : returning ratio, e.g. `1 : 4`.
+ *
+ * Callers pass the two medians, so this is the ratio *of* medians — not the median
+ * of per-session ratios. Label it accordingly.
+ */
 export function formatTrendFirstTimeReturningRatio(
   firstTime: number | null,
   returning: number | null,
