@@ -230,17 +230,47 @@ function audienceSelectOptions(
 
 const emptyLocalized = (): LocalizedValue => ({ de: '', en: '' });
 
+/**
+ * German letters the backend's ascii-only patterns would otherwise drop, so "Übung" becomes
+ * "uebung" rather than "bung".
+ */
+const TRANSLITERATIONS: [RegExp, string][] = [
+  [/ä/g, 'ae'],
+  [/ö/g, 'oe'],
+  [/ü/g, 'ue'],
+  [/ß/g, 'ss'],
+];
+
+const asciify = (value: string) =>
+  TRANSLITERATIONS.reduce(
+    (text, [pattern, replacement]) => text.replace(pattern, replacement),
+    value.toLowerCase(),
+  ).replace(/[^a-z0-9\s_-]/g, '');
+
+/**
+ * Campaign slug: kebab-case. `SurveyCampaign._validate_slug` rejects underscores because the
+ * slug is reused in URL path segments.
+ */
 function slugify(value: string) {
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9\s_-]/g, '')
+  return asciify(value)
     .trim()
     .replace(/[\s-]+/g, '-');
 }
 
-/** Question ids are frozen once answered and are the column names analytics will use. */
+/**
+ * Question id: snake_case. Frozen once answered, and used as a JSON key and in `answers__<id>`
+ * ORM lookups, which is why `QUESTION_ID_PATTERN` is `^[a-z][a-z0-9_]{0,39}$` — hyphens are
+ * rejected.
+ *
+ * Deliberately not `slugify`: the two rules are exact opposites, and sharing one helper is
+ * what produced ids like `how-was-your-call` that the backend refused to save.
+ */
 function questionIdFrom(label: string, index: number) {
-  const candidate = slugify(label).slice(0, 40);
+  const candidate = asciify(label)
+    .trim()
+    .replace(/[\s-]+/g, '_')
+    .replace(/^_+/, '')
+    .slice(0, 40);
   return /^[a-z]/.test(candidate) ? candidate : `question_${index + 1}`;
 }
 
