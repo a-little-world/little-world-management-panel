@@ -292,6 +292,7 @@ export const UNAVAILABLE = 'n/a';
 export const BLUE_10 = '#f3fbff';
 export const BLUE_40 = '#0063af';
 export const ORANGE_10 = '#fde5cf';
+export const ORANGE_30 = '#f39224';
 export const ORANGE_40 = '#db590b';
 export const GREEN_10 = '#c7ebd1';
 export const GREEN_40 = '#045e45';
