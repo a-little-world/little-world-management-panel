@@ -1,4 +1,7 @@
 import {
+  Button,
+  ButtonAppearance,
+  ButtonSizes,
   Select,
   Tag,
   TagAppearance,
@@ -6,36 +9,61 @@ import {
   Text,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
-import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
-import React, { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import {
+  ChevronDownIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ChevronUpIcon,
+} from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import {
+  Link,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from 'react-router-dom';
 import styled from 'styled-components';
 import useSWR from 'swr';
 
 import { format, parseISO } from 'date-fns';
 import {
   STATUS_CONFIG,
+  SupportTask,
   TaskPriority,
   TaskStatus,
+  buildSupportTaskListParams,
   fetchAssigneeUsers,
   fetchSupportTask,
+  fetchSupportTasks,
   getActionTypeConfig,
   patchSupportTask,
+  patchSupportTaskNote,
 } from '../../api/supportTasks';
-import { ORANGE_40, BLUE_40 } from '../../constants';
+import { BLUE_40, ORANGE_40 } from '../../constants';
 import { resolveAttachmentWidgetText } from '../../helpers/chat';
 import { formatTimeDistance } from '../../helpers/date';
 import { useTaskPriorityList } from '../../hooks/useTaskPriorities';
-import { SUPPORT_TASKS_ROUTE, getOpenChatChatRoute } from '../../router/routes';
+import {
+  SUPPORT_TASKS_ROUTE,
+  getOpenChatChatRoute,
+  getSupportTaskDetailRoute,
+} from '../../router/routes';
 import { dataFetcher } from '../../store';
 import { Card, CardContent, CardHeader, CardTitle } from '../atoms/Card';
 import { PageContainer } from '../atoms/PageLayout';
 import UserImage from '../atoms/UserImage';
 import { usePageHeader } from '../blocks/LayoutHeaderContext';
 import ObjectHistoryList, { ObjectHistory } from '../blocks/ObjectHistory';
-import SupportTaskAssigneePicker from '../blocks/SupportTaskAssigneePicker';
 import SupportTaskActionCard from '../blocks/SupportTaskActionCard';
+import SupportTaskAssigneePicker from '../blocks/SupportTaskAssigneePicker';
+import SupportTaskNotes from '../blocks/SupportTaskNotes';
+import { SectionLabel, SidebarSection } from '../blocks/user/UserCard.styles';
 import UserChat from '../blocks/user/UserChat';
+import {
+  MatchEligibility,
+  UserJourneyStatus,
+  UserMatchesSummary,
+} from '../blocks/user/UserProfileSummary';
 
 // ─── Select options ─────────────────────────────────────────────────────────
 
@@ -107,6 +135,12 @@ const DetailBody = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.medium};
+`;
+
+const HeaderNav = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xxsmall};
 `;
 
 const HeaderTags = styled.div`
@@ -189,6 +223,7 @@ const SideColumn = styled.aside`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.medium};
+  min-width: 0;
 `;
 
 const SentMessageQuote = styled.blockquote`
@@ -220,13 +255,14 @@ const StatGrid = styled.div`
   margin-bottom: ${({ theme }) => theme.spacing.xsmall};
 `;
 
-const StatBox = styled.div`
+const StatBox = styled.div<{ $full_width?: boolean }>`
   background: ${({ theme }) => theme.color.surface.secondary};
   border-radius: ${({ theme }) => theme.radius.medium};
   padding: ${({ theme }) => theme.spacing.xsmall};
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.xxxsmall};
+  grid-column: ${({ $full_width }) => ($full_width ? '1 / -1' : 'inherit')};
 `;
 
 const CollapsibleHeader = styled(CardHeader)`
@@ -238,6 +274,12 @@ const CollapsibleHeader = styled(CardHeader)`
   &:hover {
     background: ${({ theme }) => theme.color.surface.secondary};
   }
+`;
+
+const ProfileDetailsBody = styled(CardContent)`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.small};
 `;
 
 const ChatWrapper = styled.div`
@@ -302,8 +344,11 @@ export default function SupportTaskDetail() {
 
   const { taskId } = useParams<{ taskId: string }>();
   const id = Number(taskId);
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [chatOpen, setChatOpen] = useState(true);
   const [relatedUserOpen, setRelatedUserOpen] = useState(true);
+  const [profileDetailsOpen, setProfileDetailsOpen] = useState(true);
 
   const {
     data: task,
@@ -331,6 +376,46 @@ export default function SupportTaskDetail() {
     dataFetcher,
   );
 
+  const listParams = useMemo(
+    () => buildSupportTaskListParams(searchParams),
+    [searchParams],
+  );
+  const { data: list } = useSWR(listParams, fetchSupportTasks);
+
+  const results = list?.results ?? [];
+  const index = results.findIndex(t => t.id === id);
+  const previousPage = index === 0 ? list?.previous_page : null;
+  const nextPage =
+    index >= 0 && index === results.length - 1 ? list?.next_page : null;
+
+  const { data: previousPageList } = useSWR(
+    previousPage ? { ...listParams, page: previousPage } : null,
+    fetchSupportTasks,
+  );
+  const { data: nextPageList } = useSWR(
+    nextPage ? { ...listParams, page: nextPage } : null,
+    fetchSupportTasks,
+  );
+
+  const previousPageResults = previousPageList?.results ?? [];
+  const previousTask =
+    index > 0
+      ? results[index - 1]
+      : previousPageResults[previousPageResults.length - 1];
+  const nextTask =
+    index >= 0 && index < results.length - 1
+      ? results[index + 1]
+      : nextPageList?.results[0];
+
+  const goToNeighbouringTask = (
+    neighbour: SupportTask,
+    page?: number | null,
+  ) => {
+    const search = new URLSearchParams(searchParams);
+    if (page) search.set('page', String(page));
+    navigate(getSupportTaskDetailRoute(neighbour.id, search.toString()));
+  };
+
   const actionTypeCfg = getActionTypeConfig(task?.action?.action_type ?? '');
 
   usePageHeader({
@@ -339,24 +424,48 @@ export default function SupportTaskDetail() {
       current: task?.title ?? (isLoading ? 'Loading…' : 'Task not found'),
     },
     actions: task ? (
-      <HeaderTags>
-        <Tag
-          bold
-          size={TagSizes.small}
-          appearance={TagAppearance.outline}
-          color={STATUS_CONFIG[task.status].color}
-        >
-          {STATUS_CONFIG[task.status].label}
-        </Tag>
-        <Tag
-          bold
-          size={TagSizes.small}
-          appearance={TagAppearance.outline}
-          color={actionTypeCfg.color}
-        >
-          {actionTypeCfg.label}
-        </Tag>
-      </HeaderTags>
+      <>
+        <HeaderNav>
+          <Button
+            size={ButtonSizes.Small}
+            appearance={ButtonAppearance.Secondary}
+            disabled={!previousTask}
+            onClick={() =>
+              previousTask && goToNeighbouringTask(previousTask, previousPage)
+            }
+          >
+            <ChevronLeftIcon size={14} />
+            Previous request
+          </Button>
+          <Button
+            size={ButtonSizes.Small}
+            appearance={ButtonAppearance.Secondary}
+            disabled={!nextTask}
+            onClick={() => nextTask && goToNeighbouringTask(nextTask, nextPage)}
+          >
+            Next request
+            <ChevronRightIcon size={14} />
+          </Button>
+        </HeaderNav>
+        <HeaderTags>
+          <Tag
+            bold
+            size={TagSizes.small}
+            appearance={TagAppearance.outline}
+            color={STATUS_CONFIG[task.status].color}
+          >
+            {STATUS_CONFIG[task.status].label}
+          </Tag>
+          <Tag
+            bold
+            size={TagSizes.small}
+            appearance={TagAppearance.outline}
+            color={actionTypeCfg.color}
+          >
+            {actionTypeCfg.label}
+          </Tag>
+        </HeaderTags>
+      </>
     ) : undefined,
   });
 
@@ -425,9 +534,29 @@ export default function SupportTaskDetail() {
     );
   };
 
+  const toggleNoteCompleted = async (noteId: number, completed: boolean) => {
+    const notes = (task.notes ?? []).map(note =>
+      note.id === noteId ? { ...note, completed } : note,
+    );
+    await mutate(
+      async () => {
+        const updated = await patchSupportTaskNote(noteId, { completed });
+        return {
+          ...task,
+          notes: notes.map(note => (note.id === updated.id ? updated : note)),
+        };
+      },
+      {
+        optimisticData: { ...task, notes },
+        rollbackOnError: true,
+      },
+    );
+  };
+
   const combined: ObjectHistory[] = [
     ...(task.history ?? []),
     ...(task.action?.history ?? []),
+    ...(task.notes ?? []).flatMap(note => note.history ?? []),
   ].sort(
     (a, b) =>
       new Date(b.changed_at).getTime() - new Date(a.changed_at).getTime(),
@@ -715,7 +844,7 @@ export default function SupportTaskDetail() {
                         user={relatedUser}
                         dimensions={{ width: 56, height: 56 }}
                       />
-                      <div>
+                      <MetaField>
                         <Text bold color={ORANGE_40} tag="div">
                           {relatedUser.first_name} {relatedUser.second_name}
                         </Text>
@@ -725,9 +854,19 @@ export default function SupportTaskDetail() {
                         <Text type={TextTypes.Body5} tag="div">
                           {relatedUser.email}
                         </Text>
-                      </div>
+                      </MetaField>
                     </UserInfoRow>
                     <StatGrid>
+                      {(relatedUserDetail?.bucket_label ??
+                        relatedUserDetail?.bucket) && (
+                        <StatBox $full_width>
+                          <MetaLabel>Bucket</MetaLabel>
+                          <Text bold tag="div">
+                            {relatedUserDetail?.bucket_label ??
+                              relatedUserDetail?.bucket}
+                          </Text>
+                        </StatBox>
+                      )}
                       <StatBox>
                         <MetaLabel>Member since</MetaLabel>
                         <Text bold tag="div">
@@ -744,16 +883,62 @@ export default function SupportTaskDetail() {
                         </Text>
                       </StatBox>
                     </StatGrid>
-                    <MetaField>
-                      <MetaLabel>Last active</MetaLabel>
-                      <Text type={TextTypes.Body6} tag="div">
-                        {formatLastActive(relatedUser.last_active)}
-                      </Text>
-                    </MetaField>
+                    <MetaGrid>
+                      <MetaField>
+                        <MetaLabel>Last active</MetaLabel>
+                        <Text type={TextTypes.Body6} tag="div">
+                          {formatLastActive(relatedUser.last_active)}
+                        </Text>
+                      </MetaField>
+                      <MetaField>
+                        <MetaLabel>Residence</MetaLabel>
+                        <Text type={TextTypes.Body6} tag="div">
+                          {relatedUserDetail?.profile?.country_of_residence ||
+                            '-'}
+                        </Text>
+                      </MetaField>
+                    </MetaGrid>
                     <ProfileLink to={`/user/${relatedUser.id}`}>
                       Open full profile →
                     </ProfileLink>
                   </CardContent>
+                )}
+              </Card>
+            )}
+
+            {relatedUser && (
+              <Card center={false}>
+                <CollapsibleHeader
+                  onClick={() => setProfileDetailsOpen(o => !o)}
+                >
+                  <CardTitle>Profile details</CardTitle>
+                  {profileDetailsOpen ? (
+                    <ChevronUpIcon size={16} />
+                  ) : (
+                    <ChevronDownIcon size={16} />
+                  )}
+                </CollapsibleHeader>
+                {profileDetailsOpen && (
+                  <ProfileDetailsBody>
+                    {relatedUserDetail ? (
+                      <>
+                        <SidebarSection>
+                          <SectionLabel>Match eligibility</SectionLabel>
+                          <MatchEligibility userId={String(relatedUser.id)} />
+                        </SidebarSection>
+                        <UserJourneyStatus
+                          journey={relatedUserDetail?.journey}
+                        />
+                        <UserMatchesSummary
+                          matches={relatedUserDetail?.matches}
+                        />
+                      </>
+                    ) : (
+                      <Text type={TextTypes.Body6} tag="div">
+                        Loading profile details…
+                      </Text>
+                    )}
+                  </ProfileDetailsBody>
                 )}
               </Card>
             )}
@@ -764,9 +949,17 @@ export default function SupportTaskDetail() {
                 labelByModelType={{
                   supporttask: 'Task',
                   supporttaskaction: 'Action',
+                  supporttasknote: 'Note',
                 }}
               />
             )}
+
+            <SupportTaskNotes
+              taskId={id}
+              notes={task.notes}
+              onChanged={mutate}
+              onToggleCompleted={toggleNoteCompleted}
+            />
           </SideColumn>
         </ContentGrid>
       </DetailBody>

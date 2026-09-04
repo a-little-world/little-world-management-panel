@@ -13,16 +13,14 @@ import {
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
-import { ACTION_TYPE_CONFIG, AssigneeUser } from '../../api/supportTasks';
+import {
+  ACTION_TYPE_CONFIG,
+  AssigneeUser,
+  TaskFilterKeys,
+} from '../../api/supportTasks';
 import { useTaskPriorityList } from '../../hooks/useTaskPriorities';
 
 // ─── Filter keys ──────────────────────────────────────────────────────────────
-
-export enum TaskFilterKeys {
-  Priority = 'priority',
-  ActionType = 'action_type',
-  AssignedTo = 'assigned_to',
-}
 
 export const containsTaskFilterKey = (filters: Record<string, any>): boolean =>
   Object.keys(filters).some(k =>

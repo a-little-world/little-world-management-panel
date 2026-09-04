@@ -42,7 +42,7 @@ const AVATAR_NEUTRAL_COLOR = '#888';
 
 // ─── Styled components ────────────────────────────────────────────────────────
 
-const CollapsibleHeader = styled(CardHeader)`
+export const CollapsibleHeader = styled(CardHeader)`
   flex-direction: row;
   align-items: center;
   justify-content: space-between;

@@ -33,6 +33,16 @@ export interface SupportTaskAction {
   history?: ObjectHistory[];
 }
 
+export interface SupportTaskNote {
+  id: number;
+  text: string;
+  completed: boolean;
+  completed_at: string | null;
+  completed_by_profile: UserProfile | null;
+  created_at: string;
+  history?: ObjectHistory[];
+}
+
 export interface RelatedUserProfile extends UserProfile {
   email: string;
   date_joined: string;
@@ -54,6 +64,7 @@ export interface SupportTask {
   updated_at: string;
   action: SupportTaskAction;
   history?: ObjectHistory[];
+  notes: SupportTaskNote[];
 }
 
 export interface AssigneeUser {
@@ -85,6 +96,36 @@ export interface SupportTaskListParams {
   page?: number;
   page_size?: number;
 }
+
+export enum TaskFilterKeys {
+  Priority = 'priority',
+  ActionType = 'action_type',
+  AssignedTo = 'assigned_to',
+}
+
+export const DEFAULT_STATUS_FILTERS: TaskStatus[] = ['NEW', 'IN_PROGRESS'];
+
+export const buildSupportTaskListParams = (
+  searchParams: URLSearchParams,
+): SupportTaskListParams => {
+  const statusFilters = searchParams.getAll('status');
+  return {
+    status: (statusFilters.length
+      ? statusFilters
+      : DEFAULT_STATUS_FILTERS) as TaskStatus[],
+    priority: searchParams.getAll(TaskFilterKeys.Priority),
+    action_type: searchParams.getAll(TaskFilterKeys.ActionType),
+    assigned_to: searchParams.get(TaskFilterKeys.AssignedTo) || undefined,
+    sort_by: searchParams.get('sort_by') || undefined,
+    sort_order: (searchParams.get('sort_order') || undefined) as
+      | 'asc'
+      | 'desc'
+      | undefined,
+    search: searchParams.get('search') || undefined,
+    page: Number(searchParams.get('page')) || undefined,
+    page_size: Number(searchParams.get('page_size')) || undefined,
+  };
+};
 
 export const fetchSupportTasks = (
   params: SupportTaskListParams = {},
@@ -118,6 +159,24 @@ export const patchSupportTask = (
   >,
 ): Promise<SupportTask> =>
   apiFetch(`/api/support_task/${id}/update/`, { method: 'PATCH', body: data });
+
+export const addSupportTaskNote = (
+  taskId: number,
+  text: string,
+): Promise<SupportTaskNote> =>
+  apiFetch(`/api/support_task/${taskId}/notes/`, {
+    method: 'POST',
+    body: { text },
+  });
+
+export const patchSupportTaskNote = (
+  noteId: number,
+  data: Partial<Pick<SupportTaskNote, 'text' | 'completed'>>,
+): Promise<SupportTaskNote> =>
+  apiFetch(`/api/support_task/notes/${noteId}/`, {
+    method: 'PATCH',
+    body: data,
+  });
 
 export const fetchAssigneeUsers = (): Promise<AssigneeUser[]> =>
   apiFetch('/api/support_task/assignee_users/');
