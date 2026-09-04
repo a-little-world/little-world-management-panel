@@ -21,7 +21,9 @@ import useSWR from 'swr';
 import { useTheme } from 'styled-components';
 import {
   ADMIN_SURVEY_CAMPAIGNS_ENDPOINT,
+  fetchSurveyAudienceOptions,
   fetchSurveyCampaigns,
+  SurveyAudienceFilterOption,
   SurveyCampaign,
 } from '../../../../api/surveys';
 import { formatBerlinDate } from '../../../../helpers/berlinDates';
@@ -61,6 +63,32 @@ const describeAudience = (campaign: SurveyCampaign) =>
       ? campaign.audience_value
       : 'Everyone');
 
+/**
+ * The served labels spell the rule out in full — "First qualifying call (10 min or longer;
+ * excludes random calls)" — which is right for a form and far too long for a table cell. The
+ * qualifier lives in brackets, so trimming there gives a column heading without restating the
+ * labels here and letting them drift again.
+ */
+const shortLabel = (label: string) => label.split(' (')[0];
+
+const describeEligibleAfter = (
+  campaign: SurveyCampaign,
+  options: SurveyAudienceFilterOption[] | undefined,
+) => {
+  const match = (options ?? []).find(
+    option => option.value === (campaign.eligible_after_event ?? ''),
+  );
+  return match
+    ? shortLabel(match.label)
+    : campaign.eligible_after_event || 'Immediately';
+};
+
+/** Only meaningful alongside a condition — a bound on nothing is not a date worth showing. */
+const describeEligibleSince = (campaign: SurveyCampaign) =>
+  campaign.eligible_after_event && campaign.eligible_after_since
+    ? formatBerlinDate(campaign.eligible_after_since)
+    : '—';
+
 const describeRepeat = (campaign: SurveyCampaign) =>
   campaign.repeat_scope === 'context'
     ? `Once per ${campaign.context_type || 'context'}`
@@ -91,6 +119,10 @@ function SurveyCampaigns() {
     ADMIN_SURVEY_CAMPAIGNS_ENDPOINT,
     fetchSurveyCampaigns,
     { revalidateOnFocus: true, revalidateOnMount: true },
+  );
+  const { data: options } = useSWR(
+    `${ADMIN_SURVEY_CAMPAIGNS_ENDPOINT}options/`,
+    fetchSurveyAudienceOptions,
   );
 
   const { live, draft } = useMemo(() => {
@@ -164,6 +196,12 @@ function SurveyCampaigns() {
                       <TableHead className="w-44 text-center">
                         Time Window
                       </TableHead>
+                      <TableHead className="w-44 text-center">
+                        Eligible after
+                      </TableHead>
+                      <TableHead className="w-40 text-center">
+                        Eligibility valid from
+                      </TableHead>
                       <TableHead className="w-36 text-center">
                         Repeats
                       </TableHead>
@@ -193,6 +231,15 @@ function SurveyCampaigns() {
                         </TableCell>
                         <TableCell className="text-center">
                           {formatWindow(campaign)}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {describeEligibleAfter(
+                            campaign,
+                            options?.eligible_after_events,
+                          )}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {describeEligibleSince(campaign)}
                         </TableCell>
                         <TableCell className="text-center">
                           {describeRepeat(campaign)}

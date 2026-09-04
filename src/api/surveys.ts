@@ -36,7 +36,14 @@ export interface SurveyCampaignCopy {
 }
 
 export type SurveyAudienceType = 'all' | 'company' | 'filter';
-export type SurveyTrigger = 'on_session' | 'event:call_ended';
+/**
+ * Mirrors `SurveyCampaign.Trigger`. `event:call_ended` is the *non*-qualifying trigger — the
+ * value predates the split into short/long calls and is kept so existing campaigns still work.
+ */
+export type SurveyTrigger =
+  | 'on_session'
+  | 'event:call_ended'
+  | 'event:qualifying_call_ended';
 export type SurveyEligibleAfterEvent =
   | ''
   | 'onboarded'
@@ -51,9 +58,16 @@ export interface SurveyAudienceFilterOption {
   label: string;
 }
 
+/**
+ * The campaign form's dropdown contents, served by the backend rather than restated here.
+ * `triggers` and `eligibleAfterEvents` are `SurveyCampaign.Trigger` / `EligibleAfterEvent`
+ * verbatim, so a new member shows up in the UI without a frontend change.
+ */
 export interface SurveyAudienceOptions {
   companies: string[];
   filters: SurveyAudienceFilterOption[];
+  triggers: SurveyAudienceFilterOption[];
+  eligible_after_events: SurveyAudienceFilterOption[];
 }
 
 export interface SurveyCampaignPayload {

@@ -32,10 +32,12 @@ import {
   createSurveyCampaign,
   fetchSurveyAudienceOptions,
   fetchSurveyCampaign,
+  SurveyAudienceFilterOption,
   SurveyAudienceOptions,
   SurveyAudienceType,
   SurveyCampaign,
   SurveyCampaignPayload,
+  SurveyTrigger,
   SurveyEligibleAfterEvent,
   SurveyQuestion,
   updateSurveyCampaign,
@@ -123,7 +125,7 @@ type SurveyFormValues = {
   questionOrder: string[];
   audience_type: 'all' | 'company' | 'filter';
   audience_value: string;
-  trigger: 'on_session' | 'event:call_ended';
+  trigger: SurveyTrigger;
   eligible_after_event: SurveyEligibleAfterEvent;
   eligible_after_since: string | null;
   /** Preserved on edit so saving post-call cannot flatten it to once-per-user. */
@@ -139,24 +141,32 @@ type SurveyFormValues = {
 // Constants + helpers
 // ---------------------------------------------------------------------------
 
-const TRIGGER_OPTIONS = [
-  { label: 'Next time they open the app', value: 'on_session' },
-  {
-    label: 'After a call (under 10 min, both active; excludes random calls)',
-    value: 'event:call_ended',
-  },
-];
+/** Radix Select forbids an empty value, so the "Immediately" option carries this instead. */
+const NO_ELIGIBILITY_EVENT = 'none';
 
-const ELIGIBLE_AFTER_OPTIONS = [
-  { label: 'Immediately', value: 'none' },
-  { label: 'Onboarded', value: 'onboarded' },
-  {
-    label: 'First qualifying call (under 10 min; excludes random calls)',
-    value: 'first_qualifying_call',
-  },
-  { label: 'Match created', value: 'match_created' },
-  { label: 'Match success', value: 'match_success' },
-];
+/**
+ * Dropdown contents come from `/api/admin/survey_campaigns/options/`, which serves the
+ * backend enums directly. They were hardcoded here once and drifted — labels described a
+ * rule that had changed, and one trigger was missing entirely, so a campaign type the
+ * backend supported could not be created at all.
+ *
+ * `keepValue` guarantees the campaign's stored value is always present, so opening an older
+ * campaign and saving it unchanged cannot silently snap it to a different trigger.
+ */
+function selectOptions(
+  served: SurveyAudienceFilterOption[] | undefined,
+  keepValue: string,
+): { label: string; value: string }[] {
+  const options = (served ?? []).map(option => ({
+    label: option.label,
+    value: option.value === '' ? NO_ELIGIBILITY_EVENT : option.value,
+  }));
+  const current = keepValue === '' ? NO_ELIGIBILITY_EVENT : keepValue;
+  if (current && !options.some(option => option.value === current)) {
+    options.push({ label: current, value: current });
+  }
+  return options;
+}
 
 const MIN_SCALE = 2;
 const MAX_SCALE = 10;
@@ -694,7 +704,10 @@ function DetailsPane({
                 labelTooltip="When the card is presented. Eligibility is separate: a user who does not yet match Eligible after is skipped until they do, and after Ends nobody is offered it."
                 placeholder="Select a trigger"
                 value={value ?? 'on_session'}
-                options={TRIGGER_OPTIONS}
+                options={selectOptions(
+                  audienceOptions?.triggers,
+                  values.trigger,
+                )}
                 onValueChange={onChange}
                 cannotError
               />
@@ -705,15 +718,18 @@ function DetailsPane({
             control={control}
             render={({ field: { value, onChange } }) => (
               <Select
-                key={`eligible_after_${String(value || 'none')}`}
+                key={`eligible_after_${String(value || NO_ELIGIBILITY_EVENT)}`}
                 id="survey_eligible_after"
                 label="Eligible after"
                 labelTooltip="As soon as they match this condition they can be offered the survey. Match created and match success count if any tandem match qualifies — not the support chat. The survey is still once per user, so a second match does not produce a second offer. Use Only since to ignore people who reached this earlier."
                 placeholder="Select a condition"
-                value={value || 'none'}
-                options={ELIGIBLE_AFTER_OPTIONS}
+                value={value || NO_ELIGIBILITY_EVENT}
+                options={selectOptions(
+                  audienceOptions?.eligible_after_events,
+                  values.eligible_after_event,
+                )}
                 onValueChange={next => {
-                  const event = next === 'none' ? '' : next;
+                  const event = next === NO_ELIGIBILITY_EVENT ? '' : next;
                   onChange(event);
                   if (!event) {
                     setValue('eligible_after_since', null, {
