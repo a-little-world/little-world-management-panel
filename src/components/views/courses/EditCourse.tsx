@@ -2,10 +2,10 @@ import {
   Button,
   ButtonAppearance,
   ButtonSizes,
-  Select,
   InputWidth,
   Loading,
   LoadingSizes,
+  Select,
   StatusMessage,
   StatusTypes,
   Switch,
@@ -46,6 +46,27 @@ import {
 } from '../../../api/courses';
 import { COURSES_ROUTE } from '../../../router/routes';
 import { registerInput } from '../../../store';
+import {
+  DeleteSectionBtn,
+  Divider,
+  EditorRoot,
+  EmptyCallout,
+  EmptyCalloutBody,
+  EmptyCalloutText,
+  EmptyCalloutTitle,
+  FormStack,
+  MainPane,
+  PaneHeading,
+  PaneHint,
+  PaneRoot,
+  SectionMeta,
+  SectionMetaLabel,
+  SectionNumGradient,
+  SectionTitle,
+  TopBarDivider,
+  TwoCol,
+  TwoPaneLayout,
+} from '../../atoms/EditorShell.styles';
 import { ImageUploadField } from '../../atoms/ImageUploadField';
 import StructureRail from '../../atoms/StructureRail';
 import { usePageHeader } from '../../blocks/LayoutHeaderContext';
@@ -55,10 +76,6 @@ import {
   AnswerListHeader,
   AnswerRadio,
   AnswerRowHighlight,
-  ChapterEditorMeta,
-  ChapterEditorMetaLabel,
-  ChapterEditorRoot,
-  ChapterNumGradient,
   CompletionCollapseBtn,
   CompletionIconBadge,
   CompletionOptionalBadge,
@@ -71,21 +88,10 @@ import {
   CompletionToggleHint,
   CompletionToggleLabel,
   CorrectAnswerBadge,
-  CourseDetailsHeading,
-  CourseDetailsHint,
-  CourseDetailsRoot,
-  DeleteChapterBtn,
-  Divider,
-  EditorRoot,
-  EmptyChaptersBody,
-  EmptyChaptersCallout,
-  EmptyChaptersText,
-  EmptyChaptersTitle,
-  FormStack,
   IconButton,
   InlineTitleInput,
-  MainPane,
-  QuizSectionTitle,
+  QuizEmptyCallout,
+  QuizEmptyText,
   QuizStepCollapsedMeta,
   QuizStepCollapsedNum,
   QuizStepCollapsedQuestion,
@@ -98,9 +104,7 @@ import {
   QuizStepsCount,
   QuizStepsHeader,
   QuizStepsTitle,
-  TopBarDivider,
-  TwoCol,
-  TwoPaneLayout,
+  QuizStepsTitleRow,
 } from './EditCourse.styles';
 
 // ---------------------------------------------------------------------------
@@ -362,7 +366,7 @@ function QuizStepCard({
 
         <AnswerList>
           <AnswerListHeader>
-            <QuizSectionTitle>Answers</QuizSectionTitle>
+            <SectionTitle>Answers</SectionTitle>
             <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <AnswerInstructionHint>
                 ● Select the correct one
@@ -453,12 +457,14 @@ function ChapterQuizSteps({
   return (
     <div>
       <QuizStepsHeader>
-        <QuizStepsTitle>
-          Quiz steps{' '}
-          {fields.length > 0 && (
+        <QuizStepsTitleRow>
+          <QuizStepsTitle>Quiz steps</QuizStepsTitle>
+          {fields.length > 0 ? (
             <QuizStepsCount>· {fields.length}</QuizStepsCount>
+          ) : (
+            <CompletionOptionalBadge>optional</CompletionOptionalBadge>
           )}
-        </QuizStepsTitle>
+        </QuizStepsTitleRow>
         <Button
           appearance={ButtonAppearance.Secondary}
           size={ButtonSizes.Small}
@@ -469,8 +475,16 @@ function ChapterQuizSteps({
         </Button>
       </QuizStepsHeader>
 
-      {fields.length > 0 && (
-        <QuizStepList style={{ marginTop: 12 }}>
+      {fields.length === 0 ? (
+        <QuizEmptyCallout>
+          <QuizEmptyText>
+            No questions needed. Leave this empty for a video-only chapter —
+            learners go straight to the next chapter after the video, with no
+            quiz and no completion screen.
+          </QuizEmptyText>
+        </QuizEmptyCallout>
+      ) : (
+        <QuizStepList>
           {fields.map((field, stepIdx) => (
             <QuizStepCard
               key={field.id}
@@ -602,23 +616,30 @@ function ChapterEditorPane({
   onRemove: () => void;
 }) {
   const [showCompletion, setShowCompletion] = useState(false);
+  // A chapter with no quiz steps is video-only, and a video-only chapter never reaches a
+  // completion screen — learners continue straight to the next chapter after the video.
+  const quizSteps = useWatch({
+    control,
+    name: `chapters.${chapterIndex}.quiz_steps`,
+  });
+  const hasQuizSteps = (quizSteps?.length ?? 0) > 0;
 
   return (
-    <ChapterEditorRoot>
+    <PaneRoot>
       {/* ── Meta row ── */}
-      <ChapterEditorMeta>
-        <ChapterEditorMetaLabel>Chapter</ChapterEditorMetaLabel>
-        <ChapterNumGradient>
+      <SectionMeta>
+        <SectionMetaLabel>Chapter</SectionMetaLabel>
+        <SectionNumGradient>
           {String(chapterIndex + 1).padStart(2, '0')}
-        </ChapterNumGradient>
-        <ChapterEditorMetaLabel>
+        </SectionNumGradient>
+        <SectionMetaLabel>
           · position {chapterIndex + 1} of {totalChapters}
-        </ChapterEditorMetaLabel>
-        <DeleteChapterBtn type="button" onClick={onRemove}>
+        </SectionMetaLabel>
+        <DeleteSectionBtn type="button" onClick={onRemove}>
           <TrashIcon style={{ width: 12, height: 12 }} />
           Delete chapter
-        </DeleteChapterBtn>
-      </ChapterEditorMeta>
+        </DeleteSectionBtn>
+      </SectionMeta>
 
       {/* ── Inline title ── */}
       <InlineTitleInput
@@ -706,16 +727,19 @@ function ChapterEditorPane({
         errors={errors}
       />
 
-      <Divider />
-
       {/* ── Completion messaging ── */}
-      <CompletionMessagingSection
-        chapterIndex={chapterIndex}
-        register={register}
-        open={showCompletion}
-        onToggle={() => setShowCompletion(v => !v)}
-      />
-    </ChapterEditorRoot>
+      {hasQuizSteps && (
+        <>
+          <Divider />
+          <CompletionMessagingSection
+            chapterIndex={chapterIndex}
+            register={register}
+            open={showCompletion}
+            onToggle={() => setShowCompletion(v => !v)}
+          />
+        </>
+      )}
+    </PaneRoot>
   );
 }
 
@@ -745,13 +769,13 @@ function CourseDetailsPane({
   isSelfOnboardingCourse: boolean;
 }) {
   return (
-    <CourseDetailsRoot>
+    <PaneRoot $maxWidth="720px">
       <div>
-        <CourseDetailsHeading>Course details</CourseDetailsHeading>
-        <CourseDetailsHint>
+        <PaneHeading>Course details</PaneHeading>
+        <PaneHint>
           Title, slug, and audience apply to the whole course. Chapters inherit
           unless overridden.
-        </CourseDetailsHint>
+        </PaneHint>
       </div>
 
       <FormStack>
@@ -825,14 +849,14 @@ function CourseDetailsPane({
       <Divider />
 
       {chapterCount === 0 && (
-        <EmptyChaptersCallout>
-          <EmptyChaptersText>
-            <EmptyChaptersTitle>No chapters yet</EmptyChaptersTitle>
-            <EmptyChaptersBody>
+        <EmptyCallout>
+          <EmptyCalloutText>
+            <EmptyCalloutTitle>No chapters yet</EmptyCalloutTitle>
+            <EmptyCalloutBody>
               A course needs at least one chapter. Add chapters from the
               sidebar, or get started below.
-            </EmptyChaptersBody>
-          </EmptyChaptersText>
+            </EmptyCalloutBody>
+          </EmptyCalloutText>
           <Button
             appearance={ButtonAppearance.Primary}
             size={ButtonSizes.Small}
@@ -841,9 +865,9 @@ function CourseDetailsPane({
             <PlusIcon style={{ width: 12, height: 12, marginRight: 4 }} />
             Add first chapter
           </Button>
-        </EmptyChaptersCallout>
+        </EmptyCallout>
       )}
-    </CourseDetailsRoot>
+    </PaneRoot>
   );
 }
 
@@ -1101,12 +1125,11 @@ function EditCourse() {
       ) : (
         <TwoPaneLayout>
           <StructureRail
-            chapterTitles={chapterTitles}
-            chapterCount={chapterFields.length}
+            sectionTitles={chapterTitles}
             selectedSection={selectedSection}
             onSelectDetails={() => setSelectedSection('details')}
-            onSelectChapter={(idx: number) => setSelectedSection(idx)}
-            onAddChapter={addChapter}
+            onSelectSection={(idx: number) => setSelectedSection(idx)}
+            onAddSection={addChapter}
             onMoveUp={(idx: number) => move(idx, idx - 1)}
             onMoveDown={(idx: number) => move(idx, idx + 1)}
             saving={saving}

@@ -43,13 +43,24 @@ export const BANNERS_ROUTE = '/banners/';
 export const BANNER_EDIT_ROUTE = '/banners/:bannerId/';
 export const COMMUNICATIONS_ROUTE = '/communications/';
 export const QUESTION_CARDS_ROUTE = '/question-cards/';
+export const SURVEYS_ROUTE = '/surveys/';
+export const SURVEY_EDIT_ROUTE = '/surveys/:campaignId/';
+
+export const getSurveyEditRoute = (id: number | 'new') => `/surveys/${id}/`;
+
+export const getSurveyResponsesRoute = (campaignId?: number) => {
+  const params = new URLSearchParams({ tab: 'responses', page_size: '50' });
+  if (campaignId != null) {
+    params.set('campaign', String(campaignId));
+  }
+  return `${SURVEYS_ROUTE}?${params.toString()}`;
+};
 export const MATCHING_HUB_ROUTE = '/matchmaking/';
 export const JOURNEY_OVERVIEW_ROUTE = '/journey-overview/';
 export const COURSES_ROUTE = '/courses/';
 export const COURSE_EDIT_ROUTE = '/courses/:courseSlug/';
 
-export const getCourseEditRoute = (slug: string | 'new') =>
-  `/courses/${slug}/`;
+export const getCourseEditRoute = (slug: string | 'new') => `/courses/${slug}/`;
 
 export const getEditEmailRoute = (templateId: number) =>
   `/email/${templateId}/edit`;

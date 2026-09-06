@@ -18,7 +18,6 @@ import {
   TextInput,
   Toast,
 } from '@a-little-world/little-world-design-system';
-import { isValid, parseISO } from 'date-fns';
 import React, { RefObject, useEffect, useMemo, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -35,6 +34,11 @@ import {
   resolveBannerImageUrl,
   updateBanner,
 } from '../../../../api/banners';
+import {
+  parseIsoToDate,
+  toEndOfDayIso as toExpirationIso,
+  toStartOfDayIso as toActivationIso,
+} from '../../../../helpers/berlinDates';
 import { BANNERS_ROUTE } from '../../../../router/routes';
 import { registerInput } from '../../../../store';
 import { DatePicker } from '../../../atoms/DatePicker';
@@ -71,83 +75,6 @@ type BannerFormValues = BannerPayload & {
 
 function isCssUrlBackground(value: string | null | undefined): boolean {
   return Boolean(value?.trim().match(/^url\s*\(/i));
-}
-
-const BERLIN_TZ = 'Europe/Berlin';
-
-/** Berlin wall-clock fields for an instant (DST-aware). */
-function berlinParts(utcMs: number) {
-  const dtf = new Intl.DateTimeFormat('en-US', {
-    timeZone: BERLIN_TZ,
-    hour12: false,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  });
-  const p = Object.fromEntries(
-    dtf.formatToParts(new Date(utcMs)).map(x => [x.type, x.value]),
-  );
-  return {
-    y: Number(p.year),
-    mo: Number(p.month) - 1,
-    d: Number(p.day),
-    h: Number(p.hour),
-    mi: Number(p.minute),
-    s: Number(p.second),
-  };
-}
-
-/** Treat (y, mo, d, h, mi, s, ms) as a clock time in Europe/Berlin; return that instant as ISO UTC. */
-function berlinWallToIso(
-  y: number,
-  mo: number,
-  d: number,
-  h: number,
-  mi: number,
-  s: number,
-  ms: number,
-): string {
-  const utcGuess = Date.UTC(y, mo, d, h, mi, s, ms);
-  const wall = berlinParts(utcGuess);
-  const wallAsUtc = Date.UTC(wall.y, wall.mo, wall.d, wall.h, wall.mi, wall.s);
-  return new Date(utcGuess - (wallAsUtc - utcGuess)).toISOString();
-}
-
-function parseIsoToDate(value: string | null | undefined): Date | null {
-  if (value == null || value === '') return null;
-  const d = parseISO(value);
-  if (!isValid(d)) return null;
-  const { y, mo, d: day } = berlinParts(d.getTime());
-  return new Date(y, mo, day);
-}
-
-function toActivationIso(date: Date | null): string | null {
-  if (!date) return null;
-  return berlinWallToIso(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate(),
-    0,
-    0,
-    0,
-    0,
-  );
-}
-
-function toExpirationIso(date: Date | null): string | null {
-  if (!date) return null;
-  return berlinWallToIso(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate(),
-    23,
-    59,
-    59,
-    999,
-  );
 }
 
 function getSafePreviewBackground(
