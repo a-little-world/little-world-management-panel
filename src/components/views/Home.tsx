@@ -14,14 +14,15 @@ import {
   VideoCameraIcon,
 } from '@heroicons/react/20/solid';
 import React from 'react';
+import useSWR from 'swr';
 
-import {
-  ClipboardCheckIcon,
-  HeadsetIcon,
-  HeartHandshake,
-} from 'lucide-react';
+import { ClipboardCheckIcon, HeadsetIcon, HeartHandshake } from 'lucide-react';
 
 import type { MatchingPanelUser } from '../../api/index';
+import {
+  fetchOpenAssignedTaskCount,
+  openAssignedTaskCountEndpoint,
+} from '../../api/supportTasks';
 import { MANAGEMENT_PERMISSION_OPEN_CHAT_ACCESS } from '../../constants/managementPermissions';
 import { hasManagementPermission } from '../../helpers/managementPermissions';
 import {
@@ -36,7 +37,7 @@ import {
   STATS_ROUTE,
   SUPPORT_TASKS_ROUTE,
   USERS_ROUTE,
-  VIDEO_CALLS_ROUTE
+  VIDEO_CALLS_ROUTE,
 } from '../../router/routes';
 import { useGlobalState } from '../../store';
 import NavigationTiles, { NavigationTile } from '../blocks/NavigationTiles';
@@ -145,10 +146,18 @@ const Home = () => {
   const hasName = Boolean(user?.first_name || user?.last_name);
   const hasPermissions =
     user?.is_staff || (user?.permissions ?? []).some(row => row.enabled);
+  const { data: myOpenTasks } = useSWR(
+    openAssignedTaskCountEndpoint(),
+    fetchOpenAssignedTaskCount,
+  );
   const visibleTabs = TABS.filter(
     tab =>
       !tab.requiredPermission ||
       hasManagementPermission(user, tab.requiredPermission),
+  ).map(tab =>
+    tab.path === SUPPORT_TASKS_ROUTE
+      ? { ...tab, badge: myOpenTasks?.count }
+      : tab,
   );
 
   return (
