@@ -1,11 +1,23 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
+
+import Badge from '../atoms/Badge';
 
 export type NavigationTile = {
   name: string;
   path: string;
   icon: React.ReactNode;
+  badge?: number;
 };
+
+const TileBadge = styled(Badge)`
+  position: absolute;
+  top: ${({ theme }) => `-${theme.spacing.small}`};
+  right: ${({ theme }) => `-${theme.spacing.small}`};
+  width: 40px;
+  height: 40px;
+`;
 
 function NavigationTiles({
   items,
@@ -26,8 +38,9 @@ function NavigationTiles({
           <button
             onClick={() => navigate(item.path)}
             key={item.path}
-            className="flex flex-col justify-center items-center bg-indigo-500 p-2 rounded-lg shadow-lg w-40 h-40"
+            className="relative flex flex-col justify-center items-center bg-indigo-500 p-2 rounded-lg shadow-lg w-40 h-40"
           >
+            {item.badge ? <TileBadge>{item.badge}</TileBadge> : null}
             {item.icon}
             <h2 className="text-white text-xl text-center">{item.name}</h2>
           </button>
