@@ -1,4 +1,8 @@
-import { Text, TextTypes } from '@a-little-world/little-world-design-system';
+import {
+  Select,
+  Text,
+  TextTypes,
+} from '@a-little-world/little-world-design-system';
 import * as React from 'react';
 import { styled } from 'styled-components';
 import useSWR from 'swr';
@@ -6,7 +10,9 @@ import useSWR from 'swr';
 import {
   fetchMatchJourneyV5,
   fetchMatchJourneyV5Definition,
+  type MatchJourneyMatchType,
   type MatchJourneyV5DefinitionResponse,
+  type MatchJourneyV5Request,
   type MatchJourneyV5Response,
 } from '../../../api/matchJourney';
 import type { PartitionRollup } from '../../../api/userJourney';
@@ -37,6 +43,29 @@ const RollupLine = styled(Text)`
   font-style: italic;
 `;
 
+const CohortFilters = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.medium};
+`;
+
+const SourceSelect = styled(Select)`
+  div[data-radix-popper-content-wrapper] {
+    z-index: 20 !important;
+  }
+`;
+
+const MATCH_TYPE_ALL = 'all';
+
+type MatchTypeFilter = typeof MATCH_TYPE_ALL | MatchJourneyMatchType;
+
+const MATCH_TYPE_OPTIONS: { value: MatchTypeFilter; label: string }[] = [
+  { value: MATCH_TYPE_ALL, label: 'All' },
+  { value: 'standard', label: 'Standard' },
+  { value: 'random_call', label: 'Random Calls' },
+];
+
 function rollupsForPhase(
   phaseBucketIds: string[],
   rollups: PartitionRollup[],
@@ -53,6 +82,12 @@ function MatchJourneyV5Buckets() {
   const countsCacheBust = React.useRef(Date.now() + Math.random());
   const { range, setRange, cohort, isPartialRange } =
     useJourneyCohortRange(null);
+  const [matchType, setMatchType] =
+    React.useState<MatchTypeFilter>(MATCH_TYPE_ALL);
+  const request: MatchJourneyV5Request = {
+    ...(cohort ?? {}),
+    ...(matchType !== MATCH_TYPE_ALL ? { match_type: matchType } : {}),
+  };
 
   const { data: definitionData, error: definitionError } =
     useSWR<MatchJourneyV5DefinitionResponse>(
@@ -66,8 +101,9 @@ function MatchJourneyV5Buckets() {
       countsCacheBust.current,
       cohort?.start_date ?? null,
       cohort?.end_date ?? null,
+      matchType,
     ],
-    () => fetchMatchJourneyV5(cohort ?? {}),
+    () => fetchMatchJourneyV5(request),
   );
 
   const definition = definitionData?.definition ?? data?.definition;
@@ -96,14 +132,28 @@ function MatchJourneyV5Buckets() {
       </SectionTitle>
       <SectionCard>
         <Text>{definition.description}</Text>
-        <JourneyCohortRangePicker
-          label="Match created between"
-          tooltipText="Matches created in this range. Leave empty, or choose All time, for every match. Buckets show current state, not state on those dates."
-          range={range}
-          setRange={setRange}
-          clearLabel="Reset to all time data"
-          isPartialRange={isPartialRange}
-        />
+        <CohortFilters>
+          <SourceSelect
+            id="match-journey-v5-source"
+            label="Source"
+            value={matchType}
+            options={MATCH_TYPE_OPTIONS}
+            onValueChange={(value: string) =>
+              setMatchType(value as MatchTypeFilter)
+            }
+            placeholder="Source"
+            cannotError
+            maxWidth="180px"
+          />
+          <JourneyCohortRangePicker
+            label="Match created between"
+            tooltipText="Matches created in this range. Leave empty, or choose All time, for every match. Buckets show current state, not state on those dates."
+            range={range}
+            setRange={setRange}
+            clearLabel="Reset to all time data"
+            isPartialRange={isPartialRange}
+          />
+        </CohortFilters>
         {data && !data.balanced && (
           <BalanceWarning>
             Partition does not balance — {data.uncovered_count} uncovered,{' '}

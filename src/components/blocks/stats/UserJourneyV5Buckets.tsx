@@ -1,4 +1,8 @@
-import { Text, TextTypes } from '@a-little-world/little-world-design-system';
+import {
+  Select,
+  Text,
+  TextTypes,
+} from '@a-little-world/little-world-design-system';
 import * as React from 'react';
 import { styled } from 'styled-components';
 import useSWR from 'swr';
@@ -7,7 +11,9 @@ import {
   fetchUserJourneyV5,
   fetchUserJourneyV5Definition,
   type PartitionRollup,
+  type UserJourneyUserType,
   type UserJourneyV5DefinitionResponse,
+  type UserJourneyV5Request,
   type UserJourneyV5Response,
 } from '../../../api/userJourney';
 import LoadingSpinner from '../../atoms/LoadingSpinner';
@@ -39,6 +45,29 @@ const RollupLine = styled(Text)`
   font-style: italic;
 `;
 
+const CohortFilters = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.medium};
+`;
+
+const UserTypeSelect = styled(Select)`
+  div[data-radix-popper-content-wrapper] {
+    z-index: 20 !important;
+  }
+`;
+
+const USER_TYPE_ALL = 'all';
+
+type UserTypeFilter = typeof USER_TYPE_ALL | UserJourneyUserType;
+
+const USER_TYPE_OPTIONS: { value: UserTypeFilter; label: string }[] = [
+  { value: USER_TYPE_ALL, label: 'All' },
+  { value: 'volunteer', label: 'Volunteers' },
+  { value: 'learner', label: 'Learners' },
+];
+
 function rollupsForPhase(
   phaseBucketIds: string[],
   rollups: PartitionRollup[],
@@ -64,8 +93,12 @@ function UserJourneyV5Buckets() {
     start_date: USER_JOURNEY_DEFAULT_START,
     end_date: localTodayYmd(),
   });
+  const [userType, setUserType] = React.useState<UserTypeFilter>(USER_TYPE_ALL);
   // No cohort means no date filter — what "all time" on the clear action says.
-  const request = cohort ?? {};
+  const request: UserJourneyV5Request = {
+    ...(cohort ?? {}),
+    ...(userType !== USER_TYPE_ALL ? { user_type: userType } : {}),
+  };
 
   const { data: definitionData, error: definitionError } =
     useSWR<UserJourneyV5DefinitionResponse>(
@@ -79,6 +112,7 @@ function UserJourneyV5Buckets() {
       countsCacheBust.current,
       cohort?.start_date ?? null,
       cohort?.end_date ?? null,
+      userType,
     ],
     () => fetchUserJourneyV5(request),
   );
@@ -109,14 +143,28 @@ function UserJourneyV5Buckets() {
       </SectionTitle>
       <SectionCard>
         <Text>{definition.description}</Text>
-        <JourneyCohortRangePicker
-          label="Signed up between"
-          tooltipText="Users who joined in this range. Buckets show their current state, not their state on those dates."
-          range={range}
-          setRange={setRange}
-          clearLabel="Reset to all time data"
-          isPartialRange={isPartialRange}
-        />
+        <CohortFilters>
+          <UserTypeSelect
+            id="user-journey-v5-user-type"
+            label="User type"
+            value={userType}
+            options={USER_TYPE_OPTIONS}
+            onValueChange={(value: string) =>
+              setUserType(value as UserTypeFilter)
+            }
+            placeholder="User type"
+            cannotError
+            maxWidth="180px"
+          />
+          <JourneyCohortRangePicker
+            label="Signed up between"
+            tooltipText="Users who joined in this range. Buckets show their current state, not their state on those dates."
+            range={range}
+            setRange={setRange}
+            clearLabel="Reset to all time data"
+            isPartialRange={isPartialRange}
+          />
+        </CohortFilters>
         {data && !data.balanced && (
           <BalanceWarning>
             Partition does not balance — {data.uncovered_count} uncovered,{' '}
