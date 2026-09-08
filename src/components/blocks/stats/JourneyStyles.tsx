@@ -90,13 +90,7 @@ export const StyledChevron = styled(ChevronRightIcon)`
 
 // `count` is optional on purpose: these overviews render their structure before the
 // counts arrive, and an absent number shows an inline spinner in place of that one value.
-export const Count = ({
-  count,
-  label,
-}: {
-  count?: number;
-  label?: string;
-}) => {
+export const Count = ({ count, label }: { count?: number; label?: string }) => {
   if (isNumber(count))
     return (
       <Text tag="span" bold={!!label}>
@@ -184,7 +178,7 @@ export function useMatchSuccessPageHeader() {
     showMenu: true,
     actions: (
       <HeaderDocsLink to={MATCH_SUCCESS_DOCUMENTATION_ROUTE}>
-        How match success is measured
+        How match success is measured?
       </HeaderDocsLink>
     ),
   });

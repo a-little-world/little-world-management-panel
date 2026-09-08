@@ -28,10 +28,13 @@ export type PartitionDefinitionPayload = {
   rollups: PartitionRollup[];
 };
 
+export type UserJourneyUserType = 'learner' | 'volunteer';
+
 export type UserJourneyV5Response = {
   definition: PartitionDefinitionPayload;
   start_date: string;
   end_date: string;
+  user_type: UserJourneyUserType | null;
   partition_id: string;
   baseline_list_id: string;
   baseline_count: number;
@@ -50,7 +53,7 @@ export type UserJourneyV5Response = {
 export type UserJourneyV5Request = {
   start_date?: string;
   end_date?: string;
-  volunteers_only?: boolean;
+  user_type?: UserJourneyUserType;
 };
 
 export type UserJourneyV5DefinitionResponse = {
