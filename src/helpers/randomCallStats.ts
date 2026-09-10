@@ -1,4 +1,8 @@
-import { LobbyInstanceSnapshot } from '../api/randomCalls';
+import {
+  LobbyInstanceSnapshot,
+  LobbyProposalStatistics,
+  ProposalOutcomeBucket,
+} from '../api/randomCalls';
 
 /** The pair of fields every successful-call figure on this feature is derived from. */
 type SuccessfulCallCounts = {
@@ -179,4 +183,35 @@ export function formatTrendFirstTimeReturningRatio(
 
   const divisor = gcd(first, returningCount);
   return `${first / divisor} : ${returningCount / divisor}`;
+}
+
+/**
+ * Who a bucket's proposals paired, as rows for a `Stat` breakdown.
+ *
+ * The three counts are exhaustive, so they always sum to the bucket's headline number.
+ * `Other` (volunteer-volunteer, or a profile with no type) is only rendered when it is
+ * non-zero: the matcher should never produce one, but silently dropping it would let the
+ * rows stop adding up with nothing to show for it.
+ */
+export function proposalPairBreakdown(
+  stats: LobbyProposalStatistics,
+  bucket: ProposalOutcomeBucket,
+): { label: string; value: string }[] {
+  const total = stats[`${bucket}_count`];
+  const learnerLearner = stats[`${bucket}_learner_learner_count`];
+  const learnerVolunteer = stats[`${bucket}_learner_volunteer_count`];
+  const other = stats[`${bucket}_other_count`];
+
+  const row = (label: string, count: number) => ({
+    label,
+    value: total
+      ? `${count} (${Math.round((100 * count) / total)}%)`
+      : `${count}`,
+  });
+
+  return [
+    row('Learner–learner', learnerLearner),
+    row('Learner–volunteer', learnerVolunteer),
+    ...(other > 0 ? [row('Other pairing', other)] : []),
+  ];
 }

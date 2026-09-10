@@ -141,14 +141,28 @@ export interface LobbyInstanceData {
     expired: MatchProposal[];
     dangling: MatchProposal[];
   };
-  proposal_statistics: {
-    total_matches: number;
-    pending_count: number;
-    accepted_count: number;
-    rejected_count: number;
-    expired_count: number;
-    dangling_count: number;
-  };
+  proposal_statistics: LobbyProposalStatistics;
+}
+
+/** Outcome buckets that carry a learner-learner / learner-volunteer split. */
+export type ProposalOutcomeBucket = 'accepted' | 'rejected' | 'expired';
+
+export interface LobbyProposalStatistics {
+  total_matches: number;
+  pending_count: number;
+  accepted_count: number;
+  rejected_count: number;
+  expired_count: number;
+  dangling_count: number;
+  accepted_learner_learner_count: number;
+  accepted_learner_volunteer_count: number;
+  accepted_other_count: number;
+  rejected_learner_learner_count: number;
+  rejected_learner_volunteer_count: number;
+  rejected_other_count: number;
+  expired_learner_learner_count: number;
+  expired_learner_volunteer_count: number;
+  expired_other_count: number;
 }
 
 export interface TasksData {

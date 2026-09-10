@@ -19,6 +19,7 @@ import {
 import { formatDate, formatEventTime } from '../../../helpers/date';
 import {
   formatSuccessfulCallUserPct,
+  proposalPairBreakdown,
   usersWithoutSuccessfulCall,
 } from '../../../helpers/randomCallStats';
 import { dataFetcher } from '../../../store';
@@ -225,14 +226,8 @@ function RandomCallHistory() {
             )}
             {lobby.is_active && (
               <StatsGridTight>
-                <Stat
-                  label="Active Users"
-                  stat={lobby.active_users_count}
-                />
-                <Stat
-                  label="Total Users"
-                  stat={lobby.total_users_count}
-                />
+                <Stat label="Active Users" stat={lobby.active_users_count} />
+                <Stat label="Total Users" stat={lobby.total_users_count} />
               </StatsGridTight>
             )}
             <ProvisionalBucketStats $provisional={!proposalsAreFinal}>
@@ -240,14 +235,26 @@ function RandomCallHistory() {
                 <Stat
                   label="Accepted Proposals"
                   stat={proposal_statistics.accepted_count}
+                  breakdown={proposalPairBreakdown(
+                    proposal_statistics,
+                    'accepted',
+                  )}
                 />
                 <Stat
                   label="Rejected Proposals"
                   stat={proposal_statistics.rejected_count}
+                  breakdown={proposalPairBreakdown(
+                    proposal_statistics,
+                    'rejected',
+                  )}
                 />
                 <Stat
                   label="Expired Proposals"
                   stat={proposal_statistics.expired_count}
+                  breakdown={proposalPairBreakdown(
+                    proposal_statistics,
+                    'expired',
+                  )}
                 />
               </StatCards>
             </ProvisionalBucketStats>
@@ -299,10 +306,7 @@ function RandomCallHistory() {
               <SectionTitle>Celery Tasks</SectionTitle>
               <StatCards>
                 <Stat label="Total Tasks" stat={tasksData.statistics.total} />
-                <Stat
-                  label="Successful"
-                  stat={tasksData.statistics.success}
-                />
+                <Stat label="Successful" stat={tasksData.statistics.success} />
                 <Stat label="Failed" stat={tasksData.statistics.failure} />
                 <Stat label="Pending" stat={tasksData.statistics.pending} />
               </StatCards>

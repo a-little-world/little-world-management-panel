@@ -29,12 +29,14 @@ import {
   getUpcomingLobbiesEndpoint,
   LobbyInstanceSnapshot,
   LobbyParticipant,
+  LobbyProposalStatistics,
   MatchProposal,
   resetLobby,
 } from '../../../api/randomCalls';
 import { formatDate, formatEventTime } from '../../../helpers/date';
 import {
   formatSuccessfulCallUserPct,
+  proposalPairBreakdown,
   usersWithoutSuccessfulCall,
 } from '../../../helpers/randomCallStats';
 import { dataFetcher } from '../../../store';
@@ -100,14 +102,8 @@ interface LobbyData {
     dangling: MatchProposal[];
   };
   lobby_participants: LobbyParticipant[];
-  proposal_statistics: {
-    total_matches: number;
-    pending_count: number;
-    accepted_count: number;
-    rejected_count: number;
-    expired_count: number;
-    dangling_count: number;
-  };
+  // Shared with the API module so a new field cannot be added there and missed here.
+  proposal_statistics: LobbyProposalStatistics;
   schedule: Array<{
     uuid: string;
     name: string;
@@ -799,10 +795,7 @@ function RandomCallManagement() {
               }
             />
             {snapshot && (
-              <Stat
-                label="Completed Calls"
-                stat={snapshot.completed_calls}
-              />
+              <Stat label="Completed Calls" stat={snapshot.completed_calls} />
             )}
             {snapshot && (
               <Stat
@@ -841,14 +834,26 @@ function RandomCallManagement() {
               <Stat
                 label="Accepted Proposals"
                 stat={proposal_statistics.accepted_count}
+                breakdown={proposalPairBreakdown(
+                  proposal_statistics,
+                  'accepted',
+                )}
               />
               <Stat
                 label="Rejected Proposals"
                 stat={proposal_statistics.rejected_count}
+                breakdown={proposalPairBreakdown(
+                  proposal_statistics,
+                  'rejected',
+                )}
               />
               <Stat
                 label="Expired Proposals"
                 stat={proposal_statistics.expired_count}
+                breakdown={proposalPairBreakdown(
+                  proposal_statistics,
+                  'expired',
+                )}
               />
               <Stat label="Dangling proposals" stat={danglingCount} />
             </StatCards>
@@ -936,10 +941,7 @@ function RandomCallManagement() {
             ) : tasksData ? (
               <>
                 <StatCards>
-                  <Stat
-                    label="Total Tasks"
-                    stat={tasksData.statistics.total}
-                  />
+                  <Stat label="Total Tasks" stat={tasksData.statistics.total} />
                   <Stat
                     label="Successful"
                     stat={
