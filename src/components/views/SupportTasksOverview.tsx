@@ -819,7 +819,7 @@ export default function SupportTasksOverview() {
 
       <FiltersToolbar
         showSearchBar
-        searchPlaceholder="Search by title or task ID…"
+        searchPlaceholder="Search by title, task ID, or related user name…"
         searchDefaultValue={search}
         onSearchSubmit={s => updateSearchParam('search', s)}
         showFiltersButton
