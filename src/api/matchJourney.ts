@@ -4,21 +4,25 @@ import type {
   UserJourneyV5Response,
 } from './userJourney';
 
+export type MatchJourneyMatchType = 'standard' | 'random_call';
+
 export type MatchJourneyV5DefinitionResponse = {
   definition: PartitionDefinitionPayload;
 };
 
 export type MatchJourneyV5Response = Omit<
   UserJourneyV5Response,
-  'start_date' | 'end_date'
+  'start_date' | 'end_date' | 'user_type'
 > & {
   start_date: string | null;
   end_date: string | null;
+  match_type: MatchJourneyMatchType | null;
 };
 
 export type MatchJourneyV5Request = {
   start_date?: string | null;
   end_date?: string | null;
+  match_type?: MatchJourneyMatchType;
 };
 
 export function fetchMatchJourneyV5Definition(): Promise<MatchJourneyV5DefinitionResponse> {
