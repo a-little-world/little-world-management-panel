@@ -289,6 +289,8 @@ const ChatWrapper = styled.div`
   display: flex;
   flex-direction: column;
   padding: ${({ theme }) => theme.spacing.medium};
+  position: relative;
+  z-index: 0;
 `;
 
 const ProfileLink = styled(Link)`
