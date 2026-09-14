@@ -29,6 +29,7 @@ import { format, parseISO } from 'date-fns';
 import {
   STATUS_CONFIG,
   SupportTask,
+  SupportTaskListItem,
   TaskPriority,
   TaskStatus,
   buildSupportTaskListParams,
@@ -413,7 +414,7 @@ export default function SupportTaskDetail() {
       : nextPageList?.results[0];
 
   const goToNeighbouringTask = (
-    neighbour: SupportTask,
+    neighbour: SupportTaskListItem,
     page?: number | null,
   ) => {
     const search = new URLSearchParams(searchParams);

@@ -74,8 +74,22 @@ export interface AssigneeUser {
   last_name: string;
 }
 
+export interface SupportTaskListItem {
+  id: number;
+  title: string;
+  description: string;
+  status: TaskStatus;
+  priority: TaskPriority;
+  action_type: string;
+  related_user_profile: UserProfile | null;
+  assignee_profiles: UserProfile[];
+  created_by_profile: UserProfile | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface PaginatedSupportTaskList {
-  results: SupportTask[];
+  results: SupportTaskListItem[];
   count: number;
   page: number;
   page_size: number;

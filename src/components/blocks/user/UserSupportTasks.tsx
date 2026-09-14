@@ -12,7 +12,7 @@ import useSWR from 'swr';
 
 import {
   STATUS_CONFIG,
-  SupportTask,
+  SupportTaskListItem,
   TaskPriority,
   TaskStatus,
   fetchSupportTasks,
@@ -83,11 +83,11 @@ const EmptyState = styled.div`
   padding: ${({ theme }) => theme.spacing.medium};
 `;
 
-const columnHelper = createColumnHelper<SupportTask>();
+const columnHelper = createColumnHelper<SupportTaskListItem>();
 
 function buildColumns(
   priorityConfig: Record<TaskPriority, PriorityConfig>,
-): ColumnDef<SupportTask, any>[] {
+): ColumnDef<SupportTaskListItem, any>[] {
   return [
     columnHelper.accessor('title', {
       header: 'Task',
@@ -143,7 +143,7 @@ function buildColumns(
       id: 'type',
       header: 'Type',
       cell: ({ row }) => {
-        const cfg = getActionTypeConfig(row.original.action?.action_type ?? '');
+        const cfg = getActionTypeConfig(row.original.action_type ?? '');
         return (
           <Tag
             bold
