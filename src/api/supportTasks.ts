@@ -181,6 +181,13 @@ export const patchSupportTaskNote = (
 export const fetchAssigneeUsers = (): Promise<AssigneeUser[]> =>
   apiFetch('/api/support_task/assignee_users/');
 
+export const openAssignedTaskCountEndpoint = (userId?: number) =>
+  `/api/support_task/open_assigned_count/${userId ? `${userId}/` : ''}`;
+
+export const fetchOpenAssignedTaskCount = (
+  endpoint: string = openAssignedTaskCountEndpoint(),
+): Promise<{ count: number }> => apiFetch(endpoint);
+
 export const patchAction = (
   taskId: number,
   parameters: Record<string, unknown>,

@@ -10,10 +10,11 @@ import styled, { useTheme } from 'styled-components';
 import useSWR from 'swr';
 
 import type { MatchingPanelUser } from '../../../api';
-import { MATCHING_ROUTE } from '../../../router/routes';
-import { hasManagementPermission } from '../../../helpers/managementPermissions';
 import { fetchSupportTasks } from '../../../api/supportTasks';
+import { hasManagementPermission } from '../../../helpers/managementPermissions';
+import { MATCHING_ROUTE } from '../../../router/routes';
 import { dataFetcher, useGlobalState } from '../../../store';
+import Badge from '../../atoms/Badge';
 import { Section, SectionContent } from '../../atoms/Section';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../atoms/Tabs';
 import { usePageHeader } from '../LayoutHeaderContext';
@@ -26,6 +27,7 @@ import UserEmails from './UserEmails';
 import UserMatches from './UserMatches';
 import UserNotes from './UserNotes';
 import UserStats from './UserStats';
+import UserSupportTasks from './UserSupportTasks';
 
 const USER_TABS = [
   { key: 'profile', label: 'Profile' },
@@ -33,10 +35,17 @@ const USER_TABS = [
   { key: 'emails', label: 'Emails' },
   { key: 'calls', label: 'Calls' },
   { key: 'matches', label: 'Matches' },
+  { key: 'support_tasks', label: 'Support Tasks' },
   { key: 'stats', label: 'Stats' },
   { key: 'notes', label: 'Notes' },
   { key: 'actions', label: 'Actions' },
 ];
+
+const TabLabel = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xxsmall};
+`;
 
 const HeaderActionButton = styled(Button)`
   flex-grow: 0;
@@ -73,7 +82,9 @@ const UserPanelContent = ({
       <UserChat
         user={user}
         activeSupportReplyTask={activeSupportReplyTask}
-        sendViaSupportReplyApi={Boolean(activeSupportReplyTask) || Boolean(canSendSupportReplies)}
+        sendViaSupportReplyApi={
+          Boolean(activeSupportReplyTask) || Boolean(canSendSupportReplies)
+        }
         onSupportReplySent={onSupportReplySent}
       />
     );
@@ -84,6 +95,8 @@ const UserPanelContent = ({
 
   if (tab === 'matches')
     return <UserMatches user={user} appointment={appointment} />;
+
+  if (tab === 'support_tasks') return <UserSupportTasks user={user} />;
 
   if (tab === 'stats') return <UserStats user={user} />;
 
@@ -98,7 +111,8 @@ const UserPanelContent = ({
 
 const UserPanel = () => {
   const { userId } = useParams();
-  const { addUserToMatching, panelUser, setUpdateCurrentUser } = useGlobalState();
+  const { addUserToMatching, panelUser, setUpdateCurrentUser } =
+    useGlobalState();
   const theme = useTheme();
   let [searchParams, setSearchParams] = useSearchParams();
 
@@ -138,14 +152,10 @@ const UserPanel = () => {
     MANAGEMENT_PERMISSION_CAN_SEND_SUPPORT_MESSAGE_REPLIES,
   );
 
-  const shouldLoadActiveReplyTask = selectedTabKey === 'chat' && Boolean(user?.id);
+  const shouldLoadActiveReplyTask =
+    selectedTabKey === 'chat' && Boolean(user?.id);
   const { data: activeReplyTasksResponse } = useSWR(
-    shouldLoadActiveReplyTask
-      ? [
-          'active_support_reply_task',
-          user.id,
-        ]
-      : null,
+    shouldLoadActiveReplyTask ? ['active_support_reply_task', user.id] : null,
     () =>
       fetchSupportTasks({
         related_user: String(user.id),
@@ -156,7 +166,8 @@ const UserPanel = () => {
         page_size: 1,
       }),
   );
-  const [activeSupportReplyTask, setActiveSupportReplyTask] = useState<any>(null);
+  const [activeSupportReplyTask, setActiveSupportReplyTask] =
+    useState<any>(null);
 
   useEffect(() => {
     setActiveSupportReplyTask(activeReplyTasksResponse?.results?.[0] ?? null);
@@ -215,7 +226,7 @@ const UserPanel = () => {
 
   return (
     <Tabs defaultValue={selectedTabKey}>
-      <TabsList className="grid w-full grid-cols-8">
+      <TabsList className="grid w-full grid-cols-9">
         {USER_TABS.map(tab => (
           <TabsTrigger
             key={'header' + tab.key}
@@ -224,7 +235,12 @@ const UserPanel = () => {
               setSearchParams({ tab: tab.key });
             }}
           >
-            {tab.label}
+            <TabLabel>
+              {tab.label}
+              {tab.key === 'support_tasks' && user?.open_support_task_count ? (
+                <Badge>{user.open_support_task_count}</Badge>
+              ) : null}
+            </TabLabel>
           </TabsTrigger>
         ))}
       </TabsList>

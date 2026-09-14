@@ -8,8 +8,14 @@ import {
 } from '@a-little-world/little-world-design-system';
 import React from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import styled from 'styled-components';
+import useSWR from 'swr';
 
 import type { MatchingPanelUser } from '../../api/index';
+import {
+  fetchOpenAssignedTaskCount,
+  openAssignedTaskCountEndpoint,
+} from '../../api/supportTasks';
 import { MANAGEMENT_PERMISSION_OPEN_CHAT_ACCESS } from '../../constants/managementPermissions';
 import { hasManagementPermission } from '../../helpers/managementPermissions';
 import useSelectUser from '../../hooks/useSelectUser';
@@ -33,8 +39,15 @@ import {
   USERS_ROUTE,
   VIDEO_CALLS_ROUTE,
 } from '../../router/routes';
-import { useGlobalState } from '../../store';
+import { useCurrentUserId, useGlobalState } from '../../store';
+import Badge from '../atoms/Badge';
 import SearchBar from './SearchBar';
+
+const NavItemLabel = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xxsmall};
+`;
 
 const Menu = () => {
   const location = useLocation();
@@ -45,6 +58,12 @@ const Menu = () => {
   const canAccessOpenChat = hasManagementPermission(
     panelUser as MatchingPanelUser | undefined,
     MANAGEMENT_PERMISSION_OPEN_CHAT_ACCESS,
+  );
+
+  const currentUserId = useCurrentUserId();
+  const { data: myOpenTasks } = useSWR(
+    currentUserId ? openAssignedTaskCountEndpoint() : null,
+    fetchOpenAssignedTaskCount,
   );
 
   const onUserSearch = ({ search }: { search: string }) => {
@@ -109,7 +128,10 @@ const Menu = () => {
             to={SUPPORT_TASKS_ROUTE}
             active={location.pathname.startsWith(SUPPORT_TASKS_ROUTE)}
           >
-            Support Tasks
+            <NavItemLabel>
+              Support Tasks
+              {myOpenTasks?.count ? <Badge>{myOpenTasks.count}</Badge> : null}
+            </NavItemLabel>
           </NavigationMenuContentItem>
           <NavigationMenuContentItem
             to={MATCHING_HUB_ROUTE}
