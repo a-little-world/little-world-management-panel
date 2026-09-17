@@ -29,7 +29,7 @@ import {
   DEFAULT_STATUS_FILTERS,
   PaginatedSupportTaskList,
   STATUS_CONFIG,
-  SupportTask,
+  SupportTaskListItem,
   TaskFilterKeys,
   TaskPriority,
   TaskStatus,
@@ -246,9 +246,12 @@ const DEFAULT_EXPORT_HEADERS = [
   'created_at',
 ];
 
-const EMPTY_TASKS: SupportTask[] = [];
+const EMPTY_TASKS: SupportTaskListItem[] = [];
 
-function pruneSelectedRows(current: number[], tasks: SupportTask[]): number[] {
+function pruneSelectedRows(
+  current: number[],
+  tasks: SupportTaskListItem[],
+): number[] {
   if (!current.length || !tasks.length) {
     return current.length ? [] : current;
   }
@@ -264,7 +267,7 @@ function pruneSelectedRows(current: number[], tasks: SupportTask[]): number[] {
 
 // ─── Column definitions ───────────────────────────────────────────────────────
 
-const columnHelper = createColumnHelper<SupportTask>();
+const columnHelper = createColumnHelper<SupportTaskListItem>();
 
 function SortIcon({
   field,
@@ -290,7 +293,7 @@ function buildColumns(
   priorityConfig: Record<TaskPriority, PriorityConfig>,
   selectedRows: number[],
   onToggleRow: (id: number) => void,
-): ColumnDef<SupportTask, any>[] {
+): ColumnDef<SupportTaskListItem, any>[] {
   return [
     columnHelper.display({
       id: 'select',
@@ -373,7 +376,7 @@ function buildColumns(
       id: 'type',
       header: 'Type',
       cell: ({ row }) => {
-        const cfg = getActionTypeConfig(row.original.action?.action_type ?? '');
+        const cfg = getActionTypeConfig(row.original.action_type ?? '');
         return (
           <Tag
             bold
@@ -819,7 +822,7 @@ export default function SupportTasksOverview() {
 
       <FiltersToolbar
         showSearchBar
-        searchPlaceholder="Search by title or task ID…"
+        searchPlaceholder="Search by title, task ID, or related user name…"
         searchDefaultValue={search}
         onSearchSubmit={s => updateSearchParam('search', s)}
         showFiltersButton

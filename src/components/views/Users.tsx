@@ -4,16 +4,18 @@ import {
   TagSizes,
 } from '@a-little-world/little-world-design-system';
 import { ArrowsUpDownIcon } from '@heroicons/react/20/solid';
-import { createColumnHelper } from '@tanstack/react-table';
+import { ColumnDef, createColumnHelper } from '@tanstack/react-table';
 import { capitalize, isNumber } from 'lodash';
-import React, { useMemo, useRef, useEffect, useState } from 'react';
-import { Link, createSearchParams, useSearchParams } from 'react-router-dom';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createSearchParams, Link, useSearchParams } from 'react-router-dom';
 
 import {
   getUserDetails,
   getUsersExportColumns,
   getUsersExportPage,
   getUsersListPaginationMeta,
+  PaginatedUserTableList,
+  UserTableRow,
 } from '../../api/index';
 import { formatDate, formatTimeDistance } from '../../helpers/date';
 import { useGlobalState, useUserListData } from '../../store';
@@ -35,32 +37,43 @@ import {
 } from '../blocks/PaginatedCsvDownloader';
 import { SelectedUsersSheet } from '../blocks/SelectedUsersSheet';
 
-const columnHelper = createColumnHelper();
+const columnHelper = createColumnHelper<UserTableRow>();
 
-const userColumns = [
+type UsersTableMeta = {
+  selectedUsers: Record<string, unknown>;
+  selectUser: (user: UserTableRow) => void;
+  deselectUser: (userId: string) => void;
+};
+
+const formatRowDate = (value: string | null) =>
+  value === null
+    ? '—'
+    : `${formatDate(new Date(value))} (${formatTimeDistance(
+        new Date(value),
+        new Date(),
+      )})`;
+
+const userColumns: ColumnDef<UserTableRow, any>[] = [
   columnHelper.display({
     id: 'select',
     header: 'Selected',
-    cell: ({ table, row }) => (
-      <SelectBox
-        checked={Object.keys(table.options.meta.selectedUsers).includes(
-          row.original.uuid ?? row.original.hash,
-        )}
-        onChange={() => {
-          if (
-            Object.keys(table.options.meta.selectedUsers).includes(
-              row.original.uuid ?? row.original.hash,
-            )
-          ) {
-            table.options.meta.deselectUser(
-              row.original.uuid ?? row.original.hash,
-            );
-          } else {
-            table.options.meta.selectUser(row.original);
-          }
-        }}
-      />
-    ),
+    cell: ({ table, row }) => {
+      const meta = table.options.meta as UsersTableMeta | undefined;
+      const isSelected = Boolean(meta?.selectedUsers?.[row.original.uuid]);
+
+      return (
+        <SelectBox
+          checked={isSelected}
+          onChange={() => {
+            if (isSelected) {
+              meta?.deselectUser?.(row.original.uuid);
+            } else {
+              meta?.selectUser?.(row.original);
+            }
+          }}
+        />
+      );
+    },
   }),
   columnHelper.accessor('profile.image', {
     header: 'Image',
@@ -216,11 +229,7 @@ const userColumns = [
         </Button>
       );
     },
-    cell: ({ row }) =>
-      `${formatDate(new Date(row.original.date_joined))} (${formatTimeDistance(
-        new Date(row.original.date_joined),
-        new Date(),
-      )})`,
+    cell: ({ row }) => formatRowDate(row.original.date_joined),
   }),
   columnHelper.accessor('last_login', {
     header: ({ column }) => {
@@ -234,11 +243,7 @@ const userColumns = [
         </Button>
       );
     },
-    cell: ({ row }) =>
-      `${formatDate(new Date(row.original.last_login))} (${formatTimeDistance(
-        new Date(row.original.last_login),
-        new Date(),
-      )})`,
+    cell: ({ row }) => formatRowDate(row.original.last_login),
   }),
 ];
 
@@ -246,17 +251,22 @@ export function UsersTable({
   userList,
   onSelectUser,
 }: {
-  userList: any;
-  onSelectUser: (user: Record<string, any>) => Promise<void>;
+  userList?: PaginatedUserTableList;
+  onSelectUser: (user: UserTableRow) => Promise<void>;
 }) {
   const { selectedUsers, deselectUser } = useGlobalState();
+  const tableMeta: UsersTableMeta = {
+    selectedUsers,
+    deselectUser,
+    selectUser: onSelectUser,
+  };
 
   return (
     <>
       <DataTable
         columns={userColumns}
-        data={userList?.results}
-        tableMeta={{ selectedUsers, deselectUser, selectUser: onSelectUser }}
+        data={userList?.results ?? []}
+        tableMeta={tableMeta}
       />
       <SelectedUsersSheet />
     </>
@@ -475,11 +485,9 @@ export function Users() {
           {!usersLoading && !error && (
             <UsersTable
               userList={userList}
-              onSelectUser={async (user: Record<string, any>) => {
+              onSelectUser={async (user: UserTableRow) => {
                 try {
-                  const fullUser = await getUserDetails(
-                    String(user.uuid ?? user.id),
-                  );
+                  const fullUser = await getUserDetails(user.uuid);
                   selectUser(fullUser);
                 } catch (error) {
                   console.log({ error });

@@ -29,6 +29,7 @@ import { format, parseISO } from 'date-fns';
 import {
   STATUS_CONFIG,
   SupportTask,
+  SupportTaskListItem,
   TaskPriority,
   TaskStatus,
   buildSupportTaskListParams,
@@ -289,16 +290,21 @@ const ChatWrapper = styled.div`
   display: flex;
   flex-direction: column;
   padding: ${({ theme }) => theme.spacing.medium};
+  position: relative;
+  z-index: 0;
 `;
 
 const ProfileLink = styled(Link)`
   display: block;
   text-align: center;
   color: ${({ theme }) => theme.color.text.link};
-  padding-top: ${({ theme }) => theme.spacing.xsmall};
   &:hover {
     text-decoration: underline;
   }
+`;
+
+const CardProfileLink = styled(ProfileLink)`
+  margin-top: ${({ theme }) => theme.spacing.xsmall};
 `;
 
 const ContextGroup = styled(Card)`
@@ -408,7 +414,7 @@ export default function SupportTaskDetail() {
       : nextPageList?.results[0];
 
   const goToNeighbouringTask = (
-    neighbour: SupportTask,
+    neighbour: SupportTaskListItem,
     page?: number | null,
   ) => {
     const search = new URLSearchParams(searchParams);
@@ -582,6 +588,22 @@ export default function SupportTaskDetail() {
                     <Text type={TextTypes.Body6}>#{task.id}</Text>
                   </MetaValue>
                 </MetaField>
+
+                {relatedUser && (
+                  <MetaField>
+                    <MetaLabel>Related user</MetaLabel>
+                    <UserCell>
+                      <UserImage
+                        alt={`${relatedUser.first_name} ${relatedUser.second_name}`}
+                        user={relatedUser}
+                        dimensions={{ width: 28, height: 28 }}
+                      />
+                      <ProfileLink to={`/user/${relatedUser.id}`}>
+                        {relatedUser.first_name} {relatedUser.second_name}
+                      </ProfileLink>
+                    </UserCell>
+                  </MetaField>
+                )}
 
                 <MetaField>
                   <Select
@@ -898,9 +920,9 @@ export default function SupportTaskDetail() {
                         </Text>
                       </MetaField>
                     </MetaGrid>
-                    <ProfileLink to={`/user/${relatedUser.id}`}>
+                    <CardProfileLink to={`/user/${relatedUser.id}`}>
                       Open full profile →
-                    </ProfileLink>
+                    </CardProfileLink>
                   </CardContent>
                 )}
               </Card>
