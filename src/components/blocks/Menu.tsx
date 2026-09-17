@@ -55,7 +55,7 @@ const Menu = () => {
   const [searchParams] = useSearchParams();
   const { selectExactUser } = useSelectUser();
   const { panelUser } = useGlobalState();
-  const canAccessOpenChat = hasManagementPermission(
+  const hasOpenChatAccess = hasManagementPermission(
     panelUser as MatchingPanelUser | undefined,
     MANAGEMENT_PERMISSION_OPEN_CHAT_ACCESS,
   );
@@ -195,7 +195,7 @@ const Menu = () => {
           >
             Random Calls
           </NavigationMenuContentItem>
-          {canAccessOpenChat && (
+          {hasOpenChatAccess && (
             <NavigationMenuContentItem
               to={OPEN_CHAT_ROUTE}
               active={location.pathname.startsWith(OPEN_CHAT_ROUTE)}
