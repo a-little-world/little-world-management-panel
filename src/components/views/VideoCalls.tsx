@@ -38,6 +38,7 @@ const DEFAULT_VIDEO_CALL_FIELDS = [
   { key: 'u2', label: 'Second User' },
   { key: 'status', label: 'Status' },
   { key: 'both_have_been_active', label: 'Both Active?' },
+  { key: 'unusual_length', label: 'Unusual Length?' },
   { key: 'duration', label: 'Duration' },
   { key: 'call_minutes', label: 'Call Minutes' },
 ];
@@ -74,18 +75,23 @@ export function VideoCallsTable({ videoCallsList }) {
                     );
                   }
 
-                  if (key === 'both_have_been_active') {
+                  if (key === 'both_have_been_active' || key === 'unusual_length') {
+                    const flagged = Boolean(get(videoCall, key));
                     return (
                       <TableCell key={videoCall.uuid + key}>
                         <Tag
                           appearance={
-                            videoCall.both_have_been_active
-                              ? TagAppearance.success
-                              : TagAppearance.error
+                            key === 'unusual_length'
+                              ? flagged
+                                ? TagAppearance.error
+                                : TagAppearance.success
+                              : flagged
+                                ? TagAppearance.success
+                                : TagAppearance.error
                           }
                           size={TagSizes.small}
                         >
-                          {videoCall.both_have_been_active ? 'Yes' : 'No'}
+                          {flagged ? 'Yes' : 'No'}
                         </Tag>
                       </TableCell>
                     );
@@ -151,7 +157,7 @@ const orderingOptions = [
 function VideoCalls() {
   let [searchParams, setSearchParams] = useSearchParams();
   const list = searchParams.get('list') || 'all';
-  const orderBy = searchParams.get('order_by') || '-date_joined';
+  const orderBy = searchParams.get('order_by') || '-created_at';
 
   const { filterOptions, isLoading: filtersLoading } =
     useVideoCallsFilterOptions();
@@ -173,7 +179,7 @@ function VideoCalls() {
         {/* Assuming you have filter options similarly set up like in Users component */}
         <StyledDropdown
           value={list}
-          options={toListSelectOptions(filterOptions.lists)}
+          options={toListSelectOptions(filterOptions?.lists)}
           onValueChange={val => changeList(val)}
           placeholder="Select a video calls list..."
           cannotError
@@ -185,7 +191,7 @@ function VideoCalls() {
             searchParams.set('order_by', val);
             setSearchParams(searchParams);
           }}
-          placeholder="Select a user list..."
+          placeholder="Order by..."
           cannotError
         />
 
