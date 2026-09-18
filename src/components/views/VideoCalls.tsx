@@ -152,6 +152,14 @@ const orderingOptions = [
     value: '-end_time',
     label: '(Desc) End Time',
   },
+  {
+    value: 'duration',
+    label: '(Asc) Duration',
+  },
+  {
+    value: '-duration',
+    label: '(Desc) Duration',
+  },
 ];
 
 function VideoCalls() {
