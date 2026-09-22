@@ -28,6 +28,7 @@ import useSWR from 'swr';
 import { format, parseISO } from 'date-fns';
 import {
   STATUS_CONFIG,
+  SupportReplyParameters,
   SupportTask,
   TaskPriority,
   TaskStatus,
@@ -509,6 +510,10 @@ export default function SupportTaskDetail() {
   const actionParameters = action?.parameters ?? {};
   const isSupportReplyAction = action?.action_type === 'support_reply';
   const isSupportReplyExecuted = action?.status === 'EXECUTED';
+  const supportReplyParameters = actionParameters as SupportReplyParameters;
+  const suggestedAction = isSupportReplyAction
+    ? (supportReplyParameters.suggested_action ?? 'reply')
+    : 'reply';
   const supportReplyDraftMessage =
     typeof actionParameters.message === 'string'
       ? actionParameters.message
@@ -683,6 +688,20 @@ export default function SupportTaskDetail() {
                     </Text>
                   </MetaValue>
                 </MetaField>
+
+                {task.scheduled_at && (
+                  <MetaField>
+                    <MetaLabel>Scheduled</MetaLabel>
+                    <MetaValue>
+                      <Text type={TextTypes.Body6}>
+                        {format(
+                          parseISO(task.scheduled_at),
+                          'MMM d, yyyy HH:mm',
+                        )}
+                      </Text>
+                    </MetaValue>
+                  </MetaField>
+                )}
               </MetaGrid>
 
               {interactionInternalRoute && (
@@ -765,7 +784,10 @@ export default function SupportTaskDetail() {
                                   : supportReplyDraftMessage
                               }
                               sendViaSupportReplyApi
-                              hideComposer={isSupportReplyExecuted}
+                              hideComposer={
+                                isSupportReplyExecuted ||
+                                suggestedAction !== 'reply'
+                              }
                               onSupportReplySent={(message: string) => {
                                 void mutate(
                                   current =>

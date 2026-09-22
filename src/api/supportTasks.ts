@@ -20,6 +20,20 @@ export type {
 export type TaskStatus = 'NEW' | 'IN_PROGRESS' | 'COMPLETED';
 export type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
 export type ActionStatus = 'OPEN' | 'EXECUTED' | 'CANCELLED';
+export type SuggestedAction =
+  | 'reply'
+  | 'mark_read'
+  | 'slack_feedback'
+  | 'keep_open';
+
+export interface SupportReplyParameters {
+  message?: string;
+  suggested_action?: SuggestedAction;
+  slack_message?: string;
+  slack_thread?: string;
+  scheduled_at?: string;
+  note?: string;
+}
 
 export interface SupportTaskAction {
   id: number;
@@ -39,6 +53,7 @@ export interface SupportTaskNote {
   completed: boolean;
   completed_at: string | null;
   completed_by_profile: UserProfile | null;
+  created_by_profile: UserProfile | null;
   created_at: string;
   history?: ObjectHistory[];
 }
@@ -62,6 +77,7 @@ export interface SupportTask {
   created_by_profile: UserProfile | null;
   created_at: string;
   updated_at: string;
+  scheduled_at: string | null;
   action: SupportTaskAction;
   history?: ObjectHistory[];
   notes: SupportTaskNote[];
@@ -203,6 +219,23 @@ export const executeAction = (taskId: number): Promise<SupportTaskAction> =>
 export const cancelAction = (taskId: number): Promise<SupportTaskAction> =>
   apiFetch(`/api/support_task/${taskId}/action/cancel/`, { method: 'POST' });
 
+export const keepSupportTaskOpen = (
+  taskId: number,
+  parameters: SupportReplyParameters,
+): Promise<SupportTaskAction> =>
+  apiFetch(`/api/support_task/${taskId}/action/keep_open/`, {
+    method: 'POST',
+    body: { parameters },
+  });
+
+export interface SlackThreadOption {
+  key: string;
+  label: string;
+}
+
+export const fetchSlackThreads = (): Promise<SlackThreadOption[]> =>
+  apiFetch('/api/support_task/slack_threads/');
+
 export type BulkSupportTaskAction = 'delete' | 'complete' | 'cancel';
 
 export interface BulkSupportTaskResult {
@@ -293,5 +326,25 @@ export function getActionTypeConfig(actionType: string): {
       label: actionType.replace(/_/g, ' '),
       color: GRAY_40,
     }
+  );
+}
+
+export const SUGGESTED_ACTION_CONFIG: Record<
+  SuggestedAction,
+  { label: string; color: string }
+> = {
+  reply: { label: 'Reply', color: BLUE_40 },
+  mark_read: { label: 'Mark as read & close', color: GRAY_40 },
+  slack_feedback: { label: 'Post to Slack', color: PURPLE_40 },
+  keep_open: { label: 'Keep open', color: AMBER_40 },
+};
+
+export function getSuggestedActionConfig(value?: string): {
+  label: string;
+  color: string;
+} {
+  return (
+    SUGGESTED_ACTION_CONFIG[value as SuggestedAction] ??
+    SUGGESTED_ACTION_CONFIG.reply
   );
 }
