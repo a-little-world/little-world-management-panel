@@ -92,6 +92,69 @@ export interface PaginatedListMeta {
   items_total?: number;
 }
 
+/** Mirrors `UserTableProfileSerializer` — only the profile fields the table renders. */
+export interface UserTableProfile {
+  first_name: string;
+  second_name: string;
+  user_type: 'learner' | 'volunteer';
+  country_of_residence: string | null;
+  target_groups: string[];
+  image_type: 'image' | 'avatar';
+  avatar_config: Record<string, unknown>;
+  image: string | null;
+}
+
+export interface UserTableState {
+  company: string | null;
+  has_match_priority: boolean;
+}
+
+/** Mirrors `MatchPreviewProfileSerializer` plus the partner id fields. */
+export interface UserMatchPreviewPartner {
+  id: number;
+  first_name: string;
+  has_match_priority: boolean;
+  image_type: 'image' | 'avatar';
+  avatar_config: Record<string, unknown>;
+  image: string | null;
+}
+
+export interface UserMatchPreview {
+  /** The partner's uuid, as a string. */
+  id: string;
+  partner: UserMatchPreviewPartner;
+}
+
+export interface UserMatchPreviews {
+  confirmed: { results: UserMatchPreview[] };
+  unconfirmed: { results: UserMatchPreview[] };
+  proposed: { results: UserMatchPreview[] };
+}
+
+export interface UserWaitingTime {
+  number_of_days: number | null;
+  waiting_time_string: string;
+  first_search: boolean | null;
+}
+
+/** Row shape of `GET /api/matching/users/` (`UserTableSerializer` + the page batch maps). */
+export interface UserTableRow {
+  id: number;
+  uuid: string;
+  email: string;
+  date_joined: string;
+  last_login: string | null;
+  last_seen: string | null;
+  profile: UserTableProfile;
+  state: UserTableState;
+  waiting_time: UserWaitingTime;
+  matches: UserMatchPreviews;
+}
+
+export interface PaginatedUserTableList extends PaginatedListMeta {
+  results: UserTableRow[];
+}
+
 export const getUsersListPaginationMeta = async ({
   searchParams,
   pageSize,
