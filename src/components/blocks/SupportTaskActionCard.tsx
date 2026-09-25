@@ -14,10 +14,13 @@ import styled from 'styled-components';
 
 import {
   ActionStatus,
+  SupportReplyParameters,
   SupportTaskAction,
   cancelAction,
   executeAction,
   getActionTypeConfig,
+  getSuggestedActionConfig,
+  keepSupportTaskOpen,
 } from '../../api/supportTasks';
 import { ORANGE_40 } from '../../constants';
 import { Card, CardContent, CardHeader } from '../atoms/Card';
@@ -73,6 +76,28 @@ const ErrorText = styled(Text).attrs({
   color: ${({ theme }) => theme.color.text.error};
 `;
 
+const SuggestionSummary = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xxsmall};
+`;
+
+const SuggestionRow = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xxxsmall};
+`;
+
+const SuggestionValue = styled(Text).attrs({
+  type: TextTypes.Body6,
+  tag: 'p' as const,
+})`
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: ${({ theme }) => theme.color.text.primary};
+`;
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const STATUS_SUBTITLE: Record<ActionStatus, string> = {
@@ -94,16 +119,32 @@ export default function SupportTaskActionCard({
   taskId,
   onResolved,
 }: SupportTaskActionCardProps) {
-  const [loading, setLoading] = useState<'execute' | 'cancel' | null>(null);
+  const [loading, setLoading] = useState<
+    'execute' | 'cancel' | 'keep_open' | null
+  >(null);
   const [error, setError] = useState<string | null>(null);
   const isOpen = action.status === 'OPEN';
   const actionTypeCfg = getActionTypeConfig(action.action_type);
 
-  const handle = async (type: 'execute' | 'cancel') => {
+  const supportReplyParams =
+    action.action_type === 'support_reply'
+      ? (action.parameters as SupportReplyParameters)
+      : undefined;
+  const suggestedAction = supportReplyParams?.suggested_action ?? 'reply';
+  const isSuggestion =
+    action.action_type === 'support_reply' && suggestedAction !== 'reply';
+  const suggestionCfg = getSuggestedActionConfig(suggestedAction);
+
+  const handle = async (type: 'execute' | 'cancel' | 'keep_open') => {
     setLoading(type);
     setError(null);
     try {
       if (type === 'execute') await executeAction(taskId);
+      else if (type === 'keep_open')
+        await keepSupportTaskOpen(taskId, {
+          note: supportReplyParams?.note,
+          scheduled_at: supportReplyParams?.scheduled_at,
+        });
       else await cancelAction(taskId);
       onResolved?.();
     } catch (e: unknown) {
@@ -112,6 +153,46 @@ export default function SupportTaskActionCard({
       setLoading(null);
     }
   };
+
+  function renderSuggestion() {
+    if (!isSuggestion || !supportReplyParams) return null;
+    const scheduledAt = supportReplyParams.scheduled_at;
+    return (
+      <SuggestionSummary>
+        {scheduledAt && (
+          <SuggestionRow>
+            <Text type={TextTypes.Body7} bold tag="span">
+              Scheduled for
+            </Text>
+            <SuggestionValue>
+              {new Date(scheduledAt).toLocaleString()}
+            </SuggestionValue>
+          </SuggestionRow>
+        )}
+        {supportReplyParams.slack_message && (
+          <SuggestionRow>
+            <Text type={TextTypes.Body7} bold tag="span">
+              Slack message
+              {supportReplyParams.slack_thread
+                ? ` (${supportReplyParams.slack_thread})`
+                : ''}
+            </Text>
+            <SuggestionValue>
+              {supportReplyParams.slack_message}
+            </SuggestionValue>
+          </SuggestionRow>
+        )}
+        {supportReplyParams.note && (
+          <SuggestionRow>
+            <Text type={TextTypes.Body7} bold tag="span">
+              Note
+            </Text>
+            <SuggestionValue>{supportReplyParams.note}</SuggestionValue>
+          </SuggestionRow>
+        )}
+      </SuggestionSummary>
+    );
+  }
 
   function renderContent() {
     switch (action.action_type) {
@@ -130,6 +211,9 @@ export default function SupportTaskActionCard({
     }
   }
   const customContent = renderContent();
+  const suggestionContent = renderSuggestion();
+  const primaryLabel = isSuggestion ? suggestionCfg.label : 'Execute';
+  const primaryAction = suggestedAction === 'keep_open' ? 'keep_open' : 'execute';
 
   return (
     <ActionCard center={false}>
@@ -144,6 +228,15 @@ export default function SupportTaskActionCard({
             >
               {actionTypeCfg.label}
             </Tag>
+            {isSuggestion && (
+              <Tag
+                size={TagSizes.small}
+                appearance={TagAppearance.outline}
+                color={suggestionCfg.color}
+              >
+                {suggestionCfg.label}
+              </Tag>
+            )}
             <Tag size={TagSizes.small}>{STATUS_SUBTITLE[action.status]}</Tag>
           </HeaderMeta>
           {isOpen && (
@@ -159,19 +252,20 @@ export default function SupportTaskActionCard({
               <Button
                 size={ButtonSizes.Small}
                 disabled={loading !== null}
-                onClick={() => handle('execute')}
+                onClick={() => handle(primaryAction)}
               >
-                Execute <CheckIcon size={14} />
+                {primaryLabel} <CheckIcon size={14} />
               </Button>
             </HeaderActions>
           )}
         </HeaderRow>
       </CompactHeader>
 
-      {(error || customContent) && (
+      {(error || customContent || suggestionContent) && (
         <CompactContent>
           {error && <ErrorText>{error}</ErrorText>}
           {customContent}
+          {suggestionContent}
         </CompactContent>
       )}
     </ActionCard>

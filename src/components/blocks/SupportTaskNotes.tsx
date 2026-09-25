@@ -51,7 +51,6 @@ const NoteText = styled(Text).attrs({
   type: TextTypes.Body6,
   tag: 'span' as const,
 })<{ $completed: boolean }>`
-  flex: 1;
   min-width: 0;
   overflow-wrap: anywhere;
   line-height: 1.5;
@@ -59,6 +58,21 @@ const NoteText = styled(Text).attrs({
     $completed ? 'line-through' : 'none'};
   color: ${({ $completed, theme }) =>
     $completed ? theme.color.text.tertiary : theme.color.text.primary};
+`;
+
+const NoteContent = styled.div`
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xxxsmall};
+`;
+
+const NoteAuthor = styled(Text).attrs({
+  type: TextTypes.Body7,
+  tag: 'span' as const,
+})`
+  color: ${({ theme }) => theme.color.text.tertiary};
 `;
 
 const NoteForm = styled.form`
@@ -263,7 +277,17 @@ export default function SupportTaskNotes({
                   />
                 ) : (
                   <>
-                    <NoteText $completed={note.completed}>{note.text}</NoteText>
+                    <NoteContent>
+                      <NoteText $completed={note.completed}>
+                        {note.text}
+                      </NoteText>
+                      {note.created_by_profile && (
+                        <NoteAuthor>
+                          {note.created_by_profile.first_name}{' '}
+                          {note.created_by_profile.second_name}
+                        </NoteAuthor>
+                      )}
+                    </NoteContent>
                     <Button
                       variation={ButtonVariations.Icon}
                       size={ButtonSizes.Small}
