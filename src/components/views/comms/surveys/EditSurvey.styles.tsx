@@ -39,3 +39,22 @@ export const LoadingWrap = styled.div`
   display: flex;
   justify-content: center;
 `;
+
+export const LinkPreview = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xxsmall};
+`;
+
+export const LinkPreviewRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.small};
+  flex-wrap: wrap;
+`;
+
+export const LinkPath = styled.span`
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8125rem;
+  color: ${({ theme }) => theme.color.text.secondary};
+`;

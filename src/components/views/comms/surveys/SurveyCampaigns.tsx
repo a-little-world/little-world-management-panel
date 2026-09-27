@@ -25,6 +25,7 @@ import {
   fetchSurveyCampaigns,
   SurveyAudienceFilterOption,
   SurveyCampaign,
+  surveyPublicUrl,
 } from '../../../../api/surveys';
 import { formatBerlinDate } from '../../../../helpers/berlinDates';
 import {
@@ -93,6 +94,16 @@ const describeRepeat = (campaign: SurveyCampaign) =>
   campaign.repeat_scope === 'context'
     ? `Once per ${campaign.context_type || 'context'}`
     : 'Once per user';
+
+const describeTrigger = (
+  campaign: SurveyCampaign,
+  options: SurveyAudienceFilterOption[] | undefined,
+) => {
+  const match = (options ?? []).find(
+    option => option.value === campaign.trigger,
+  );
+  return match ? shortLabel(match.label) : campaign.trigger;
+};
 
 const describeResponses = (campaign: SurveyCampaign) => {
   if (!campaign.offered) return '—';
@@ -190,6 +201,8 @@ function SurveyCampaigns() {
                     <TableRow>
                       <TableHead>Name</TableHead>
                       <TableHead>Audience</TableHead>
+                      <TableHead className="w-44">When</TableHead>
+                      <TableHead className="w-28 text-center">Link</TableHead>
                       <TableHead className="w-40 text-center">
                         Questions
                       </TableHead>
@@ -226,6 +239,22 @@ function SurveyCampaigns() {
                       <TableRow key={campaign.id}>
                         <TableCell>{campaign.name || campaign.slug}</TableCell>
                         <TableCell>{describeAudience(campaign)}</TableCell>
+                        <TableCell>
+                          {describeTrigger(campaign, options?.triggers)}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {campaign.available_via_link ? (
+                            <Link
+                              href={surveyPublicUrl(campaign.slug)}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              Open
+                            </Link>
+                          ) : (
+                            '—'
+                          )}
+                        </TableCell>
                         <TableCell className="text-center">
                           {campaign.questions.length}
                         </TableCell>

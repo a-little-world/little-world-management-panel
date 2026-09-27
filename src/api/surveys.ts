@@ -43,7 +43,14 @@ export type SurveyAudienceType = 'all' | 'company' | 'filter';
 export type SurveyTrigger =
   | 'on_session'
   | 'event:call_ended'
-  | 'event:qualifying_call_ended';
+  | 'event:qualifying_call_ended'
+  | 'none';
+
+/** Public path on the main app. Staff can open it when `available_via_link` is on. */
+export const surveyPublicPath = (slug: string) => `/app/surveys/${slug}`;
+
+export const surveyPublicUrl = (slug: string) =>
+  `${typeof window === 'undefined' ? '' : window.location.origin}${surveyPublicPath(slug)}`;
 export type SurveyEligibleAfterEvent =
   | ''
   | 'onboarded'
@@ -87,6 +94,7 @@ export interface SurveyCampaignPayload {
   starts_at: string | null;
   ends_at: string | null;
   max_shows: number;
+  available_via_link: boolean;
 }
 
 export interface SurveyCampaign extends SurveyCampaignPayload {
