@@ -568,17 +568,22 @@ const automatedEmails = {
         text: automatedText['automatic-emails-m032.block-4'],
       },
       {
-        type: ContentTypes.Paragraph,
+        type: ContentTypes.Button,
         text: automatedText['automatic-emails-m032.block-5'],
+        href: BackendVars.interculturalCommunicationTrainingUrl,
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-m032.block-6'],
       },
       {
         type: ContentTypes.Button,
-        text: automatedText['automatic-emails-m032.block-6'],
-        href: '{{ still_in_contact_yes_url }}',
+        text: automatedText['automatic-emails-m032.block-7'],
+        href: BackendVars.stillInContactYesUrl,
       },
       {
         type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m032.block-7'],
+        text: automatedText['automatic-emails-m032.block-8'],
       },
     ],
   },
@@ -2236,37 +2241,46 @@ const automatedEmails = {
       },
     ],
   },
-  'new-match': {
-    id: 'new-match',
-    label: 'New Match',
+  'automatic-emails-m011': {
+    id: 'automatic-emails-m011',
+    label: 'M011 - New Match',
     category_id: EmailCategories.Automated,
-    preview: automatedText['new-match.preview'],
-    subject: automatedText['new-match.subject'],
+    preview: automatedText['automatic-emails-m011.preview'],
+    subject: automatedText['automatic-emails-m011.subject'],
     content: [
       {
         type: ContentTypes.Title,
-        text: automatedText['new-match.block-1'],
+        text: automatedText['automatic-emails-m011.block-1'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: automatedText['new-match.block-2'],
+        text: automatedText['automatic-emails-m011.block-2'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: automatedText['new-match.block-3'],
+        text: automatedText['automatic-emails-m011.block-3'],
       },
       {
         type: ContentTypes.Paragraph,
-        text: automatedText['new-match.block-4'],
+        text: automatedText['automatic-emails-m011.block-4'],
       },
       {
         type: ContentTypes.Button,
-        text: automatedText['new-match.block-5'],
+        text: automatedText['automatic-emails-m011.block-5'],
         href: BackendVars.partnerProfileUrl,
       },
       {
         type: ContentTypes.Paragraph,
-        text: automatedText['new-match.block-6'],
+        text: automatedText['automatic-emails-m011.block-6'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['automatic-emails-m011.block-7'],
+        href: BackendVars.interculturalCommunicationTrainingUrl,
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-m011.block-8'],
       },
     ],
   },
