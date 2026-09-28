@@ -421,6 +421,32 @@ const automatedEmails = {
       },
     ],
   },
+  'automatic-emails-m022': {
+    id: 'automatic-emails-m022',
+    label: 'M022 - New Message Reminder',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['automatic-emails-m022.preview'],
+    subject: automatedText['automatic-emails-m022.subject'],
+    content: [
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-m022.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-m022.block-2'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['automatic-emails-m022.block-3'],
+        href: BackendVars.messagesUrl,
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-m022.block-4'],
+      },
+    ],
+  },
   'automatic-emails-m023': {
     id: 'automatic-emails-m023',
     label: 'M023 - Partner Waiting Reminder',
