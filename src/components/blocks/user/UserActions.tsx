@@ -29,6 +29,7 @@ import {
   fetchMatchingPanelUser,
   fetchUserManagementPermissions,
   inviteNativeAppTester,
+  migrateUser,
   sendPushNotification,
   sendSms,
   setHadPrematchingCall,
@@ -453,6 +454,11 @@ const UserActions = ({
   const { apiOptions, apiTranslations } = useGlobalState();
   const [deleteUserModalOpen, setDeleteUserModalOpen] = useState(false);
   const [deleteUserError, setDeleteUserError] = useState<string | null>(null);
+  const [migrateUserModalOpen, setMigrateUserModalOpen] = useState(false);
+  const [migrateUserError, setMigrateUserError] = useState<string | null>(null);
+  const [migrateEmail, setMigrateEmail] = useState('');
+  const [migrateRemoveCompany, setMigrateRemoveCompany] = useState(false);
+  const [migrateCensor, setMigrateCensor] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [changesSaved, setChangesSaved] = useState(false);
   const { data: currentUser, isLoading: currentUserLoading } = useSWR(
@@ -550,6 +556,37 @@ const UserActions = ({
     });
   };
 
+  const openMigrateUserModal = () => {
+    setMigrateUserError(null);
+    setMigrateEmail('');
+    setMigrateRemoveCompany(false);
+    setMigrateCensor(true);
+    setMigrateUserModalOpen(true);
+  };
+
+  const onMigrateUser = () => {
+    setIsSubmitting(true);
+    setChangesSaved(false);
+    setMigrateUserError(null);
+    migrateUser({
+      id: user.id,
+      newEmail: migrateEmail.trim() ? migrateEmail.trim() : null,
+      removeCompany: migrateRemoveCompany,
+      censor: migrateCensor,
+      onError: error => {
+        console.error(error);
+        setMigrateUserError(error?.message || 'Could not migrate this user.');
+        setIsSubmitting(false);
+      },
+      onSuccess: () => {
+        setIsSubmitting(false);
+        setChangesSaved(true);
+        setMigrateUserModalOpen(false);
+        onUpdate();
+      },
+    });
+  };
+
   const permissionsStatus = (
     permissionsError as { status?: number } | undefined
   )?.status;
@@ -558,6 +595,7 @@ const UserActions = ({
     (Boolean(permissionsError) && permissionsStatus !== 403);
   const canUpdateMatchingProfileFields = Boolean(currentUser?.is_matching_user);
   const canDeleteUser = Boolean(currentUser?.can_edit_management_permissions);
+  const canMigrateUser = canDeleteUser;
   const canGrantApplyManagementPermissions = Boolean(
     currentUser?.can_grant_apply_management_permissions,
   );
@@ -570,6 +608,13 @@ const UserActions = ({
     permissionsLoading ||
     !canDeleteUser ||
     targetIsProtected;
+  const migrateDisabled =
+    isSubmitting ||
+    currentUserLoading ||
+    permissionsLoading ||
+    !canMigrateUser ||
+    targetIsProtected ||
+    (!migrateEmail.trim() && !migrateRemoveCompany);
 
   return (
     <div className="w-full">
@@ -838,6 +883,19 @@ const UserActions = ({
                     Danger Zone
                   </Text>
                   <Text className="mb-2">
+                    Migrate the user: change their email or remove their company
+                    attribution. Optionally keep a stale censored copy of the
+                    profile so matches, chats and call history stay resolvable.
+                  </Text>
+                  <div>
+                    <Button
+                      onClick={openMigrateUserModal}
+                      backgroundColor={theme.color.status.error}
+                    >
+                      Migrate User
+                    </Button>
+                  </div>
+                  <Text className="mt-2 mb-2">
                     Delete the user and censor their profile
                   </Text>
                   <div>
@@ -887,6 +945,67 @@ const UserActions = ({
               size={ButtonSizes.Stretch}
             >
               {isSubmitting ? 'Deleting...' : 'Delete Account'}
+            </Button>
+          </CardFooter>
+        </Card>
+      </Modal>
+      <Modal
+        open={migrateUserModalOpen}
+        onClose={() => setMigrateUserModalOpen(false)}
+      >
+        <Card width={CardSizes.Medium}>
+          <CardHeader>Migrate user</CardHeader>
+          <CardContent>
+            <Text>
+              Change the user's email address and/or remove their company
+              attribution. When censoring is enabled the existing profile is
+              kept as a stale censored copy, so matches, chats and call history
+              stay resolvable.
+            </Text>
+            <TextInput
+              id="migrate_email"
+              label="New email address"
+              placeholder="Leave empty to keep the current email"
+              value={migrateEmail}
+              onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                setMigrateEmail(event.target.value)
+              }
+              autoComplete="off"
+            />
+            <Checkbox
+              id="migrate_remove_company"
+              label={`Remove company (${user.state?.company || 'none'})`}
+              checked={migrateRemoveCompany}
+              onCheckedChange={checked =>
+                setMigrateRemoveCompany(checked === true)
+              }
+              required={false}
+            />
+            <Checkbox
+              id="migrate_censor"
+              label="Censor the profile in place (keep a stale ghost for references)"
+              checked={migrateCensor}
+              onCheckedChange={checked => setMigrateCensor(checked === true)}
+              required={false}
+            />
+            <StatusMessage
+              type={StatusTypes.Error}
+              visible={!canMigrateUser || targetIsProtected || !!migrateUserError}
+            >
+              {migrateUserError ||
+                (targetIsProtected
+                  ? 'Staff, superusers, and matching users cannot be migrated from this view.'
+                  : `You do not have the required permissions to migrate this user.`)}
+            </StatusMessage>
+          </CardContent>
+          <CardFooter>
+            <Button
+              onClick={onMigrateUser}
+              backgroundColor={theme.color.status.error}
+              disabled={migrateDisabled}
+              size={ButtonSizes.Stretch}
+            >
+              {isSubmitting ? 'Migrating...' : 'Migrate User'}
             </Button>
           </CardFooter>
         </Card>
