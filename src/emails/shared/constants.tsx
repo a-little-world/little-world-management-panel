@@ -26,6 +26,8 @@ export const BackendVars = {
   unsubscribeUrl: '{{ unsubscribe_url }}',
   stillInContactYesUrl: '{{ still_in_contact_yes_url }}',
   stillInContactNoUrl: '{{ still_in_contact_no_url }}',
+  interculturalCommunicationTrainingUrl:
+    '{{ intercultural_communication_training_url }}',
 };
 
 export const THEMES = {
