@@ -2,6 +2,8 @@ export const ALGORITHM_ROUTE = '/documentation/algorithm/';
 export const BASE_ROUTE = '/matching/';
 export const CREATE_NEW_EMAIL_ROUTE = '/email/new';
 export const DEVKIT_ROUTE = '/devkit/';
+export const DEVELOPMENT_PROCESS_DOCUMENTATION_ROUTE =
+  '/documentation/development-process/';
 export const DOCUMENTATION_ROUTE = '/documentation/';
 export const JOURNEY_OVERVIEW_DOCUMENTATION_ROUTE =
   '/documentation/journey-overview-alpha/';
