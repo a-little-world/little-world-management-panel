@@ -27,7 +27,7 @@ export interface SurveyQuestion {
   label: LocalizedText;
   placeholder?: LocalizedText;
   options?: SurveyChoiceOption[];
-  /** Stars for this rating question. Falls back to the campaign scale. */
+  /** Stars for this rating question. Falls back to the campaign scale on older rows. */
   scale?: number;
 }
 
@@ -84,7 +84,6 @@ export interface SurveyCampaignPayload {
   slug: string;
   name: string;
   copy: SurveyCampaignCopy;
-  scale: number;
   questions: SurveyQuestion[];
   audience_type: SurveyAudienceType;
   audience_value: string;
@@ -102,6 +101,8 @@ export interface SurveyCampaignPayload {
 
 export interface SurveyCampaign extends SurveyCampaignPayload {
   id: number;
+  /** Read-only fallback stars for rating questions saved without a scale of their own. */
+  scale: number;
   created_at: string;
   updated_at: string;
   /** Offers created. */
@@ -114,8 +115,6 @@ export interface SurveyCampaign extends SurveyCampaignPayload {
   missing_copy: string[];
   /** Question ids with answers: their id and type are frozen. */
   locked_questions?: string[];
-  /** True once a score has been mirrored onto SurveyResponse.rating (the first rating). */
-  scale_locked?: boolean;
   audience_label?: string;
 }
 

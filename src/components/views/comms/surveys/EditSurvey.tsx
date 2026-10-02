@@ -418,11 +418,21 @@ function pruneLocalized(value?: LocalizedValue) {
 }
 
 function formValuesToPayload(values: SurveyFormValues): SurveyCampaignPayload {
+  // Ids already on a question (stored, or the new-campaign default) are reserved first, so a
+  // generated id can never take one over — whatever the display order. Renaming a stored id
+  // would orphan its answers.
   const usedIds = new Set<string>();
+  const ids = values.questions.map(question => {
+    if (!question.id || usedIds.has(question.id)) return '';
+    usedIds.add(question.id);
+    return question.id;
+  });
   const questions: SurveyQuestion[] = values.questions.map((question, index) => {
-    const generated = question.id || questionIdFrom(question.label.de, index);
-    const id = uniqueAmong(generated, usedIds);
-    usedIds.add(id);
+    let id = ids[index];
+    if (!id) {
+      id = uniqueAmong(questionIdFrom(question.label.de, index), usedIds);
+      usedIds.add(id);
+    }
 
     const payload: SurveyQuestion = {
       id,
@@ -455,8 +465,6 @@ function formValuesToPayload(values: SurveyFormValues): SurveyCampaignPayload {
     return payload;
   });
 
-  const firstRating = questions.find(question => question.type === 'rating');
-
   return {
     slug: values.slug.trim(),
     name: values.name.trim(),
@@ -465,7 +473,6 @@ function formValuesToPayload(values: SurveyFormValues): SurveyCampaignPayload {
       description: pruneLocalized(values.copy.description),
       submit_button: pruneLocalized(values.copy.submit_button),
     },
-    scale: clampScale(firstRating?.scale ?? 5),
     questions,
     audience_type: values.audience_type,
     audience_value:
