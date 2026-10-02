@@ -1092,7 +1092,7 @@ function QuestionPane({
                   labelTooltip={
                     locked
                       ? 'Scale is frozen because someone has already submitted this rating. Changing it would make existing scores mean something else.'
-                      : 'Highest score a user can give. The star captions ("Terrible" … "Excellent") only fit a 5-star scale, so any other value shows bare stars.'
+                      : 'Highest score a user can give.'
                   }
                   width={InputWidth.Large}
                   id={`survey_question_scale_${index}`}
