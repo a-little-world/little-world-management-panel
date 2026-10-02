@@ -13,7 +13,7 @@ export type LocalizedText = {
   en?: string;
 };
 
-export type SurveyQuestionType = 'rating' | 'text' | 'choice';
+export type SurveyQuestionType = 'rating' | 'text' | 'choice' | 'multiselect';
 
 export interface SurveyChoiceOption {
   value: string;
@@ -27,6 +27,8 @@ export interface SurveyQuestion {
   label: LocalizedText;
   placeholder?: LocalizedText;
   options?: SurveyChoiceOption[];
+  /** Stars for this rating question. Falls back to the campaign scale. */
+  scale?: number;
 }
 
 export interface SurveyCampaignCopy {
@@ -56,6 +58,7 @@ export type SurveyEligibleAfterEvent =
   | 'onboarded'
   | 'first_qualifying_call'
   | 'match_created'
+  | 'halfway_match_success'
   | 'match_success';
 export type SurveyRepeatScope = 'user' | 'context';
 export type SurveyContextType = '' | 'live_session' | 'match';
@@ -107,12 +110,11 @@ export interface SurveyCampaign extends SurveyCampaignPayload {
   answered: number;
   /** Offers the client confirmed it displayed — flat at 0 means delivery is broken. */
   rendered: number;
-  mean_rating: number | null;
   /** What still blocks activation. Empty means the campaign can go live. */
   missing_copy: string[];
   /** Question ids with answers: their id and type are frozen. */
   locked_questions?: string[];
-  /** True once a rating has been submitted — scale must not change. */
+  /** True once a score has been mirrored onto SurveyResponse.rating (the first rating). */
   scale_locked?: boolean;
   audience_label?: string;
 }
@@ -161,6 +163,24 @@ export type SurveyResponseStatus =
   | 'dismissed'
   | 'expired';
 
+export type SurveyDeliveryChannel = 'pending' | 'link';
+
+export type SurveyAnswerValue = number | string | string[];
+
+export interface SurveyRatingMean {
+  id: string;
+  label: string;
+  scale: number;
+  mean: number | null;
+  n: number;
+}
+
+export interface SurveyResponseSummary {
+  offered: number;
+  answered: number;
+  rating_means: SurveyRatingMean[];
+}
+
 export interface AdminSurveyResponse {
   id: number;
   campaign_id: number;
@@ -168,9 +188,11 @@ export interface AdminSurveyResponse {
   user_id: number;
   user_email: string;
   status: SurveyResponseStatus;
-  rating: number | null;
-  comment: string;
+  delivery_channel: SurveyDeliveryChannel;
   shown_count: number;
+  opened_at: string | null;
+  answers: Record<string, SurveyAnswerValue>;
+  questions: SurveyQuestion[];
   created_at: string;
   submitted_at: string | null;
 }
@@ -191,6 +213,7 @@ export interface AdminSurveyResponseList {
   results_total: number;
   campaign_options: SurveyFilterOption[];
   status_options: SurveyFilterOption[];
+  summary: SurveyResponseSummary | null;
 }
 
 export const fetchSurveyResponses = (queryString: string) =>

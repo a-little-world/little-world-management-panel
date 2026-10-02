@@ -26,6 +26,7 @@ import {
   useForm,
   UseFormRegister,
   UseFormSetValue,
+  useWatch,
 } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
 import useSWR, { mutate } from 'swr';
@@ -43,6 +44,7 @@ import {
   SurveyTrigger,
   SurveyEligibleAfterEvent,
   SurveyQuestion,
+  SurveyQuestionType,
   surveyPublicPath,
   surveyPublicUrl,
   updateSurveyCampaign,
@@ -86,6 +88,10 @@ import {
   LinkPreviewRow,
   LoadingWrap,
   LockedNotice,
+  OptionCard,
+  OptionHeader,
+  OptionList,
+  OptionTitle,
 } from './EditSurvey.styles';
 
 // ---------------------------------------------------------------------------
@@ -99,11 +105,19 @@ import {
  */
 type LocalizedValue = { de: string; en: string };
 
+type QuestionOptionForm = {
+  value: string;
+  label: LocalizedValue;
+};
+
 type QuestionFormValues = {
   id: string;
+  type: SurveyQuestionType;
   label: LocalizedValue;
   placeholder: LocalizedValue;
   required: boolean;
+  scale: number;
+  options: QuestionOptionForm[];
 };
 
 type SurveyFormValues = {
@@ -114,25 +128,7 @@ type SurveyFormValues = {
     description: LocalizedValue;
     submit_button: LocalizedValue;
   };
-  scale: number;
-  /** The rating question's label. Edited on the details pane, since the rating is implicit. */
-  ratingLabel: LocalizedValue;
-  /**
-   * Id of the rating question as stored. Ids are frozen once answered, so a campaign whose
-   * rating is called something else must keep that name rather than be renamed to `rating`.
-   */
-  ratingId: string;
-  /** When false the campaign has no star-rating question — text/choice questions only. */
-  includeRating: boolean;
   questions: QuestionFormValues[];
-  /**
-   * Questions this editor cannot render — choice questions, or a second rating — carried
-   * through a save untouched. Without this, opening a campaign built in Django admin and
-   * saving it would silently delete them.
-   */
-  preservedQuestions: SurveyQuestion[];
-  /** Question ids in their stored order, so a round-trip does not reshuffle the card. */
-  questionOrder: string[];
   audience_type: 'all' | 'company' | 'filter';
   audience_value: string;
   trigger: SurveyTrigger;
@@ -187,8 +183,20 @@ const MIN_MAX_SHOWS = 1;
 const MAX_MAX_SHOWS = 10;
 const DEFAULT_MAX_SHOWS = 3;
 
-/** The rating question lives on the details pane, not in the rail. */
+/** Default id for the first rating on a new campaign. Frozen once answered. */
 const RATING_QUESTION_ID = 'rating';
+
+const QUESTION_TYPE_OPTIONS: { label: string; value: SurveyQuestionType }[] = [
+  { value: 'rating', label: 'Rating' },
+  { value: 'text', label: 'Text' },
+  { value: 'choice', label: 'Choice' },
+  { value: 'multiselect', label: 'Multi select' },
+];
+
+const OPTIONS_QUESTION_TYPES: SurveyQuestionType[] = ['choice', 'multiselect'];
+
+const isOptionsType = (type: SurveyQuestionType) =>
+  OPTIONS_QUESTION_TYPES.includes(type);
 
 const AUDIENCE_PREFIX = {
   company: 'company:',
@@ -295,6 +303,20 @@ function questionIdFrom(label: string, index: number) {
   return /^[a-z]/.test(candidate) ? candidate : `question_${index + 1}`;
 }
 
+function uniqueAmong(candidate: string, used: Set<string>): string {
+  if (!used.has(candidate)) return candidate;
+  let suffix = 2;
+  while (used.has(`${candidate}_${suffix}`)) suffix += 1;
+  return `${candidate}_${suffix}`;
+}
+
+function clampScale(value: unknown): number {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed < MIN_SCALE) return MIN_SCALE;
+  if (parsed > MAX_SCALE) return MAX_SCALE;
+  return Math.round(parsed);
+}
+
 const localizedFrom = (value?: {
   de?: string;
   en?: string;
@@ -303,11 +325,24 @@ const localizedFrom = (value?: {
   en: value?.en ?? '',
 });
 
-const defaultQuestion = (): QuestionFormValues => ({
-  id: '',
+const defaultOption = (): QuestionOptionForm => ({
+  value: '',
+  label: emptyLocalized(),
+});
+
+const defaultQuestion = (
+  type: SurveyQuestionType = 'text',
+): QuestionFormValues => ({
+  id: type === 'rating' ? RATING_QUESTION_ID : '',
+  type,
   label: emptyLocalized(),
   placeholder: emptyLocalized(),
-  required: false,
+  required: type === 'rating',
+  scale: 5,
+  options:
+    type === 'choice' || type === 'multiselect'
+      ? [defaultOption(), defaultOption()]
+      : [],
 });
 
 const defaultFormValues: SurveyFormValues = {
@@ -318,13 +353,7 @@ const defaultFormValues: SurveyFormValues = {
     description: emptyLocalized(),
     submit_button: emptyLocalized(),
   },
-  scale: 5,
-  ratingLabel: emptyLocalized(),
-  ratingId: RATING_QUESTION_ID,
-  includeRating: true,
-  questions: [],
-  preservedQuestions: [],
-  questionOrder: [],
+  questions: [defaultQuestion('rating')],
   audience_type: 'all',
   audience_value: '',
   trigger: 'on_session',
@@ -340,14 +369,6 @@ const defaultFormValues: SurveyFormValues = {
 };
 
 function campaignToFormValues(campaign: SurveyCampaign): SurveyFormValues {
-  const ratingQuestion = campaign.questions.find(q => q.type === 'rating');
-  const editable = new Set(
-    campaign.questions
-      .filter(
-        question => question === ratingQuestion || question.type === 'text',
-      )
-      .map(question => question.id),
-  );
   return {
     slug: campaign.slug,
     name: campaign.name,
@@ -356,22 +377,22 @@ function campaignToFormValues(campaign: SurveyCampaign): SurveyFormValues {
       description: localizedFrom(campaign.copy?.description),
       submit_button: localizedFrom(campaign.copy?.submit_button),
     },
-    scale: campaign.scale,
-    ratingLabel: localizedFrom(ratingQuestion?.label),
-    ratingId: ratingQuestion?.id || RATING_QUESTION_ID,
-    includeRating: Boolean(ratingQuestion),
-    preservedQuestions: campaign.questions.filter(
-      question => !editable.has(question.id),
-    ),
-    questionOrder: campaign.questions.map(question => question.id),
-    questions: campaign.questions
-      .filter(q => q.type === 'text')
-      .map(q => ({
-        id: q.id,
-        label: localizedFrom(q.label),
-        placeholder: localizedFrom(q.placeholder),
-        required: q.required,
-      })),
+    questions: campaign.questions.map(question => ({
+      id: question.id,
+      type: question.type,
+      label: localizedFrom(question.label),
+      placeholder: localizedFrom(question.placeholder),
+      required: Boolean(question.required),
+      scale: question.scale ?? campaign.scale ?? 5,
+      options: isOptionsType(question.type)
+        ? (question.options ?? []).length
+          ? (question.options ?? []).map(option => ({
+              value: option.value,
+              label: localizedFrom(option.label),
+            }))
+          : [defaultOption(), defaultOption()]
+        : [],
+    })),
     audience_type: campaign.audience_type,
     audience_value: campaign.audience_value,
     trigger: campaign.trigger,
@@ -397,34 +418,44 @@ function pruneLocalized(value?: LocalizedValue) {
 }
 
 function formValuesToPayload(values: SurveyFormValues): SurveyCampaignPayload {
-  const order = values.questionOrder ?? [];
-  // Anything the editor did not create keeps its stored position; new questions go last in
-  // the order they were added. `sort` is stable, so equal ranks preserve that order.
-  const rank = (question: SurveyQuestion) => {
-    const index = order.indexOf(question.id);
-    return index === -1 ? Number.MAX_SAFE_INTEGER : index;
-  };
+  const usedIds = new Set<string>();
+  const questions: SurveyQuestion[] = values.questions.map((question, index) => {
+    const generated = question.id || questionIdFrom(question.label.de, index);
+    const id = uniqueAmong(generated, usedIds);
+    usedIds.add(id);
 
-  const questions: SurveyQuestion[] = [
-    ...(values.includeRating
-      ? [
-          {
-            id: values.ratingId || RATING_QUESTION_ID,
-            type: 'rating' as const,
-            required: true,
-            label: pruneLocalized(values.ratingLabel ?? emptyLocalized()),
-          },
-        ]
-      : []),
-    ...values.questions.map((question, index) => ({
-      id: question.id || questionIdFrom(question.label.de, index),
-      type: 'text' as const,
+    const payload: SurveyQuestion = {
+      id,
+      type: question.type,
       required: question.required,
       label: pruneLocalized(question.label),
-      placeholder: pruneLocalized(question.placeholder),
-    })),
-    ...(values.preservedQuestions ?? []),
-  ].sort((a, b) => rank(a) - rank(b));
+    };
+
+    if (question.type === 'rating') {
+      payload.scale = clampScale(question.scale);
+      return payload;
+    }
+    if (question.type === 'text') {
+      const placeholder = pruneLocalized(question.placeholder);
+      if (placeholder.de) payload.placeholder = placeholder;
+      return payload;
+    }
+
+    const usedOptionValues = new Set<string>();
+    payload.options = (question.options ?? []).map((option, optionIndex) => {
+      const generatedValue =
+        option.value.trim() || questionIdFrom(option.label.de, optionIndex);
+      const value = uniqueAmong(generatedValue, usedOptionValues);
+      usedOptionValues.add(value);
+      return {
+        value,
+        label: pruneLocalized(option.label),
+      };
+    });
+    return payload;
+  });
+
+  const firstRating = questions.find(question => question.type === 'rating');
 
   return {
     slug: values.slug.trim(),
@@ -434,7 +465,7 @@ function formValuesToPayload(values: SurveyFormValues): SurveyCampaignPayload {
       description: pruneLocalized(values.copy.description),
       submit_button: pruneLocalized(values.copy.submit_button),
     },
-    scale: Math.min(MAX_SCALE, Math.max(MIN_SCALE, Number(values.scale) || 5)),
+    scale: clampScale(firstRating?.scale ?? 5),
     questions,
     audience_type: values.audience_type,
     audience_value:
@@ -522,8 +553,6 @@ function DetailsPane({
   questionCount,
   onAddQuestion,
   saving,
-  scaleLocked,
-  ratingLocked,
   audienceOptions,
 }: {
   register: UseFormRegister<SurveyFormValues>;
@@ -535,8 +564,6 @@ function DetailsPane({
   questionCount: number;
   onAddQuestion: () => void;
   saving: boolean;
-  scaleLocked: boolean;
-  ratingLocked: boolean;
   audienceOptions?: SurveyAudienceOptions;
 }) {
   return (
@@ -606,103 +633,6 @@ function DetailsPane({
             )}
           />
         </TwoCol>
-
-        <Divider />
-        <SectionTitle>Rating</SectionTitle>
-        <Controller
-          name="includeRating"
-          control={control}
-          render={({ field: { value, onChange } }) => (
-            <Switch
-              label={value ? 'Includes a star rating' : 'No star rating'}
-              labelInline
-              cannotError
-              checked={!!value}
-              onCheckedChange={onChange}
-              disabled={saving || ratingLocked}
-            />
-          )}
-        />
-        {ratingLocked && (
-          <LockedNotice>
-            The star rating cannot be removed because someone has already
-            submitted a score.
-          </LockedNotice>
-        )}
-        {values.includeRating && (
-          <>
-            <PaneHint>
-              Shown at the top of the card. Turn this off for a text-only
-              survey.
-            </PaneHint>
-
-            <TwoCol>
-              <Controller
-                name="scale"
-                control={control}
-                rules={{ required: values.includeRating ? 'Required' : false }}
-                render={({ field: { value, onChange, onBlur, name, ref } }) => (
-                  <TextInput
-                    label="Scale"
-                    type="number"
-                    required
-                    min={MIN_SCALE}
-                    max={MAX_SCALE}
-                    step={1}
-                    disabled={scaleLocked || saving}
-                    labelTooltip={
-                      scaleLocked
-                        ? 'Scale is frozen because someone has already submitted a rating. Changing it would make existing scores mean something else.'
-                        : 'Highest score a user can give. The star captions ("Terrible" … "Excellent") only fit a 5-star scale, so any other value shows bare stars.'
-                    }
-                    width={InputWidth.Large}
-                    id="survey_scale"
-                    name={name}
-                    value={value ?? ''}
-                    inputRef={
-                      ref as unknown as React.RefObject<HTMLInputElement>
-                    }
-                    onBlur={() => {
-                      const n = Number(value);
-                      if (!Number.isFinite(n) || n < MIN_SCALE) {
-                        onChange(MIN_SCALE);
-                      } else if (n > MAX_SCALE) {
-                        onChange(MAX_SCALE);
-                      }
-                      onBlur();
-                    }}
-                    onChange={event => {
-                      const raw = event.target.value;
-                      if (raw === '') {
-                        onChange(raw);
-                        return;
-                      }
-                      const next = Number(raw);
-                      if (Number.isNaN(next)) return;
-                      onChange(Math.min(MAX_SCALE, next));
-                    }}
-                  />
-                )}
-              />
-            </TwoCol>
-            {scaleLocked && (
-              <LockedNotice>
-                Scale is frozen because someone has already submitted a rating.
-                Changing it would make existing scores mean something else.
-              </LockedNotice>
-            )}
-
-            <LocalizedField
-              register={register}
-              name="ratingLabel"
-              label="Rating question"
-              required
-              placeholderDe="Wie zufrieden bist du?"
-              placeholderEn="How satisfied are you?"
-              disabled={saving}
-            />
-          </>
-        )}
 
         <Divider />
         <SectionTitle>Audience and timing</SectionTitle>
@@ -778,7 +708,7 @@ function DetailsPane({
                 key={`eligible_after_${String(value || NO_ELIGIBILITY_EVENT)}`}
                 id="survey_eligible_after"
                 label="Eligible after"
-                labelTooltip="As soon as they match this condition they can be offered the survey. Match created and match success count if any tandem match qualifies — not the support chat. The survey is still once per user, so a second match does not produce a second offer. Use Only since to ignore people who reached this earlier."
+                labelTooltip="As soon as they match this condition they can be offered the survey. Match created, halfway to match success, and match success count if any tandem match qualifies — not the support chat. Halfway uses half of the live match-success token threshold. The survey is still once per user, so a second match does not produce a second offer. Use Only since to ignore people who reached this earlier."
                 placeholder="Select a condition"
                 value={value || NO_ELIGIBILITY_EVENT}
                 options={selectOptions(
@@ -829,15 +759,23 @@ function DetailsPane({
                     ? 'Available at a public link'
                     : 'Not available at a link'
                 }
+                labelTooltip={
+                  values.context_type === 'match'
+                    ? 'Link delivery is not supported yet for once-per-match surveys.'
+                    : values.trigger === 'none'
+                      ? 'This survey has no in-app trigger, so the public link is its only delivery path. Turning this off also sets When to offer it back to an in-app trigger.'
+                      : 'Anyone signed in who matches the audience can open the survey at this URL. Independent of When to offer it.'
+                }
                 labelInline
                 cannotError
                 checked={!!value}
-                onCheckedChange={onChange}
-                disabled={
-                  saving ||
-                  values.trigger === 'none' ||
-                  values.context_type === 'match'
-                }
+                onCheckedChange={next => {
+                  onChange(next);
+                  if (!next && values.trigger === 'none') {
+                    setValue('trigger', 'on_session', { shouldDirty: true });
+                  }
+                }}
+                disabled={saving || values.context_type === 'match'}
               />
             )}
           />
@@ -928,26 +866,13 @@ function DetailsPane({
         disabled={saving}
       />
 
-      {!!values.preservedQuestions?.length && (
-        <LockedNotice>
-          {`This survey has ${values.preservedQuestions.length} question(s) this editor cannot show — `}
-          {values.preservedQuestions.map(question => question.id).join(', ')}
-          {`. They are kept exactly as they are when you save; edit them in Django admin.`}
-        </LockedNotice>
-      )}
-
       {questionCount === 0 && (
         <EmptyCallout>
           <EmptyCalloutText>
-            <EmptyCalloutTitle>
-              {values.includeRating
-                ? 'No follow-up questions'
-                : 'No questions yet'}
-            </EmptyCalloutTitle>
+            <EmptyCalloutTitle>No questions yet</EmptyCalloutTitle>
             <EmptyCalloutBody>
-              {values.includeRating
-                ? 'The survey will ask for a star rating only. Add a written question if you want more than a number.'
-                : 'A survey needs at least one question. Add a written question, or turn the star rating back on.'}
+              A survey needs at least one question. Add a rating, a written
+              question, a choice, or a multi-select.
             </EmptyCalloutBody>
           </EmptyCalloutText>
           <Button
@@ -967,14 +892,101 @@ function DetailsPane({
 }
 
 // ---------------------------------------------------------------------------
-// QuestionPane — one written question
+// QuestionPane — one question of any type
 // ---------------------------------------------------------------------------
+
+function OptionsEditor({
+  questionIndex,
+  register,
+  control,
+  locked,
+  saving,
+}: {
+  questionIndex: number;
+  register: UseFormRegister<SurveyFormValues>;
+  control: Control<SurveyFormValues>;
+  locked: boolean;
+  saving: boolean;
+}) {
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: `questions.${questionIndex}.options`,
+  });
+
+  return (
+    <FormStack>
+      <SectionTitle>Options</SectionTitle>
+      <PaneHint>
+        The value is what gets stored in answers. Labels are copy and can still
+        be edited after people have answered. Multi-select answers are saved in
+        this order, not the order they were clicked.
+      </PaneHint>
+      <OptionList>
+        {fields.map((field, optionIndex) => (
+          <OptionCard key={field.id}>
+            <OptionHeader>
+              <OptionTitle>Option {optionIndex + 1}</OptionTitle>
+              <DeleteSectionBtn
+                type="button"
+                onClick={() => remove(optionIndex)}
+                disabled={locked || fields.length <= 1 || saving}
+              >
+                <InlineIcon>
+                  <TrashIcon />
+                </InlineIcon>
+                Remove
+              </DeleteSectionBtn>
+            </OptionHeader>
+            <TextInput
+              label="Value"
+              required
+              placeholder="e.g. too_short"
+              labelTooltip={
+                locked
+                  ? 'Option values are frozen once someone has answered this question.'
+                  : 'Stored in answers. Frozen once someone has picked this option.'
+              }
+              width={InputWidth.Large}
+              disabled={locked || saving}
+              {...registerInput({
+                register,
+                name: `questions.${questionIndex}.options.${optionIndex}.value`,
+              })}
+            />
+            <LocalizedField
+              register={register}
+              name={`questions.${questionIndex}.options.${optionIndex}.label`}
+              label="Label"
+              required
+              placeholderDe="Zu kurz"
+              placeholderEn="Too short"
+              disabled={saving}
+            />
+          </OptionCard>
+        ))}
+      </OptionList>
+      <Button
+        appearance={ButtonAppearance.Secondary}
+        size={ButtonSizes.Small}
+        type="button"
+        onClick={() => append(defaultOption())}
+        disabled={saving}
+      >
+        <InlineIcon>
+          <PlusIcon />
+        </InlineIcon>
+        Add option
+      </Button>
+    </FormStack>
+  );
+}
 
 function QuestionPane({
   index,
   total,
   register,
   control,
+  setValue,
   locked,
   onRemove,
   saving,
@@ -983,10 +995,20 @@ function QuestionPane({
   total: number;
   register: UseFormRegister<SurveyFormValues>;
   control: Control<SurveyFormValues>;
+  setValue: UseFormSetValue<SurveyFormValues>;
   locked: boolean;
   onRemove: () => void;
   saving: boolean;
 }) {
+  const type = useWatch({
+    control,
+    name: `questions.${index}.type`,
+  }) as SurveyQuestionType;
+  const options = useWatch({
+    control,
+    name: `questions.${index}.options`,
+  });
+
   return (
     <PaneRoot>
       <SectionMeta>
@@ -1008,29 +1030,129 @@ function QuestionPane({
       {locked && (
         <LockedNotice>
           People have already answered this question, so it cannot be removed or
-          renamed — their answers would stop meaning anything. The wording is
-          still editable, and you can add another question instead.
+          have its type changed — their answers would stop meaning anything. The
+          wording is still editable. Rating scale and option values stay frozen.
         </LockedNotice>
       )}
 
       <FormStack>
+        <TwoCol>
+          <Controller
+            name={`questions.${index}.type`}
+            control={control}
+            render={({ field: { value, onChange } }) => (
+              <Select
+                key={`question_type_${index}_${value}`}
+                id={`survey_question_type_${index}`}
+                label="Type"
+                labelTooltip="Rating is stars, choice is one option, multi select is several. The stored name for a single-option question is still Choice."
+                placeholder="Select a type"
+                value={value}
+                options={QUESTION_TYPE_OPTIONS}
+                onValueChange={next => {
+                  const questionType = next as SurveyQuestionType;
+                  onChange(questionType);
+                  if (isOptionsType(questionType)) {
+                    if (!options?.length) {
+                      setValue(`questions.${index}.options`, [
+                        defaultOption(),
+                        defaultOption(),
+                      ]);
+                    }
+                  } else {
+                    setValue(`questions.${index}.options`, []);
+                  }
+                }}
+                disabled={locked || saving}
+                cannotError
+              />
+            )}
+          />
+          {type === 'rating' && (
+            <Controller
+              name={`questions.${index}.scale`}
+              control={control}
+              rules={{ required: 'Required' }}
+              render={({ field: { value, onChange, onBlur, name, ref } }) => (
+                <TextInput
+                  label="Scale"
+                  type="number"
+                  required
+                  min={MIN_SCALE}
+                  max={MAX_SCALE}
+                  step={1}
+                  disabled={locked || saving}
+                  labelTooltip={
+                    locked
+                      ? 'Scale is frozen because someone has already submitted this rating. Changing it would make existing scores mean something else.'
+                      : 'Highest score a user can give. The star captions ("Terrible" … "Excellent") only fit a 5-star scale, so any other value shows bare stars.'
+                  }
+                  width={InputWidth.Large}
+                  id={`survey_question_scale_${index}`}
+                  name={name}
+                  value={value ?? ''}
+                  inputRef={ref as unknown as React.RefObject<HTMLInputElement>}
+                  onBlur={() => {
+                    const parsed = Number(value);
+                    if (!Number.isFinite(parsed) || parsed < MIN_SCALE) {
+                      onChange(MIN_SCALE);
+                    } else if (parsed > MAX_SCALE) {
+                      onChange(MAX_SCALE);
+                    }
+                    onBlur();
+                  }}
+                  onChange={event => {
+                    const raw = event.target.value;
+                    if (raw === '') {
+                      onChange(raw);
+                      return;
+                    }
+                    const next = Number(raw);
+                    if (Number.isNaN(next)) return;
+                    onChange(Math.min(MAX_SCALE, next));
+                  }}
+                />
+              )}
+            />
+          )}
+        </TwoCol>
+
         <LocalizedField
           register={register}
           name={`questions.${index}.label`}
           label="Question"
           required
-          placeholderDe="Was können wir besser machen?"
-          placeholderEn="What could we do better?"
+          placeholderDe={
+            type === 'rating'
+              ? 'Wie zufrieden bist du?'
+              : 'Was können wir besser machen?'
+          }
+          placeholderEn={
+            type === 'rating'
+              ? 'How satisfied are you?'
+              : 'What could we do better?'
+          }
           disabled={saving}
         />
-        <LocalizedField
-          register={register}
-          name={`questions.${index}.placeholder`}
-          label="Placeholder"
-          placeholderDe="Schreib dein Feedback hier"
-          placeholderEn="Leave your feedback here"
-          disabled={saving}
-        />
+        {type === 'text' && (
+          <LocalizedField
+            register={register}
+            name={`questions.${index}.placeholder`}
+            label="Placeholder"
+            placeholderDe="Schreib dein Feedback hier"
+            placeholderEn="Leave your feedback here"
+            disabled={saving}
+          />
+        )}
+        {isOptionsType(type) && (
+          <OptionsEditor
+            questionIndex={index}
+            register={register}
+            control={control}
+            locked={locked}
+            saving={saving}
+          />
+        )}
 
         <Controller
           name={`questions.${index}.required`}
@@ -1096,7 +1218,7 @@ function EditSurvey() {
     append,
     remove,
     move,
-  } = useFieldArray({ control, name: 'questions' });
+  } = useFieldArray({ control, name: 'questions', keyName: 'fieldId' });
 
   const hydratedIdRef = useRef<string | null>(null);
 
@@ -1137,9 +1259,7 @@ function EditSurvey() {
     try {
       const payload = formValuesToPayload(formValues);
       if (!payload.questions.length) {
-        setSaveError(
-          'Add at least one question, or turn the star rating back on.',
-        );
+        setSaveError('Add at least one question.');
         setToast({
           id: Date.now(),
           headline: 'Error',
@@ -1252,14 +1372,10 @@ function EditSurvey() {
             onMoveDown={idx => move(idx, idx + 1)}
             saving={saving}
             detailsLabel="Survey details"
-            sectionsLabel="Written questions"
+            sectionsLabel="Questions"
             addLabel="Add question"
             untitledLabel="Untitled question"
-            emptyLabel={
-              values.includeRating
-                ? 'Rating only. Add one to ask more.'
-                : 'No questions yet. Add one to save.'
-            }
+            emptyLabel="No questions yet. Add one to save."
           />
 
           <MainPane>
@@ -1274,10 +1390,6 @@ function EditSurvey() {
                 questionCount={questionFields.length}
                 onAddQuestion={addQuestion}
                 saving={saving}
-                scaleLocked={!!data?.scale_locked}
-                ratingLocked={lockedQuestions.includes(
-                  values.ratingId || RATING_QUESTION_ID,
-                )}
                 audienceOptions={audienceOptions}
               />
             ) : (
@@ -1287,6 +1399,7 @@ function EditSurvey() {
                 total={questionFields.length}
                 register={register}
                 control={control}
+                setValue={setValue}
                 locked={lockedQuestions.includes(
                   values.questions?.[selectedSection as number]?.id ?? '',
                 )}

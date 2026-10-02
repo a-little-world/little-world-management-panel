@@ -3,6 +3,7 @@ import {
   ButtonAppearance,
   ButtonSizes,
   ButtonVariations,
+  CopyIcon,
   Link,
   Loading,
   LoadingSizes,
@@ -13,12 +14,13 @@ import {
   TagAppearance,
   Text,
   TextTypes,
+  Toast,
 } from '@a-little-world/little-world-design-system';
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useSWR from 'swr';
 
-import { useTheme } from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 import {
   ADMIN_SURVEY_CAMPAIGNS_ENDPOINT,
   fetchSurveyAudienceOptions,
@@ -50,6 +52,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../atoms/Tabs';
 import { usePageHeader } from '../../../blocks/LayoutHeaderContext';
 
 type SurveyTab = 'live' | 'draft';
+
+const LinkCell = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xxsmall};
+`;
+
+const SurveyLinkAnchor = styled.a`
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: ${({ theme }) => theme.color.text.accent};
+`;
 
 const formatWindow = (campaign: SurveyCampaign) => {
   if (!campaign.starts_at && !campaign.ends_at) return 'Always';
@@ -124,7 +139,31 @@ const describeDelivery = (campaign: SurveyCampaign) => {
 function SurveyCampaigns() {
   const navigate = useNavigate();
   const [tab, setTab] = useState<SurveyTab>('live');
+  const [toast, setToast] = useState<{
+    id: number;
+    headline: string;
+    title: string;
+  } | null>(null);
   const theme = useTheme();
+
+  const copyCampaignLink = async (slug: string) => {
+    const url = surveyPublicUrl(slug);
+    try {
+      await navigator.clipboard.writeText(url);
+      setToast({
+        id: Date.now(),
+        headline: 'Copied',
+        title: url,
+      });
+    } catch {
+      setToast({
+        id: Date.now(),
+        headline: 'Error',
+        title:
+          'Could not reach the clipboard. Select the link and copy it manually.',
+      });
+    }
+  };
 
   const { data, error, isLoading } = useSWR<SurveyCampaign[]>(
     ADMIN_SURVEY_CAMPAIGNS_ENDPOINT,
@@ -202,7 +241,7 @@ function SurveyCampaigns() {
                       <TableHead>Name</TableHead>
                       <TableHead>Audience</TableHead>
                       <TableHead className="w-44">When</TableHead>
-                      <TableHead className="w-28 text-center">Link</TableHead>
+                      <TableHead>Link</TableHead>
                       <TableHead className="w-40 text-center">
                         Questions
                       </TableHead>
@@ -224,7 +263,6 @@ function SurveyCampaigns() {
                       <TableHead className="w-36 text-center">
                         Answered
                       </TableHead>
-                      <TableHead className="w-28 text-center">Rating</TableHead>
                       <TableHead className="w-28 text-center">Status</TableHead>
                       <TableHead className="w-[5.5rem] text-center">
                         Edit
@@ -242,15 +280,31 @@ function SurveyCampaigns() {
                         <TableCell>
                           {describeTrigger(campaign, options?.triggers)}
                         </TableCell>
-                        <TableCell className="text-center">
+                        <TableCell className="max-w-[20rem]">
                           {campaign.available_via_link ? (
-                            <Link
-                              href={surveyPublicUrl(campaign.slug)}
-                              target="_blank"
-                              rel="noreferrer"
-                            >
-                              Open
-                            </Link>
+                            <LinkCell>
+                              <SurveyLinkAnchor
+                                href={surveyPublicUrl(campaign.slug)}
+                                title={surveyPublicUrl(campaign.slug)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                {surveyPublicUrl(campaign.slug)}
+                              </SurveyLinkAnchor>
+                              <Button
+                                variation={ButtonVariations.Circle}
+                                appearance={ButtonAppearance.Secondary}
+                                size={ButtonSizes.Small}
+                                onClick={() => copyCampaignLink(campaign.slug)}
+                                title={`Copy the link for “${campaign.name || campaign.slug}”`}
+                              >
+                                <CopyIcon
+                                  label={`copy link for ${campaign.name || campaign.slug}`}
+                                  width={16}
+                                  height={16}
+                                />
+                              </Button>
+                            </LinkCell>
                           ) : (
                             '—'
                           )}
@@ -278,11 +332,6 @@ function SurveyCampaigns() {
                         </TableCell>
                         <TableCell className="text-center">
                           {describeResponses(campaign)}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          {campaign.mean_rating
-                            ? campaign.mean_rating.toFixed(2)
-                            : '—'}
                         </TableCell>
                         <TableCell className="text-center">
                           {campaign.active ? (
@@ -326,6 +375,15 @@ function SurveyCampaigns() {
           </ListPanel>
         </TabsContent>
       </Tabs>
+
+      {toast && (
+        <Toast
+          key={toast.id}
+          headline={toast.headline}
+          title={toast.title}
+          onClose={() => setToast(null)}
+        />
+      )}
     </PageContainer>
   );
 }

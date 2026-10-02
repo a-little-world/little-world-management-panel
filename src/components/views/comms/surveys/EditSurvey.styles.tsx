@@ -58,3 +58,31 @@ export const LinkPath = styled.span`
   font-size: 0.8125rem;
   color: ${({ theme }) => theme.color.text.secondary};
 `;
+
+export const OptionList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.small};
+`;
+
+export const OptionCard = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xsmall};
+  padding: ${({ theme }) => theme.spacing.small};
+  border: 1px solid ${({ theme }) => theme.color.border.subtle};
+  border-radius: ${({ theme }) => theme.radius.small};
+`;
+
+export const OptionHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.xsmall};
+`;
+
+export const OptionTitle = styled.span`
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: ${({ theme }) => theme.color.text.secondary};
+`;
