@@ -97,6 +97,13 @@ export const Footer = ({
           href={themeContent.contactUrl}
         >
           Kontakt
+        </Link>{' '}
+        ・{' '}
+        <Link
+          style={{ ...footerLink, marginLeft: '8px' }}
+          href={themeContent.privacyUrl}
+        >
+          Datenschutz
         </Link>
       </Text>
       {themeContent.socials && (

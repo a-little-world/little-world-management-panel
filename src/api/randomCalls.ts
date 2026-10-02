@@ -28,7 +28,9 @@ export interface LobbyParticipant {
   user_name: string;
   user_type?: string;
   is_active: boolean;
+  first_joined_at: string | null;
   completed_calls: number;
+  successful_calls: number;
   unsuccessful_proposals: number;
   accepted_proposals: number;
   longest_call_duration_seconds: number;
@@ -66,6 +68,9 @@ export interface LobbyInstanceSnapshot {
   proposals_pending: number;
   proposals_dangling: number;
   completed_calls: number;
+  /** Completed calls that ran at least MIN_SUCCESSFUL_CALL_SECONDS (server-side constant). */
+  successful_calls: number;
+  users_with_successful_calls: number;
   learner_count: number;
   volunteer_count: number;
   bucket_mismatch: number;
@@ -136,14 +141,28 @@ export interface LobbyInstanceData {
     expired: MatchProposal[];
     dangling: MatchProposal[];
   };
-  proposal_statistics: {
-    total_matches: number;
-    pending_count: number;
-    accepted_count: number;
-    rejected_count: number;
-    expired_count: number;
-    dangling_count: number;
-  };
+  proposal_statistics: LobbyProposalStatistics;
+}
+
+/** Outcome buckets that carry a learner-learner / learner-volunteer split. */
+export type ProposalOutcomeBucket = 'accepted' | 'rejected' | 'expired';
+
+export interface LobbyProposalStatistics {
+  total_matches: number;
+  pending_count: number;
+  accepted_count: number;
+  rejected_count: number;
+  expired_count: number;
+  dangling_count: number;
+  accepted_learner_learner_count: number;
+  accepted_learner_volunteer_count: number;
+  accepted_other_count: number;
+  rejected_learner_learner_count: number;
+  rejected_learner_volunteer_count: number;
+  rejected_other_count: number;
+  expired_learner_learner_count: number;
+  expired_learner_volunteer_count: number;
+  expired_other_count: number;
 }
 
 export interface TasksData {
@@ -190,8 +209,33 @@ export interface PaginatedLobbyAnalytics {
   results_total: number;
 }
 
+/** Aggregates over the whole date range, not per session. Computed server-side. */
+export interface LobbyRangeTotals {
+  lobby_count: number;
+  total_participants: number;
+  unique_participants: number;
+  completed_calls: number;
+  /** Completed calls that actually ran long enough to count as a conversation. */
+  successful_calls: number;
+  total_call_duration_seconds: number;
+  median_call_duration_seconds: number | null;
+  rejected_proposals: number;
+  rejected_learner_learner: number;
+  rejected_learner_volunteer: number;
+  rejected_other: number;
+}
+
+export interface LobbyTrendsResponse {
+  count: number;
+  results: LobbyInstanceSnapshot[];
+  totals: LobbyRangeTotals;
+}
+
 export const RANDOM_CALL_LOBBY_ANALYTICS_ENDPOINT =
   '/api/random_calls/analytics/lobbies';
+
+export const RANDOM_CALL_LOBBY_TRENDS_ENDPOINT =
+  '/api/random_calls/analytics/lobbies/trends';
 
 export const getLobbyInstanceEndpoint = (
   lobbyName = DEFAULT_LOBBY_NAME,
@@ -208,6 +252,12 @@ export const getUpcomingLobbiesEndpoint = (lobbyName = DEFAULT_LOBBY_NAME) =>
 export const fetchLobbyAnalytics = (queryString: string) =>
   apiFetch<PaginatedLobbyAnalytics>(
     `${RANDOM_CALL_LOBBY_ANALYTICS_ENDPOINT}?${queryString}`,
+    { method: 'GET' },
+  );
+
+export const fetchLobbyTrends = (queryString: string) =>
+  apiFetch<LobbyTrendsResponse>(
+    `${RANDOM_CALL_LOBBY_TRENDS_ENDPOINT}?${queryString}`,
     { method: 'GET' },
   );
 
@@ -399,13 +449,10 @@ export const clearUserRandomCallProposals = async ({
       message: string;
       updated_count: number;
       user_uuid: string;
-    }>(
-      `/api/random_calls/lobby/${lobbyName}/management/clear-user-proposals`,
-      {
-        method: 'POST',
-        body: { user_uuid: userUuid },
-      },
-    );
+    }>(`/api/random_calls/lobby/${lobbyName}/management/clear-user-proposals`, {
+      method: 'POST',
+      body: { user_uuid: userUuid },
+    });
     onSuccess(result);
   } catch (error) {
     onError(error);

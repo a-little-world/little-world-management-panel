@@ -27,10 +27,18 @@ import {
   endLobby,
   getLobbyInstanceEndpoint,
   getUpcomingLobbiesEndpoint,
+  LobbyInstanceSnapshot,
+  LobbyParticipant,
+  LobbyProposalStatistics,
   MatchProposal,
   resetLobby,
 } from '../../../api/randomCalls';
 import { formatDate, formatEventTime } from '../../../helpers/date';
+import {
+  formatSuccessfulCallUserPct,
+  proposalPairBreakdown,
+  usersWithoutSuccessfulCall,
+} from '../../../helpers/randomCallStats';
 import { dataFetcher } from '../../../store';
 import { PageContainer } from '../../atoms/PageLayout';
 import Stat, { StatCards } from '../../atoms/stats/Stat';
@@ -67,20 +75,7 @@ import {
 } from './RandomCalls.styles';
 
 interface LobbyData {
-  snapshot: {
-    first_time_users: number;
-    returning_users: number;
-    completed_calls: number;
-    total_users: number;
-    proposals_total: number;
-    proposals_accepted: number;
-    proposals_rejected: number;
-    proposals_expired: number;
-    proposals_pending: number;
-    proposals_dangling: number;
-    bucket_mismatch: number;
-    proposals_are_final: boolean;
-  } | null;
+  snapshot: LobbyInstanceSnapshot | null;
   lobby: {
     name: string;
     uuid: string;
@@ -106,31 +101,9 @@ interface LobbyData {
     expired: MatchProposal[];
     dangling: MatchProposal[];
   };
-  lobby_participants: Array<{
-    user_id: number;
-    user_uuid: string;
-    user_name: string;
-    user_type: string;
-    is_active: boolean;
-    completed_calls: number;
-    unsuccessful_proposals: number;
-    accepted_proposals: number;
-    longest_call_duration_seconds: number;
-    profile: {
-      first_name: string;
-      image_type: string;
-      avatar_config: Record<string, unknown>;
-      image: string | null;
-    };
-  }>;
-  proposal_statistics: {
-    total_matches: number;
-    pending_count: number;
-    accepted_count: number;
-    rejected_count: number;
-    expired_count: number;
-    dangling_count: number;
-  };
+  lobby_participants: LobbyParticipant[];
+  // Shared with the API module so a new field cannot be added there and missed here.
+  proposal_statistics: LobbyProposalStatistics;
   schedule: Array<{
     uuid: string;
     name: string;
@@ -822,9 +795,22 @@ function RandomCallManagement() {
               }
             />
             {snapshot && (
+              <Stat label="Completed Calls" stat={snapshot.completed_calls} />
+            )}
+            {snapshot && (
               <Stat
-                label="Completed Calls"
-                stat={snapshot.completed_calls}
+                label="Users with successful call"
+                stat={formatSuccessfulCallUserPct(snapshot)}
+                breakdown={[
+                  {
+                    label: 'With call',
+                    value: snapshot.users_with_successful_calls,
+                  },
+                  {
+                    label: 'Without call',
+                    value: usersWithoutSuccessfulCall(snapshot),
+                  },
+                ]}
               />
             )}
           </StatCards>
@@ -848,14 +834,26 @@ function RandomCallManagement() {
               <Stat
                 label="Accepted Proposals"
                 stat={proposal_statistics.accepted_count}
+                breakdown={proposalPairBreakdown(
+                  proposal_statistics,
+                  'accepted',
+                )}
               />
               <Stat
                 label="Rejected Proposals"
                 stat={proposal_statistics.rejected_count}
+                breakdown={proposalPairBreakdown(
+                  proposal_statistics,
+                  'rejected',
+                )}
               />
               <Stat
                 label="Expired Proposals"
                 stat={proposal_statistics.expired_count}
+                breakdown={proposalPairBreakdown(
+                  proposal_statistics,
+                  'expired',
+                )}
               />
               <Stat label="Dangling proposals" stat={danglingCount} />
             </StatCards>
@@ -943,10 +941,7 @@ function RandomCallManagement() {
             ) : tasksData ? (
               <>
                 <StatCards>
-                  <Stat
-                    label="Total Tasks"
-                    stat={tasksData.statistics.total}
-                  />
+                  <Stat label="Total Tasks" stat={tasksData.statistics.total} />
                   <Stat
                     label="Successful"
                     stat={

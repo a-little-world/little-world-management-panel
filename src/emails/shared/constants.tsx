@@ -26,11 +26,14 @@ export const BackendVars = {
   unsubscribeUrl: '{{ unsubscribe_url }}',
   stillInContactYesUrl: '{{ still_in_contact_yes_url }}',
   stillInContactNoUrl: '{{ still_in_contact_no_url }}',
+  interculturalCommunicationTrainingUrl:
+    '{{ intercultural_communication_training_url }}',
 };
 
 export const THEMES = {
   little_world: {
     contactUrl: 'https://home.little-world.com/kontakt',
+    privacyUrl: 'https://home.little-world.com/de/datenschutz',
     from: 'Dein Little World Team',
     footerText: 'A Little World gUG, little-world.com',
     footerBannerImage,
@@ -46,6 +49,7 @@ export const THEMES = {
   },
   patenmatch: {
     contactUrl: 'mailto:oliver.berlin@patenmatch.de',
+    privacyUrl: 'https://home.little-world.com/de/datenschutz',
     from: 'Dein Patenmatch Team',
     footerText:
       'Patenmatch.de is provided by A Little World gUG, patenmatch.de',
