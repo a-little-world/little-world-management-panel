@@ -16,6 +16,7 @@ import Layout from './components/blocks/Layout';
 import UserPanel from './components/blocks/user/UserPanel';
 import Algorithm from './components/views/Algorithm';
 import Documentation, {
+  DevelopmentProcessDocumentation,
   JourneyOverviewDocumentation,
   MatchJourneyDocumentation,
   MatchSuccessDocumentation,
@@ -73,6 +74,7 @@ import {
   COURSES_ROUTE,
   COURSE_EDIT_ROUTE,
   CREATE_NEW_EMAIL_ROUTE,
+  DEVELOPMENT_PROCESS_DOCUMENTATION_ROUTE,
   DOCUMENTATION_ROUTE,
   DYNAMIC_USER_LISTS_ROUTE,
   EDIT_EMAIL_ROUTE,
@@ -268,6 +270,11 @@ const router = createBrowserRouter(
           path: REPORTING_BUGS_DOCUMENTATION_ROUTE,
           element: <ReportingBugsAndIssuesDocumentation />,
           ...routeTitle('Reporting Bugs and Issues'),
+        },
+        {
+          path: DEVELOPMENT_PROCESS_DOCUMENTATION_ROUTE,
+          element: <DevelopmentProcessDocumentation />,
+          ...routeTitle('Development Process'),
         },
         {
           path: MULTI_USER_MANAGEMENT_DOCUMENTATION_ROUTE,
