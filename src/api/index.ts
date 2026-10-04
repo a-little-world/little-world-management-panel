@@ -726,6 +726,90 @@ export const deleteUser = async ({
   }
 };
 
+export const changeUserEmail = async ({
+  id,
+  email,
+  sendVerificationEmail = false,
+  onError,
+  onSuccess,
+}: {
+  id: string | number;
+  email: string;
+  sendVerificationEmail?: boolean;
+  onError: (error: any) => void;
+  onSuccess: (result: any) => void;
+}) => {
+  try {
+    const result = await apiFetch(`/api/matching/users/${id}/change_email/`, {
+      method: 'POST',
+      body: {
+        email,
+        send_verification_email: sendVerificationEmail,
+      },
+    });
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
+  }
+};
+
+export const setUserCompany = async ({
+  id,
+  company,
+  onError,
+  onSuccess,
+}: {
+  id: string | number;
+  company: string | null;
+  onError: (error: any) => void;
+  onSuccess: (result: any) => void;
+}) => {
+  try {
+    const result = await apiFetch(`/api/matching/users/${id}/set_company/`, {
+      method: 'POST',
+      body: {
+        company,
+      },
+    });
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
+  }
+};
+
+export const migrateUser = async ({
+  id,
+  newEmail,
+  removeCompany = false,
+  censor = true,
+  sendDeletionEmail = false,
+  onError,
+  onSuccess,
+}: {
+  id: string | number;
+  newEmail?: string | null;
+  removeCompany?: boolean;
+  censor?: boolean;
+  sendDeletionEmail?: boolean;
+  onError: (error: any) => void;
+  onSuccess: (result: any) => void;
+}) => {
+  try {
+    const result = await apiFetch(`/api/matching/users/${id}/migrate_user/`, {
+      method: 'POST',
+      body: {
+        new_email: newEmail || null,
+        remove_company: removeCompany,
+        censor,
+        send_deletion_email: sendDeletionEmail,
+      },
+    });
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
+  }
+};
+
 export const burstUpdateMatchingScores = async ({
   parallel_tasks,
   scoring_list = 'default',
