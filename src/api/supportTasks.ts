@@ -298,6 +298,7 @@ export const ACTION_TYPE_CONFIG: Record<
   { label: string; color: string }
 > = {
   support_reply: { label: 'Support reply', color: BLUE_40 },
+  manual: { label: 'Task', color: GRAY_40 },
   message_action_remove_match: { label: 'Remove match', color: CRIMSON_40 },
   profile_change_action_country_of_residence: {
     label: 'Country change',
