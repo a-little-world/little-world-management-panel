@@ -63,10 +63,11 @@ function RandomCallSchedule() {
   const theme = useTheme();
   const [showLobbyForm, setShowLobbyForm] = useState(false);
   const [editingLobby, setEditingLobby] = useState<LobbyListItem | null>(null);
-  const [deletingLobby, setDeletingLobby] = useState<LobbyListItem | null>(null);
+  const [deletingLobby, setDeletingLobby] = useState<LobbyListItem | null>(
+    null,
+  );
   const [isSavingLobby, setIsSavingLobby] = useState(false);
   const [isDeletingLobby, setIsDeletingLobby] = useState(false);
-  const [showEditScope, setShowEditScope] = useState(false);
   const [newLobbyStartDate, setNewLobbyStartDate] = useState<Date | null>(
     new Date(),
   );
@@ -214,7 +215,6 @@ function RandomCallSchedule() {
         });
       }
       setShowLobbyForm(false);
-      setShowEditScope(false);
       setEditingLobby(null);
       await mutate(getUpcomingLobbiesEndpoint());
       alert(`Lobby ${editingLobby ? 'updated' : 'created'} successfully!`);
@@ -227,11 +227,6 @@ function RandomCallSchedule() {
   };
 
   const handleSaveLobby = () => {
-    if (!validateLobbyForm()) return;
-    if (editingLobby?.recurrence_group) {
-      setShowEditScope(true);
-      return;
-    }
     const scope =
       editingLobby && editingLobby.frequency !== frequency
         ? 'future'
@@ -239,9 +234,9 @@ function RandomCallSchedule() {
     saveLobby(scope);
   };
 
-  const handleDeleteLobby = async (
-    scope: LobbyMutationScope = 'single',
-  ) => {
+  const isEditingSeries = Boolean(editingLobby?.recurrence_group);
+
+  const handleDeleteLobby = async (scope: LobbyMutationScope = 'single') => {
     if (!deletingLobby) return;
     setIsDeletingLobby(true);
     try {
@@ -258,6 +253,16 @@ function RandomCallSchedule() {
   };
 
   const schedule = upcomingLobbies ?? [];
+
+  // Series are only generated to 31 December; showing where each one stops is the
+  // reminder to schedule the next year.
+  const seriesEnds = schedule.reduce<Record<string, Date>>((ends, lobby) => {
+    if (!lobby.recurrence_group) return ends;
+    const start = new Date(lobby.start_time);
+    const current = ends[lobby.recurrence_group];
+    if (!current || start > current) ends[lobby.recurrence_group] = start;
+    return ends;
+  }, {});
 
   return (
     <PageContainer>
@@ -319,9 +324,7 @@ function RandomCallSchedule() {
                 value={frequency}
                 options={FREQUENCY_OPTIONS}
                 placeholder="Select a frequency"
-                onValueChange={value =>
-                  setFrequency(value as LobbyFrequency)
-                }
+                onValueChange={value => setFrequency(value as LobbyFrequency)}
                 inModal
                 cannotError
                 disabled={isSavingLobby}
@@ -350,18 +353,41 @@ function RandomCallSchedule() {
             >
               Cancel
             </Button>
-            <Button
-              appearance={ButtonAppearance.Primary}
-              size={ButtonSizes.Medium}
-              onClick={handleSaveLobby}
-              disabled={isSavingLobby}
-            >
-              {isSavingLobby
-                ? 'Saving...'
-                : editingLobby
-                  ? 'Save Changes'
-                  : 'Create Lobby'}
-            </Button>
+            {isEditingSeries ? (
+              <>
+                <Button
+                  appearance={ButtonAppearance.Secondary}
+                  size={ButtonSizes.Medium}
+                  onClick={() => saveLobby('single')}
+                  disabled={
+                    isSavingLobby || frequency !== editingLobby?.frequency
+                  }
+                >
+                  Save This Lobby
+                </Button>
+                <Button
+                  appearance={ButtonAppearance.Primary}
+                  size={ButtonSizes.Medium}
+                  onClick={() => saveLobby('future')}
+                  disabled={isSavingLobby}
+                >
+                  {isSavingLobby ? 'Saving...' : 'Save This and Future'}
+                </Button>
+              </>
+            ) : (
+              <Button
+                appearance={ButtonAppearance.Primary}
+                size={ButtonSizes.Medium}
+                onClick={handleSaveLobby}
+                disabled={isSavingLobby}
+              >
+                {isSavingLobby
+                  ? 'Saving...'
+                  : editingLobby
+                    ? 'Save Changes'
+                    : 'Create Lobby'}
+              </Button>
+            )}
           </CardFooter>
         </Card>
       </Modal>
@@ -408,6 +434,13 @@ function RandomCallSchedule() {
                             option => option.value === lobbyItem.frequency,
                           )?.label
                         }
+                        {lobbyItem.recurrence_group &&
+                          seriesEnds[lobbyItem.recurrence_group] &&
+                          ` until ${formatDate(
+                            seriesEnds[lobbyItem.recurrence_group],
+                            'd MMM yyyy',
+                            'de',
+                          )}`}
                       </Text>
                     )}
                     {startDate > new Date() && (
@@ -489,46 +522,6 @@ function RandomCallSchedule() {
                 Delete This and Future
               </Button>
             )}
-          </CardFooter>
-        </Card>
-      </Modal>
-
-      <Modal open={showEditScope} onClose={() => setShowEditScope(false)}>
-        <Card width={CardSizes.Medium}>
-          <CardHeader>Update Recurring Lobbies</CardHeader>
-          <CardContent align="flex-start">
-            <Text>
-              Apply these changes only to this lobby, or replace this and all
-              future lobbies in the series?
-            </Text>
-          </CardContent>
-          <CardFooter align="space-between">
-            <Button
-              appearance={ButtonAppearance.Secondary}
-              size={ButtonSizes.Medium}
-              onClick={() => setShowEditScope(false)}
-              disabled={isSavingLobby}
-            >
-              Cancel
-            </Button>
-            <Button
-              appearance={ButtonAppearance.Secondary}
-              size={ButtonSizes.Medium}
-              onClick={() => saveLobby('single')}
-              disabled={
-                isSavingLobby || frequency !== editingLobby?.frequency
-              }
-            >
-              This Lobby
-            </Button>
-            <Button
-              appearance={ButtonAppearance.Primary}
-              size={ButtonSizes.Medium}
-              onClick={() => saveLobby('future')}
-              disabled={isSavingLobby}
-            >
-              This and Future
-            </Button>
           </CardFooter>
         </Card>
       </Modal>
