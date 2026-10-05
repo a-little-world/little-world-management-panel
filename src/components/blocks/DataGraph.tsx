@@ -37,6 +37,7 @@ interface DataGraphProps {
   dataLabel: string;
   minHeight?: string;
   maxHeight?: string;
+  valueFormatter?: (value: number) => string;
 }
 
 export function DataGraph({
@@ -44,15 +45,17 @@ export function DataGraph({
   dataLabel,
   maxHeight,
   minHeight,
+  valueFormatter = value => value.toLocaleString(),
 }: DataGraphProps) {
+  const theme = useTheme();
   const chartConfig = {
     count: {
       label: dataLabel,
-      color: '#2563eb',
+      color: theme.color.status.info,
     },
     date: {
       label: 'Date',
-      color: '#000',
+      color: theme.color.text.primary,
     },
   };
 
@@ -73,8 +76,16 @@ export function DataGraph({
           textAnchor="end"
           tickFormatter={value => value.slice(0, 10)}
         />
-        <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-        <Bar dataKey="count" fill="var(--color-desktop)" radius={0} />
+        <YAxis tickFormatter={value => valueFormatter(Number(value))} />
+        <ChartTooltip
+          cursor={false}
+          content={
+            <ChartTooltipContent
+              formatter={value => valueFormatter(Number(value))}
+            />
+          }
+        />
+        <Bar dataKey="count" fill="var(--color-count)" radius={0} />
       </BarChart>
     </StyledChartContainer>
   );
@@ -150,10 +161,11 @@ interface DataGraphStackedPercentagesProps {
   maxHeight?: string;
 }
 
-const formatMonthLabel = (value: string) => {
-  const date = new Date(value);
+const formatMonthLabel = (value: React.ReactNode) => {
+  const stringValue = String(value ?? '');
+  const date = new Date(stringValue);
   if (Number.isNaN(date.getTime())) {
-    return value.slice(0, 7);
+    return stringValue.slice(0, 7);
   }
 
   return date.toLocaleDateString(undefined, {
@@ -241,9 +253,7 @@ export function DataGraphStackedPercentages({
             dataKey={item.dataKey}
             fill={item.color}
             stackId="outcomes"
-            radius={
-              index === series.length - 1 ? [8, 8, 0, 0] : [0, 0, 0, 0]
-            }
+            radius={index === series.length - 1 ? [8, 8, 0, 0] : [0, 0, 0, 0]}
           />
         ))}
       </BarChart>
@@ -365,8 +375,8 @@ export function DataGraphCohortSuccess({
                   {formatWeekLabel(point.date)}
                 </CohortTooltipTitle>
                 <div>
-                  {successLabel}: {point.success_count} / {point.cohort_size}{' '}
-                  ({point.percentage}%)
+                  {successLabel}: {point.success_count} / {point.cohort_size} (
+                  {point.percentage}%)
                 </div>
               </CohortTooltipCard>
             );

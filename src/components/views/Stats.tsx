@@ -65,10 +65,7 @@ function Stats() {
         </TabsContent>
       )}
       {tab === 'graphs' && (
-        <TabsContent
-          value="graphs"
-          className="flex flex-col content-center justify-center items-center flex-grow"
-        >
+        <TabsContent value="graphs">
           <RangedDataGraph />
         </TabsContent>
       )}
