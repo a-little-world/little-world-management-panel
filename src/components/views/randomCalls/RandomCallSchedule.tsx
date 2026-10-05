@@ -2,6 +2,7 @@ import {
   Button,
   ButtonAppearance,
   ButtonSizes,
+  ButtonVariations,
   Card,
   CardContent,
   CardFooter,
@@ -9,19 +10,27 @@ import {
   CardSizes,
   InputWidth,
   Modal,
+  Select,
   Tag,
   TagAppearance,
   TagSizes,
   Text,
   TextInput,
 } from '@a-little-world/little-world-design-system';
+import { PencilIcon, TrashIcon } from '@heroicons/react/20/solid';
 import { isEmpty } from 'lodash';
 import React, { useCallback, useRef, useState } from 'react';
+import { useTheme } from 'styled-components';
 import useSWR, { mutate } from 'swr';
 
 import {
   createLobby,
+  deleteLobby,
   getUpcomingLobbiesEndpoint,
+  LobbyFrequency,
+  LobbyMutationScope,
+  LobbyListItem,
+  updateLobby,
 } from '../../../api/randomCalls';
 import { formatDate, formatEventTime } from '../../../helpers/date';
 import { dataFetcher } from '../../../store';
@@ -43,19 +52,21 @@ import {
   Title,
 } from './RandomCalls.styles';
 
-/** Upcoming lobby item from api/random_calls/upcoming */
-interface UpcomingLobbyItem {
-  uuid: string;
-  name: string;
-  start_time: string;
-  end_time: string;
-  status: boolean;
-  active_users_count: number;
-}
+const FREQUENCY_OPTIONS = [
+  { value: 'once', label: 'Once' },
+  { value: 'weekly', label: 'Weekly' },
+  { value: 'fortnightly', label: 'Fortnightly' },
+  { value: 'monthly', label: 'Monthly' },
+];
 
 function RandomCallSchedule() {
-  const [showCreateLobby, setShowCreateLobby] = useState(false);
-  const [isCreatingLobby, setIsCreatingLobby] = useState(false);
+  const theme = useTheme();
+  const [showLobbyForm, setShowLobbyForm] = useState(false);
+  const [editingLobby, setEditingLobby] = useState<LobbyListItem | null>(null);
+  const [deletingLobby, setDeletingLobby] = useState<LobbyListItem | null>(null);
+  const [isSavingLobby, setIsSavingLobby] = useState(false);
+  const [isDeletingLobby, setIsDeletingLobby] = useState(false);
+  const [showEditScope, setShowEditScope] = useState(false);
   const [newLobbyStartDate, setNewLobbyStartDate] = useState<Date | null>(
     new Date(),
   );
@@ -72,9 +83,13 @@ function RandomCallSchedule() {
     return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
   });
   const [matchProposalTimeout, setMatchProposalTimeout] = useState(60);
+  const [frequency, setFrequency] = useState<LobbyFrequency>('once');
 
   const startTimeInputRef = useRef<HTMLInputElement>(null);
   const endTimeInputRef = useRef<HTMLInputElement>(null);
+
+  const timeValue = (date: Date) =>
+    `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 
   const combineDateAndTime = (date: Date | null, time: string): Date => {
     if (!date) return new Date();
@@ -84,9 +99,41 @@ function RandomCallSchedule() {
     return combined;
   };
 
-  const handleCloseCreateLobby = useCallback(() => {
-    setShowCreateLobby(false);
+  const handleCloseLobbyForm = useCallback(() => {
+    if (isSavingLobby) return;
+    setShowLobbyForm(false);
+    setEditingLobby(null);
+  }, [isSavingLobby]);
+
+  const resetLobbyForm = useCallback(() => {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() + 1);
+    const endTime = new Date(now);
+    endTime.setHours(endTime.getHours() + 2);
+    setNewLobbyStartDate(now);
+    setNewLobbyStartTime(timeValue(now));
+    setNewLobbyEndTime(timeValue(endTime));
+    setMatchProposalTimeout(60);
+    setFrequency('once');
   }, []);
+
+  const handleOpenCreateLobby = () => {
+    resetLobbyForm();
+    setEditingLobby(null);
+    setShowLobbyForm(true);
+  };
+
+  const handleOpenEditLobby = (lobby: LobbyListItem) => {
+    const startTime = new Date(lobby.start_time);
+    const endTime = new Date(lobby.end_time);
+    setNewLobbyStartDate(startTime);
+    setNewLobbyStartTime(timeValue(startTime));
+    setNewLobbyEndTime(timeValue(endTime));
+    setMatchProposalTimeout(lobby.match_proposal_timeout);
+    setFrequency(lobby.frequency);
+    setEditingLobby(lobby);
+    setShowLobbyForm(true);
+  };
 
   const handleStartTimeChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -114,16 +161,16 @@ function RandomCallSchedule() {
     [],
   );
 
-  const { data: upcomingLobbies, error } = useSWR<UpcomingLobbyItem[]>(
+  const { data: upcomingLobbies, error } = useSWR<LobbyListItem[]>(
     getUpcomingLobbiesEndpoint(),
     dataFetcher,
     { revalidateOnFocus: true, revalidateOnMount: true },
   );
 
-  const handleCreateLobby = async () => {
+  const validateLobbyForm = () => {
     if (!newLobbyStartDate) {
       alert('Please select a start date');
-      return;
+      return null;
     }
 
     const startDateTime = combineDateAndTime(
@@ -134,42 +181,80 @@ function RandomCallSchedule() {
 
     if (endDateTime <= startDateTime) {
       alert('End time must be after start time');
+      return null;
+    }
+    return { startDateTime, endDateTime };
+  };
+
+  const saveLobby = async (scope: LobbyMutationScope = 'single') => {
+    const times = validateLobbyForm();
+    if (!times) return;
+    const { startDateTime, endDateTime } = times;
+    setIsSavingLobby(true);
+    try {
+      if (editingLobby) {
+        await updateLobby({
+          lobbyUuid: editingLobby.uuid,
+          startTime: startDateTime.toISOString(),
+          endTime: endDateTime.toISOString(),
+          matchProposalTimeout,
+          frequency,
+          scope,
+        });
+      } else {
+        await createLobby({
+          startTime: startDateTime.toISOString(),
+          endTime: endDateTime.toISOString(),
+          matchProposalTimeout,
+          frequency,
+          onSuccess: () => undefined,
+          onError: error => {
+            throw error;
+          },
+        });
+      }
+      setShowLobbyForm(false);
+      setShowEditScope(false);
+      setEditingLobby(null);
+      await mutate(getUpcomingLobbiesEndpoint());
+      alert(`Lobby ${editingLobby ? 'updated' : 'created'} successfully!`);
+    } catch (error: any) {
+      console.error('Error saving lobby:', error);
+      alert(error?.message || 'Failed to save lobby. Please try again.');
+    } finally {
+      setIsSavingLobby(false);
+    }
+  };
+
+  const handleSaveLobby = () => {
+    if (!validateLobbyForm()) return;
+    if (editingLobby?.recurrence_group) {
+      setShowEditScope(true);
       return;
     }
+    const scope =
+      editingLobby && editingLobby.frequency !== frequency
+        ? 'future'
+        : 'single';
+    saveLobby(scope);
+  };
 
-    setIsCreatingLobby(true);
-    createLobby({
-      startTime: startDateTime.toISOString(),
-      endTime: endDateTime.toISOString(),
-      matchProposalTimeout,
-      onSuccess: () => {
-        const now = new Date();
-        now.setMinutes(now.getMinutes() + 1);
-        setNewLobbyStartDate(now);
-        setNewLobbyStartTime(
-          `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`,
-        );
-        const endTime = new Date(now);
-        endTime.setHours(endTime.getHours() + 2);
-        setNewLobbyEndTime(
-          `${String(endTime.getHours()).padStart(2, '0')}:${String(endTime.getMinutes()).padStart(2, '0')}`,
-        );
-        setMatchProposalTimeout(60);
-        setShowCreateLobby(false);
-        setIsCreatingLobby(false);
-        mutate(getUpcomingLobbiesEndpoint());
-        alert('Lobby created successfully!');
-      },
-      onError: (error: any) => {
-        console.error('Error creating lobby:', error);
-        const errorMessage =
-          error?.message ||
-          error?.data?.error ||
-          'Failed to create lobby. Please try again.';
-        alert(errorMessage);
-        setIsCreatingLobby(false);
-      },
-    });
+  const handleDeleteLobby = async (
+    scope: LobbyMutationScope = 'single',
+  ) => {
+    if (!deletingLobby) return;
+    setIsDeletingLobby(true);
+    try {
+      await deleteLobby(deletingLobby.uuid, scope);
+      setDeletingLobby(null);
+      await mutate(getUpcomingLobbiesEndpoint());
+      alert('Lobby deleted successfully!');
+    } catch (error: any) {
+      console.error('Error deleting lobby:', error);
+      alert(error?.message || 'Failed to delete lobby. Please try again.');
+    } finally {
+      setIsDeletingLobby(false);
+    }
   };
 
   const schedule = upcomingLobbies ?? [];
@@ -181,16 +266,17 @@ function RandomCallSchedule() {
         <Button
           appearance={ButtonAppearance.Primary}
           size={ButtonSizes.Small}
-          onClick={() => setShowCreateLobby(true)}
+          onClick={handleOpenCreateLobby}
         >
           Create Lobby
         </Button>
       </Header>
 
-      {/* Create Lobby Modal */}
-      <Modal open={showCreateLobby} onClose={handleCloseCreateLobby}>
+      <Modal open={showLobbyForm} onClose={handleCloseLobbyForm}>
         <Card width={CardSizes.Medium}>
-          <CardHeader>Create New Lobby</CardHeader>
+          <CardHeader>
+            {editingLobby ? 'Edit Lobby' : 'Create New Lobby'}
+          </CardHeader>
           <CardContent align="flex-start">
             <DatePickerContainer>
               <FormField>
@@ -201,14 +287,12 @@ function RandomCallSchedule() {
                   disablePastDays
                   inModal
                 />
-                <FormLabel style={{ marginTop: '0.5rem' }}>
-                  Start Time
-                </FormLabel>
+                <FormLabel>Start Time</FormLabel>
                 <TimeInput
                   ref={startTimeInputRef}
                   value={newLobbyStartTime}
                   onChange={handleStartTimeChange}
-                  disabled={isCreatingLobby}
+                  disabled={isSavingLobby}
                 />
               </FormField>
               <FormField>
@@ -219,15 +303,30 @@ function RandomCallSchedule() {
                   disabled
                   inModal
                 />
-                <FormLabel style={{ marginTop: '0.5rem' }}>End Time</FormLabel>
+                <FormLabel>End Time</FormLabel>
                 <TimeInput
                   ref={endTimeInputRef}
                   value={newLobbyEndTime}
                   onChange={handleEndTimeChange}
-                  disabled={isCreatingLobby}
+                  disabled={isSavingLobby}
                 />
               </FormField>
             </DatePickerContainer>
+            <FormField>
+              <Select
+                label="Frequency"
+                id="lobbyFrequency"
+                value={frequency}
+                options={FREQUENCY_OPTIONS}
+                placeholder="Select a frequency"
+                onValueChange={value =>
+                  setFrequency(value as LobbyFrequency)
+                }
+                inModal
+                cannotError
+                disabled={isSavingLobby}
+              />
+            </FormField>
             <FormField>
               <TextInput
                 label="Match Proposal Timeout (seconds)"
@@ -238,7 +337,7 @@ function RandomCallSchedule() {
                 width={InputWidth.Medium}
                 value={String(matchProposalTimeout)}
                 onChange={handleMatchProposalTimeoutChange}
-                disabled={isCreatingLobby}
+                disabled={isSavingLobby}
               />
             </FormField>
           </CardContent>
@@ -246,18 +345,22 @@ function RandomCallSchedule() {
             <Button
               appearance={ButtonAppearance.Secondary}
               size={ButtonSizes.Medium}
-              onClick={() => setShowCreateLobby(false)}
-              disabled={isCreatingLobby}
+              onClick={handleCloseLobbyForm}
+              disabled={isSavingLobby}
             >
               Cancel
             </Button>
             <Button
               appearance={ButtonAppearance.Primary}
               size={ButtonSizes.Medium}
-              onClick={handleCreateLobby}
-              disabled={isCreatingLobby}
+              onClick={handleSaveLobby}
+              disabled={isSavingLobby}
             >
-              {isCreatingLobby ? 'Creating...' : 'Create Lobby'}
+              {isSavingLobby
+                ? 'Saving...'
+                : editingLobby
+                  ? 'Save Changes'
+                  : 'Create Lobby'}
             </Button>
           </CardFooter>
         </Card>
@@ -298,6 +401,45 @@ function RandomCallSchedule() {
                       {lobbyItem.status ? 'Active' : 'Upcoming'}
                     </Tag>
                     <Text>{lobbyItem.active_users_count} users</Text>
+                    {lobbyItem.frequency !== 'once' && (
+                      <Text>
+                        {
+                          FREQUENCY_OPTIONS.find(
+                            option => option.value === lobbyItem.frequency,
+                          )?.label
+                        }
+                      </Text>
+                    )}
+                    {startDate > new Date() && (
+                      <>
+                        <Button
+                          variation={ButtonVariations.Circle}
+                          appearance={ButtonAppearance.Secondary}
+                          size={ButtonSizes.Medium}
+                          onClick={() => handleOpenEditLobby(lobbyItem)}
+                          color={theme.color.text.accent}
+                        >
+                          <PencilIcon
+                            title="Edit lobby"
+                            width={16}
+                            height={16}
+                          />
+                        </Button>
+                        <Button
+                          variation={ButtonVariations.Circle}
+                          appearance={ButtonAppearance.Secondary}
+                          size={ButtonSizes.Medium}
+                          onClick={() => setDeletingLobby(lobbyItem)}
+                          color={theme.color.text.error}
+                        >
+                          <TrashIcon
+                            title="Delete lobby"
+                            width={16}
+                            height={16}
+                          />
+                        </Button>
+                      </>
+                    )}
                   </ScheduleStatus>
                 </ScheduleItem>
               );
@@ -305,6 +447,91 @@ function RandomCallSchedule() {
           </ScheduleList>
         )}
       </Section>
+
+      <Modal
+        open={Boolean(deletingLobby)}
+        onClose={() => {
+          if (!isDeletingLobby) setDeletingLobby(null);
+        }}
+      >
+        <Card width={CardSizes.Medium}>
+          <CardHeader>Delete Lobby?</CardHeader>
+          <CardContent align="flex-start">
+            <Text>
+              This will permanently delete the scheduled random call session.
+              Are you sure you want to continue?
+            </Text>
+          </CardContent>
+          <CardFooter align="space-between">
+            <Button
+              appearance={ButtonAppearance.Secondary}
+              size={ButtonSizes.Medium}
+              onClick={() => setDeletingLobby(null)}
+              disabled={isDeletingLobby}
+            >
+              Cancel
+            </Button>
+            <Button
+              appearance={ButtonAppearance.Primary}
+              size={ButtonSizes.Medium}
+              onClick={() => handleDeleteLobby('single')}
+              disabled={isDeletingLobby}
+            >
+              {isDeletingLobby ? 'Deleting...' : 'Delete This Lobby'}
+            </Button>
+            {deletingLobby?.recurrence_group && (
+              <Button
+                appearance={ButtonAppearance.Primary}
+                size={ButtonSizes.Medium}
+                onClick={() => handleDeleteLobby('future')}
+                disabled={isDeletingLobby}
+              >
+                Delete This and Future
+              </Button>
+            )}
+          </CardFooter>
+        </Card>
+      </Modal>
+
+      <Modal open={showEditScope} onClose={() => setShowEditScope(false)}>
+        <Card width={CardSizes.Medium}>
+          <CardHeader>Update Recurring Lobbies</CardHeader>
+          <CardContent align="flex-start">
+            <Text>
+              Apply these changes only to this lobby, or replace this and all
+              future lobbies in the series?
+            </Text>
+          </CardContent>
+          <CardFooter align="space-between">
+            <Button
+              appearance={ButtonAppearance.Secondary}
+              size={ButtonSizes.Medium}
+              onClick={() => setShowEditScope(false)}
+              disabled={isSavingLobby}
+            >
+              Cancel
+            </Button>
+            <Button
+              appearance={ButtonAppearance.Secondary}
+              size={ButtonSizes.Medium}
+              onClick={() => saveLobby('single')}
+              disabled={
+                isSavingLobby || frequency !== editingLobby?.frequency
+              }
+            >
+              This Lobby
+            </Button>
+            <Button
+              appearance={ButtonAppearance.Primary}
+              size={ButtonSizes.Medium}
+              onClick={() => saveLobby('future')}
+              disabled={isSavingLobby}
+            >
+              This and Future
+            </Button>
+          </CardFooter>
+        </Card>
+      </Modal>
     </PageContainer>
   );
 }
