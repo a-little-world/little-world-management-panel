@@ -92,6 +92,69 @@ export interface PaginatedListMeta {
   items_total?: number;
 }
 
+/** Mirrors `UserTableProfileSerializer` — only the profile fields the table renders. */
+export interface UserTableProfile {
+  first_name: string;
+  second_name: string;
+  user_type: 'learner' | 'volunteer';
+  country_of_residence: string | null;
+  target_groups: string[];
+  image_type: 'image' | 'avatar';
+  avatar_config: Record<string, unknown>;
+  image: string | null;
+}
+
+export interface UserTableState {
+  company: string | null;
+  has_match_priority: boolean;
+}
+
+/** Mirrors `MatchPreviewProfileSerializer` plus the partner id fields. */
+export interface UserMatchPreviewPartner {
+  id: number;
+  first_name: string;
+  has_match_priority: boolean;
+  image_type: 'image' | 'avatar';
+  avatar_config: Record<string, unknown>;
+  image: string | null;
+}
+
+export interface UserMatchPreview {
+  /** The partner's uuid, as a string. */
+  id: string;
+  partner: UserMatchPreviewPartner;
+}
+
+export interface UserMatchPreviews {
+  confirmed: { results: UserMatchPreview[] };
+  unconfirmed: { results: UserMatchPreview[] };
+  proposed: { results: UserMatchPreview[] };
+}
+
+export interface UserWaitingTime {
+  number_of_days: number | null;
+  waiting_time_string: string;
+  first_search: boolean | null;
+}
+
+/** Row shape of `GET /api/matching/users/` (`UserTableSerializer` + the page batch maps). */
+export interface UserTableRow {
+  id: number;
+  uuid: string;
+  email: string;
+  date_joined: string;
+  last_login: string | null;
+  last_seen: string | null;
+  profile: UserTableProfile;
+  state: UserTableState;
+  waiting_time: UserWaitingTime;
+  matches: UserMatchPreviews;
+}
+
+export interface PaginatedUserTableList extends PaginatedListMeta {
+  results: UserTableRow[];
+}
+
 export const getUsersListPaginationMeta = async ({
   searchParams,
   pageSize,
@@ -655,6 +718,90 @@ export const deleteUser = async ({
       method: 'POST',
       body: {
         send_deletion_email: true,
+      },
+    });
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
+  }
+};
+
+export const changeUserEmail = async ({
+  id,
+  email,
+  sendVerificationEmail = false,
+  onError,
+  onSuccess,
+}: {
+  id: string | number;
+  email: string;
+  sendVerificationEmail?: boolean;
+  onError: (error: any) => void;
+  onSuccess: (result: any) => void;
+}) => {
+  try {
+    const result = await apiFetch(`/api/matching/users/${id}/change_email/`, {
+      method: 'POST',
+      body: {
+        email,
+        send_verification_email: sendVerificationEmail,
+      },
+    });
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
+  }
+};
+
+export const setUserCompany = async ({
+  id,
+  company,
+  onError,
+  onSuccess,
+}: {
+  id: string | number;
+  company: string | null;
+  onError: (error: any) => void;
+  onSuccess: (result: any) => void;
+}) => {
+  try {
+    const result = await apiFetch(`/api/matching/users/${id}/set_company/`, {
+      method: 'POST',
+      body: {
+        company,
+      },
+    });
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
+  }
+};
+
+export const migrateUser = async ({
+  id,
+  newEmail,
+  removeCompany = false,
+  censor = true,
+  sendDeletionEmail = false,
+  onError,
+  onSuccess,
+}: {
+  id: string | number;
+  newEmail?: string | null;
+  removeCompany?: boolean;
+  censor?: boolean;
+  sendDeletionEmail?: boolean;
+  onError: (error: any) => void;
+  onSuccess: (result: any) => void;
+}) => {
+  try {
+    const result = await apiFetch(`/api/matching/users/${id}/migrate_user/`, {
+      method: 'POST',
+      body: {
+        new_email: newEmail || null,
+        remove_company: removeCompany,
+        censor,
+        send_deletion_email: sendDeletionEmail,
       },
     });
     onSuccess(result);

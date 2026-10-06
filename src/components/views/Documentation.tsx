@@ -16,6 +16,7 @@ import issuesTabImage from '../../assets/documentation/github_issues/repo_issues
 import onboardingManagementUsersPermissionsImage from '../../assets/documentation/onboarding_management_users/onboarding_management_users_relevant_permissions_labeled.png';
 import preMatchingCheckOffCompleteImage from '../../assets/documentation/prematching_check_off/prematching_check_off_complete_page_censored.png';
 import preMatchingCheckOffSelectionImage from '../../assets/documentation/prematching_check_off/prematching_checkoff_user_selection_preview_censored.png';
+import developmentProcessMdx from '../../content/documentation/development-process.mdx';
 import journeyOverviewAlphaMdx from '../../content/documentation/journey-overview-alpha.mdx';
 import preMatchingCheckoffsMdx from '../../content/documentation/how-pre-matching-check-offs-work.mdx';
 import multiUserManagementMdx from '../../content/documentation/multi-user-management-and-management-onboarding.mdx';
@@ -23,6 +24,7 @@ import reportingBugsAndIssuesMdx from '../../content/documentation/reporting-bug
 
 import {
   ALGORITHM_ROUTE,
+  DEVELOPMENT_PROCESS_DOCUMENTATION_ROUTE,
   DOCUMENTATION_ROUTE,
   JOURNEY_OVERVIEW_DOCUMENTATION_ROUTE,
   JOURNEY_OVERVIEW_ROUTE,
@@ -89,7 +91,21 @@ const DocumentationHeader = styled.div`
 const DocumentationList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.large};
+  gap: ${({ theme }) => theme.spacing.xlarge};
+`;
+
+const DocumentationSectionBlock = styled.section`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.medium};
+`;
+
+const DocumentationSectionTitle = styled(Text)`
+  color: ${({ theme }) => theme.color.text.primary};
+  font-weight: 600;
+  margin: 0;
+  padding-bottom: ${({ theme }) => theme.spacing.xxsmall};
+  border-bottom: 1px solid ${({ theme }) => theme.color.border.subtle};
 `;
 
 const DocumentationCard = styled(Link)`
@@ -629,6 +645,8 @@ const JOURNEY_OVERVIEW_ALPHA_MDX_URL =
   'https://github.com/a-little-world/little-world-management-panel/blob/main/src/content/documentation/journey-overview-alpha.mdx';
 const MULTI_USER_MANAGEMENT_MDX_URL =
   'https://github.com/a-little-world/little-world-management-panel/blob/main/src/content/documentation/multi-user-management-and-management-onboarding.mdx';
+const DEVELOPMENT_PROCESS_MDX_URL =
+  'https://github.com/a-little-world/little-world-management-panel/blob/main/src/content/documentation/development-process.mdx';
 
 const PREMATCH_ORDERING_OPTIONS = [
   { value: 'start_time', label: '(Asc) Starts At' },
@@ -852,62 +870,87 @@ const RouteBadge = styled.span`
   letter-spacing: 0.5px;
 `;
 
-const documentationLinks: DocumentationLink[] = [
+interface DocumentationSection {
+  id: string;
+  title: string;
+  links: DocumentationLink[];
+}
+
+const documentationSections: DocumentationSection[] = [
   {
-    id: 'algorithm',
-    title: 'Matching Algorithm',
-    description:
-      'Comprehensive guide to our custom matching algorithm that pairs learners with volunteers. Learn about scoring elements including gender preferences, time slot overlap, language levels, interests, and distance calculations. Understand how we achieve maximum cardinality matching to optimize successful pairings.',
-    route: ALGORITHM_ROUTE,
+    id: 'panel-documentation',
+    title: 'Panel Documentation',
+    links: [
+      {
+        id: 'algorithm',
+        title: 'Matching Algorithm',
+        description:
+          'Comprehensive guide to our custom matching algorithm that pairs learners with volunteers. Learn about scoring elements including gender preferences, time slot overlap, language levels, interests, and distance calculations. Understand how we achieve maximum cardinality matching to optimize successful pairings.',
+        route: ALGORITHM_ROUTE,
+      },
+      {
+        id: 'journey-overview-alpha',
+        title: 'User & Match Journey Overview (Alpha)',
+        description:
+          'Preview the new alpha journey overview for user and match lifecycle insights.',
+        route: JOURNEY_OVERVIEW_DOCUMENTATION_ROUTE,
+      },
+      {
+        id: 'user-journey',
+        title: 'User Journey Documentation',
+        description:
+          'All user list filters from the backend registry, including descriptions, source references, and direct links into the matching users page.',
+        route: USER_JOURNEY_DOCUMENTATION_ROUTE,
+      },
+      {
+        id: 'match-journey',
+        title: 'Match Journey Documentation',
+        description:
+          'All match list filters from the backend registry, including descriptions, source references, and direct links into the matching matches page.',
+        route: MATCH_JOURNEY_DOCUMENTATION_ROUTE,
+      },
+      {
+        id: 'match-success',
+        title: 'Match Success',
+        description:
+          'How we measure a successful match and how the token scale works, including every registered version. Content is served from the live match-success code, so it stays in sync when versions change.',
+        route: MATCH_SUCCESS_DOCUMENTATION_ROUTE,
+      },
+      {
+        id: 'pre-matching-check-offs',
+        title: 'How Pre-Matching Check-offs Work',
+        description:
+          'How attendee check-offs update onboarding state and trigger follow-up emails in the pre-matching flow.',
+        route: PRE_MATCHING_CHECKOFFS_DOCUMENTATION_ROUTE,
+      },
+      {
+        id: 'multi-user-management-and-management-onboarding',
+        title: 'Multi User Management and Management Onboarding',
+        description:
+          'Step-by-step process for onboarding management users and assigning required panel permissions.',
+        route: MULTI_USER_MANAGEMENT_DOCUMENTATION_ROUTE,
+      },
+    ],
   },
   {
-    id: 'journey-overview-alpha',
-    title: 'User & Match Journey Overview (Alpha)',
-    description:
-      'Preview the new alpha journey overview for user and match lifecycle insights.',
-    route: JOURNEY_OVERVIEW_DOCUMENTATION_ROUTE,
-  },
-  {
-    id: 'user-journey',
-    title: 'User Journey Documentation',
-    description:
-      'All user list filters from the backend registry, including descriptions, source references, and direct links into the matching users page.',
-    route: USER_JOURNEY_DOCUMENTATION_ROUTE,
-  },
-  {
-    id: 'match-journey',
-    title: 'Match Journey Documentation',
-    description:
-      'All match list filters from the backend registry, including descriptions, source references, and direct links into the matching matches page.',
-    route: MATCH_JOURNEY_DOCUMENTATION_ROUTE,
-  },
-  {
-    id: 'match-success',
-    title: 'Match Success',
-    description:
-      'How we measure a successful match and how the token scale works, including every registered version. Content is served from the live match-success code, so it stays in sync when versions change.',
-    route: MATCH_SUCCESS_DOCUMENTATION_ROUTE,
-  },
-  {
-    id: 'reporting-bugs-and-issues',
-    title: 'Reporting Bugs and Issues',
-    description:
-      'How to report bugs in the open-source repository and where to file sensitive internal issues.',
-    route: REPORTING_BUGS_DOCUMENTATION_ROUTE,
-  },
-  {
-    id: 'pre-matching-check-offs',
-    title: 'How Pre-Matching Check-offs Work',
-    description:
-      'How attendee check-offs update onboarding state and trigger follow-up emails in the pre-matching flow.',
-    route: PRE_MATCHING_CHECKOFFS_DOCUMENTATION_ROUTE,
-  },
-  {
-    id: 'multi-user-management-and-management-onboarding',
-    title: 'Multi User Management and Management Onboarding',
-    description:
-      'Step-by-step process for onboarding management users and assigning required panel permissions.',
-    route: MULTI_USER_MANAGEMENT_DOCUMENTATION_ROUTE,
+    id: 'development',
+    title: 'Development',
+    links: [
+      {
+        id: 'reporting-bugs-and-issues',
+        title: 'Reporting Bugs and Issues',
+        description:
+          'How to report bugs in the open-source repository and where to file sensitive internal issues.',
+        route: REPORTING_BUGS_DOCUMENTATION_ROUTE,
+      },
+      {
+        id: 'development-process',
+        title: 'Development Process',
+        description:
+          'Repository ownership, review responsibilities, CI labels, cross-repo merge order, and the staging/production flow.',
+        route: DEVELOPMENT_PROCESS_DOCUMENTATION_ROUTE,
+      },
+    ],
   },
 ];
 
@@ -1034,18 +1077,25 @@ export const Documentation: React.FC = () => {
       </DocumentationHeader>
 
       <DocumentationList>
-        {documentationLinks.map(link => (
-          <DocumentationCard key={link.id} to={link.route}>
-            <CardHeader>
-              <CardTitle type={TextTypes.Heading4} tag="h3">
-                {link.title}
-              </CardTitle>
-              <RouteBadge>{link.route}</RouteBadge>
-            </CardHeader>
-            <CardDescription type={TextTypes.Body5}>
-              {link.description}
-            </CardDescription>
-          </DocumentationCard>
+        {documentationSections.map(section => (
+          <DocumentationSectionBlock key={section.id}>
+            <DocumentationSectionTitle type={TextTypes.Heading3} tag="h2">
+              {section.title}
+            </DocumentationSectionTitle>
+            {section.links.map(link => (
+              <DocumentationCard key={link.id} to={link.route}>
+                <CardHeader>
+                  <CardTitle type={TextTypes.Heading4} tag="h3">
+                    {link.title}
+                  </CardTitle>
+                  <RouteBadge>{link.route}</RouteBadge>
+                </CardHeader>
+                <CardDescription type={TextTypes.Body5}>
+                  {link.description}
+                </CardDescription>
+              </DocumentationCard>
+            ))}
+          </DocumentationSectionBlock>
         ))}
       </DocumentationList>
     </DocumentationContainer>
@@ -1218,6 +1268,37 @@ export const MultiUserManagementDocumentation: React.FC = () => {
             maxWidth="920px"
             minHeight="260px"
           />
+        </ReportingPagePanel>
+      </DocumentationPageContent>
+    </DocumentationContainer>
+  );
+};
+
+export const DevelopmentProcessDocumentation: React.FC = () => {
+  return (
+    <DocumentationContainer>
+      <DocumentationPageContent>
+        <DocumentationPageTopRow>
+          <BackToDocumentationLink to={DOCUMENTATION_ROUTE}>
+            {'<- Back to Documentation'}
+          </BackToDocumentationLink>
+          <ViewOnGitHubButton
+            href={DEVELOPMENT_PROCESS_MDX_URL}
+            target="_blank"
+            rel="noreferrer"
+          >
+            View on GitHub
+          </ViewOnGitHubButton>
+        </DocumentationPageTopRow>
+        <ReportingPagePanel>
+          <MarkdownDocument>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={markdownLinkComponents}
+            >
+              {developmentProcessMdx}
+            </ReactMarkdown>
+          </MarkdownDocument>
         </ReportingPagePanel>
       </DocumentationPageContent>
     </DocumentationContainer>
