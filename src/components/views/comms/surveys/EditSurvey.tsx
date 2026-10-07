@@ -183,9 +183,6 @@ const MIN_MAX_SHOWS = 1;
 const MAX_MAX_SHOWS = 10;
 const DEFAULT_MAX_SHOWS = 3;
 
-/** Default id for the first rating on a new campaign. Frozen once answered. */
-const RATING_QUESTION_ID = 'rating';
-
 const QUESTION_TYPE_OPTIONS: { label: string; value: SurveyQuestionType }[] = [
   { value: 'rating', label: 'Rating' },
   { value: 'text', label: 'Text' },
@@ -287,12 +284,9 @@ function slugify(value: string) {
 }
 
 /**
- * Question id: snake_case. Frozen once answered, and used as a JSON key and in `answers__<id>`
- * ORM lookups, which is why `QUESTION_ID_PATTERN` is `^[a-z][a-z0-9_]{0,39}$` — hyphens are
- * rejected.
- *
- * Deliberately not `slugify`: the two rules are exact opposites, and sharing one helper is
- * what produced ids like `how-was-your-call` that the backend refused to save.
+ * Option *values* can still be slugged from labels — they are the stored answer, not a
+ * JSON key with a 40-character pattern. Deliberately not `slugify`: hyphens vs underscores.
+ * Question ids are minted on the campaign, not here.
  */
 function questionIdFrom(label: string, index: number) {
   const candidate = asciify(label)
@@ -333,7 +327,7 @@ const defaultOption = (): QuestionOptionForm => ({
 const defaultQuestion = (
   type: SurveyQuestionType = 'text',
 ): QuestionFormValues => ({
-  id: type === 'rating' ? RATING_QUESTION_ID : '',
+  id: '',
   type,
   label: emptyLocalized(),
   placeholder: emptyLocalized(),
@@ -378,7 +372,7 @@ function campaignToFormValues(campaign: SurveyCampaign): SurveyFormValues {
       submit_button: localizedFrom(campaign.copy?.submit_button),
     },
     questions: campaign.questions.map(question => ({
-      id: question.id,
+      id: question.id ?? '',
       type: question.type,
       label: localizedFrom(question.label),
       placeholder: localizedFrom(question.placeholder),
@@ -418,28 +412,16 @@ function pruneLocalized(value?: LocalizedValue) {
 }
 
 function formValuesToPayload(values: SurveyFormValues): SurveyCampaignPayload {
-  // Ids already on a question (stored, or the new-campaign default) are reserved first, so a
-  // generated id can never take one over — whatever the display order. Renaming a stored id
-  // would orphan its answers.
-  const usedIds = new Set<string>();
-  const ids = values.questions.map(question => {
-    if (!question.id || usedIds.has(question.id)) return '';
-    usedIds.add(question.id);
-    return question.id;
-  });
-  const questions: SurveyQuestion[] = values.questions.map((question, index) => {
-    let id = ids[index];
-    if (!id) {
-      id = uniqueAmong(questionIdFrom(question.label.de, index), usedIds);
-      usedIds.add(id);
-    }
-
+  const questions: SurveyQuestion[] = values.questions.map(question => {
     const payload: SurveyQuestion = {
-      id,
       type: question.type,
       required: question.required,
       label: pruneLocalized(question.label),
     };
+    // Echo a stored id so answered questions stay addressable. New rows omit it;
+    // SurveyCampaign.clean mints one. Copy is not a source of ids.
+    const id = question.id?.trim();
+    if (id) payload.id = id;
 
     if (question.type === 'rating') {
       payload.scale = clampScale(question.scale);

@@ -10,14 +10,16 @@ import {
   CardSizes,
   InputWidth,
   Modal,
+  PencilIcon,
   Select,
   Tag,
   TagAppearance,
   TagSizes,
   Text,
   TextInput,
+  TrashIcon,
 } from '@a-little-world/little-world-design-system';
-import { PencilIcon, TrashIcon } from '@heroicons/react/20/solid';
+
 import { isEmpty } from 'lodash';
 import React, { useCallback, useRef, useState } from 'react';
 import { useTheme } from 'styled-components';
@@ -28,8 +30,8 @@ import {
   deleteLobby,
   getUpcomingLobbiesEndpoint,
   LobbyFrequency,
-  LobbyMutationScope,
   LobbyListItem,
+  LobbyMutationScope,
   updateLobby,
 } from '../../../api/randomCalls';
 import { formatDate, formatEventTime } from '../../../helpers/date';
@@ -408,6 +410,9 @@ function RandomCallSchedule() {
                 'de',
               );
               const formattedTime = formatEventTime(startDate, endDate);
+              const seriesEnd = lobbyItem.recurrence_group
+                ? seriesEnds[lobbyItem.recurrence_group]
+                : undefined;
 
               return (
                 <ScheduleItem key={lobbyItem.uuid}>
@@ -434,13 +439,10 @@ function RandomCallSchedule() {
                             option => option.value === lobbyItem.frequency,
                           )?.label
                         }
-                        {lobbyItem.recurrence_group &&
-                          seriesEnds[lobbyItem.recurrence_group] &&
-                          ` until ${formatDate(
-                            seriesEnds[lobbyItem.recurrence_group],
-                            'd MMM yyyy',
-                            'de',
-                          )}`}
+                        {seriesEnd &&
+                          (seriesEnd > startDate
+                            ? ` until ${formatDate(seriesEnd, 'd MMM yyyy', 'de')}`
+                            : ', last in series')}
                       </Text>
                     )}
                     {startDate > new Date() && (
@@ -453,7 +455,7 @@ function RandomCallSchedule() {
                           color={theme.color.text.accent}
                         >
                           <PencilIcon
-                            title="Edit lobby"
+                            label="Edit lobby"
                             width={16}
                             height={16}
                           />
@@ -466,7 +468,7 @@ function RandomCallSchedule() {
                           color={theme.color.text.error}
                         >
                           <TrashIcon
-                            title="Delete lobby"
+                            label="Delete lobby"
                             width={16}
                             height={16}
                           />
