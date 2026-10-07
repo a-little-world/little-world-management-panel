@@ -21,7 +21,8 @@ export interface SurveyChoiceOption {
 }
 
 export interface SurveyQuestion {
-  id: string;
+  /** Assigned on save. Omit on new questions; send back whatever the campaign already has. */
+  id?: string;
   type: SurveyQuestionType;
   required: boolean;
   label: LocalizedText;
