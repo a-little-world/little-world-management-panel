@@ -875,6 +875,13 @@ export default function SupportTaskDetail() {
           </MainColumn>
 
           <SideColumn>
+            <SupportTaskNotes
+              taskId={id}
+              notes={task.notes}
+              collapseIfEmpty
+              onChanged={mutate}
+              onToggleCompleted={toggleNoteCompleted}
+            />
             {relatedUser && (
               <Card center={false}>
                 <CollapsibleHeader onClick={() => setRelatedUserOpen(o => !o)}>
@@ -1002,13 +1009,6 @@ export default function SupportTaskDetail() {
                 }}
               />
             )}
-
-            <SupportTaskNotes
-              taskId={id}
-              notes={task.notes}
-              onChanged={mutate}
-              onToggleCompleted={toggleNoteCompleted}
-            />
           </SideColumn>
         </ContentGrid>
       </DetailBody>
