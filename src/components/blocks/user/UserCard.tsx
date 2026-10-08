@@ -16,7 +16,11 @@ import { useNavigate } from 'react-router-dom';
 
 import type { MatchingPanelUser } from '../../../api/index';
 import { MANAGEMENT_PERMISSION_IS_MAIN_SUPPORT_ACCOUNT } from '../../../constants/managementPermissions';
-import { formatDate, formatDateTime, formatTimeDistance } from '../../../helpers/date';
+import {
+  formatDate,
+  formatDateTime,
+  formatTimeDistance,
+} from '../../../helpers/date';
 import { hasManagementPermission } from '../../../helpers/managementPermissions';
 import { MATCHING_ROUTE } from '../../../router/routes';
 import { useGlobalState } from '../../../store';
@@ -78,6 +82,7 @@ interface UserProfile {
 
 interface UserState {
   company?: string;
+  signup_campaign?: string | null;
   searching_state: 'idle' | 'searching';
   searching_state_last_updated?: string | null;
   email_authenticated: boolean;
@@ -148,6 +153,10 @@ const UserDetailsFull: React.FC<{
         <DataField title="Id" value={user.id} />
         <DataField title="Email" value={user.email} />
         <DataField title="Company" value={user.state.company || '-'} />
+        <DataField
+          title="Signup Campaign"
+          value={user.state.signup_campaign || 'None'}
+        />
         <DataField
           title="Residence"
           value={user.profile.country_of_residence || '-'}
