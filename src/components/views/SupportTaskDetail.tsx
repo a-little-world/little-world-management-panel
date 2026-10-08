@@ -975,11 +975,11 @@ export default function SupportTaskDetail() {
                           <SectionLabel>Match eligibility</SectionLabel>
                           <MatchEligibility userId={String(relatedUser.id)} />
                         </SidebarSection>
-                        <UserJourneyStatus
-                          journey={relatedUserDetail?.journey}
-                        />
                         <UserMatchesSummary
                           matches={relatedUserDetail?.matches}
+                        />
+                        <UserJourneyStatus
+                          journey={relatedUserDetail?.journey}
                         />
                       </>
                     ) : (
