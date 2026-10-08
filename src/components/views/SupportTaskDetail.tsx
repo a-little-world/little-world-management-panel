@@ -29,7 +29,6 @@ import { format, parseISO } from 'date-fns';
 import {
   STATUS_CONFIG,
   SupportReplyParameters,
-  SupportTask,
   SupportTaskListItem,
   TaskPriority,
   TaskStatus,
@@ -213,12 +212,16 @@ const ContentGrid = styled.div`
   display: grid;
   grid-template-columns: minmax(0, 1fr) 360px;
   gap: ${({ theme }) => theme.spacing.medium};
+  height: 100%;
+  overflow: hidden;
 `;
 
 const MainColumn = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.medium};
+  height: 100%;
+  overflow-y: auto;
 `;
 
 const SideColumn = styled.aside`
@@ -226,6 +229,8 @@ const SideColumn = styled.aside`
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.medium};
   min-width: 0;
+  height: 100%;
+  overflow-y: auto;
 `;
 
 const SentMessageQuote = styled.blockquote`
