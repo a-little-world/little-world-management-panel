@@ -14,6 +14,8 @@ interface ApiError extends Error {
   status?: number;
   statusText?: string;
   data?: any;
+  code?: string;
+  fields?: Record<string, string[]>;
 }
 
 export const formatApiError = (responseBody: any, response: Response) => {
@@ -22,18 +24,51 @@ export const formatApiError = (responseBody: any, response: Response) => {
   apiError.statusText = response.statusText;
   apiError.data = responseBody;
 
-  if (typeof responseBody === 'string') {
+  const structuredError =
+    responseBody &&
+    typeof responseBody === 'object' &&
+    responseBody.error &&
+    typeof responseBody.error === 'object'
+      ? responseBody.error
+      : undefined;
+
+  if (structuredError) {
+    apiError.code = structuredError.code;
+    apiError.fields =
+      structuredError.fields && typeof structuredError.fields === 'object'
+        ? structuredError.fields
+        : undefined;
+
+    const firstField = apiError.fields
+      ? Object.keys(apiError.fields)[0]
+      : undefined;
+    apiError.cause = firstField ?? null;
+
+    const firstFieldMessage =
+      firstField && Array.isArray(apiError.fields?.[firstField])
+        ? apiError.fields?.[firstField][0]
+        : undefined;
+
+    apiError.message =
+      (typeof structuredError.message === 'string' && structuredError.message) ||
+      (typeof firstFieldMessage === 'string' && firstFieldMessage) ||
+      apiError.statusText;
+  } else if (typeof responseBody === 'string') {
     apiError.message = responseBody;
   } else if (responseBody && typeof responseBody === 'object') {
     const detail =
       typeof responseBody.detail === 'string' ? responseBody.detail : undefined;
     const message =
       typeof responseBody.message === 'string' ? responseBody.message : undefined;
+    const msg =
+      typeof responseBody.msg === 'string' ? responseBody.msg : undefined;
 
     if (detail) {
       apiError.message = detail;
     } else if (message) {
       apiError.message = message;
+    } else if (msg) {
+      apiError.message = msg;
     } else {
       const errorTypeApi = Object.keys(responseBody)?.[0];
       const errorTags = Object.values(responseBody)?.[0];
