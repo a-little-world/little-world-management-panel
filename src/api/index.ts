@@ -114,6 +114,7 @@ export interface UserMatchPreviewPartner {
   id: number;
   first_name: string;
   has_match_priority: boolean;
+  isDeleted: boolean;
   image_type: 'image' | 'avatar';
   avatar_config: Record<string, unknown>;
   image: string | null;
@@ -129,6 +130,7 @@ export interface UserMatchPreviews {
   confirmed: { results: UserMatchPreview[] };
   unconfirmed: { results: UserMatchPreview[] };
   proposed: { results: UserMatchPreview[] };
+  inactive: { results: UserMatchPreview[] };
 }
 
 export interface UserWaitingTime {
