@@ -1,3 +1,5 @@
+export const AI_USAGE_POLICY_DOCUMENTATION_ROUTE =
+  '/documentation/ai-usage-policy/';
 export const ALGORITHM_ROUTE = '/documentation/algorithm/';
 export const BASE_ROUTE = '/matching/';
 export const CREATE_NEW_EMAIL_ROUTE = '/email/new';
