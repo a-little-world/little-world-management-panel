@@ -42,12 +42,16 @@ export const getMatchReportProps = (
       ? 'Proposal Rejected by Learner'
       : 'Proposal Expired'
     : capitalize(
-        `${reportUnmatch.kind}${match.partner?.isDeleted ? '' : 'ed'}`,
+        `${reportUnmatch.kind}${
+          match.partner?.isDeleted || reportUnmatch.kind?.endsWith('ed')
+            ? ''
+            : 'ed'
+        }`,
       );
 
   const date = isProposed
     ? (match.rejected_at ?? match.expires_at)
-    : match.reoportUnmatch?.time;
+    : reportUnmatch?.time;
 
   const reason =
     (isProposed ? match.rejected_reason : reportUnmatch?.reason) || UNAVAILABLE;
