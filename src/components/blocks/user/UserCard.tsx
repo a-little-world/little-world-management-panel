@@ -152,7 +152,7 @@ const UserDetailsFull: React.FC<{
         />
         <DataField title="Id" value={user.id} />
         <DataField title="Email" value={user.email} />
-        <DataField title="Company" value={user.state.company || '-'} />
+        <DataField title="Company" value={user.state.company || 'None'} />
         <DataField
           title="Signup Campaign"
           value={user.state.signup_campaign || 'None'}

@@ -106,6 +106,7 @@ export interface UserTableProfile {
 
 export interface UserTableState {
   company: string | null;
+  signup_campaign: string | null;
   has_match_priority: boolean;
 }
 

@@ -169,6 +169,20 @@ const userColumns: ColumnDef<UserTableRow, any>[] = [
     },
     cell: ({ row }) => row.original.state.company,
   }),
+  columnHelper.accessor('state.signup_campaign', {
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Signup Campaign
+          <ArrowsUpDownIcon className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => row.original.state.signup_campaign,
+  }),
   columnHelper.accessor('profile.country_of_residence', {
     header: ({ column }) => {
       return (
