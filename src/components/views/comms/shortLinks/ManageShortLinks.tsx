@@ -33,6 +33,7 @@ import {
   archiveAdminShortLink,
   createAdminShortLink,
   fetchAdminShortLinks,
+  metaConversionEventLabel,
   updateAdminShortLink,
 } from '../../../../api/shortLinks';
 import {
@@ -80,6 +81,8 @@ const getDefaultFormValues = (): LinkFormValues => ({
   tracking_cookies_enabled: false,
   register_at_app_root: false,
   tracking_cookies: [],
+  meta_conversion_enabled: false,
+  meta_conversion_event: '',
 });
 
 const getEditFormValues = (link: AdminShortLink): LinkFormValues => ({
@@ -90,6 +93,8 @@ const getEditFormValues = (link: AdminShortLink): LinkFormValues => ({
   tracking_cookies: link.tracking_cookies?.length
     ? link.tracking_cookies.map(c => ({ ...c }))
     : [],
+  meta_conversion_enabled: link.meta_conversion_enabled,
+  meta_conversion_event: link.meta_conversion_event ?? '',
 });
 
 function normalizeCookies(rows: LinkFormValues['tracking_cookies']) {
@@ -167,6 +172,10 @@ function Links() {
           tracking_cookies_enabled: values.tracking_cookies_enabled,
           tracking_cookies: cookies,
           register_at_app_root: values.register_at_app_root,
+          meta_conversion_enabled: values.meta_conversion_enabled,
+          meta_conversion_event: values.meta_conversion_enabled
+            ? values.meta_conversion_event
+            : '',
         });
       } else {
         await createAdminShortLink({
@@ -175,6 +184,10 @@ function Links() {
           tracking_cookies_enabled: values.tracking_cookies_enabled,
           tracking_cookies: cookies,
           register_at_app_root: values.register_at_app_root,
+          meta_conversion_enabled: values.meta_conversion_enabled,
+          meta_conversion_event: values.meta_conversion_enabled
+            ? values.meta_conversion_event
+            : '',
         });
       }
       await mutate(
@@ -287,7 +300,9 @@ function Links() {
           when the key is not already present (for example campaign{' '}
           <code>source</code> / <code>s</code>, and optional{' '}
           <code>user_hash</code> / <code>u</code> / <code>h</code>). Archived
-          links stop redirecting but remain in the database for reporting.
+          links stop redirecting but remain in the database for reporting. A link
+          can optionally send a Meta (Facebook) backend conversion on every click
+          once the visitor has accepted analytics cookies; it is off by default.
         </Description>
       </PageHeader>
 
@@ -331,6 +346,7 @@ function Links() {
                   <TableHead className="w-44 text-center">Clicks</TableHead>
                   <TableHead className="w-28 text-center">Home root</TableHead>
                   <TableHead className="w-28 text-center">Tracking</TableHead>
+                  <TableHead className="w-40 text-center">Conversion</TableHead>
                   <TableHead className="w-44">Updated</TableHead>
                   <TableHead className="w-28 text-left">Edit</TableHead>
                   <TableHead className="w-28 text-left">Archive</TableHead>
@@ -394,6 +410,21 @@ function Links() {
                         }
                       >
                         {link.tracking_cookies_enabled ? 'On' : 'Off'}
+                      </Tag>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Tag
+                        appearance={
+                          link.meta_conversion_enabled
+                            ? TagAppearance.success
+                            : TagAppearance.error
+                        }
+                      >
+                        {link.meta_conversion_enabled && link.meta_conversion_event
+                          ? metaConversionEventLabel(
+                              link.meta_conversion_event,
+                            )
+                          : 'Off'}
                       </Tag>
                     </TableCell>
                     <TableCell>{formatDateTime(link.updated_at)}</TableCell>
