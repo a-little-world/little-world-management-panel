@@ -28,7 +28,16 @@ import {
   SEND_DYNAMIC_EMAIL_ROUTE,
 } from '../../../router/routes';
 import { dataFetcher } from '../../../store';
+import AutoEmailStatusTag from '../../atoms/AutoEmailStatusTag';
 import LoadingSpinner from '../../atoms/LoadingSpinner';
+
+interface AutoEmailFlags {
+  [templateId: string]: {
+    group: string;
+    enabled: boolean;
+    emulated: boolean;
+  };
+}
 
 const Container = styled.div`
   padding: ${({ theme }) => theme.spacing.small};
@@ -56,6 +65,7 @@ const Template = styled(Link)`
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: ${({ theme }) => theme.spacing.xxsmall};
   width: fit-content;
 `;
 
@@ -160,6 +170,12 @@ const Emails = () => {
     {},
   );
 
+  const { data: autoEmailFlags } = useSWR<AutoEmailFlags>(
+    '/api/matching/emails/auto_email_flags/',
+    dataFetcher,
+    {},
+  );
+
   const onSyncBackendEmails = async () => {
     // 1 - fetches the current email confirguration from the backend
     // 2 - injects all the new email templates into the json
@@ -184,6 +200,11 @@ const Emails = () => {
         These are automated backend emails that must be updated in the backend.
         You may edit all of them in emails.json.
       </Text>
+      <Text type={TextTypes.Body6}>
+        The status tag shows whether an automatic email is actually delivered:
+        &quot;Live&quot; emails are sent, &quot;Emulated&quot; emails are logged
+        but never delivered, and &quot;Off&quot; emails are disabled entirely.
+      </Text>
       <Accordion
         ContentWrapper={EmailGrouping}
         items={map(GROUPED_TEMPLATES, (item, header) => {
@@ -192,15 +213,24 @@ const Emails = () => {
             content: sortBy(
               item as { id: string; label: string }[],
               'label',
-            ).map(template => (
-              <Template
-                key={template.id}
-                to={template.id}
-                textDecoration={false}
-              >
-                <Text>{template.label}</Text>
-              </Template>
-            )),
+            ).map(template => {
+              const flags = autoEmailFlags?.[template.id];
+              return (
+                <Template
+                  key={template.id}
+                  to={template.id}
+                  textDecoration={false}
+                >
+                  <Text>{template.label}</Text>
+                  {flags && (
+                    <AutoEmailStatusTag
+                      enabled={flags.enabled}
+                      emulated={flags.emulated}
+                    />
+                  )}
+                </Template>
+              );
+            }),
           };
         })}
       />
