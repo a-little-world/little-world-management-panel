@@ -7,6 +7,7 @@ import { DashboardContainer, ReportsList } from './styles';
 
 const FilterKeys = {
   Company: 'state__company',
+  SignupCampaign: 'state__signup_campaign',
 } as const;
 
 // Specific Report Components
@@ -92,6 +93,44 @@ function CompanyReportDownloadBlock() {
   );
 }
 
+function SignupCampaignReportDownloadBlock() {
+  const { filterOptions } = useFilterOptions();
+  const signupCampaignChoices = find(
+    filterOptions?.filters,
+    element => element.name === FilterKeys.SignupCampaign,
+  )?.choices;
+
+  const dropdownOptions = useMemo(() => {
+    if (!signupCampaignChoices) return undefined;
+    return signupCampaignChoices
+      .filter(({ value }: { value: string }) => value !== 'null')
+      .map(({ tag, value }: { tag: string; value: string }) => ({
+        label: tag,
+        value,
+      }));
+  }, [signupCampaignChoices]);
+
+  return (
+    <ReportDownloadSection
+      title="Signup Campaign Report"
+      description="Download a report for all users attributed to a specific signup campaign."
+      apiEndpointBuilder={signupCampaign =>
+        `/api/matching/users/statistics/signup_campaign_users_report/${encodeURIComponent(signupCampaign)}/`
+      }
+      apiParams={{ format: 'csv' }}
+      downloadFilename={(startDate, endDate, signupCampaign) =>
+        `signup_campaign_report_${signupCampaign || 'all'}_${startDate || ''}_to_${endDate || ''}.csv`
+      }
+      downloadMimeType="text/csv"
+      transformData={data => data?.csv ?? ''}
+      showDateRange
+      defaultStartDate="2025-01-01"
+      dropdownOptions={dropdownOptions}
+      dropdownLabel="Signup campaign"
+    />
+  );
+}
+
 function ShortLinkCampaignSummaryDownloadBlock() {
   return (
     <ReportDownloadSection
@@ -118,6 +157,7 @@ const ReportsDashboard: React.FC = () => {
       <ReportsList>
         <UserLossStatisticDownloadBlock />
         <CompanyReportDownloadBlock />
+        <SignupCampaignReportDownloadBlock />
         <ShortLinkCampaignSummaryDownloadBlock />
         <MatchQualityStatisticDownloadBlock />
         <MarketingCampaignReportDownloadBlock />
