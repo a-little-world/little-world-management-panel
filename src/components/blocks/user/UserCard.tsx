@@ -430,6 +430,10 @@ export const UserCard: React.FC<UserCardProps> = ({
             label="Proposed"
             matches={user?.matches.proposed?.results}
           />
+          <MatchesIcons
+            label="Inactive"
+            matches={user?.matches.inactive?.results ?? []}
+          />
         </MatchesContainer>
       </UserInfoContainer>
 
