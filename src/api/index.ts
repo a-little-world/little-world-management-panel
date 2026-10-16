@@ -649,6 +649,12 @@ export const sendBulkEmail = async ({
   }
 };
 
+export const deleteDynamicTemplate = (templateName: string) =>
+  apiFetch<void>(
+    `/api/matching/emails/dynamic_templates/${encodeURIComponent(templateName)}/`,
+    { method: 'DELETE' },
+  );
+
 export const setHadPrematchingCall = async ({
   userId,
   completed,
