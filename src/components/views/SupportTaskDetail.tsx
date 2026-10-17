@@ -29,7 +29,6 @@ import { format, parseISO } from 'date-fns';
 import {
   STATUS_CONFIG,
   SupportReplyParameters,
-  SupportTask,
   SupportTaskListItem,
   TaskPriority,
   TaskStatus,
@@ -213,12 +212,16 @@ const ContentGrid = styled.div`
   display: grid;
   grid-template-columns: minmax(0, 1fr) 360px;
   gap: ${({ theme }) => theme.spacing.medium};
+  height: 100%;
+  overflow: hidden;
 `;
 
 const MainColumn = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.medium};
+  height: 100%;
+  overflow-y: auto;
 `;
 
 const SideColumn = styled.aside`
@@ -226,6 +229,8 @@ const SideColumn = styled.aside`
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.medium};
   min-width: 0;
+  height: 100%;
+  overflow-y: auto;
 `;
 
 const SentMessageQuote = styled.blockquote`
@@ -870,6 +875,13 @@ export default function SupportTaskDetail() {
           </MainColumn>
 
           <SideColumn>
+            <SupportTaskNotes
+              taskId={id}
+              notes={task.notes}
+              collapseIfEmpty
+              onChanged={mutate}
+              onToggleCompleted={toggleNoteCompleted}
+            />
             {relatedUser && (
               <Card center={false}>
                 <CollapsibleHeader onClick={() => setRelatedUserOpen(o => !o)}>
@@ -970,11 +982,11 @@ export default function SupportTaskDetail() {
                           <SectionLabel>Match eligibility</SectionLabel>
                           <MatchEligibility userId={String(relatedUser.id)} />
                         </SidebarSection>
-                        <UserJourneyStatus
-                          journey={relatedUserDetail?.journey}
-                        />
                         <UserMatchesSummary
                           matches={relatedUserDetail?.matches}
+                        />
+                        <UserJourneyStatus
+                          journey={relatedUserDetail?.journey}
                         />
                       </>
                     ) : (
@@ -997,13 +1009,6 @@ export default function SupportTaskDetail() {
                 }}
               />
             )}
-
-            <SupportTaskNotes
-              taskId={id}
-              notes={task.notes}
-              onChanged={mutate}
-              onToggleCompleted={toggleNoteCompleted}
-            />
           </SideColumn>
         </ContentGrid>
       </DetailBody>
