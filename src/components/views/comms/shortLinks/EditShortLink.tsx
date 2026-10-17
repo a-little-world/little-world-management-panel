@@ -11,6 +11,7 @@ import {
   InputWidth,
   Label,
   PlusIcon,
+  Select,
   Switch,
   Text,
   TextInput,
@@ -21,7 +22,10 @@ import React, { useEffect } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import styled, { useTheme } from 'styled-components';
 
-import { AdminShortLink } from '../../../../api/shortLinks';
+import {
+  AdminShortLink,
+  META_CONVERSION_EVENT_OPTIONS,
+} from '../../../../api/shortLinks';
 
 export const DeleteButton = styled(Button)`
   bottom: ${({ theme }) => theme.spacing.small};
@@ -70,6 +74,8 @@ export type LinkFormValues = {
   tracking_cookies_enabled: boolean;
   register_at_app_root: boolean;
   tracking_cookies: Array<{ name: string; value: string }>;
+  meta_conversion_enabled: boolean;
+  meta_conversion_event: string;
 };
 
 type LinkFormProps = {
@@ -93,11 +99,14 @@ function LinkForm({
     control,
     handleSubmit,
     reset,
+    watch,
     formState: { errors },
   } = useForm<LinkFormValues>({
     mode: 'onSubmit',
     defaultValues: initialValues,
   });
+
+  const metaConversionEnabled = watch('meta_conversion_enabled');
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -216,6 +225,41 @@ function LinkForm({
               <Text>No tracking cookies set</Text>
             )}
           </div>
+
+          <Controller
+            name="meta_conversion_enabled"
+            control={control}
+            render={({ field: { value, onChange } }) => (
+              <Switch
+                id="short-link-meta-toggle"
+                label="Send Meta (Facebook) conversion on click"
+                labelInline
+                checked={value}
+                onCheckedChange={onChange}
+              />
+            )}
+          />
+          {metaConversionEnabled && (
+            <Controller
+              name="meta_conversion_event"
+              control={control}
+              rules={{
+                required: 'Select a conversion event when conversions are enabled',
+              }}
+              render={({ field: { value, onChange } }) => (
+                <Select
+                  id="short-link-meta-event"
+                  label="Conversion event"
+                  placeholder="Select a conversion event"
+                  value={value || undefined}
+                  options={META_CONVERSION_EVENT_OPTIONS}
+                  onValueChange={onChange}
+                  error={errors.meta_conversion_event?.message}
+                  inModal
+                />
+              )}
+            />
+          )}
         </CardContent>
 
         <CardFooter align="space-between">
