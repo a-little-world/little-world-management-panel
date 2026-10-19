@@ -22,6 +22,7 @@ import useSelectUser from '../../hooks/useSelectUser';
 import {
   BANNERS_ROUTE,
   COMMUNICATIONS_ROUTE,
+  COMPANIES_ROUTE,
   COURSES_ROUTE,
   DOCUMENTATION_ROUTE,
   DYNAMIC_USER_LISTS_ROUTE,
@@ -36,6 +37,7 @@ import {
   SCORES_ROUTE,
   STATS_ROUTE,
   SUPPORT_TASKS_ROUTE,
+  USERS_HUB_ROUTE,
   USERS_ROUTE,
   VIDEO_CALLS_ROUTE,
 } from '../../router/routes';
@@ -105,7 +107,21 @@ const Menu = () => {
     location.pathname === MATCHES_LIST_ROUTE ||
     location.pathname.startsWith('/match/') ||
     location.pathname === SCORES_ROUTE ||
-    location.pathname === PREMATCH_APPOINTMENTS_ROUTE;
+    location.pathname === PREMATCH_APPOINTMENTS_ROUTE ||
+    location.pathname === VIDEO_CALLS_ROUTE;
+
+  const isUsersRoute =
+    location.pathname === USERS_HUB_ROUTE ||
+    location.pathname === USERS_ROUTE ||
+    location.pathname === MATCHING_USERS_ROUTE ||
+    location.pathname === DYNAMIC_USER_LISTS_ROUTE ||
+    location.pathname.startsWith('/user/');
+
+  const isDocumentationRoute =
+    location.pathname === DOCUMENTATION_ROUTE ||
+    location.pathname.startsWith('/documentation/') ||
+    location.pathname === JOURNEY_OVERVIEW_ROUTE;
+
   return (
     <NavigationMenu withShadow>
       <SearchBar
@@ -140,16 +156,10 @@ const Menu = () => {
             Matching
           </NavigationMenuContentItem>
           <NavigationMenuContentItem
-            to={USERS_ROUTE}
-            active={location.pathname === USERS_ROUTE}
+            to={USERS_HUB_ROUTE}
+            active={isUsersRoute}
           >
             Users
-          </NavigationMenuContentItem>
-          <NavigationMenuContentItem
-            to={MATCHING_USERS_ROUTE}
-            active={location.pathname === MATCHING_USERS_ROUTE}
-          >
-            Matching users
           </NavigationMenuContentItem>
           <NavigationMenuContentItem
             to={COMMUNICATIONS_ROUTE}
@@ -157,37 +167,17 @@ const Menu = () => {
           >
             Communications
           </NavigationMenuContentItem>
-          {
-            <NavigationMenuContentItem
-              to={STATS_ROUTE}
-              active={location.pathname === STATS_ROUTE}
-            >
-              Stats
-            </NavigationMenuContentItem>
-          }
           <NavigationMenuContentItem
-            to={DYNAMIC_USER_LISTS_ROUTE}
-            active={location.pathname === DYNAMIC_USER_LISTS_ROUTE}
+            to={STATS_ROUTE}
+            active={location.pathname === STATS_ROUTE}
           >
-            Dynamic User Lists
-          </NavigationMenuContentItem>
-          <NavigationMenuContentItem
-            to={VIDEO_CALLS_ROUTE}
-            active={location.pathname === VIDEO_CALLS_ROUTE}
-          >
-            Video Calls
+            Stats
           </NavigationMenuContentItem>
           <NavigationMenuContentItem
             to={DOCUMENTATION_ROUTE}
-            active={location.pathname === DOCUMENTATION_ROUTE}
+            active={isDocumentationRoute}
           >
             Documentation
-          </NavigationMenuContentItem>
-          <NavigationMenuContentItem
-            to={JOURNEY_OVERVIEW_ROUTE}
-            active={location.pathname === JOURNEY_OVERVIEW_ROUTE}
-          >
-            Journey Overview
           </NavigationMenuContentItem>
           <NavigationMenuContentItem
             to={RANDOM_CALLS_ROUTE}
@@ -208,6 +198,12 @@ const Menu = () => {
             active={location.pathname === COURSES_ROUTE}
           >
             Courses
+          </NavigationMenuContentItem>
+          <NavigationMenuContentItem
+            to={COMPANIES_ROUTE}
+            active={location.pathname.startsWith(COMPANIES_ROUTE)}
+          >
+            Companies
           </NavigationMenuContentItem>
         </NavigationMenuContent>
       </NavigationMenuItem>

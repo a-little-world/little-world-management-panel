@@ -37,6 +37,15 @@ export type AdminShortLinkUpdatePayload = Omit<
 >;
 
 export const ADMIN_SHORT_LINKS_ENDPOINT = '/api/admin/short_links/';
+
+/**
+ * The public URL a short link redirects from. Built here rather than read off the
+ * record: the backend stores only the tag, and `links/<tag>/` is the route the
+ * redirect view is registered at. The admin panel is served by that same Django app,
+ * so its origin is the right host in every environment.
+ */
+export const shortLinkUrl = (tag: string) =>
+  `${window.location.origin}/links/${tag}/`;
 export const ADMIN_SHORT_LINK_CLICKS_ENDPOINT = '/api/admin/short_link_clicks/';
 
 export interface AdminShortLinkClick {
@@ -66,9 +75,8 @@ export interface AdminShortLinkClickList {
 
 export const fetchAdminShortLinks = (search: string) => {
   const q = search.trim();
-  const url =
-    q ?
-      `${ADMIN_SHORT_LINKS_ENDPOINT}?search=${encodeURIComponent(q)}`
+  const url = q
+    ? `${ADMIN_SHORT_LINKS_ENDPOINT}?search=${encodeURIComponent(q)}`
     : ADMIN_SHORT_LINKS_ENDPOINT;
   return apiFetch<AdminShortLink[]>(url, { method: 'GET' });
 };
@@ -95,9 +103,9 @@ export const archiveAdminShortLink = (id: number) =>
 
 export const fetchAdminShortLinkClicks = (queryString: string) =>
   apiFetch<AdminShortLinkClickList>(
-    queryString ?
-      `${ADMIN_SHORT_LINK_CLICKS_ENDPOINT}?${queryString}`
-    : ADMIN_SHORT_LINK_CLICKS_ENDPOINT,
+    queryString
+      ? `${ADMIN_SHORT_LINK_CLICKS_ENDPOINT}?${queryString}`
+      : ADMIN_SHORT_LINK_CLICKS_ENDPOINT,
     {
       method: 'GET',
     },

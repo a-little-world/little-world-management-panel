@@ -9,3 +9,6 @@ export const MANAGEMENT_PERMISSION_MANAGE_OPEN_CHAT_ACCESS =
 
 export const MANAGEMENT_PERMISSION_IS_MAIN_SUPPORT_ACCOUNT =
   'management.is_main_support_account';
+
+export const MANAGEMENT_PERMISSION_MANAGE_COMPANIES =
+  'management.manage_companies';

@@ -1,7 +1,7 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
-import { FormStack as BaseFormStack } from './FormLayout';
 import { BLUE_40, ORANGE_30, ORANGE_40 } from '../../constants';
+import { FormStack as BaseFormStack } from './FormLayout';
 
 /**
  * The shell shared by the full-page editors: a fixed top bar, a structure rail on the left
@@ -46,12 +46,17 @@ export const MainPane = styled.div`
 /* ── A pane's content ── */
 
 /** `$maxWidth` narrows a pane whose form reads better short of the default measure. */
-export const PaneRoot = styled.div<{ $maxWidth?: string }>`
+export const PaneRoot = styled.div<{ $maxWidth?: string; $center?: boolean }>`
   padding: 24px 32px 48px;
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.medium};
   max-width: ${({ $maxWidth }) => $maxWidth ?? '820px'};
+  ${({ $center }) =>
+    $center &&
+    css`
+      margin: 0 auto;
+    `}
 `;
 
 export const PaneHeading = styled.h2`

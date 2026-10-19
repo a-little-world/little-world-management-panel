@@ -9,9 +9,7 @@ import {
   ChartBarIcon,
   ChatBubbleLeftRightIcon,
   DocumentTextIcon,
-  RectangleStackIcon,
   UserGroupIcon,
-  VideoCameraIcon,
 } from '@heroicons/react/20/solid';
 import React from 'react';
 import useSWR from 'swr';
@@ -29,15 +27,12 @@ import {
   COMMUNICATIONS_ROUTE,
   COURSES_ROUTE,
   DOCUMENTATION_ROUTE,
-  DYNAMIC_USER_LISTS_ROUTE,
   MATCHING_HUB_ROUTE,
-  MATCHING_USERS_ROUTE,
   OPEN_CHAT_ROUTE,
   RANDOM_CALLS_ROUTE,
   STATS_ROUTE,
   SUPPORT_TASKS_ROUTE,
-  USERS_ROUTE,
-  VIDEO_CALLS_ROUTE,
+  USERS_HUB_ROUTE,
 } from '../../router/routes';
 import { useGlobalState } from '../../store';
 import NavigationTiles, { NavigationTile } from '../blocks/NavigationTiles';
@@ -54,18 +49,13 @@ const TABS: HomeNavigationTile[] = [
   },
   {
     name: 'Users',
-    path: USERS_ROUTE,
+    path: USERS_HUB_ROUTE,
     icon: <UserGroupIcon className="h-16 w-16 text-white mb-2" />,
   },
   {
     name: 'Support Tasks',
     path: SUPPORT_TASKS_ROUTE,
     icon: <ClipboardCheckIcon className="h-16 w-16 text-white mb-2" />,
-  },
-  {
-    name: 'Matching users',
-    path: MATCHING_USERS_ROUTE,
-    icon: <UserGroupIcon className="h-16 w-16 text-white mb-2" />,
   },
   {
     name: 'Communications',
@@ -76,16 +66,6 @@ const TABS: HomeNavigationTile[] = [
     name: 'Stats',
     path: STATS_ROUTE,
     icon: <ChartBarIcon className="h-16 w-16 text-white mb-2" />,
-  },
-  {
-    name: 'Dynamic User Lists',
-    path: DYNAMIC_USER_LISTS_ROUTE,
-    icon: <RectangleStackIcon className="h-16 w-16 text-white mb-2" />,
-  },
-  {
-    name: 'Video Calls',
-    path: VIDEO_CALLS_ROUTE,
-    icon: <VideoCameraIcon className="h-16 w-16 text-white mb-2" />,
   },
   {
     name: 'Documentation',

@@ -235,8 +235,9 @@ function audienceSelectOptions(
 
   const rows: { label: string; value: string }[] = [
     { label: 'Everyone', value: 'all' },
+    // Values are `company` or `company/cohort` slugs; spacing the slash keeps cohorts legible.
     ...[...companies].sort().map(company => ({
-      label: `Company · ${company}`,
+      label: `Company · ${company.replace('/', ' / ')}`,
       value: encodeAudience('company', company),
     })),
     ...(options?.filters ?? []).map(filter => ({

@@ -64,12 +64,13 @@ function CompanyReportDownloadBlock() {
 
   const dropdownOptions = useMemo(() => {
     if (!companyChoices) return undefined;
-    return companyChoices.map(
-      ({ tag, value }: { tag: string; value: string }) => ({
+    // The user filter's "No Company" option (`null`) has no report.
+    return companyChoices
+      .filter(({ value }: { value: string }) => value !== 'null')
+      .map(({ tag, value }: { tag: string; value: string }) => ({
         label: tag,
         value: value,
-      }),
-    );
+      }));
   }, [companyChoices]);
 
   return (

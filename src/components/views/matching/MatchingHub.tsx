@@ -1,4 +1,4 @@
-import { CalendarDaysIcon } from '@heroicons/react/20/solid';
+import { CalendarDaysIcon, VideoCameraIcon } from '@heroicons/react/20/solid';
 import { Calculator, HeartHandshake } from 'lucide-react';
 import React from 'react';
 
@@ -6,6 +6,7 @@ import {
   MATCHES_LIST_ROUTE,
   PREMATCH_APPOINTMENTS_ROUTE,
   SCORES_ROUTE,
+  VIDEO_CALLS_ROUTE,
 } from '../../../router/routes';
 import NavigationTiles, { NavigationTile } from '../../blocks/NavigationTiles';
 
@@ -24,6 +25,11 @@ const MATCHING_ITEMS: NavigationTile[] = [
     name: 'Onboarding Appointments',
     path: PREMATCH_APPOINTMENTS_ROUTE,
     icon: <CalendarDaysIcon className="h-16 w-16 text-white mb-2" />,
+  },
+  {
+    name: 'Video Calls',
+    path: VIDEO_CALLS_ROUTE,
+    icon: <VideoCameraIcon className="h-16 w-16 text-white mb-2" />,
   },
 ];
 
