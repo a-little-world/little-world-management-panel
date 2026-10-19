@@ -231,6 +231,12 @@ const userColumns: ColumnDef<UserTableRow, any>[] = [
       <MatchesIcons matches={row.original.matches.proposed.results} />
     ),
   }),
+  columnHelper.accessor('matches.inactive', {
+    header: 'Inactive',
+    cell: ({ row }) => (
+      <MatchesIcons matches={row.original.matches.inactive?.results ?? []} />
+    ),
+  }),
   columnHelper.accessor('date_joined', {
     header: ({ column }) => {
       return (
