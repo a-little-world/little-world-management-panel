@@ -14,6 +14,7 @@ import {
   Switch,
   Text,
   TextInput,
+  TextTypes,
   TrashIcon,
 } from '@a-little-world/little-world-design-system';
 import React, { useEffect } from 'react';
@@ -47,6 +48,13 @@ export const CookiesHeader = styled.div`
   justify-content: space-between;
   gap: ${({ theme }) => theme.spacing.large};
   width: 100%;
+`;
+
+const CookiesHint = styled(Text).attrs({
+  type: TextTypes.Body7,
+  tag: 'p' as const,
+})`
+  color: ${({ theme }) => theme.color.text.secondary};
 `;
 
 const CookieField = styled.div`
@@ -168,6 +176,11 @@ function LinkForm({
               <PlusIcon label="Add cookie row" width={16} height={16} />
             </AddMoreButton>
           </CookiesHeader>
+          <CookiesHint>
+            For a marketing campaign, use <code>lw-signup-campaign</code> as the
+            cookie name. Only use <code>lw-company</code> for partner
+            organisations (e.g. Generali, Lingoda).
+          </CookiesHint>
 
           <div>
             {fields.length > 0 ? (

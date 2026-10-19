@@ -16,6 +16,7 @@ import Layout from './components/blocks/Layout';
 import UserPanel from './components/blocks/user/UserPanel';
 import Algorithm from './components/views/Algorithm';
 import Documentation, {
+  AIUsagePolicyDocumentation,
   DevelopmentProcessDocumentation,
   JourneyOverviewDocumentation,
   MatchJourneyDocumentation,
@@ -64,6 +65,7 @@ import RandomCalls from './components/views/randomCalls/RandomCalls';
 import { EmailThemeProvider } from './emails/shared/theme';
 import { routeTitle } from './router/routeHandle';
 import {
+  AI_USAGE_POLICY_DOCUMENTATION_ROUTE,
   ALGORITHM_ROUTE,
   BANNERS_ROUTE,
   SURVEY_EDIT_ROUTE,
@@ -275,6 +277,11 @@ const router = createBrowserRouter(
           path: DEVELOPMENT_PROCESS_DOCUMENTATION_ROUTE,
           element: <DevelopmentProcessDocumentation />,
           ...routeTitle('Development Process'),
+        },
+        {
+          path: AI_USAGE_POLICY_DOCUMENTATION_ROUTE,
+          element: <AIUsagePolicyDocumentation />,
+          ...routeTitle('AI Usage Policy'),
         },
         {
           path: MULTI_USER_MANAGEMENT_DOCUMENTATION_ROUTE,

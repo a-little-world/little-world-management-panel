@@ -106,6 +106,7 @@ export interface UserTableProfile {
 
 export interface UserTableState {
   company: string | null;
+  signup_campaign: string | null;
   has_match_priority: boolean;
 }
 
@@ -650,6 +651,12 @@ export const sendBulkEmail = async ({
     onError(error);
   }
 };
+
+export const deleteDynamicTemplate = (templateName: string) =>
+  apiFetch<void>(
+    `/api/matching/emails/dynamic_templates/${encodeURIComponent(templateName)}/`,
+    { method: 'DELETE' },
+  );
 
 export const setHadPrematchingCall = async ({
   userId,

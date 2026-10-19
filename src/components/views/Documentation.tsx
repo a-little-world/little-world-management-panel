@@ -16,6 +16,7 @@ import issuesTabImage from '../../assets/documentation/github_issues/repo_issues
 import onboardingManagementUsersPermissionsImage from '../../assets/documentation/onboarding_management_users/onboarding_management_users_relevant_permissions_labeled.png';
 import preMatchingCheckOffCompleteImage from '../../assets/documentation/prematching_check_off/prematching_check_off_complete_page_censored.png';
 import preMatchingCheckOffSelectionImage from '../../assets/documentation/prematching_check_off/prematching_checkoff_user_selection_preview_censored.png';
+import aiUsagePolicyMdx from '../../content/documentation/ai-usage-policy.mdx';
 import developmentProcessMdx from '../../content/documentation/development-process.mdx';
 import journeyOverviewAlphaMdx from '../../content/documentation/journey-overview-alpha.mdx';
 import preMatchingCheckoffsMdx from '../../content/documentation/how-pre-matching-check-offs-work.mdx';
@@ -23,6 +24,7 @@ import multiUserManagementMdx from '../../content/documentation/multi-user-manag
 import reportingBugsAndIssuesMdx from '../../content/documentation/reporting-bugs-and-issues.mdx';
 
 import {
+  AI_USAGE_POLICY_DOCUMENTATION_ROUTE,
   ALGORITHM_ROUTE,
   DEVELOPMENT_PROCESS_DOCUMENTATION_ROUTE,
   DOCUMENTATION_ROUTE,
@@ -647,6 +649,8 @@ const MULTI_USER_MANAGEMENT_MDX_URL =
   'https://github.com/a-little-world/little-world-management-panel/blob/main/src/content/documentation/multi-user-management-and-management-onboarding.mdx';
 const DEVELOPMENT_PROCESS_MDX_URL =
   'https://github.com/a-little-world/little-world-management-panel/blob/main/src/content/documentation/development-process.mdx';
+const AI_USAGE_POLICY_MDX_URL =
+  'https://github.com/a-little-world/little-world-management-panel/blob/main/src/content/documentation/ai-usage-policy.mdx';
 
 const PREMATCH_ORDERING_OPTIONS = [
   { value: 'start_time', label: '(Asc) Starts At' },
@@ -949,6 +953,13 @@ const documentationSections: DocumentationSection[] = [
         description:
           'Repository ownership, review responsibilities, CI labels, cross-repo merge order, and the staging/production flow.',
         route: DEVELOPMENT_PROCESS_DOCUMENTATION_ROUTE,
+      },
+      {
+        id: 'ai-usage-policy',
+        title: 'AI Usage Policy',
+        description:
+          'How we use AI agents and coding assistants: always read the code diff, always test on a frontend, and keep AI usage documented.',
+        route: AI_USAGE_POLICY_DOCUMENTATION_ROUTE,
       },
     ],
   },
@@ -1297,6 +1308,37 @@ export const DevelopmentProcessDocumentation: React.FC = () => {
               components={markdownLinkComponents}
             >
               {developmentProcessMdx}
+            </ReactMarkdown>
+          </MarkdownDocument>
+        </ReportingPagePanel>
+      </DocumentationPageContent>
+    </DocumentationContainer>
+  );
+};
+
+export const AIUsagePolicyDocumentation: React.FC = () => {
+  return (
+    <DocumentationContainer>
+      <DocumentationPageContent>
+        <DocumentationPageTopRow>
+          <BackToDocumentationLink to={DOCUMENTATION_ROUTE}>
+            {'<- Back to Documentation'}
+          </BackToDocumentationLink>
+          <ViewOnGitHubButton
+            href={AI_USAGE_POLICY_MDX_URL}
+            target="_blank"
+            rel="noreferrer"
+          >
+            View on GitHub
+          </ViewOnGitHubButton>
+        </DocumentationPageTopRow>
+        <ReportingPagePanel>
+          <MarkdownDocument>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={markdownLinkComponents}
+            >
+              {aiUsagePolicyMdx}
             </ReactMarkdown>
           </MarkdownDocument>
         </ReportingPagePanel>
