@@ -169,6 +169,20 @@ const userColumns: ColumnDef<UserTableRow, any>[] = [
     },
     cell: ({ row }) => row.original.state.company,
   }),
+  columnHelper.accessor('state.signup_campaign', {
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Signup Campaign
+          <ArrowsUpDownIcon className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => row.original.state.signup_campaign,
+  }),
   columnHelper.accessor('profile.country_of_residence', {
     header: ({ column }) => {
       return (
@@ -215,6 +229,12 @@ const userColumns: ColumnDef<UserTableRow, any>[] = [
     header: 'Proposed',
     cell: ({ row }) => (
       <MatchesIcons matches={row.original.matches.proposed.results} />
+    ),
+  }),
+  columnHelper.accessor('matches.inactive', {
+    header: 'Inactive',
+    cell: ({ row }) => (
+      <MatchesIcons matches={row.original.matches.inactive?.results ?? []} />
     ),
   }),
   columnHelper.accessor('date_joined', {

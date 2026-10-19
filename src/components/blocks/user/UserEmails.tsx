@@ -1,8 +1,6 @@
 import {
   Button,
   ButtonVariations,
-  CheckIcon,
-  ExclamationIcon,
   Modal,
   Text,
   TextTypes,
@@ -15,6 +13,7 @@ import useSWR from 'swr';
 
 import { formatDate, formatTime } from '../../../helpers/date';
 import { dataFetcher } from '../../../store';
+import EmailDeliveryStatusTag from '../../atoms/EmailDeliveryStatusTag';
 import Pagination from '../../atoms/Pagination';
 import {
   Table,
@@ -28,7 +27,7 @@ import {
 const fields = [
   { key: 'receiver', label: 'Reciever' },
   { key: 'template', label: 'Template' },
-  { key: 'sucess', label: 'Sent status' },
+  { key: 'delivery_status', label: 'Status' },
   { key: 'time', label: 'Time' },
   { key: 'retrieve', label: 'View' },
 ];
@@ -136,25 +135,12 @@ const UserEmails = ({ user }) => {
                           </TableCell>
                         );
                       }
-                      if (key === 'sucess') {
+                      if (key === 'delivery_status') {
                         return (
                           <TableCell key={email + key}>
-                            {email.sucess ? (
-                              <CheckIcon
-                                height={12}
-                                width={12}
-                                circular
-                                backgroundColor="green"
-                                color="white"
-                                label="email successful icon"
-                              />
-                            ) : (
-                              <ExclamationIcon
-                                label="email unsuccessful icon"
-                                height={24}
-                                width={24}
-                              />
-                            )}
+                            <EmailDeliveryStatusTag
+                              status={email.delivery_status}
+                            />
                           </TableCell>
                         );
                       }

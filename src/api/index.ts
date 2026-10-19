@@ -106,6 +106,7 @@ export interface UserTableProfile {
 
 export interface UserTableState {
   company: string | null;
+  signup_campaign: string | null;
   has_match_priority: boolean;
 }
 
@@ -114,6 +115,7 @@ export interface UserMatchPreviewPartner {
   id: number;
   first_name: string;
   has_match_priority: boolean;
+  isDeleted: boolean;
   image_type: 'image' | 'avatar';
   avatar_config: Record<string, unknown>;
   image: string | null;
@@ -129,6 +131,7 @@ export interface UserMatchPreviews {
   confirmed: { results: UserMatchPreview[] };
   unconfirmed: { results: UserMatchPreview[] };
   proposed: { results: UserMatchPreview[] };
+  inactive: { results: UserMatchPreview[] };
 }
 
 export interface UserWaitingTime {
@@ -648,6 +651,12 @@ export const sendBulkEmail = async ({
     onError(error);
   }
 };
+
+export const deleteDynamicTemplate = (templateName: string) =>
+  apiFetch<void>(
+    `/api/matching/emails/dynamic_templates/${encodeURIComponent(templateName)}/`,
+    { method: 'DELETE' },
+  );
 
 export const setHadPrematchingCall = async ({
   userId,
