@@ -17,6 +17,7 @@ import {
   PaginatedUserTableList,
   UserTableRow,
 } from '../../api/index';
+import { formatCompanyLabel } from '../../api/companies';
 import { formatDate, formatTimeDistance } from '../../helpers/date';
 import { useGlobalState, useUserListData } from '../../store';
 import { Button } from '../atoms/Button';
@@ -155,20 +156,25 @@ const userColumns: ColumnDef<UserTableRow, any>[] = [
           : row.original.waiting_time?.waiting_time_string
       }`,
   }),
-  columnHelper.accessor('state.company', {
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          Company
-          <ArrowsUpDownIcon className="ml-2 h-4 w-4" />
-        </Button>
-      );
+  // Sorts by the label shown rather than the `{slug, name}` objects.
+  columnHelper.accessor(
+    row => formatCompanyLabel(row.state.company, row.state.company_cohort),
+    {
+      id: 'state.company',
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          >
+            Company
+            <ArrowsUpDownIcon className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ getValue }) => getValue(),
     },
-    cell: ({ row }) => row.original.state.company,
-  }),
+  ),
   columnHelper.accessor('state.signup_campaign', {
     header: ({ column }) => {
       return (

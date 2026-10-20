@@ -48,6 +48,8 @@ import Surveys from './components/views/comms/surveys/Surveys';
 import Events from './components/views/comms/events/Events';
 import QuestionCards from './components/views/comms/questionCards/QuestionCards';
 import ShortLinks from './components/views/comms/shortLinks/ShortLinks';
+import Companies from './components/views/companies/Companies';
+import EditCompany from './components/views/companies/EditCompany';
 import Courses from './components/views/courses/Courses';
 import EditCourse from './components/views/courses/EditCourse';
 import CreateNewEmail from './components/views/emails/CreateNewEmail';
@@ -56,6 +58,7 @@ import EmailHtml from './components/views/emails/EmailHtml';
 import Emails from './components/views/emails/Emails';
 import { SendDynamicTemplateView } from './components/views/emails/SendDynamicTemplate';
 import MatchingHub from './components/views/matching/MatchingHub';
+import UsersHub from './components/views/users/UsersHub';
 import OpenChatChat from './components/views/OpenChatChat';
 import {
   OPEN_CHAT_QUERY_PARAM_TAB,
@@ -75,6 +78,8 @@ import {
   COMMUNICATIONS_ROUTE,
   COURSES_ROUTE,
   COURSE_EDIT_ROUTE,
+  COMPANIES_ROUTE,
+  COMPANY_EDIT_ROUTE,
   CREATE_NEW_EMAIL_ROUTE,
   DEVELOPMENT_PROCESS_DOCUMENTATION_ROUTE,
   DOCUMENTATION_ROUTE,
@@ -108,6 +113,7 @@ import {
   STATS_ROUTE,
   SUPPORT_TASKS_ROUTE,
   SUPPORT_TASK_DETAIL_ROUTE,
+  USERS_HUB_ROUTE,
   USERS_ROUTE,
   USER_DETAILS_ROUTE,
   USER_JOURNEY_DOCUMENTATION_ROUTE,
@@ -155,6 +161,11 @@ const router = createBrowserRouter(
           path: MATCHING_HUB_ROUTE,
           element: <MatchingHub />,
           ...routeTitle('Matching'),
+        },
+        {
+          path: USERS_HUB_ROUTE,
+          element: <UsersHub />,
+          ...routeTitle('Users'),
         },
         {
           path: USERS_ROUTE,
@@ -376,6 +387,18 @@ const router = createBrowserRouter(
           element: <EditCourse />,
           ...routeTitle(({ courseSlug }) =>
             courseSlug === 'new' ? 'New course' : 'Edit course',
+          ),
+        },
+        {
+          path: COMPANIES_ROUTE,
+          element: <Companies />,
+          ...routeTitle('Companies'),
+        },
+        {
+          path: COMPANY_EDIT_ROUTE,
+          element: <EditCompany />,
+          ...routeTitle(({ companyId }) =>
+            companyId === 'new' ? 'New company' : 'Edit company',
           ),
         },
       ],

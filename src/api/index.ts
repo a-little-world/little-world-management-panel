@@ -104,8 +104,15 @@ export interface UserTableProfile {
   image: string | null;
 }
 
+/** `{slug, name}` reference the backend serializes for a user's company or cohort. */
+export interface CompanyRef {
+  slug: string;
+  name: string;
+}
+
 export interface UserTableState {
-  company: string | null;
+  company: CompanyRef | null;
+  company_cohort: CompanyRef | null;
   signup_campaign: string | null;
   has_match_priority: boolean;
 }
@@ -762,24 +769,37 @@ export const changeUserEmail = async ({
   }
 };
 
+export interface SetUserCompanyResult {
+  msg: string;
+  company: CompanyRef | null;
+  company_cohort: CompanyRef | null;
+}
+
+/** Company and cohort are slugs; `null` clears them. A cohort needs its company. */
 export const setUserCompany = async ({
   id,
   company,
+  cohort = null,
   onError,
   onSuccess,
 }: {
   id: string | number;
   company: string | null;
+  cohort?: string | null;
   onError: (error: any) => void;
-  onSuccess: (result: any) => void;
+  onSuccess: (result: SetUserCompanyResult) => void;
 }) => {
   try {
-    const result = await apiFetch(`/api/matching/users/${id}/set_company/`, {
-      method: 'POST',
-      body: {
-        company,
+    const result = await apiFetch<SetUserCompanyResult>(
+      `/api/matching/users/${id}/set_company/`,
+      {
+        method: 'POST',
+        body: {
+          company,
+          cohort,
+        },
       },
-    });
+    );
     onSuccess(result);
   } catch (error) {
     onError(error);
@@ -1099,7 +1119,8 @@ export const setHasMatchPriority = async ({
   userId: string;
   onError: (error: any) => void;
   onSuccess: (result: any) => void;
-  priority: boolean;
+  /** `null` drops the per-user override, so the company default applies again. */
+  priority: boolean | null;
 }) => {
   try {
     const result = await apiFetch(
@@ -1108,6 +1129,34 @@ export const setHasMatchPriority = async ({
         method: 'POST',
         body: {
           has_match_priority: priority,
+        },
+      },
+    );
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
+  }
+};
+
+export const setForceMatchEligible = async ({
+  userId,
+  onError,
+  onSuccess,
+  forceMatchEligible,
+}: {
+  userId: string;
+  onError: (error: any) => void;
+  onSuccess: (result: any) => void;
+  /** `null` drops the per-user override, so the company default applies again. */
+  forceMatchEligible: boolean | null;
+}) => {
+  try {
+    const result = await apiFetch(
+      `/api/matching/users/${userId}/set_force_match_eligible/`,
+      {
+        method: 'POST',
+        body: {
+          force_match_eligible: forceMatchEligible,
         },
       },
     );

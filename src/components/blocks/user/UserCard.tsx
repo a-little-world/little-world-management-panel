@@ -14,7 +14,8 @@ import { capitalize } from 'lodash';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import type { MatchingPanelUser } from '../../../api/index';
+import { formatCompanyLabel } from '../../../api/companies';
+import type { CompanyRef, MatchingPanelUser } from '../../../api/index';
 import { MANAGEMENT_PERMISSION_IS_MAIN_SUPPORT_ACCOUNT } from '../../../constants/managementPermissions';
 import {
   formatDate,
@@ -81,7 +82,8 @@ interface UserProfile {
 }
 
 interface UserState {
-  company?: string;
+  company?: CompanyRef | null;
+  company_cohort?: CompanyRef | null;
   signup_campaign?: string | null;
   searching_state: 'idle' | 'searching';
   searching_state_last_updated?: string | null;
@@ -91,7 +93,15 @@ interface UserState {
   is_onboarded: boolean;
   self_onboarding_step_id?: string | null;
   unresponsive: boolean;
+  /** Effective value: the per-user override, else the company default. */
   has_match_priority?: boolean;
+  force_match_eligible?: boolean;
+  /** `null` means the company default applies. */
+  match_priority_override?: boolean | null;
+  force_match_eligible_override?: boolean | null;
+  /** What the user gets with the override cleared (backend-computed). */
+  match_priority_default?: boolean;
+  force_match_eligible_default?: boolean;
 }
 
 interface User {
@@ -152,7 +162,13 @@ const UserDetailsFull: React.FC<{
         />
         <DataField title="Id" value={user.id} />
         <DataField title="Email" value={user.email} />
-        <DataField title="Company" value={user.state.company || 'None'} />
+        <DataField
+          title="Company"
+          value={
+            formatCompanyLabel(user.state.company, user.state.company_cohort) ||
+            'None'
+          }
+        />
         <DataField
           title="Signup Campaign"
           value={user.state.signup_campaign || 'None'}

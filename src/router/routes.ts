@@ -35,6 +35,7 @@ export const SEND_DYNAMIC_EMAIL_ROUTE =
 export const STATS_ROUTE = '/stats/';
 export const USER_DETAILS_ROUTE = '/user/:userId';
 export const USERS_ROUTE = '/users/';
+export const USERS_HUB_ROUTE = '/user-management/';
 export const MATCHING_USERS_ROUTE = '/matching-users/';
 export const VIDEO_CALLS_ROUTE = '/video-calls/';
 export const RANDOM_CALLS_ROUTE = '/random-calls/';
@@ -43,6 +44,9 @@ export const OPEN_CHAT_CHAT_ROUTE = '/open-chat/:chatUuid/';
 export const OPEN_CHAT_CONFIGURATION_ROUTE = '/open-chat/configuration/';
 export const EVENTS_ROUTE = '/events/';
 export const SHORT_LINKS_ROUTE = '/short-links/';
+/** Opens the short-links page with that link's edit modal already open. */
+export const getShortLinkEditRoute = (id: number) =>
+  `${SHORT_LINKS_ROUTE}?edit=${id}`;
 export const BANNERS_ROUTE = '/banners/';
 export const BANNER_EDIT_ROUTE = '/banners/:bannerId/';
 export const COMMUNICATIONS_ROUTE = '/communications/';
@@ -65,6 +69,11 @@ export const COURSES_ROUTE = '/courses/';
 export const COURSE_EDIT_ROUTE = '/courses/:courseSlug/';
 
 export const getCourseEditRoute = (slug: string | 'new') => `/courses/${slug}/`;
+
+export const COMPANIES_ROUTE = '/companies/';
+export const COMPANY_EDIT_ROUTE = '/companies/:companyId/';
+
+export const getCompanyEditRoute = (id: number | 'new') => `/companies/${id}/`;
 
 export const getEditEmailRoute = (templateId: number) =>
   `/email/${templateId}/edit`;

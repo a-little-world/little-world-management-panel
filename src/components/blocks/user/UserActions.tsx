@@ -25,6 +25,12 @@ import { useTheme } from 'styled-components';
 import useSWR from 'swr';
 
 import {
+  ADMIN_COMPANIES_ENDPOINT,
+  Company,
+  fetchCompanies,
+  formatCompanyLabel,
+} from '../../../api/companies';
+import {
   deleteUser,
   fetchMatchingPanelUser,
   fetchUserManagementPermissions,
@@ -34,7 +40,9 @@ import {
   sendSms,
   setHadPrematchingCall,
   setHasMatchPriority,
+  setForceMatchEligible,
   setNewsletterSubscribed,
+  setUserCompany,
   setUserManagementPermission,
   setUserSearching,
   setUserUnresponsive,
@@ -63,6 +71,41 @@ const USER_TYPE_OPTIONS = [
   { label: 'Learner', value: 'learner' },
   { label: 'Volunteer', value: 'volunteer' },
 ];
+
+/** Radix Select forbids empty values, so "no company" / "no cohort" need a sentinel. */
+const NO_COMPANY = 'none';
+
+/**
+ * Match priority and force-match eligibility are company defaults a user can override.
+ * The override is tri-state: `null` follows the company, true/false pins the user.
+ */
+type FlagOverride = 'default' | 'on' | 'off';
+
+const toFlagOverride = (override: boolean | null | undefined): FlagOverride =>
+  override == null ? 'default' : override ? 'on' : 'off';
+
+const fromFlagOverride = (value: FlagOverride): boolean | null =>
+  value === 'on' ? true : value === 'off' ? false : null;
+
+/**
+ * `inherited` is what the user gets with the override cleared, as computed by the backend
+ * (company flag, or for match priority also a priority signup campaign) — never the effective
+ * value, which reflects the override itself.
+ */
+const flagOverrideOptions = (inherited: boolean | undefined) => [
+  {
+    label:
+      inherited === undefined
+        ? 'Default'
+        : `Default (currently ${inherited ? 'on' : 'off'})`,
+    value: 'default',
+  },
+  { label: 'On', value: 'on' },
+  { label: 'Off', value: 'off' },
+];
+
+/** Form keys whose value is a `FlagOverride` and must be converted before sending. */
+const FLAG_OVERRIDE_KEYS = ['priority', 'forceMatchEligible'];
 
 /** Only staff can grant/revoke `management.apply_management_permissions`. */
 const APPLY_MANAGEMENT_PERMISSIONS = 'management.apply_management_permissions';
@@ -443,6 +486,125 @@ function InviteNativeAppTester({ user }: { user: any }) {
   );
 }
 
+/**
+ * Assigns the user to a company and, optionally, one of its cohorts. Only active companies
+ * and cohorts can be chosen; a user already on an inactive one still sees it selected.
+ */
+function CompanySection({
+  user,
+  companies,
+  companiesLoading,
+  onUpdate,
+}: {
+  user: any;
+  companies?: Company[];
+  companiesLoading: boolean;
+  onUpdate: () => void;
+}) {
+  const currentCompany: string = user.state.company?.slug ?? NO_COMPANY;
+  const currentCohort: string = user.state.company_cohort?.slug ?? NO_COMPANY;
+  const [company, setCompany] = useState(currentCompany);
+  const [cohort, setCohort] = useState(currentCohort);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const selectedCompany = companies?.find(row => row.slug === company);
+  const isCurrent = (slug: string, current: string) => slug === current;
+
+  const companyOptions = [
+    { label: 'No company', value: NO_COMPANY },
+    ...(companies ?? [])
+      .filter(row => row.is_active || isCurrent(row.slug, currentCompany))
+      .map(row => ({
+        label: row.is_active ? row.name : `${row.name} (inactive)`,
+        value: row.slug,
+      })),
+  ];
+  const cohortOptions = [
+    { label: 'No cohort', value: NO_COMPANY },
+    ...(selectedCompany?.cohorts ?? [])
+      .filter(
+        row =>
+          row.is_active ||
+          (company === currentCompany && isCurrent(row.slug, currentCohort)),
+      )
+      .map(row => ({
+        label: row.is_active ? row.name : `${row.name} (inactive)`,
+        value: row.slug,
+      })),
+  ];
+
+  const unchanged = company === currentCompany && cohort === currentCohort;
+
+  const onSave = () => {
+    setIsSubmitting(true);
+    setSaved(false);
+    setError(null);
+    setUserCompany({
+      id: user.id,
+      company: company === NO_COMPANY ? null : company,
+      cohort: company === NO_COMPANY || cohort === NO_COMPANY ? null : cohort,
+      onError: e => {
+        setError(e?.message || 'Could not change the company.');
+        setIsSubmitting(false);
+      },
+      onSuccess: () => {
+        setIsSubmitting(false);
+        setSaved(true);
+        onUpdate();
+      },
+    });
+  };
+
+  return (
+    <div className="flex flex-col gap-2 pt-2">
+      <Text>
+        {`Currently: ${formatCompanyLabel(user.state.company, user.state.company_cohort) || 'No company'}`}
+      </Text>
+      <Select
+        id="user_company"
+        key={`user_company_${company}_${companyOptions.length}`}
+        label="Company"
+        placeholder="Select a company"
+        value={company}
+        options={companyOptions}
+        disabled={companiesLoading || isSubmitting}
+        onValueChange={value => {
+          setCompany(value);
+          // Cohorts belong to one company; switching company clears the choice.
+          setCohort(value === currentCompany ? currentCohort : NO_COMPANY);
+          setSaved(false);
+        }}
+      />
+      <Select
+        id="user_company_cohort"
+        key={`user_company_cohort_${company}_${cohort}`}
+        label="Cohort"
+        placeholder="Select a cohort"
+        value={cohort}
+        options={cohortOptions}
+        disabled={companiesLoading || isSubmitting || company === NO_COMPANY}
+        onValueChange={value => {
+          setCohort(value);
+          setSaved(false);
+        }}
+      />
+      <StatusMessage
+        visible={saved || !!error}
+        type={saved ? StatusTypes.Success : StatusTypes.Error}
+      >
+        {saved ? 'Company updated' : error}
+      </StatusMessage>
+      <div>
+        <Button onClick={onSave} disabled={isSubmitting || unchanged}>
+          Save company
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 const UserActions = ({
   user,
   onUpdate,
@@ -477,6 +639,12 @@ const UserActions = ({
     { revalidateOnFocus: false },
   );
 
+  const { data: companies, isLoading: companiesLoading } = useSWR(
+    ADMIN_COMPANIES_ENDPOINT,
+    fetchCompanies,
+    { revalidateOnFocus: false },
+  );
+
   const {
     control,
     handleSubmit,
@@ -506,6 +674,8 @@ const UserActions = ({
           func = setUserSearching;
         } else if (key === 'priority') {
           func = setHasMatchPriority;
+        } else if (key === 'forceMatchEligible') {
+          func = setForceMatchEligible;
         } else if (key === 'user_type' || key === 'country_of_residence') {
           func = updateUserProfileFields;
         } else {
@@ -517,7 +687,9 @@ const UserActions = ({
 
         return func({
           userId: user.id,
-          [key]: data[key],
+          [key]: FLAG_OVERRIDE_KEYS.includes(key)
+            ? fromFlagOverride(data[key])
+            : data[key],
           onError: error => {
             setError(key, error.message);
             throw error;
@@ -822,26 +994,50 @@ const UserActions = ({
                     )}
                   />
                   <Controller
-                    defaultValue={user.state.has_match_priority}
+                    defaultValue={toFlagOverride(
+                      user.state.match_priority_override,
+                    )}
                     name="priority"
                     control={control}
                     render={({
-                      field: { onChange, onBlur, value, name, ref },
+                      field: { onChange, value },
                       fieldState: { error },
                     }) => (
-                      <Checkbox
+                      <Select
                         id="priority"
-                        name={name}
-                        inputRef={ref}
-                        onCheckedChange={val =>
-                          onChange({ target: { value: val } })
-                        }
-                        onBlur={onBlur}
+                        onValueChange={onChange}
                         value={value}
-                        defaultChecked={value}
                         error={error?.message}
-                        label={'Should the user be given match priority?'}
-                        required={false}
+                        label="Match priority"
+                        labelTooltip="Prioritised in matching. Default follows the user's company or a priority signup campaign. International SMS follows the company or campaign only and is not changed by this setting."
+                        options={flagOverrideOptions(
+                          user.state.match_priority_default,
+                        )}
+                        placeholder="Select match priority"
+                      />
+                    )}
+                  />
+                  <Controller
+                    defaultValue={toFlagOverride(
+                      user.state.force_match_eligible_override,
+                    )}
+                    name="forceMatchEligible"
+                    control={control}
+                    render={({
+                      field: { onChange, value },
+                      fieldState: { error },
+                    }) => (
+                      <Select
+                        id="forceMatchEligible"
+                        onValueChange={onChange}
+                        value={value}
+                        error={error?.message}
+                        label="Force match eligible"
+                        labelTooltip="Bypasses the A0 language level and outside-Germany checks. Default follows the user's company."
+                        options={flagOverrideOptions(
+                          user.state.force_match_eligible_default,
+                        )}
+                        placeholder="Select force match eligibility"
                       />
                     )}
                   />
@@ -863,6 +1059,15 @@ const UserActions = ({
                     Save Changes
                   </Button>
                 </form>
+                {/* Its own form and save, so it sits after the profile form rather than in it. */}
+                {canUpdateMatchingProfileFields && (
+                  <CompanySection
+                    user={user}
+                    companies={companies}
+                    companiesLoading={companiesLoading}
+                    onUpdate={onUpdate}
+                  />
+                )}
               </div>
             ),
           },
@@ -974,7 +1179,7 @@ const UserActions = ({
             />
             <Checkbox
               id="migrate_remove_company"
-              label={`Remove company (${user.state?.company || 'none'})`}
+              label={`Remove company (${formatCompanyLabel(user.state?.company, user.state?.company_cohort) || 'none'})`}
               checked={migrateRemoveCompany}
               onCheckedChange={checked =>
                 setMigrateRemoveCompany(checked === true)
@@ -990,7 +1195,9 @@ const UserActions = ({
             />
             <StatusMessage
               type={StatusTypes.Error}
-              visible={!canMigrateUser || targetIsProtected || !!migrateUserError}
+              visible={
+                !canMigrateUser || targetIsProtected || !!migrateUserError
+              }
             >
               {migrateUserError ||
                 (targetIsProtected
