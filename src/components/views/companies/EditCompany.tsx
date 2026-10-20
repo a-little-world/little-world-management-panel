@@ -97,6 +97,7 @@ const defaultFormValues: CompanyFormValues = {
   slug: '',
   name: '',
   description: '',
+  email_domain: '',
   is_active: true,
   custom_onboarding: false,
   force_match_eligible: false,
@@ -109,6 +110,7 @@ const companyToFormValues = (company: Company): CompanyFormValues => ({
   slug: company.slug,
   name: company.name,
   description: company.description,
+  email_domain: company.email_domain ?? '',
   is_active: company.is_active,
   custom_onboarding: company.custom_onboarding,
   force_match_eligible: company.force_match_eligible,
@@ -741,6 +743,15 @@ function EditCompany() {
                       })}
                     />
                   </TwoCol>
+
+                  <TextInput
+                    label="Email domain"
+                    placeholder="e.g. little-world.com"
+                    labelTooltip="New users whose email is at exactly this domain join the company, even if they used another company's sign-up link. Leave empty for none. Public providers like gmail.com aren't allowed."
+                    width={InputWidth.Large}
+                    disabled={readOnly}
+                    {...registerInput({ register, name: 'email_domain' })}
+                  />
 
                   <TextArea
                     label="Description"

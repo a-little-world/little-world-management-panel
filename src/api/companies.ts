@@ -48,6 +48,11 @@ export interface Company extends CompanyFlags {
   slug: string;
   name: string;
   description: string;
+  /**
+   * e.g. `little-world.com`. New users with an email at exactly this domain join the company,
+   * ahead of any company cookie. Null when unset.
+   */
+  email_domain: string | null;
   /** Relative or absolute URL of the logo, or null if none. Set via `uploadCompanyLogo`. */
   logo: string | null;
   is_active: boolean;
@@ -63,7 +68,7 @@ export interface Company extends CompanyFlags {
 /** Slug is only accepted on create — the backend refuses to change it afterwards. */
 export type CompanyPayload = Pick<
   Company,
-  'slug' | 'name' | 'description' | 'is_active'
+  'slug' | 'name' | 'description' | 'email_domain' | 'is_active'
 > &
   CompanyFlags;
 

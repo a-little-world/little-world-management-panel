@@ -139,6 +139,14 @@ function Companies() {
           );
         },
       }),
+      columnHelper.accessor('email_domain', {
+        header: 'Email domain',
+        cell: ({ getValue }) => (
+          <Text type={TextTypes.Body6} tag="span">
+            {getValue() ? `@${getValue()}` : '—'}
+          </Text>
+        ),
+      }),
       columnHelper.accessor('description', {
         header: 'Description',
         cell: ({ getValue }) =>

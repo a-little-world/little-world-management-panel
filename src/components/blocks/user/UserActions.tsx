@@ -801,21 +801,6 @@ const UserActions = ({
               </div>
             ),
           },
-          ...(canUpdateMatchingProfileFields
-            ? [
-                {
-                  header: 'Company',
-                  content: (
-                    <CompanySection
-                      user={user}
-                      companies={companies}
-                      companiesLoading={companiesLoading}
-                      onUpdate={onUpdate}
-                    />
-                  ),
-                },
-              ]
-            : []),
           ...(showManagementPermissionsSection
             ? [
                 {
@@ -1074,6 +1059,15 @@ const UserActions = ({
                     Save Changes
                   </Button>
                 </form>
+                {/* Its own form and save, so it sits after the profile form rather than in it. */}
+                {canUpdateMatchingProfileFields && (
+                  <CompanySection
+                    user={user}
+                    companies={companies}
+                    companiesLoading={companiesLoading}
+                    onUpdate={onUpdate}
+                  />
+                )}
               </div>
             ),
           },
