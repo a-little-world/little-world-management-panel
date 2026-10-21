@@ -118,7 +118,7 @@
   "automatic-emails-m032.block-3": "wir haben bemerkt, dass du und {{ partner_first_name }} bisher noch keinen Video-Call vereinbart habt.",
   "automatic-emails-m032.block-4": "Habt ihr schon euren ersten Video-Call geplant? Falls du noch etwas unsicher bist, wie du das erste Gespräch angehen sollst, kein Stress, das kennen viele! Unser Kurs „Interkulturelle Gesprächsführung\" hilft dir, entspannt und gut vorbereitet in euren Austausch zu starten.",
   "automatic-emails-m032.block-5": "👉 Zum Kurs",
-  "automatic-emails-m032.preview": "Plane euren nächsten Video-Call oder gib uns kurz Bescheid, falls ihr einen anderen Kanal nutzt.",
+  "automatic-emails-m032.preview": "Plane jetzt euren nächsten Video-Call.",
   "automatic-emails-m032.subject": "📅 Habt ihr euren Video-Call schon geplant?",
   "automatic-emails-m033.block-1": "⏳ Noch kein Video-Call – gebt uns bitte ein kurzes Update",
   "automatic-emails-m033.block-2": "Hallo {{ first_name }},",
