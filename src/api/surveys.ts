@@ -1,4 +1,4 @@
-import { apiFetch } from './helpers';
+import { apiFetch, apiFetchText } from './helpers';
 
 /**
  * Survey campaigns are configuration: audience, window, cadence, questions and copy all live
@@ -151,6 +151,8 @@ export const updateSurveyCampaign = (
   });
 
 export const ADMIN_SURVEY_RESPONSES_ENDPOINT = '/api/admin/survey_responses/';
+export const ADMIN_SURVEY_RESPONSES_EXPORT_ENDPOINT =
+  '/api/admin/survey_responses/export/';
 
 export interface SurveyFilterOption {
   label: string;
@@ -222,4 +224,12 @@ export const fetchSurveyResponses = (queryString: string) =>
       ? `${ADMIN_SURVEY_RESPONSES_ENDPOINT}?${queryString}`
       : ADMIN_SURVEY_RESPONSES_ENDPOINT,
     { method: 'GET' },
+  );
+
+/** Same filters as the table, including the email search; the CSV never contains emails. */
+export const fetchSurveyResponsesCsv = (queryString: string) =>
+  apiFetchText(
+    queryString
+      ? `${ADMIN_SURVEY_RESPONSES_EXPORT_ENDPOINT}?${queryString}`
+      : ADMIN_SURVEY_RESPONSES_EXPORT_ENDPOINT,
   );

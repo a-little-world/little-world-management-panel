@@ -49,6 +49,7 @@ import {
   ORANGE_40,
 } from '../../constants';
 import { resolveAttachmentWidgetText } from '../../helpers/chat';
+import { buildCsv, csvBlob } from '../../helpers/csv';
 import { formatTimeDistance } from '../../helpers/date';
 import {
   PriorityConfig,
@@ -736,21 +737,8 @@ export default function SupportTasksOverview() {
       );
       a.download = `support-tasks-${new Date().toLocaleDateString('de')}.json`;
     } else {
-      const rows = tasks.map(task =>
-        headers
-          .map(h => {
-            const val = (task as any)[h];
-            const str = val === null || val === undefined ? '' : String(val);
-            return str.includes(',') || str.includes('"')
-              ? `"${str.replace(/"/g, '""')}"`
-              : str;
-          })
-          .join(','),
-      );
-      const csv = [headers.join(','), ...rows].join('\n');
-      a.href = URL.createObjectURL(
-        new Blob([csv], { type: 'text/csv;charset=utf-8;' }),
-      );
+      const rows = tasks.map(task => headers.map(h => (task as any)[h]));
+      a.href = URL.createObjectURL(csvBlob(buildCsv(headers, rows)));
       a.download = `support-tasks-${new Date().toLocaleDateString('de')}.csv`;
     }
     a.click();

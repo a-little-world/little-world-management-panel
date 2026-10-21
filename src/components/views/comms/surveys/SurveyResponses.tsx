@@ -12,7 +12,9 @@ import {
   Text,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
+import { isValid } from 'date-fns';
 import React, { useState } from 'react';
+import type { DateRange } from 'react-day-picker';
 import { Link, useSearchParams } from 'react-router-dom';
 import useSWR from 'swr';
 
@@ -20,12 +22,19 @@ import {
   ADMIN_SURVEY_RESPONSES_ENDPOINT,
   AdminSurveyResponse,
   fetchSurveyResponses,
+  fetchSurveyResponsesCsv,
   LocalizedText,
   SurveyAnswerValue,
   SurveyQuestion,
   SurveyResponseStatus,
 } from '../../../../api/surveys';
 import { formatBerlinDateTime } from '../../../../helpers/berlinDates';
+import { downloadCsv } from '../../../../helpers/csv';
+import {
+  DateRangePicker,
+  formatLocalDateYmd,
+  parseYmdToLocalDate,
+} from '../../../atoms/DateRangePicker';
 import {
   ListPanel,
   ListScroll,
@@ -67,6 +76,12 @@ const STATUS_APPEARANCE: Record<SurveyResponseStatus, TagAppearance> = {
 const statusLabel = (status: SurveyResponseStatus) =>
   status.charAt(0).toUpperCase() + status.slice(1);
 
+const parseDateParam = (value: string | null) => {
+  if (!value) return undefined;
+  const date = parseYmdToLocalDate(value);
+  return isValid(date) ? date : undefined;
+};
+
 const copyText = (value?: LocalizedText) =>
   value?.de?.trim() || value?.en?.trim() || '';
 
@@ -103,10 +118,16 @@ const formatAnswer = (
 function SurveyResponses() {
   const [searchParams, setSearchParams] = useSearchParams({ page_size: '50' });
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
 
   const search = searchParams.get('search') || '';
   const campaign = searchParams.get('campaign') || 'all';
   const status = searchParams.get('status') || 'all';
+  const rangeFrom = parseDateParam(searchParams.get('start_date'));
+  const rangeTo = parseDateParam(searchParams.get('end_date'));
+  const dateRange: DateRange | undefined =
+    rangeFrom || rangeTo ? { from: rangeFrom, to: rangeTo } : undefined;
 
   const { data, error, isLoading } = useSWR(
     [ADMIN_SURVEY_RESPONSES_ENDPOINT, searchParams.toString()] as const,
@@ -129,6 +150,46 @@ function SurveyResponses() {
       nextParams.set(key, value);
     }
     setSearchParams(nextParams);
+  };
+
+  const updateDateRange = (range: DateRange | undefined) => {
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('page');
+    if (range?.from) {
+      nextParams.set('start_date', formatLocalDateYmd(range.from));
+    } else {
+      nextParams.delete('start_date');
+    }
+    if (range?.to) {
+      nextParams.set('end_date', formatLocalDateYmd(range.to));
+    } else {
+      nextParams.delete('end_date');
+    }
+    setSearchParams(nextParams);
+  };
+
+  const handleDownload = async () => {
+    setIsDownloading(true);
+    setDownloadError(null);
+    const exportParams = new URLSearchParams(searchParams);
+    exportParams.delete('tab');
+    exportParams.delete('page');
+    exportParams.delete('page_size');
+    try {
+      const csv = await fetchSurveyResponsesCsv(exportParams.toString());
+      downloadCsv(
+        csv,
+        `survey-responses-${formatLocalDateYmd(new Date())}.csv`,
+      );
+    } catch (exportError) {
+      setDownloadError(
+        exportError instanceof Error && exportError.message
+          ? exportError.message
+          : 'Failed to export survey responses.',
+      );
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   const campaignOptions = [
@@ -162,6 +223,11 @@ function SurveyResponses() {
         paginationList={data}
         isLoading={isLoading}
         loadingText="Loading survey responses..."
+        showDownloadButton
+        downloadDisabled={
+          isDownloading || isLoading || !data || data.results_total === 0
+        }
+        onDownloadClick={handleDownload}
       >
         <Select
           id="survey-response-campaign"
@@ -183,11 +249,26 @@ function SurveyResponses() {
           cannotError
           maxWidth="180px"
         />
+        <DateRangePicker
+          label="Created date"
+          tooltipText="Includes responses created on these Berlin calendar dates."
+          range={dateRange}
+          setRange={updateDateRange}
+          clearLabel="Clear"
+        />
       </FiltersToolbar>
+
+      {downloadError && (
+        <StatusMessage type={StatusTypes.Error} visible>
+          {downloadError}
+        </StatusMessage>
+      )}
 
       {error && (
         <StatusMessage type={StatusTypes.Error} visible>
-          Failed to load survey responses.
+          {error instanceof Error && error.message
+            ? error.message
+            : 'Failed to load survey responses.'}
         </StatusMessage>
       )}
 
@@ -313,7 +394,7 @@ function SurveyResponses() {
                   {(selected.questions ?? []).map(question => {
                     const rendered = formatAnswer(
                       question,
-                      selected.answers?.[question.id],
+                      selected.answers?.[question.id ?? ''],
                     );
                     return (
                       <AnswerBlock key={question.id}>
