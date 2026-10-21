@@ -362,7 +362,7 @@ function SurveyCampaigns() {
                           </Button>
                         </TableCell>
                         <TableCell className="text-center">
-                          <Link to={getSurveyResponsesRoute(campaign.id)}>
+                          <Link href={getSurveyResponsesRoute(campaign.id)}>
                             View responses
                           </Link>
                         </TableCell>

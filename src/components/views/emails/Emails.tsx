@@ -141,7 +141,11 @@ function buildTemplateColumns(
     columnHelper.display({
       id: 'view',
       header: '',
-      cell: ({ row }) => <Link to={row.original.id}>View</Link>,
+      cell: ({ row }) => (
+        <Link href={row.original.id} relative>
+          View
+        </Link>
+      ),
     }),
   ];
 }
@@ -179,7 +183,7 @@ function buildDynamicTemplateColumns({
       header: '',
       cell: ({ row }) => (
         <Link
-          to={SEND_DYNAMIC_EMAIL_ROUTE.replace(
+          href={SEND_DYNAMIC_EMAIL_ROUTE.replace(
             ':emailTemplateName',
             row.original.template_name,
           )}
@@ -418,7 +422,7 @@ const Emails = () => {
               <Link
                 buttonSize={ButtonSizes.Small}
                 buttonAppearance={ButtonAppearance.Primary}
-                to={CREATE_NEW_EMAIL_ROUTE}
+                href={CREATE_NEW_EMAIL_ROUTE}
                 style={{ maxWidth: '200px' }}
               >
                 Create New

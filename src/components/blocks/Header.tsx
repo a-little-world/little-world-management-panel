@@ -48,7 +48,7 @@ const Header = () => {
   return (
     <HeaderContainer>
       <TitleGroup>
-        <Link to="/" textDecoration={false}>
+        <Link href="/" textDecoration={false}>
           <Logo label="Little World" width={48} height={48} />
         </Link>
         {breadcrumbs ? (

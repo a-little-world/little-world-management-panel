@@ -72,7 +72,7 @@ const ScoreBreakdown = ({ results, scoreId }) => {
     <CardDS>
       <div className="flex gap-4 items-center justify-between">
         <Text type={TextTypes.Body4}>Score Breakdown (#{scoreId})</Text>
-        <Link to={ALGORITHM_ROUTE}>More Info</Link>
+        <Link href={ALGORITHM_ROUTE}>More Info</Link>
       </div>
       {results.slice(2).map(result => (
         <ScoreCategory $matchable={result.res.matchable}>
@@ -270,7 +270,7 @@ const Matching = ({
                     >
                       {scoreData?.matchable ? 'Matchable' : 'Not valid'}
                     </Tag>
-                    <Link to={ALGORITHM_ROUTE}>How is this calculated?</Link>
+                    <Link href={ALGORITHM_ROUTE}>How is this calculated?</Link>
                   </>
                 )}
               </div>
