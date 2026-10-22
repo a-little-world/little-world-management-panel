@@ -81,7 +81,7 @@ const UserStats = ({ user }: { user: { id: number } }) => {
       <Link
         buttonAppearance={ButtonAppearance.Primary}
         buttonSize={ButtonSizes.Medium}
-        to={VIDEO_CALLS_ROUTE + '?user_id=' + user.id}
+        href={VIDEO_CALLS_ROUTE + '?user_id=' + user.id}
       >
         View list of video calls
       </Link>

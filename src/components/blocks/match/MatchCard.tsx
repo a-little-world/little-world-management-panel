@@ -194,7 +194,7 @@ const StyledMatchReport = styled(MatchReport)`
 const UserInfo = ({ user, match }: { match: any; user: any }) => (
   <UserInfoContainer>
     <Link
-      to={`/user/${user.id}`}
+      href={`/user/${user.id}`}
       key={match.id}
       className="tooltip"
       textDecoration={false}
@@ -386,7 +386,7 @@ const MatchCard = (props: MatchCardProps) => {
               }
               labelAccessory={
                 <TokenDocsLink
-                  to={MATCH_SUCCESS_DOCUMENTATION_ROUTE}
+                  href={MATCH_SUCCESS_DOCUMENTATION_ROUTE}
                   aria-label="How match success is measured"
                 >
                   <InfoIcon

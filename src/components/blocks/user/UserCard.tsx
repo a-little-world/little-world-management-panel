@@ -454,8 +454,8 @@ export const UserCard: React.FC<UserCardProps> = ({
       </UserInfoContainer>
 
       <ActionContainer $horizontal={horizontal}>
-        <Link to={`/user/${user.id}`}>View profile</Link>
-        <Link to={`/user/${user.id}?tab=chat`} state={{ openTab: 'chat' }}>
+        <Link href={`/user/${user.id}`}>View profile</Link>
+        <Link href={`/user/${user.id}?tab=chat`} state={{ openTab: 'chat' }}>
           Open chat
         </Link>
         {!horizontal && (

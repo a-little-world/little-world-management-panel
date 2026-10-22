@@ -54,7 +54,7 @@ export function SendDynamicTemplateView() {
     <Container>
       <SendWrapper>
         <Link
-          to={getEditEmailRoute(dynamicEmail?.id)}
+          href={getEditEmailRoute(dynamicEmail?.id)}
           buttonAppearance={ButtonAppearance.Secondary}
         >
           Edit Template

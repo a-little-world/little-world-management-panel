@@ -117,7 +117,7 @@ export function HoverableLiveListDescription({
   return (
     <HoverCard>
       <HoverCardTrigger asChild>
-        <Link to={linkTo} className="flex ">
+        <Link href={linkTo} className="flex ">
           <>
             <span>{title}</span>
             {showCount && (
@@ -177,7 +177,7 @@ export function useMatchSuccessPageHeader() {
   usePageHeader({
     showMenu: true,
     actions: (
-      <HeaderDocsLink to={MATCH_SUCCESS_DOCUMENTATION_ROUTE}>
+      <HeaderDocsLink href={MATCH_SUCCESS_DOCUMENTATION_ROUTE}>
         How match success is measured?
       </HeaderDocsLink>
     ),

@@ -56,7 +56,7 @@ export type BreadcrumbsProps = {
 
 const BreadcrumbCrumb = ({ item }: { item: BreadcrumbItem }) =>
   'to' in item ? (
-    <BreadcrumbLink textType={TextTypes.Heading4} to={item.to}>
+    <BreadcrumbLink textType={TextTypes.Heading4} href={item.to}>
       {item.label}
     </BreadcrumbLink>
   ) : (

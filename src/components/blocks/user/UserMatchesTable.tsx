@@ -107,7 +107,7 @@ const UserMatchesTable = ({
                   {match.partner?.censored ? (
                     <Text>Account no longer exists</Text>
                   ) : (
-                    <Link to={`/match/${match.id}`} textDecoration={false}>
+                    <Link href={`/match/${match.id}`} textDecoration={false}>
                       <PartnerInfo>
                         <UserImage
                           hasPriority={match.partner.has_match_priority}
@@ -175,7 +175,7 @@ const UserMatchesTable = ({
                 {!isProposed && (
                   <TableCell>
                     <ActionsCell>
-                      <Link to={`/match/${match.id}`}>View Match</Link>
+                      <Link href={`/match/${match.id}`}>View Match</Link>
                     </ActionsCell>
                   </TableCell>
                 )}
