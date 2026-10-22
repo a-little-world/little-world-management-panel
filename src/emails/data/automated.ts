@@ -572,7 +572,7 @@ const automatedEmails = {
   },
   'automatic-emails-m032': {
     id: 'automatic-emails-m032',
-    label: 'M032 - Videocall Planning Reminder',
+    label: 'M032 - Video-call Planning Reminder',
     category_id: EmailCategories.Automated,
     preview: automatedText['automatic-emails-m032.preview'],
     subject: automatedText['automatic-emails-m032.subject'],
@@ -597,19 +597,6 @@ const automatedEmails = {
         type: ContentTypes.Button,
         text: automatedText['automatic-emails-m032.block-5'],
         href: BackendVars.interculturalCommunicationTrainingUrl,
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m032.block-6'],
-      },
-      {
-        type: ContentTypes.Button,
-        text: automatedText['automatic-emails-m032.block-7'],
-        href: BackendVars.stillInContactYesUrl,
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m032.block-8'],
       },
     ],
   },
@@ -637,31 +624,13 @@ const automatedEmails = {
         text: automatedText['automatic-emails-m033.block-4'],
       },
       {
-        type: ContentTypes.Button,
-        text: automatedText['automatic-emails-m033.block-5'],
-        href: '{{ still_in_contact_yes_url }}',
-      },
-      {
-        type: ContentTypes.Button,
-        text: automatedText['automatic-emails-m033.block-6'],
-        href: '{{ still_in_contact_no_url }}',
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m033.block-7'],
-      },
-      {
         type: ContentTypes.Link,
         text: automatedText['automatic-emails-m033.link-support-chat'],
         href: '{{ messages_url }}',
       },
       {
         type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m033.block-8'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['automatic-emails-m033.block-9'],
+        text: automatedText['automatic-emails-m033.block-5'],
       },
     ],
   },
@@ -2411,68 +2380,6 @@ const automatedEmails = {
       {
         type: ContentTypes.Paragraph,
         text: automatedText['reset-password.block-5'],
-      },
-    ],
-  },
-  'still-in-contact': {
-    id: 'still-in-contact',
-    label: 'Still in Contact?',
-    category_id: EmailCategories.Automated,
-    subject: automatedText['still-in-contact.subject'],
-    preview: automatedText['still-in-contact.preview'],
-    content: [
-      {
-        type: ContentTypes.Title,
-        text: automatedText['still-in-contact.block-1'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['still-in-contact.block-2'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['still-in-contact.block-3'],
-      },
-      {
-        type: ContentTypes.Button,
-        text: automatedText['still-in-contact.block-4'],
-        href: BackendVars.confirmContactUrl,
-      },
-    ],
-  },
-  'still-in-contact-inactive': {
-    id: 'still-in-contact-inactive',
-    label: 'Still in Contact (Inactive Match)',
-    category_id: EmailCategories.Automated,
-    preview: automatedText['still-in-contact-inactive.preview'],
-    subject: automatedText['still-in-contact-inactive.subject'],
-    content: [
-      {
-        type: ContentTypes.Title,
-        text: automatedText['still-in-contact-inactive.block-1'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['still-in-contact-inactive.block-2'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['still-in-contact-inactive.block-3'],
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['still-in-contact-inactive.block-4'],
-      },
-      {
-        type: ContentTypes.TwoButtons,
-        leftText: automatedText['still-in-contact-inactive.block-5'],
-        rightText: automatedText['still-in-contact-inactive.block-6'],
-        leftHref: BackendVars.stillInContactYesUrl,
-        rightHref: BackendVars.stillInContactNoUrl,
-      },
-      {
-        type: ContentTypes.Paragraph,
-        text: automatedText['still-in-contact-inactive.block-7'],
       },
     ],
   },
