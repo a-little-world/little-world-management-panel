@@ -162,7 +162,7 @@ function EventForm({
 
             <EventModalScheduleRow>
               {/* Recurring Zoom meetings (Gruppengespräche, Einführungsgespräch) have a fixed time
-                in Zoom; if it drifts from the event time, moderators can't open the meeting. */}
+                in Zoom; if it drifts from the event time, participants can't enter the meeting. */}
               {isRecurring && (
                 <StatusMessage type={StatusTypes.Warning} visible withBorder>
                   Changing the date or time? Update the meeting in our Zoom

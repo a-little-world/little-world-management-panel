@@ -633,12 +633,17 @@ const automatedEmails = {
         text: automatedText['automatic-emails-m033.block-6'],
       },
       {
-        type: ContentTypes.Paragraph,
+        type: ContentTypes.Button,
         text: automatedText['automatic-emails-m033.block-7'],
+        href: BackendVars.messagesUrl,
       },
       {
         type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-m033.block-8'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-m033.block-9'],
       },
     ],
   },
