@@ -18,7 +18,7 @@ import {
   TextInput,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
-import { isEmpty, map } from 'lodash';
+import { find, isEmpty, map } from 'lodash';
 import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTheme } from 'styled-components';
@@ -45,11 +45,16 @@ import {
   setUserCompany,
   setUserManagementPermission,
   setUserSearching,
+  setUserSignupCampaign,
   setUserUnresponsive,
   updateUserProfileFields,
 } from '../../../api/index';
 import { formatCountryOfResidenceOptions } from '../../../helpers/countryOfResidenceOptions';
-import { registerInput, useGlobalState } from '../../../store';
+import {
+  registerInput,
+  useFilterOptions,
+  useGlobalState,
+} from '../../../store';
 
 const SUPPORT_USERS = [
   {
@@ -605,6 +610,100 @@ function CompanySection({
   );
 }
 
+/** The user filter's "No Signup Campaign" choice; it maps to clearing the campaign. */
+const NO_SIGNUP_CAMPAIGN = 'null';
+
+/**
+ * Sets the user's signup campaign to one that already exists on some user. Options come from
+ * the user table's signup campaign filter, so they are exactly the campaigns in the db.
+ */
+function SignupCampaignSection({
+  user,
+  onUpdate,
+}: {
+  user: any;
+  onUpdate: () => void;
+}) {
+  const {
+    filterOptions,
+    isLoading: optionsLoading,
+    mutate: refreshFilterOptions,
+  } = useFilterOptions();
+  const currentCampaign: string =
+    user.state.signup_campaign || NO_SIGNUP_CAMPAIGN;
+  const [campaign, setCampaign] = useState(currentCampaign);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const campaignOptions = (
+    find(
+      filterOptions?.filters,
+      filter => filter.name === 'state__signup_campaign',
+    )?.choices ?? []
+  ).map(({ tag, value }: { tag: string; value: string }) => ({
+    label: tag,
+    value,
+  }));
+
+  const onSave = () => {
+    setIsSubmitting(true);
+    setSaved(false);
+    setError(null);
+    setUserSignupCampaign({
+      id: user.id,
+      signupCampaign: campaign === NO_SIGNUP_CAMPAIGN ? null : campaign,
+      onError: e => {
+        setError(e?.message || 'Could not change the signup campaign.');
+        setIsSubmitting(false);
+      },
+      onSuccess: () => {
+        setIsSubmitting(false);
+        setSaved(true);
+        // Clearing the last user on a campaign removes it from the list.
+        refreshFilterOptions();
+        onUpdate();
+      },
+    });
+  };
+
+  return (
+    <div className="flex flex-col gap-2 pt-2">
+      <Text>
+        {`Current signup campaign: ${user.state.signup_campaign || 'None'}`}
+      </Text>
+      <Select
+        id="user_signup_campaign"
+        key={`user_signup_campaign_${campaign}_${campaignOptions.length}`}
+        label="Signup campaign"
+        labelTooltip="Priority signup campaigns give the user match priority (unless overridden) and international SMS."
+        placeholder="Select a signup campaign"
+        value={campaign}
+        options={campaignOptions}
+        disabled={optionsLoading || isSubmitting}
+        onValueChange={value => {
+          setCampaign(value);
+          setSaved(false);
+        }}
+      />
+      <StatusMessage
+        visible={saved || !!error}
+        type={saved ? StatusTypes.Success : StatusTypes.Error}
+      >
+        {saved ? 'Signup campaign updated' : error}
+      </StatusMessage>
+      <div>
+        <Button
+          onClick={onSave}
+          disabled={isSubmitting || campaign === currentCampaign}
+        >
+          Save signup campaign
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 const UserActions = ({
   user,
   onUpdate,
@@ -1061,12 +1160,15 @@ const UserActions = ({
                 </form>
                 {/* Its own form and save, so it sits after the profile form rather than in it. */}
                 {canUpdateMatchingProfileFields && (
-                  <CompanySection
-                    user={user}
-                    companies={companies}
-                    companiesLoading={companiesLoading}
-                    onUpdate={onUpdate}
-                  />
+                  <>
+                    <CompanySection
+                      user={user}
+                      companies={companies}
+                      companiesLoading={companiesLoading}
+                      onUpdate={onUpdate}
+                    />
+                    <SignupCampaignSection user={user} onUpdate={onUpdate} />
+                  </>
                 )}
               </div>
             ),
