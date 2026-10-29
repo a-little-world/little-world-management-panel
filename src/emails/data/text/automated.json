@@ -11,7 +11,7 @@
   "automatic-emails-fm001.block-2": "Hallo {{ first_name }},",
   "automatic-emails-fm001.block-3": "leider ist dein vorgeschlagenes Match mit {{ partner_first_name }} abgelaufen, weil du es nicht bestätigt hast. Wir gehen davon aus, dass du gerade keine Zeit hast, aktiv an Gesprächen teilzunehmen.",
   "automatic-emails-fm001.block-4": "Wenn du bereit bist, einen neuen Partner zu suchen, kannst du jederzeit eine neue Suche auf der Plattform starten:",
-  "automatic-emails-fm001.block-5": "+ Neue Suche starten",
+  "automatic-emails-fm001.block-5": "Neue Suche starten",
   "automatic-emails-fm001.block-6": "Wir freuen uns, dich bald wieder mit jemandem zu verbinden.",
   "automatic-emails-fm001.preview": "Dein vorgeschlagenes Match mit {{ partner_first_name }} ist abgelaufen.",
   "automatic-emails-fm001.subject": "❌ Dein vorgeschlagenes Match ist abgelaufen – starte neu 🔄",
