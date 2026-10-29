@@ -720,7 +720,7 @@ const automatedEmails = {
       {
         type: ContentTypes.Button,
         text: automatedText['automatic-emails-m043.block-6'],
-        href: 'https://home.little-world.com/jetzt-spenden/',
+        href: BackendVars.donateUrl,
       },
       {
         type: ContentTypes.Paragraph,
@@ -752,13 +752,13 @@ const automatedEmails = {
         text: automatedText['automatic-emails-m044.block-4'],
       },
       {
-        type: ContentTypes.Paragraph,
+        type: ContentTypes.Button,
         text: automatedText['automatic-emails-m044.block-5'],
+        href: '{{ share_story_url }}',
       },
       {
-        type: ContentTypes.Button,
+        type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-m044.block-6'],
-        href: '{{ share_story_url }}',
       },
       {
         type: ContentTypes.Paragraph,
@@ -804,7 +804,7 @@ const automatedEmails = {
       {
         type: ContentTypes.Button,
         text: automatedText['automatic-emails-m045.block-8'],
-        href: 'https://home.little-world.com/jetzt-spenden/',
+        href: BackendVars.donateUrl,
       },
       {
         type: ContentTypes.Paragraph,
@@ -1895,7 +1895,7 @@ const automatedEmails = {
       {
         type: ContentTypes.Button,
         text: automatedText['automatic-emails-u072.block-5'],
-        href: 'https://home.little-world.com/#gruppentermine',
+        href: BackendVars.groupConversationsUrl,
       },
       {
         type: ContentTypes.Paragraph,
@@ -1996,7 +1996,7 @@ const automatedEmails = {
       {
         type: ContentTypes.Button,
         text: automatedText['automatic-emails-u074.block-8'],
-        href: 'https://home.little-world.com/#gruppentermine',
+        href: BackendVars.groupConversationsUrl,
       },
       {
         type: ContentTypes.Paragraph,
@@ -2042,7 +2042,7 @@ const automatedEmails = {
       {
         type: ContentTypes.Button,
         text: automatedText['automatic-emails-u081.block-8'],
-        href: 'https://home.little-world.com/#gruppentermine',
+        href: BackendVars.groupConversationsUrl,
       },
       {
         type: ContentTypes.Button,
@@ -2098,7 +2098,7 @@ const automatedEmails = {
       {
         type: ContentTypes.Button,
         text: automatedText['automatic-emails-u082.block-9'],
-        href: 'https://home.little-world.com/#gruppentermine',
+        href: BackendVars.groupConversationsUrl,
       },
       {
         type: ContentTypes.Paragraph,
@@ -2186,7 +2186,7 @@ const automatedEmails = {
       {
         type: ContentTypes.Button,
         text: automatedText['automatic-emails-u084.block-7'],
-        href: 'https://home.little-world.com/#gruppentermine',
+        href: BackendVars.groupConversationsUrl,
       },
       {
         type: ContentTypes.Paragraph,

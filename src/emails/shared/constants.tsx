@@ -28,6 +28,8 @@ export const BackendVars = {
   stillInContactNoUrl: '{{ still_in_contact_no_url }}',
   interculturalCommunicationTrainingUrl:
     '{{ intercultural_communication_training_url }}',
+  groupConversationsUrl: '{{ group_conversations_url }}',
+  donateUrl: '{{ donate_url }}',
 };
 
 export const THEMES = {
