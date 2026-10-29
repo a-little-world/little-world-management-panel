@@ -14,6 +14,9 @@ import {
   Modal,
   StatusMessage,
   StatusTypes,
+  Tag,
+  TagAppearance,
+  TagSizes,
   Text,
   TextTypes,
   Toast,
@@ -35,10 +38,14 @@ import automatedEmails, {
 } from '../../../emails/data/automated';
 import marketingEmails from '../../../emails/data/marketing';
 import partnershipsEmails from '../../../emails/data/partnerships';
-import { getUnsubscribeUrl } from '../../../emails/shared/constants';
+import {
+  EmailCategories,
+  getUnsubscribeUrl,
+} from '../../../emails/shared/constants';
 import { getCookiesAsObject } from '../../../lib/utils';
 import {
   CREATE_NEW_EMAIL_ROUTE,
+  JOURNEY_OVERVIEW_ROUTE,
   SEND_DYNAMIC_EMAIL_ROUTE,
 } from '../../../router/routes';
 import { dataFetcher } from '../../../store';
@@ -48,11 +55,19 @@ import AutoEmailStatusTag, {
 import LoadingSpinner from '../../atoms/LoadingSpinner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../atoms/Tabs';
 import { DataTable } from '../../blocks/DataTable';
+import EmailLogTab, { EMAIL_LOG_PARAMS } from './EmailLogTab';
 
 interface AutoEmailFlags {
   [templateId: string]: {
     group: string | null;
     status: AutoEmailStatus;
+  };
+}
+
+interface AutoEmailMetadata {
+  [templateId: string]: {
+    trigger: string;
+    audience: 'Volunteer' | 'Learner' | 'All';
   };
 }
 
@@ -65,6 +80,8 @@ interface BackendTemplateRow {
   id: string;
   label: string;
   status?: AutoEmailStatus;
+  trigger?: string;
+  audience?: AutoEmailMetadata[string]['audience'];
 }
 
 const Container = styled.div`
@@ -84,7 +101,7 @@ const TabPanel = styled.div`
   `}
 `;
 
-type EmailsTab = 'automated' | 'dynamic';
+type EmailsTab = 'automated' | 'dynamic' | 'log';
 
 const TopBar = styled.div`
   display: flex;
@@ -101,7 +118,9 @@ const EmailGrouping = styled(AccordionContent)`
 `;
 
 const GROUPED_TEMPLATES = {
-  Automated: map(automatedEmails),
+  Automated: map(automatedEmails).filter(
+    email => email.category_id !== EmailCategories.AutomatedPatenmatch,
+  ),
   Marketing: map(marketingEmails),
   Partnerships: map(partnershipsEmails),
   AutomatedPatenmatch: map(getAutomatedPatentmatchEmails()),
@@ -138,10 +157,42 @@ function buildTemplateColumns(
           }),
         ]
       : []),
+    columnHelper.accessor('trigger', {
+      header: 'Trigger',
+      cell: ({ getValue }) => (
+        <Text type={TextTypes.Body6} tag="span">
+          {getValue() ?? '—'}
+        </Text>
+      ),
+    }),
+    columnHelper.accessor('audience', {
+      header: 'Audience',
+      cell: ({ getValue }) => {
+        const audience = getValue();
+        return audience ? (
+          <Tag appearance={TagAppearance.outline} size={TagSizes.small}>
+            {audience}
+          </Tag>
+        ) : (
+          <Text type={TextTypes.Body6} tag="span">
+            —
+          </Text>
+        );
+      },
+    }),
     columnHelper.display({
       id: 'view',
       header: '',
-      cell: ({ row }) => <Link to={row.original.id}>View</Link>,
+      cell: ({ row }) => <Link to={row.original.id}>View template</Link>,
+    }),
+    columnHelper.display({
+      id: 'view-logs',
+      header: '',
+      cell: ({ row }) => (
+        <Link to={`?tab=log&template=${encodeURIComponent(row.original.id)}`}>
+          View logs
+        </Link>
+      ),
     }),
   ];
 }
@@ -290,11 +341,18 @@ const Emails = () => {
 
   const theme = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
+  const requestedTab = searchParams.get('tab');
   const tab: EmailsTab =
-    searchParams.get('tab') === 'dynamic' ? 'dynamic' : 'automated';
+    requestedTab === 'dynamic' || requestedTab === 'log'
+      ? requestedTab
+      : 'automated';
   const onTabChange = (value: string) => {
     const newParams = new URLSearchParams(searchParams);
     newParams.set('tab', value);
+    // Log filters only apply to the log tab; don't carry them over to the others
+    if (value !== 'log') {
+      EMAIL_LOG_PARAMS.forEach(key => newParams.delete(key));
+    }
     setSearchParams(newParams, { replace: true });
   };
   const [templateToDelete, setTemplateToDelete] =
@@ -317,6 +375,12 @@ const Emails = () => {
 
   const { data: autoEmailFlags } = useSWR<AutoEmailFlags>(
     '/api/matching/emails/auto_email_flags/',
+    dataFetcher,
+    {},
+  );
+
+  const { data: autoEmailMetadata } = useSWR<AutoEmailMetadata>(
+    '/api/matching/emails/auto_email_metadata/',
     dataFetcher,
     {},
   );
@@ -361,6 +425,7 @@ const Emails = () => {
         <TabsList>
           <TabsTrigger value="automated">Automated</TabsTrigger>
           <TabsTrigger value="dynamic">Dynamic</TabsTrigger>
+          <TabsTrigger value="log">Email Log</TabsTrigger>
         </TabsList>
         <TabsContent value="automated">
           <TabPanel>
@@ -385,6 +450,11 @@ const Emails = () => {
               and are sent whenever their event happens; &quot;Unused&quot;
               emails are not sent anywhere.
             </Text>
+            <div>
+              <Link to={JOURNEY_OVERVIEW_ROUTE}>
+                View User &amp; Match Journey
+              </Link>
+            </div>
             <Accordion
               ContentWrapper={EmailGrouping}
               items={map(GROUPED_TEMPLATES, (item, header) => {
@@ -395,6 +465,8 @@ const Emails = () => {
                   id: template.id,
                   label: template.label,
                   status: autoEmailFlags?.[template.id]?.status,
+                  trigger: autoEmailMetadata?.[template.id]?.trigger,
+                  audience: autoEmailMetadata?.[template.id]?.audience,
                 }));
                 // Only env-gated automatic emails have a delivery status
                 const withStatus = rows.some(row => row.status);
@@ -439,6 +511,12 @@ const Emails = () => {
                 data={sortBy(dynamicEmails?.results ?? [], 'template_name')}
               />
             )}
+          </TabPanel>
+        </TabsContent>
+        <TabsContent value="log">
+          <TabPanel>
+            <Text type={TextTypes.Heading4}>Email Log</Text>
+            <EmailLogTab />
           </TabPanel>
         </TabsContent>
       </Tabs>

@@ -692,7 +692,7 @@ const automatedEmails = {
   },
   'automatic-emails-m043': {
     id: 'automatic-emails-m043',
-    label: 'M043 - 5 Videocalls Survey',
+    label: 'M043 - 5 Token Milestone',
     category_id: EmailCategories.Automated,
     preview: automatedText['automatic-emails-m043.preview'],
     subject: automatedText['automatic-emails-m043.subject'],
@@ -720,7 +720,7 @@ const automatedEmails = {
       {
         type: ContentTypes.Button,
         text: automatedText['automatic-emails-m043.block-6'],
-        href: '{{ post_videocall_survey_url }}',
+        href: BackendVars.donateUrl,
       },
       {
         type: ContentTypes.Paragraph,
@@ -752,13 +752,13 @@ const automatedEmails = {
         text: automatedText['automatic-emails-m044.block-4'],
       },
       {
-        type: ContentTypes.Paragraph,
+        type: ContentTypes.Button,
         text: automatedText['automatic-emails-m044.block-5'],
+        href: '{{ share_story_url }}',
       },
       {
-        type: ContentTypes.Button,
+        type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-m044.block-6'],
-        href: '{{ share_story_url }}',
       },
       {
         type: ContentTypes.Paragraph,
@@ -768,7 +768,7 @@ const automatedEmails = {
   },
   'automatic-emails-m045': {
     id: 'automatic-emails-m045',
-    label: 'M045 - 10 Videocalls Completed',
+    label: 'M045 - 10 Token Milestone',
     category_id: EmailCategories.Automated,
     preview: automatedText['automatic-emails-m045.preview'],
     subject: automatedText['automatic-emails-m045.subject'],
@@ -794,17 +794,17 @@ const automatedEmails = {
         text: automatedText['automatic-emails-m045.block-5'],
       },
       {
-        type: ContentTypes.Button,
+        type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-m045.block-6'],
-        href: '{{ completed_match_poll_url }}',
       },
       {
         type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-m045.block-7'],
       },
       {
-        type: ContentTypes.Paragraph,
+        type: ContentTypes.Button,
         text: automatedText['automatic-emails-m045.block-8'],
+        href: BackendVars.donateUrl,
       },
       {
         type: ContentTypes.Paragraph,
@@ -1871,7 +1871,7 @@ const automatedEmails = {
   },
   'automatic-emails-u072': {
     id: 'automatic-emails-u072',
-    label: 'U072 - Group Calls Follow-up',
+    label: 'U072 - Group and Random Calls Follow-up',
     category_id: EmailCategories.Automated,
     preview: automatedText['automatic-emails-u072.preview'],
     subject: automatedText['automatic-emails-u072.subject'],
@@ -1893,17 +1893,26 @@ const automatedEmails = {
         text: automatedText['automatic-emails-u072.block-4'],
       },
       {
-        type: ContentTypes.Paragraph,
+        type: ContentTypes.Button,
         text: automatedText['automatic-emails-u072.block-5'],
+        href: BackendVars.groupConversationsUrl,
       },
       {
-        type: ContentTypes.Button,
+        type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-u072.block-6'],
-        href: 'https://home.little-world.com/#gruppentermine',
       },
       {
         type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-u072.block-7'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['automatic-emails-u072.block-8'],
+        href: '{{ random_calls_url }}',
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u072.block-9'],
       },
     ],
   },
@@ -1987,7 +1996,7 @@ const automatedEmails = {
       {
         type: ContentTypes.Button,
         text: automatedText['automatic-emails-u074.block-8'],
-        href: 'https://home.little-world.com/#gruppentermine',
+        href: BackendVars.groupConversationsUrl,
       },
       {
         type: ContentTypes.Paragraph,
@@ -2033,7 +2042,7 @@ const automatedEmails = {
       {
         type: ContentTypes.Button,
         text: automatedText['automatic-emails-u081.block-8'],
-        href: 'https://home.little-world.com/#gruppentermine',
+        href: BackendVars.groupConversationsUrl,
       },
       {
         type: ContentTypes.Button,
@@ -2048,7 +2057,7 @@ const automatedEmails = {
   },
   'automatic-emails-u082': {
     id: 'automatic-emails-u082',
-    label: 'U082 - Group Calls Invitation',
+    label: 'U082 - Group and Random Calls Invitation',
     category_id: EmailCategories.Automated,
     preview: automatedText['automatic-emails-u082.preview'],
     subject: automatedText['automatic-emails-u082.subject'],
@@ -2076,7 +2085,7 @@ const automatedEmails = {
       {
         type: ContentTypes.Button,
         text: automatedText['automatic-emails-u082.block-6'],
-        href: 'https://home.little-world.com/#gruppentermine',
+        href: '{{ random_calls_url }}',
       },
       {
         type: ContentTypes.Paragraph,
@@ -2085,6 +2094,19 @@ const automatedEmails = {
       {
         type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-u082.block-8'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['automatic-emails-u082.block-9'],
+        href: BackendVars.groupConversationsUrl,
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u082.block-10'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u082.block-11'],
       },
     ],
   },
@@ -2164,7 +2186,7 @@ const automatedEmails = {
       {
         type: ContentTypes.Button,
         text: automatedText['automatic-emails-u084.block-7'],
-        href: 'https://home.little-world.com/#gruppentermine',
+        href: BackendVars.groupConversationsUrl,
       },
       {
         type: ContentTypes.Paragraph,
