@@ -403,11 +403,14 @@ export const sendSupportMessageReply = async ({
         })()
       : { message: text };
 
-    const result = await apiFetch(`/api/matching/users/${userId}/message_reply/`, {
-      method: 'POST',
-      ...(file ? { useTagsOnly: true } : {}),
-      body,
-    });
+    const result = await apiFetch(
+      `/api/matching/users/${userId}/message_reply/`,
+      {
+        method: 'POST',
+        ...(file ? { useTagsOnly: true } : {}),
+        body,
+      },
+    );
     onSuccess(result);
   } catch (error) {
     onError(error);
@@ -806,6 +809,32 @@ export const setUserCompany = async ({
   }
 };
 
+/** Must be a campaign some user already has; `null` clears it. */
+export const setUserSignupCampaign = async ({
+  id,
+  signupCampaign,
+  onError,
+  onSuccess,
+}: {
+  id: string | number;
+  signupCampaign: string | null;
+  onError: (error: any) => void;
+  onSuccess: (result: { msg: string; signup_campaign: string | null }) => void;
+}) => {
+  try {
+    const result = await apiFetch<{
+      msg: string;
+      signup_campaign: string | null;
+    }>(`/api/matching/users/${id}/set_signup_campaign/`, {
+      method: 'POST',
+      body: { signup_campaign: signupCampaign },
+    });
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
+  }
+};
+
 export const migrateUser = async ({
   id,
   newEmail,
@@ -1029,7 +1058,8 @@ export const updateDynamicTemplate = async ({
 }) => {
   try {
     const result = await apiFetch(
-      `/api/matching/emails/dynamic_templates/${existingTemplate ? `${templateName}/` : ''
+      `/api/matching/emails/dynamic_templates/${
+        existingTemplate ? `${templateName}/` : ''
       }`,
       {
         method: existingTemplate ? 'PATCH' : 'POST',
