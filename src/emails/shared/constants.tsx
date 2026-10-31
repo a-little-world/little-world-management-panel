@@ -18,6 +18,8 @@ export const BackendVars = {
   messagesUrl: '{{ messages_url }}',
   profileUrlUrl: '{{ profile_link_url }}',
   loginUrl: 'https://little-world.com/login',
+  activateSearchingUrl: '{{ activate_searching_url }}',
+  randomCallsUrl: '{{ random_calls_url }}',
   partnerProfileUrl: '{{ partner_profile_url }}',
   restartSearchUrl: '{{ restart_search_url }}',
   confirmationUrl: '{{ verification_url }}',
