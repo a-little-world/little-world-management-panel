@@ -22,6 +22,7 @@ import useSelectUser from '../../hooks/useSelectUser';
 import {
   BANNERS_ROUTE,
   COMMUNICATIONS_ROUTE,
+  ADVENT_SIGNUPS_ROUTE,
   COMPANIES_ROUTE,
   COURSES_ROUTE,
   DOCUMENTATION_ROUTE,
@@ -155,10 +156,7 @@ const Menu = () => {
           >
             Matching
           </NavigationMenuContentItem>
-          <NavigationMenuContentItem
-            to={USERS_HUB_ROUTE}
-            active={isUsersRoute}
-          >
+          <NavigationMenuContentItem to={USERS_HUB_ROUTE} active={isUsersRoute}>
             Users
           </NavigationMenuContentItem>
           <NavigationMenuContentItem
@@ -204,6 +202,12 @@ const Menu = () => {
             active={location.pathname.startsWith(COMPANIES_ROUTE)}
           >
             Companies
+          </NavigationMenuContentItem>
+          <NavigationMenuContentItem
+            to={ADVENT_SIGNUPS_ROUTE}
+            active={location.pathname.startsWith(ADVENT_SIGNUPS_ROUTE)}
+          >
+            Adventsgespräche
           </NavigationMenuContentItem>
         </NavigationMenuContent>
       </NavigationMenuItem>

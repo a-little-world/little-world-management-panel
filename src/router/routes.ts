@@ -72,6 +72,7 @@ export const getCourseEditRoute = (slug: string | 'new') => `/courses/${slug}/`;
 
 export const COMPANIES_ROUTE = '/companies/';
 export const COMPANY_EDIT_ROUTE = '/companies/:companyId/';
+export const ADVENT_SIGNUPS_ROUTE = '/advents-gespraeche/';
 
 export const getCompanyEditRoute = (id: number | 'new') => `/companies/${id}/`;
 
