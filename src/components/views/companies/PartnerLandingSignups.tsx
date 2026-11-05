@@ -106,16 +106,16 @@ function PartnerLandingSignups() {
     { revalidateOnFocus: true, revalidateOnMount: true },
   );
 
-  const appointmentTimes = data?.appointment_times ?? [];
+  const appointmentTimes = data?.appointment_times;
   const selectedAppointment =
-    appointmentParam && appointmentTimes.includes(appointmentParam)
+    appointmentParam && appointmentTimes?.includes(appointmentParam)
       ? appointmentParam
       : ALL_TIMES;
 
   const appointmentOptions = useMemo(
     () => [
       { value: ALL_TIMES, label: 'All times' },
-      ...appointmentTimes.map(value => ({
+      ...(appointmentTimes ?? []).map(value => ({
         value,
         label: formatBerlinDateTime(value),
       })),
