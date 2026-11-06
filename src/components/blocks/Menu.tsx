@@ -22,7 +22,6 @@ import useSelectUser from '../../hooks/useSelectUser';
 import {
   BANNERS_ROUTE,
   COMMUNICATIONS_ROUTE,
-  ADVENT_SIGNUPS_ROUTE,
   COMPANIES_ROUTE,
   COURSES_ROUTE,
   DOCUMENTATION_ROUTE,
@@ -181,7 +180,7 @@ const Menu = () => {
             to={RANDOM_CALLS_ROUTE}
             active={location.pathname === RANDOM_CALLS_ROUTE}
           >
-            Random Calls
+            Special Events
           </NavigationMenuContentItem>
           {hasOpenChatAccess && (
             <NavigationMenuContentItem
@@ -202,12 +201,6 @@ const Menu = () => {
             active={location.pathname.startsWith(COMPANIES_ROUTE)}
           >
             Companies
-          </NavigationMenuContentItem>
-          <NavigationMenuContentItem
-            to={ADVENT_SIGNUPS_ROUTE}
-            active={location.pathname.startsWith(ADVENT_SIGNUPS_ROUTE)}
-          >
-            Adventsgespräche
           </NavigationMenuContentItem>
         </NavigationMenuContent>
       </NavigationMenuItem>

@@ -15,10 +15,10 @@ import useSWR from 'swr';
 
 import { formatCompanyLabel } from '../../../api/companies';
 import {
-  ADMIN_PARTNER_LANDING_SIGNUPS_ENDPOINT,
-  fetchPartnerLandingSignups,
-  PartnerLandingSignup,
-} from '../../../api/partnerLandingSignups';
+  ADMIN_PARTNER_EVENT_REGISTRATIONS_ENDPOINT,
+  fetchPartnerEventRegistrations,
+  PartnerEventRegistration,
+} from '../../../api/partnerEventRegistrations';
 import { formatBerlinDateTime } from '../../../helpers/berlinDates';
 import {
   Description,
@@ -38,13 +38,13 @@ const LoadingWrap = styled.div`
 
 const StyledDropdown = styled(Select)`
   div[data-radix-popper-content-wrapper] {
-    z-index: 20 !important;
+    z-index: ${({ theme }) => theme.zIndex.dropdown} !important;
   }
 `;
 
-const columnHelper = createColumnHelper<PartnerLandingSignup>();
+const columnHelper = createColumnHelper<PartnerEventRegistration>();
 
-const columns: ColumnDef<PartnerLandingSignup, any>[] = [
+const columns: ColumnDef<PartnerEventRegistration, any>[] = [
   columnHelper.accessor('email', {
     header: 'Email',
     cell: ({ getValue }) => (
@@ -56,6 +56,14 @@ const columns: ColumnDef<PartnerLandingSignup, any>[] = [
   columnHelper.accessor(row => formatCompanyLabel(row.company), {
     id: 'company',
     header: 'Company',
+    cell: ({ getValue }) => (
+      <Text type={TextTypes.Body6} tag="span">
+        {getValue() || '—'}
+      </Text>
+    ),
+  }),
+  columnHelper.accessor('lobby_name', {
+    header: 'Session',
     cell: ({ getValue }) => (
       <Text type={TextTypes.Body6} tag="span">
         {getValue() || '—'}
@@ -88,7 +96,7 @@ const columns: ColumnDef<PartnerLandingSignup, any>[] = [
   }),
 ];
 
-function PartnerLandingSignups() {
+function SpecialEventRegistrations() {
   const [searchParams, setSearchParams] = useSearchParams();
   const appointmentParam = searchParams.get('appointment_starts_at') || '';
 
@@ -101,8 +109,8 @@ function PartnerLandingSignups() {
   }, [appointmentParam]);
 
   const { data, error, isLoading } = useSWR(
-    [ADMIN_PARTNER_LANDING_SIGNUPS_ENDPOINT, listParams] as const,
-    ([, queryString]) => fetchPartnerLandingSignups(queryString),
+    [ADMIN_PARTNER_EVENT_REGISTRATIONS_ENDPOINT, listParams] as const,
+    ([, queryString]) => fetchPartnerEventRegistrations(queryString),
     { revalidateOnFocus: true, revalidateOnMount: true },
   );
 
@@ -130,6 +138,8 @@ function PartnerLandingSignups() {
     } else {
       nextParams.set('appointment_starts_at', value);
     }
+    nextParams.set('tab', 'external');
+    nextParams.set('section', 'registrations');
     setSearchParams(nextParams);
   };
 
@@ -137,7 +147,7 @@ function PartnerLandingSignups() {
     <PageContainer>
       <PageHeader>
         <Description>
-          Emails registered on the Adventsgespräche landing. Filter by the
+          Emails registered on external-session landings. Filter by the
           appointment times already stored in the database.
         </Description>
       </PageHeader>
@@ -160,7 +170,7 @@ function PartnerLandingSignups() {
 
       {error && (
         <StatusMessage type={StatusTypes.Error} visible>
-          Failed to load sign-ups.
+          Failed to load registrations.
         </StatusMessage>
       )}
 
@@ -179,4 +189,4 @@ function PartnerLandingSignups() {
   );
 }
 
-export default PartnerLandingSignups;
+export default SpecialEventRegistrations;

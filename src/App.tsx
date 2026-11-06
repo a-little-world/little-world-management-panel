@@ -50,7 +50,6 @@ import QuestionCards from './components/views/comms/questionCards/QuestionCards'
 import ShortLinks from './components/views/comms/shortLinks/ShortLinks';
 import Companies from './components/views/companies/Companies';
 import EditCompany from './components/views/companies/EditCompany';
-import PartnerLandingSignups from './components/views/companies/PartnerLandingSignups';
 import Courses from './components/views/courses/Courses';
 import EditCourse from './components/views/courses/EditCourse';
 import CreateNewEmail from './components/views/emails/CreateNewEmail';
@@ -79,7 +78,6 @@ import {
   COMMUNICATIONS_ROUTE,
   COURSES_ROUTE,
   COURSE_EDIT_ROUTE,
-  ADVENT_SIGNUPS_ROUTE,
   COMPANIES_ROUTE,
   COMPANY_EDIT_ROUTE,
   CREATE_NEW_EMAIL_ROUTE,
@@ -309,7 +307,7 @@ const router = createBrowserRouter(
         {
           path: RANDOM_CALLS_ROUTE,
           element: <RandomCalls />,
-          ...routeTitle('Random Calls'),
+          ...routeTitle('Special Events'),
         },
         {
           path: OPEN_CHAT_ROUTE,
@@ -395,11 +393,6 @@ const router = createBrowserRouter(
           path: COMPANIES_ROUTE,
           element: <Companies />,
           ...routeTitle('Companies'),
-        },
-        {
-          path: ADVENT_SIGNUPS_ROUTE,
-          element: <PartnerLandingSignups />,
-          ...routeTitle('Adventsgespräche'),
         },
         {
           path: COMPANY_EDIT_ROUTE,
