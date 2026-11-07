@@ -180,7 +180,7 @@ const Menu = () => {
             to={RANDOM_CALLS_ROUTE}
             active={location.pathname === RANDOM_CALLS_ROUTE}
           >
-            Special Events
+            Random Calls
           </NavigationMenuContentItem>
           {hasOpenChatAccess && (
             <NavigationMenuContentItem

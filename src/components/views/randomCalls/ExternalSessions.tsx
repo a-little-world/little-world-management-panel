@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../atoms/Tabs';
 import ExternalSessionSchedule from './ExternalSessionSchedule';
-import SpecialEventRegistrations from './SpecialEventRegistrations';
+import ExternalSessionRegistrations from './ExternalSessionRegistrations';
 
 function ExternalSessions() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -30,7 +30,7 @@ function ExternalSessions() {
       </TabsList>
       {section === 'registrations' && (
         <TabsContent value="registrations">
-          <SpecialEventRegistrations />
+          <ExternalSessionRegistrations />
         </TabsContent>
       )}
       {section === 'scheduled' && (

@@ -96,7 +96,7 @@ const columns: ColumnDef<PartnerEventRegistration, any>[] = [
   }),
 ];
 
-function SpecialEventRegistrations() {
+function ExternalSessionRegistrations() {
   const [searchParams, setSearchParams] = useSearchParams();
   const appointmentParam = searchParams.get('appointment_starts_at') || '';
 
@@ -189,4 +189,4 @@ function SpecialEventRegistrations() {
   );
 }
 
-export default SpecialEventRegistrations;
+export default ExternalSessionRegistrations;

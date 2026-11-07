@@ -307,7 +307,7 @@ const router = createBrowserRouter(
         {
           path: RANDOM_CALLS_ROUTE,
           element: <RandomCalls />,
-          ...routeTitle('Special Events'),
+          ...routeTitle('Random Calls'),
         },
         {
           path: OPEN_CHAT_ROUTE,
