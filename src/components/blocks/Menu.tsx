@@ -155,10 +155,7 @@ const Menu = () => {
           >
             Matching
           </NavigationMenuContentItem>
-          <NavigationMenuContentItem
-            to={USERS_HUB_ROUTE}
-            active={isUsersRoute}
-          >
+          <NavigationMenuContentItem to={USERS_HUB_ROUTE} active={isUsersRoute}>
             Users
           </NavigationMenuContentItem>
           <NavigationMenuContentItem
