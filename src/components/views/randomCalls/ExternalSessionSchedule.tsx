@@ -24,6 +24,7 @@ import {
   ADMIN_EXTERNAL_SESSIONS_ENDPOINT,
   createExternalSession,
   ExternalSession,
+  externalSessionLandingUrl,
   fetchExternalSessions,
   updateExternalSession,
 } from '../../../api/partnerEventRegistrations';
@@ -33,6 +34,7 @@ import {
   formatBerlinDateTime,
   parseIsoToDate,
 } from '../../../helpers/berlinDates';
+import { CopyableLink, copyResultToast } from '../../atoms/CopyableLink';
 import {
   Description,
   ListPanel,
@@ -49,10 +51,6 @@ import ExternalSessionForm, {
 
 const LoadingWrap = styled.div`
   padding: ${({ theme }) => theme.spacing.large};
-`;
-
-const LandingPath = styled.code`
-  font-size: 0.8125rem;
 `;
 
 const columnHelper = createColumnHelper<ExternalSession>();
@@ -172,8 +170,8 @@ function ExternalSessionSchedule() {
         id: Date.now(),
         headline: 'Success',
         title: editing
-          ? `Updated ${saved.name}. Landing: ${saved.landing_path}`
-          : `Created ${saved.name}. Landing: ${saved.landing_path}`,
+          ? `Updated ${saved.name}. Landing: ${externalSessionLandingUrl(saved.landing_path)}`
+          : `Created ${saved.name}. Landing: ${externalSessionLandingUrl(saved.landing_path)}`,
       });
       setFormOpen(false);
       setEditing(null);
@@ -237,7 +235,13 @@ function ExternalSessionSchedule() {
       }),
       columnHelper.accessor('landing_path', {
         header: 'Landing',
-        cell: ({ getValue }) => <LandingPath>{getValue()}</LandingPath>,
+        cell: ({ row, getValue }) => (
+          <CopyableLink
+            url={externalSessionLandingUrl(getValue())}
+            label={row.original.name}
+            onCopied={result => setToast(copyResultToast(result))}
+          />
+        ),
       }),
       columnHelper.accessor('registration_count', {
         header: 'Registrations',

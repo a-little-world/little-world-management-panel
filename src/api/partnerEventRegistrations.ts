@@ -3,8 +3,7 @@ import type { CompanyRef } from './index';
 
 export const ADMIN_PARTNER_EVENT_REGISTRATIONS_ENDPOINT =
   '/api/admin/partner-event-registrations/';
-export const ADMIN_EXTERNAL_SESSIONS_ENDPOINT =
-  '/api/admin/external-sessions/';
+export const ADMIN_EXTERNAL_SESSIONS_ENDPOINT = '/api/admin/external-sessions/';
 
 export interface PartnerEventRegistration {
   id: number;
@@ -49,6 +48,10 @@ export interface ExternalSessionWrite {
   start_time: string;
   end_time: string;
 }
+
+/** Landing pages are served by the main frontend on the same origin. */
+export const externalSessionLandingUrl = (landingPath: string) =>
+  `${window.location.origin}${landingPath}`;
 
 export const fetchPartnerEventRegistrations = (queryString = '') => {
   const suffix = queryString ? `?${queryString}` : '';
