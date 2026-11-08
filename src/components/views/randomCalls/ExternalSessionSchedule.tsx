@@ -3,26 +3,19 @@ import {
   ButtonAppearance,
   ButtonSizes,
   ButtonVariations,
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardSizes,
   Loading,
   LoadingSizes,
   Modal,
   PencilIcon,
-  Select,
   StatusMessage,
   StatusTypes,
   Text,
-  TextInput,
   TextTypes,
   Toast,
 } from '@a-little-world/little-world-design-system';
 import { ColumnDef, createColumnHelper } from '@tanstack/react-table';
 import { parseISO } from 'date-fns';
-import React, { FormEvent, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import styled, { useTheme } from 'styled-components';
 import useSWR, { mutate } from 'swr';
 
@@ -40,13 +33,6 @@ import {
   formatBerlinDateTime,
   parseIsoToDate,
 } from '../../../helpers/berlinDates';
-import { DatePicker } from '../../atoms/DatePicker';
-import {
-  DatePickerContainer,
-  FormField,
-  FormLabel,
-  FormStack,
-} from '../../atoms/FormLayout';
 import {
   Description,
   ListPanel,
@@ -56,9 +42,10 @@ import {
 } from '../../atoms/PageLayout';
 import { DataTable } from '../../blocks/DataTable';
 import { usePageHeader } from '../../blocks/LayoutHeaderContext';
-import { TimeInput } from './RandomCalls.styles';
-
-const NO_COMPANY = 'NONE';
+import ExternalSessionForm, {
+  ExternalSessionFormValues,
+  NO_COMPANY,
+} from './ExternalSessionForm';
 
 const LoadingWrap = styled.div`
   padding: ${({ theme }) => theme.spacing.large};
@@ -92,15 +79,7 @@ const toBerlinIso = (date: Date, time: string) => {
   );
 };
 
-type SessionFormState = {
-  name: string;
-  companyId: string;
-  startDate: Date | null;
-  startTime: string;
-  endTime: string;
-};
-
-const emptyForm = (): SessionFormState => {
+const emptyForm = (): ExternalSessionFormValues => {
   const now = new Date();
   const end = new Date(now);
   end.setMinutes(end.getMinutes() + 30);
@@ -113,9 +92,12 @@ const emptyForm = (): SessionFormState => {
   };
 };
 
-const formFromSession = (session: ExternalSession): SessionFormState => ({
+const formFromSession = (
+  session: ExternalSession,
+): ExternalSessionFormValues => ({
   name: session.name,
-  companyId: session.company_id == null ? NO_COMPANY : String(session.company_id),
+  companyId:
+    session.company_id == null ? NO_COMPANY : String(session.company_id),
   startDate: parseIsoToDate(session.start_time),
   startTime: timeFromIso(session.start_time),
   endTime: timeFromIso(session.end_time),
@@ -131,7 +113,8 @@ function ExternalSessionSchedule() {
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<ExternalSession | null>(null);
-  const [form, setForm] = useState<SessionFormState>(emptyForm);
+  const [formInitialValues, setFormInitialValues] =
+    useState<ExternalSessionFormValues>(emptyForm);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [toast, setToast] = useState<{
@@ -140,27 +123,16 @@ function ExternalSessionSchedule() {
     title: string;
   } | null>(null);
 
-  const companyOptions = useMemo(
-    () => [
-      { value: NO_COMPANY, label: 'No company (generic landing)' },
-      ...(data?.companies ?? []).map(company => ({
-        value: String(company.id),
-        label: `${company.name} (${company.slug})`,
-      })),
-    ],
-    [data?.companies],
-  );
-
   const openCreate = () => {
     setEditing(null);
-    setForm(emptyForm());
+    setFormInitialValues(emptyForm());
     setFormError(null);
     setFormOpen(true);
   };
 
   const openEdit = (session: ExternalSession) => {
     setEditing(session);
-    setForm(formFromSession(session));
+    setFormInitialValues(formFromSession(session));
     setFormError(null);
     setFormOpen(true);
   };
@@ -171,8 +143,7 @@ function ExternalSessionSchedule() {
     setEditing(null);
   };
 
-  const handleSubmit = async (formEvent: FormEvent) => {
-    formEvent.preventDefault();
+  const handleSave = async (form: ExternalSessionFormValues) => {
     if (!form.startDate) {
       setFormError('Select a date.');
       return;
@@ -188,7 +159,8 @@ function ExternalSessionSchedule() {
     try {
       const body = {
         name: form.name,
-        company_id: form.companyId === NO_COMPANY ? null : Number(form.companyId),
+        company_id:
+          form.companyId === NO_COMPANY ? null : Number(form.companyId),
         start_time: start,
         end_time: end,
       };
@@ -299,8 +271,8 @@ function ExternalSessionSchedule() {
       <PageHeader>
         <Description>
           One-off random-call lobbies used for Adventsgespräche landings. The
-          lobby name becomes the URL slug when there is no company. Times are
-          in Berlin.
+          lobby name becomes the URL slug when there is no company. Times are in
+          Berlin.
         </Description>
       </PageHeader>
 
@@ -323,105 +295,15 @@ function ExternalSessionSchedule() {
       </ListPanel>
 
       <Modal open={formOpen} onClose={closeForm}>
-        <Card width={CardSizes.Medium}>
-          <form onSubmit={handleSubmit}>
-            <CardHeader>
-              {editing ? 'Edit external session' : 'Create external session'}
-            </CardHeader>
-            <CardContent align="flex-start" marginBottom={theme.spacing.large}>
-              <FormStack>
-                {formError && (
-                  <StatusMessage type={StatusTypes.Error} visible>
-                    {formError}
-                  </StatusMessage>
-                )}
-                <TextInput
-                  label="Lobby name"
-                  value={form.name}
-                  onChange={event =>
-                    setForm(current => ({
-                      ...current,
-                      name: event.target.value,
-                    }))
-                  }
-                  placeholder="capgemini"
-                  required
-                />
-                <Select
-                  label="Company"
-                  value={form.companyId}
-                  options={companyOptions}
-                  onValueChange={value =>
-                    setForm(current => ({ ...current, companyId: value }))
-                  }
-                  cannotError
-                />
-                <DatePicker
-                  label="Session date"
-                  date={form.startDate}
-                  setDate={date =>
-                    setForm(current => ({ ...current, startDate: date }))
-                  }
-                  disablePastDays={!editing}
-                  inModal
-                />
-                <DatePickerContainer>
-                  <FormField>
-                    <FormLabel htmlFor="external-session-start">
-                      Start time
-                    </FormLabel>
-                    <TimeInput
-                      id="external-session-start"
-                      value={form.startTime}
-                      onChange={event =>
-                        setForm(current => ({
-                          ...current,
-                          startTime: event.target.value,
-                        }))
-                      }
-                      required
-                    />
-                  </FormField>
-                  <FormField>
-                    <FormLabel htmlFor="external-session-end">
-                      End time
-                    </FormLabel>
-                    <TimeInput
-                      id="external-session-end"
-                      value={form.endTime}
-                      onChange={event =>
-                        setForm(current => ({
-                          ...current,
-                          endTime: event.target.value,
-                        }))
-                      }
-                      required
-                    />
-                  </FormField>
-                </DatePickerContainer>
-              </FormStack>
-            </CardContent>
-            <CardFooter align="space-between">
-              <Button
-                appearance={ButtonAppearance.Secondary}
-                size={ButtonSizes.Small}
-                onClick={closeForm}
-                disabled={saving}
-                type="button"
-              >
-                Cancel
-              </Button>
-              <Button
-                appearance={ButtonAppearance.Primary}
-                size={ButtonSizes.Small}
-                disabled={saving}
-                type="submit"
-              >
-                {saving ? 'Saving…' : editing ? 'Save' : 'Create session'}
-              </Button>
-            </CardFooter>
-          </form>
-        </Card>
+        <ExternalSessionForm
+          editingSession={editing}
+          companies={data?.companies ?? []}
+          saving={saving}
+          formError={formError}
+          initialValues={formInitialValues}
+          onCancel={closeForm}
+          onSubmit={handleSave}
+        />
       </Modal>
 
       {toast && (
