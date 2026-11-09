@@ -87,6 +87,8 @@ const emptyForm = (): ExternalSessionFormValues => {
     startDate: now,
     startTime: timeValue(now),
     endTime: timeValue(end),
+    enforceEmailDomain: false,
+    sendRegistrationConfirmation: true,
   };
 };
 
@@ -99,6 +101,8 @@ const formFromSession = (
   startDate: parseIsoToDate(session.start_time),
   startTime: timeFromIso(session.start_time),
   endTime: timeFromIso(session.end_time),
+  enforceEmailDomain: session.enforce_email_domain,
+  sendRegistrationConfirmation: session.send_registration_confirmation,
 });
 
 function ExternalSessionSchedule() {
@@ -161,6 +165,8 @@ function ExternalSessionSchedule() {
           form.companyId === NO_COMPANY ? null : Number(form.companyId),
         start_time: start,
         end_time: end,
+        enforce_email_domain: form.enforceEmailDomain,
+        send_registration_confirmation: form.sendRegistrationConfirmation,
       };
       const saved = editing
         ? await updateExternalSession(editing.uuid, body)

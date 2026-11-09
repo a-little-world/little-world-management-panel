@@ -10,6 +10,7 @@ import {
   Select,
   StatusMessage,
   StatusTypes,
+  Switch,
   TextInput,
 } from '@a-little-world/little-world-design-system';
 import React, { useEffect, useMemo } from 'react';
@@ -38,6 +39,8 @@ export type ExternalSessionFormValues = {
   startDate: Date | null;
   startTime: string;
   endTime: string;
+  enforceEmailDomain: boolean;
+  sendRegistrationConfirmation: boolean;
 };
 
 type ExternalSessionFormProps = {
@@ -122,6 +125,34 @@ function ExternalSessionForm({
                 onValueChange={onChange}
                 cannotError
                 inModal
+              />
+            )}
+          />
+          <Controller
+            name="sendRegistrationConfirmation"
+            control={control}
+            render={({ field: { value, onChange } }) => (
+              <Switch
+                label="Send confirmation email"
+                labelInline
+                checked={value}
+                onCheckedChange={onChange}
+                cannotError
+                disabled={saving}
+              />
+            )}
+          />
+          <Controller
+            name="enforceEmailDomain"
+            control={control}
+            render={({ field: { value, onChange } }) => (
+              <Switch
+                label="Require company email domain"
+                labelInline
+                checked={value}
+                onCheckedChange={onChange}
+                cannotError
+                disabled={saving}
               />
             )}
           />

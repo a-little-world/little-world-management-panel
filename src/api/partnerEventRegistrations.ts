@@ -33,6 +33,8 @@ export interface ExternalSession {
   company_id: number | null;
   start_time: string;
   end_time: string;
+  enforce_email_domain: boolean;
+  send_registration_confirmation: boolean;
   landing_path: string;
   registration_count: number;
 }
@@ -47,6 +49,8 @@ export interface ExternalSessionWrite {
   company_id: number | null;
   start_time: string;
   end_time: string;
+  enforce_email_domain: boolean;
+  send_registration_confirmation: boolean;
 }
 
 /** Landing pages are served by the main frontend on the same origin. */
