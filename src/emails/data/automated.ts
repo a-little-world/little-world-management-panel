@@ -1017,6 +1017,98 @@ const automatedEmails = {
       },
     ],
   },
+  'automatic-emails-m061': {
+    id: 'automatic-emails-m061',
+    label: 'M061 - Completed Match Volunteer Reactivation',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['automatic-emails-m061.preview'],
+    subject: automatedText['automatic-emails-m061.subject'],
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: automatedText['automatic-emails-m061.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-m061.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-m061.block-3'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-m061.block-4'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-m061.block-5'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-m061.block-6'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['automatic-emails-m061.block-7'],
+        href: BackendVars.activateSearchingUrl,
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-m061.block-8'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-m061.block-9'],
+      },
+    ],
+  },
+  'automatic-emails-m071': {
+    id: 'automatic-emails-m071',
+    label: 'M071 - Free Play Second Match Invite',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['automatic-emails-m071.preview'],
+    subject: automatedText['automatic-emails-m071.subject'],
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: automatedText['automatic-emails-m071.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-m071.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-m071.block-3'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-m071.block-4'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-m071.block-5'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-m071.block-6'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['automatic-emails-m071.block-7'],
+        href: BackendVars.activateSearchingUrl,
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-m071.block-8'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-m071.block-9'],
+      },
+    ],
+  },
   'automatic-emails-native-app-beta-android': {
     id: 'automatic-emails-native-app-beta-android',
     label: 'Native App Beta Invite (Android)',
@@ -2299,7 +2391,7 @@ const automatedEmails = {
   },
   'automatic-emails-u201': {
     id: 'automatic-emails-u201',
-    label: 'U201 - Re-engage Volunteer',
+    label: 'U201 - Happy Inactive Volunteer',
     category_id: EmailCategories.Automated,
     preview: automatedText['automatic-emails-u201.preview'],
     subject: automatedText['automatic-emails-u201.subject'],
@@ -2327,11 +2419,112 @@ const automatedEmails = {
       {
         type: ContentTypes.Button,
         text: automatedText['automatic-emails-u201.block-6'],
-        href: BackendVars.loginUrl,
+        href: BackendVars.activateSearchingUrl,
       },
       {
         type: ContentTypes.Paragraph,
         text: automatedText['automatic-emails-u201.block-7'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u201.block-8'],
+      },
+    ],
+  },
+  'automatic-emails-u202': {
+    id: 'automatic-emails-u202',
+    label: 'U202 - Happy Inactive Volunteer Follow-up',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['automatic-emails-u202.preview'],
+    subject: automatedText['automatic-emails-u202.subject'],
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: automatedText['automatic-emails-u202.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u202.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u202.block-3'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u202.block-4'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u202.block-5'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u202.block-6'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['automatic-emails-u202.block-7'],
+        href: BackendVars.activateSearchingUrl,
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u202.block-8'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u202.block-9'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['automatic-emails-u202.block-10'],
+        href: BackendVars.randomCallsUrl,
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u202.block-11'],
+      },
+    ],
+  },
+  'automatic-emails-u203': {
+    id: 'automatic-emails-u203',
+    label: 'U203 - Happy Inactive Volunteer Last Chance',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['automatic-emails-u203.preview'],
+    subject: automatedText['automatic-emails-u203.subject'],
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: automatedText['automatic-emails-u203.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u203.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u203.block-3'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u203.block-4'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u203.block-5'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['automatic-emails-u203.block-6'],
+        href: BackendVars.randomCallsUrl,
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u203.block-7'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-u203.block-8'],
       },
     ],
   },
