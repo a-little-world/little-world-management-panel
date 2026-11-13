@@ -940,6 +940,30 @@ export const removeMatch = async ({
   }
 };
 
+export const reactivateMatch = async ({
+  id,
+  reason,
+  onError,
+  onSuccess,
+}: {
+  id: string;
+  reason: string;
+  onError: (error: any) => void;
+  onSuccess: (result: any) => void;
+}) => {
+  try {
+    const result = await apiFetch(`/api/matching/matches/${id}/reactivate/`, {
+      method: 'POST',
+      body: {
+        reason,
+      },
+    });
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
+  }
+};
+
 export const matchUsers = ({ data, onError, onSuccess }) =>
   fetch(`/api/matching/make_match`, {
     method: 'POST',

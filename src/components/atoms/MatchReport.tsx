@@ -22,6 +22,13 @@ const Reporter = styled(Text)`
   text-align: left;
 `;
 
+// The latest close, not the first: a match that was reactivated and closed again has
+// several entries. `reactivated` entries record the reopening, not a close.
+const getClosingEntry = (reportUnmatch: any[] | undefined) =>
+  [...(reportUnmatch ?? [])]
+    .reverse()
+    .find(entry => entry?.kind && entry.kind !== 'reactivated');
+
 export const getMatchReportProps = (
   match: any,
   isProposed: boolean,
@@ -34,7 +41,7 @@ export const getMatchReportProps = (
   showUnmatcher: boolean;
 } => {
   const reportUnmatch =
-    match.report_unmatch?.[0] ||
+    getClosingEntry(match.report_unmatch) ||
     (match.partner?.isDeleted
       ? { kind: 'user_deleted', reason: 'User account was deleted' }
       : {});

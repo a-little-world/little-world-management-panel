@@ -13,6 +13,7 @@ import styled from 'styled-components';
 
 import { setMatchCompletedOffplattform } from '../../../api';
 import { MATCH_STATUS } from '../../../constants';
+import ConfirmReactivateModal from './ConfirmReactivateModal';
 import ConfirmUnmatchModal from './ConfirmUnmatchModal';
 
 const StyledStatusMessage = styled(StatusMessage)`
@@ -26,7 +27,7 @@ const ActionsStack = styled.div`
   gap: ${({ theme }) => theme.spacing.medium};
 `;
 
-const UnmatchButton = styled(Button)`
+const ActionButton = styled(Button)`
   width: 320px;
   max-width: 100%;
 `;
@@ -40,6 +41,7 @@ const MatchActions = ({
 }) => {
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [reactivateOpen, setReactivateOpen] = useState(false);
   const isProposed = match.status === MATCH_STATUS.proposed;
 
   const {
@@ -111,7 +113,7 @@ const MatchActions = ({
         </Button>
       </form>
       {!isProposed && match.active && (
-        <UnmatchButton
+        <ActionButton
           appearance={ButtonAppearance.Secondary}
           size={ButtonSizes.Large}
           color={'#faf4f4'}
@@ -121,8 +123,24 @@ const MatchActions = ({
           }}
         >
           Unmatch
-        </UnmatchButton>
+        </ActionButton>
       )}
+      {!isProposed && !match.active && (
+        <ActionButton
+          size={ButtonSizes.Large}
+          onClick={() => setReactivateOpen(true)}
+        >
+          Reactivate match
+        </ActionButton>
+      )}
+      <ConfirmReactivateModal
+        dialogOpen={reactivateOpen}
+        onClose={() => setReactivateOpen(false)}
+        onMatchUpdate={onUpdate}
+        matchId={match.uuid}
+        user1Name={match.user1.profile.first_name}
+        user2Name={match.user2.profile.first_name}
+      />
       <ConfirmUnmatchModal
         dialogOpen={dialogOpen}
         onClose={() => setDialogOpen(false)}
