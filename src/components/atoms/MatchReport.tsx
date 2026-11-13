@@ -1,4 +1,5 @@
 import { Text } from '@a-little-world/little-world-design-system';
+import { isValid } from 'date-fns';
 import { capitalize } from 'lodash';
 import React from 'react';
 import styled from 'styled-components';
@@ -89,11 +90,16 @@ const MatchReport: React.FC<MatchReportProps> = ({
   unmatcherType,
   showUnmatcher,
 }) => {
+  // The time comes from free-form JSON history. An unparseable value (old rows, censored
+  // dev data) would make date-fns throw and take the whole page down, so it is dropped.
+  const parsedDate = date ? new Date(date) : null;
+  const hasValidDate = !!parsedDate && isValid(parsedDate);
+
   return (
     <MatchReportContainer className={className}>
       <Text bold center>{`${inactiveCause}${
-        date
-          ? ` on ${formatDate(new Date(date), 'dd.LL.yyyy', LANGUAGES.en)}`
+        hasValidDate
+          ? ` on ${formatDate(parsedDate, 'dd.LL.yyyy', LANGUAGES.en)}`
           : ''
       }`}</Text>
       {reason && <Reason>{`<bold>Reason</bold>: ${reason}`}</Reason>}
