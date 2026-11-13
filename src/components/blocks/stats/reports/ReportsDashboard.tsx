@@ -16,7 +16,7 @@ export function UserLossStatisticDownloadBlock() {
   return (
     <ReportDownloadSection
       title="User Sign-Up Loss Statistics"
-      description="This data is cleaned and buckets should be 'distinct' there is a duplication check performed by the backend, found duplicates would be outputted in 'intersecting_ids_lists' some lists maybe be ignored like 'all' they are also listed."
+      description="The signup funnel for users who joined in the date range: how many reached each step, and how many stopped at the step before."
       apiEndpoint="/api/matching/users/statistics/user_signup_loss/"
       downloadFilename="user_signup_loss.json"
       downloadMimeType="application/json"
