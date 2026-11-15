@@ -21,6 +21,7 @@ import MatchActions from '../blocks/match/MatchActions';
 import MatchCalls from '../blocks/match/MatchCalls';
 import MatchCard from '../blocks/match/MatchCard';
 import MatchJourney from '../blocks/match/MatchJourney';
+import MatchLog from '../blocks/match/MatchLog';
 import UserNotes from '../blocks/user/UserNotes';
 
 const HeaderTitleGroup = styled.div`
@@ -41,6 +42,7 @@ const MATCH_TABS = [
   { key: 'journey', label: 'Journey' },
   { key: 'calls', label: 'Calls' },
   { key: 'notes', label: 'Notes' },
+  { key: 'log', label: 'Log' },
   { key: 'actions', label: 'Actions' },
 ];
 
@@ -51,7 +53,7 @@ const MatchPanelContent = ({
 }: {
   tab: string;
   match: any;
-  onUpdate: () => void;
+  onUpdate: () => void | Promise<unknown>;
 }) => {
   if (tab === 'overview') return <MatchCard match={match} />;
 
@@ -63,6 +65,8 @@ const MatchPanelContent = ({
     return (
       <UserNotes notes={match?.notes} modelId={match.uuid} model="match" />
     );
+
+  if (tab === 'log') return <MatchLog events={match?.match_log} />;
 
   if (tab === 'actions')
     return <MatchActions match={match} onUpdate={onUpdate} />;
