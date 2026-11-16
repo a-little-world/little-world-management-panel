@@ -9,9 +9,10 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import styled, { useTheme } from 'styled-components';
 import useSWR from 'swr';
 
-import type { MatchingPanelUser } from '../../../api';
+import type { MatchingPanelUser, PanelCapability } from '../../../api';
 import { fetchSupportTasks } from '../../../api/supportTasks';
 import { hasManagementPermission } from '../../../helpers/managementPermissions';
+import { usePanelCapabilities } from '../../../helpers/panelCapabilities';
 import { MATCHING_ROUTE } from '../../../router/routes';
 import { dataFetcher, useGlobalState } from '../../../store';
 import Badge from '../../atoms/Badge';
@@ -30,14 +31,21 @@ import UserNotes from './UserNotes';
 import UserStats from './UserStats';
 import UserSupportTasks from './UserSupportTasks';
 
-const USER_TABS = [
+type UserTab = {
+  key: string;
+  label: string;
+  title?: string;
+  capability?: PanelCapability;
+};
+
+const USER_TABS: UserTab[] = [
   { key: 'profile', label: 'Profile' },
   { key: 'chat', label: 'Chat', title: 'User Support Chat' },
   { key: 'emails', label: 'Emails' },
   { key: 'sms', label: 'SMS' },
   { key: 'calls', label: 'Calls' },
   { key: 'matches', label: 'Matches' },
-  { key: 'support_tasks', label: 'Support Tasks' },
+  { key: 'support_tasks', label: 'Support Tasks', capability: 'support_tasks' },
   { key: 'stats', label: 'Stats' },
   { key: 'notes', label: 'Notes' },
   { key: 'actions', label: 'Actions' },
@@ -65,6 +73,7 @@ const UserPanelContent = ({
   activeSupportReplyTask,
   onSupportReplySent,
   canSendSupportReplies,
+  canEditUsers,
 }: {
   tab: string;
   user: any;
@@ -73,23 +82,27 @@ const UserPanelContent = ({
   activeSupportReplyTask?: any;
   onSupportReplySent?: (message: string) => void;
   canSendSupportReplies?: boolean;
+  canEditUsers?: boolean;
 }) => {
   if (tab === 'profile')
     return (
       <UserDetailsCard user={user} appointment={appointment} partial={false} />
     );
 
-  if (tab === 'chat')
+  if (tab === 'chat') {
+    const canReplyAsSupport =
+      Boolean(activeSupportReplyTask) || Boolean(canSendSupportReplies);
     return (
       <UserChat
         user={user}
         activeSupportReplyTask={activeSupportReplyTask}
-        sendViaSupportReplyApi={
-          Boolean(activeSupportReplyTask) || Boolean(canSendSupportReplies)
-        }
+        sendViaSupportReplyApi={canReplyAsSupport}
+        // A viewer with only `users` sees the chat read-only.
+        hideComposer={!canReplyAsSupport && !canEditUsers}
         onSupportReplySent={onSupportReplySent}
       />
     );
+  }
 
   if (tab === 'emails') return <UserEmails user={user} />;
 
@@ -121,6 +134,10 @@ const UserPanel = () => {
   let [searchParams, setSearchParams] = useSearchParams();
 
   const navigate = useNavigate();
+  const can = usePanelCapabilities();
+  const visibleTabs = USER_TABS.filter(
+    tab => !tab.capability || can(tab.capability),
+  );
 
   const {
     data: user,
@@ -145,19 +162,25 @@ const UserPanel = () => {
     navigate(MATCHING_ROUTE);
   };
 
-  const selectedTabKey = searchParams.get('tab') ?? USER_TABS[0].key;
   const selectedTab =
-    USER_TABS.find(tab => tab.key === selectedTabKey) ?? USER_TABS[0];
+    visibleTabs.find(tab => tab.key === searchParams.get('tab')) ??
+    visibleTabs[0];
+  const selectedTabKey = selectedTab.key;
   const userName = user
     ? `${user.profile.first_name} ${user.profile.second_name}`
     : 'User';
-  const canSendSupportReplies = hasManagementPermission(
-    panelUser as MatchingPanelUser | undefined,
-    MANAGEMENT_PERMISSION_CAN_SEND_SUPPORT_MESSAGE_REPLIES,
-  );
+  // Replying as support needs the support_tasks capability on top of the
+  // existing reply permission.
+  const canSendSupportReplies =
+    can('support_tasks') &&
+    hasManagementPermission(
+      panelUser as MatchingPanelUser | undefined,
+      MANAGEMENT_PERMISSION_CAN_SEND_SUPPORT_MESSAGE_REPLIES,
+    );
+  const canEditUsers = can('edit_users');
 
   const shouldLoadActiveReplyTask =
-    selectedTabKey === 'chat' && Boolean(user?.id);
+    selectedTabKey === 'chat' && Boolean(user?.id) && can('support_tasks');
   const { data: activeReplyTasksResponse } = useSWR(
     shouldLoadActiveReplyTask ? ['active_support_reply_task', user.id] : null,
     () =>
@@ -202,17 +225,18 @@ const UserPanel = () => {
   usePageHeader({
     title: `${userName} - ${selectedTab.title ?? selectedTab.label}`,
     showMenu: true,
-    actions: user ? (
-      <HeaderActionButton
-        backgroundColor={theme.color.gradient.blue10}
-        size={ButtonSizes.Medium}
-        appearance={ButtonAppearance.Secondary}
-        onClick={onAddToMatching}
-      >
-        <PlusIcon label="select user" width={16} height={16} />
-        Add to matching
-      </HeaderActionButton>
-    ) : undefined,
+    actions:
+      user && can('scores') ? (
+        <HeaderActionButton
+          backgroundColor={theme.color.gradient.blue10}
+          size={ButtonSizes.Medium}
+          appearance={ButtonAppearance.Secondary}
+          onClick={onAddToMatching}
+        >
+          <PlusIcon label="select user" width={16} height={16} />
+          Add to matching
+        </HeaderActionButton>
+      ) : undefined,
   });
 
   useEffect(() => {
@@ -230,8 +254,14 @@ const UserPanel = () => {
 
   return (
     <Tabs defaultValue={selectedTabKey}>
-      <TabsList className="grid w-full grid-cols-10">
-        {USER_TABS.map(tab => (
+      <TabsList
+        className={`grid w-full ${
+          visibleTabs.length === USER_TABS.length
+            ? 'grid-cols-10'
+            : 'grid-cols-9'
+        }`}
+      >
+        {visibleTabs.map(tab => (
           <TabsTrigger
             key={'header' + tab.key}
             value={tab.key}
@@ -248,7 +278,7 @@ const UserPanel = () => {
           </TabsTrigger>
         ))}
       </TabsList>
-      {USER_TABS.map(tab => (
+      {visibleTabs.map(tab => (
         <TabsContent key={'content' + tab.key} value={tab.key}>
           <Section fullHeight={tab.key === 'chat'}>
             <SectionContent>
@@ -260,12 +290,13 @@ const UserPanel = () => {
                 activeSupportReplyTask={activeSupportReplyTask}
                 onSupportReplySent={onSupportReplySent}
                 canSendSupportReplies={canSendSupportReplies}
+                canEditUsers={canEditUsers}
               />
             </SectionContent>
           </Section>
         </TabsContent>
       ))}
-      {searchParams.get('tab') !== USER_TABS[1].key && <SelectedUsersSheet />}
+      {selectedTabKey !== 'chat' && <SelectedUsersSheet />}
     </Tabs>
   );
 };

@@ -253,7 +253,7 @@ const PRIORITY_OPTIONS = [
 | Table page with dropdowns      | `src/components/views/Matches.tsx`                                                  |
 | Support task table page        | `src/components/views/SupportTasksOverview.tsx`                                     |
 | Detail / single-record page    | `src/components/views/SupportTaskDetail.tsx`                                        |
-| Layout / navigation            | `src/components/blocks/Layout.tsx`, `Header.tsx`, `Menu.tsx`                        |
+| Layout / navigation            | `src/components/blocks/Layout.tsx`, `Header.tsx`, `Menu.tsx`, `src/router/panelNavigation.tsx` |
 | Filter modal                   | `src/components/blocks/Filters.tsx`, `src/components/blocks/SupportTaskFilters.tsx` |
 | Toolbar with search/pagination | `src/components/blocks/FiltersToolbar.tsx`                                          |
 | Data table                     | `src/components/blocks/DataTable.tsx`                                               |
@@ -313,7 +313,7 @@ Filter options (priority, action type, etc.) must be derived from the shared con
 
 1. Add constants to `src/routes.ts`: a `ROUTE_NAME` constant and a `getRouteNameRoute(id)` helper for parameterised routes.
 2. Register in `src/App.tsx` under the `<Root withLayout />` parent.
-3. Add a nav entry in `src/components/blocks/Menu.tsx`.
+3. Add a top-level entry to `src/router/panelNavigation.tsx` (it renders both the Home tiles and the Menu), or, for a page inside a hub, a tile in that hub's `*_HUB_TILES` in the same file (the hub's capabilities are derived from its tiles). The type-check fails if a page capability is reachable from neither.
 
 ---
 

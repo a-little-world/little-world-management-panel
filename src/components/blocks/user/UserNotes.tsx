@@ -4,6 +4,7 @@ import {
   StatusMessage,
   StatusTypes,
   TextArea,
+  Text,
   TextAreaSize,
 } from '@a-little-world/little-world-design-system';
 import React, { useEffect, useState } from 'react';
@@ -11,6 +12,7 @@ import { useForm } from 'react-hook-form';
 import styled from 'styled-components';
 
 import { updateMatchNotes, updateUserNotes } from '../../../api';
+import { usePanelCapability } from '../../../helpers/panelCapabilities';
 import { registerInput } from '../../../store';
 
 const ButtonsContainer = styled.div`
@@ -24,12 +26,19 @@ const ButtonsContainer = styled.div`
   }
 `;
 
+const ReadOnlyNotes = styled(Text)`
+  white-space: pre-wrap;
+  padding: ${({ theme }) => theme.spacing.small} 0;
+`;
+
 const NotesUseCases = {
   user: {
+    editCapability: 'edit_users' as const,
     placeholder: 'Write your notes for this user...',
     updateNotes: updateUserNotes,
   },
   match: {
+    editCapability: 'edit_matches' as const,
     placeholder: 'Write your notes for this match here...',
     updateNotes: updateMatchNotes,
   },
@@ -54,6 +63,7 @@ const Notes = ({ model, notes, modelId }: NotesProps) => {
   const notesVal = watch('notes');
   const displayStatusMessage = saved || !!errors?.root?.serverError;
   const useCase = NotesUseCases[model];
+  const canEdit = usePanelCapability(useCase.editCapability);
 
   const handleSave = ({ notes }: { notes: string }) => {
     useCase.updateNotes({
@@ -70,6 +80,10 @@ const Notes = ({ model, notes, modelId }: NotesProps) => {
   useEffect(() => {
     setSaved(false);
   }, [notesVal]);
+
+  if (!canEdit) {
+    return <ReadOnlyNotes tag="p">{notes || 'No notes.'}</ReadOnlyNotes>;
+  }
 
   return (
     <form onSubmit={handleSubmit(handleSave)}>

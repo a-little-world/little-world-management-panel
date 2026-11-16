@@ -23,6 +23,7 @@ import {
   formatTimeDistance,
 } from '../../../helpers/date';
 import { hasManagementPermission } from '../../../helpers/managementPermissions';
+import { usePanelCapabilities } from '../../../helpers/panelCapabilities';
 import { MATCHING_ROUTE } from '../../../router/routes';
 import { useGlobalState } from '../../../store';
 import DataField from '../../atoms/DataField';
@@ -68,7 +69,7 @@ interface UserProfile {
   first_name: string;
   second_name: string;
   country_of_residence?: string | null;
-  phone_mobile: string;
+  phone_mobile: string | null;
   target_group: string;
   target_groups?: string[];
   partner_gender: string;
@@ -108,7 +109,7 @@ interface User {
   id: string;
   uuid?: string;
   hash?: string;
-  email: string;
+  email: string | null;
   date_joined: string;
   last_seen?: string | null;
   profile: UserProfile;
@@ -161,7 +162,8 @@ const UserDetailsFull: React.FC<{
           value={formatDateTime(user.state.searching_state_last_updated, 'en')}
         />
         <DataField title="Id" value={user.id} />
-        <DataField title="Email" value={user.email} />
+        {/* null = hidden by the backend (no personal details permission) */}
+        <DataField title="Email" value={user.email ?? 'Hidden'} />
         <DataField
           title="Company"
           value={
@@ -179,7 +181,11 @@ const UserDetailsFull: React.FC<{
         />
         <DataField
           title="Phone Number"
-          value={`${user.profile.phone_mobile} (Notify via ${user.profile.phone_mobile})`}
+          value={
+            user.profile.phone_mobile === null
+              ? 'Hidden'
+              : `${user.profile.phone_mobile} (Notify via ${user.profile.phone_mobile})`
+          }
         />
         <DataField
           title={isVolunteer ? 'Target Group' : 'Group'}
@@ -267,11 +273,17 @@ export const UserCard: React.FC<UserCardProps> = ({
 }) => {
   const navigate = useNavigate();
   const { addUserToMatching, panelUser } = useGlobalState();
+  const can = usePanelCapabilities();
 
-  const canViewProfile = hasManagementPermission(
-    panelUser as MatchingPanelUser | undefined,
-    MANAGEMENT_PERMISSION_IS_MAIN_SUPPORT_ACCOUNT,
-  );
+  // The app profile shows everything about the user, so it also needs personal details.
+  const canViewProfile =
+    hasManagementPermission(
+      panelUser as MatchingPanelUser | undefined,
+      MANAGEMENT_PERMISSION_IS_MAIN_SUPPORT_ACCOUNT,
+    ) && can('personal_details');
+
+  const canViewUsers = can('users');
+  const canMatch = can('scores');
 
   if (!user) return <div>Undefined User</div>;
 
@@ -454,11 +466,15 @@ export const UserCard: React.FC<UserCardProps> = ({
       </UserInfoContainer>
 
       <ActionContainer $horizontal={horizontal}>
-        <Link to={`/user/${user.id}`}>View profile</Link>
-        <Link to={`/user/${user.id}?tab=chat`} state={{ openTab: 'chat' }}>
-          Open chat
-        </Link>
-        {!horizontal && (
+        {canViewUsers && (
+          <>
+            <Link to={`/user/${user.id}`}>View profile</Link>
+            <Link to={`/user/${user.id}?tab=chat`} state={{ openTab: 'chat' }}>
+              Open chat
+            </Link>
+          </>
+        )}
+        {!horizontal && canMatch && (
           <Button variation={ButtonVariations.Inline} onClick={onAddToMatching}>
             Match
           </Button>

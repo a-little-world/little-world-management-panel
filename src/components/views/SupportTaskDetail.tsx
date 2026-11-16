@@ -43,6 +43,7 @@ import {
 import { BLUE_40, ORANGE_40 } from '../../constants';
 import { resolveAttachmentWidgetText } from '../../helpers/chat';
 import { formatTimeDistance } from '../../helpers/date';
+import { usePanelCapability } from '../../helpers/panelCapabilities';
 import { useTaskPriorityList } from '../../hooks/useTaskPriorities';
 import {
   SUPPORT_TASKS_ROUTE,
@@ -358,6 +359,7 @@ export default function SupportTaskDetail() {
   const id = Number(taskId);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const canViewUsers = usePanelCapability('users');
   const [chatOpen, setChatOpen] = useState(true);
   const [relatedUserOpen, setRelatedUserOpen] = useState(true);
   const [profileDetailsOpen, setProfileDetailsOpen] = useState(true);
@@ -608,9 +610,15 @@ export default function SupportTaskDetail() {
                         user={relatedUser}
                         dimensions={{ width: 28, height: 28 }}
                       />
-                      <ProfileLink to={`/user/${relatedUser.id}`}>
-                        {relatedUser.first_name} {relatedUser.second_name}
-                      </ProfileLink>
+                      {canViewUsers ? (
+                        <ProfileLink to={`/user/${relatedUser.id}`}>
+                          {relatedUser.first_name} {relatedUser.second_name}
+                        </ProfileLink>
+                      ) : (
+                        <Text type={TextTypes.Body6} tag="span">
+                          {relatedUser.first_name} {relatedUser.second_name}
+                        </Text>
+                      )}
                     </UserCell>
                   </MetaField>
                 )}
@@ -954,9 +962,11 @@ export default function SupportTaskDetail() {
                         </Text>
                       </MetaField>
                     </MetaGrid>
-                    <CardProfileLink to={`/user/${relatedUser.id}`}>
-                      Open full profile →
-                    </CardProfileLink>
+                    {canViewUsers && (
+                      <CardProfileLink to={`/user/${relatedUser.id}`}>
+                        Open full profile →
+                      </CardProfileLink>
+                    )}
                   </CardContent>
                 )}
               </Card>

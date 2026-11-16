@@ -19,6 +19,7 @@ import {
 } from '../../api/index';
 import { formatCompanyLabel } from '../../api/companies';
 import { formatDate, formatTimeDistance } from '../../helpers/date';
+import { usePanelCapability } from '../../helpers/panelCapabilities';
 import { useGlobalState, useUserListData } from '../../store';
 import { Button } from '../atoms/Button';
 import MatchesIcons from '../atoms/MatchesIcons';
@@ -322,6 +323,8 @@ type Filters = { [key: string]: string | string[] };
 
 export function Users() {
   const { selectUser } = useGlobalState();
+  const canExport = usePanelCapability('export');
+  const canViewPersonalDetails = usePanelCapability('personal_details');
   let [searchParams, setSearchParams] = useSearchParams({
     order_by: '-date_joined',
     page_size: '50',
@@ -448,16 +451,20 @@ export function Users() {
       <FiltersToolbar
         bundleDownloadAndSettings
         showSearchBar
-        searchPlaceholder="Search by name or email"
+        searchPlaceholder={
+          canViewPersonalDetails
+            ? 'Search by name or email'
+            : 'Search by first name'
+        }
         searchDefaultValue={filters?.search as string}
         onSearchSubmit={search => updateSearchParams('search', search)}
         showFiltersButton
         filtersActive={containsFilterKey(filters)}
         onFiltersClick={() => setFiltersOpen(true)}
-        showDownloadButton
+        showDownloadButton={canExport}
         downloadDisabled={!list || usersLoading || selectedHeaders.length === 0}
         onDownloadClick={handleDownload}
-        showSettingsButton
+        showSettingsButton={canExport}
         settingsDisabled={false}
         onSettingsClick={handleSettingsOpen}
         paginationList={userList}

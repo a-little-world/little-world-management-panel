@@ -4,6 +4,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
+import { usePanelCapability } from '../../helpers/panelCapabilities';
 import UserImage from './UserImage';
 
 const DeletedAvatar = styled.span`
@@ -20,6 +21,7 @@ const MatchesIcons = ({
   matches: any[];
   label?: string;
 }) => {
+  const canViewUsers = usePanelCapability('users');
   return (
     <div className="h-fit flex flex-row items-center content-center gap-2">
       {label && (
@@ -43,17 +45,27 @@ const MatchesIcons = ({
               }}
             />
           );
-          return (
+          const tooltip = `${match.partner.first_name}${
+            deleted ? ' (deleted)' : ''
+          }`;
+          const content = deleted ? (
+            <DeletedAvatar>{avatar}</DeletedAvatar>
+          ) : (
+            avatar
+          );
+          return canViewUsers ? (
             <Link
               to={'/user/' + match.partner?.id}
               key={match.id}
               className="tooltip"
-              data-tip={`${match.partner.first_name}${
-                deleted ? ' (deleted)' : ''
-              }`}
+              data-tip={tooltip}
             >
-              {deleted ? <DeletedAvatar>{avatar}</DeletedAvatar> : avatar}
+              {content}
             </Link>
+          ) : (
+            <span key={match.id} className="tooltip" data-tip={tooltip}>
+              {content}
+            </span>
           );
         })
       )}

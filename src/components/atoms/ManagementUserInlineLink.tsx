@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import useSWR from 'swr';
 
+import { usePanelCapability } from '../../helpers/panelCapabilities';
 import { dataFetcher } from '../../store';
 import UserImage from './UserImage';
 
@@ -69,8 +70,9 @@ export const ManagementUserInlineLink = ({
   tab?: string;
 }) => {
   const encodedEmail = encodeURIComponent(email);
+  const canViewUsers = usePanelCapability('users');
   const { data } = useSWR<InlineManagementUser>(
-    `/api/matching/users/${encodedEmail}/`,
+    canViewUsers ? `/api/matching/users/${encodedEmail}/` : null,
     dataFetcher,
   );
 

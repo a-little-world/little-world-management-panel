@@ -53,6 +53,7 @@ import AutoEmailStatusTag, {
   AutoEmailStatus,
 } from '../../atoms/AutoEmailStatusTag';
 import LoadingSpinner from '../../atoms/LoadingSpinner';
+import { usePanelCapabilities } from '../../../helpers/panelCapabilities';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../atoms/Tabs';
 import { DataTable } from '../../blocks/DataTable';
 import EmailLogTab, { EMAIL_LOG_PARAMS } from './EmailLogTab';
@@ -333,8 +334,17 @@ async function developmentUpdateBackendEmailTemplatesAndConfiguration({
 }
 
 const Emails = () => {
+  const can = usePanelCapabilities();
+  const canAutomated = can('automated_emails');
+  const canDynamic = can('dynamic_emails');
+  const visibleTabs: EmailsTab[] = [
+    ...(canAutomated ? (['automated'] as const) : []),
+    ...(canDynamic ? (['dynamic'] as const) : []),
+    ...(canAutomated ? (['log'] as const) : []),
+  ];
+
   const { data: backendEmailConfiguration } = useSWR(
-    '/api/matching/emails/config/',
+    canAutomated ? '/api/matching/emails/config/' : null,
     dataFetcher,
     {},
   );
@@ -342,10 +352,9 @@ const Emails = () => {
   const theme = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
   const requestedTab = searchParams.get('tab');
-  const tab: EmailsTab =
-    requestedTab === 'dynamic' || requestedTab === 'log'
-      ? requestedTab
-      : 'automated';
+  const tab: EmailsTab = visibleTabs.includes(requestedTab as EmailsTab)
+    ? (requestedTab as EmailsTab)
+    : (visibleTabs[0] ?? 'automated');
   const onTabChange = (value: string) => {
     const newParams = new URLSearchParams(searchParams);
     newParams.set('tab', value);
@@ -368,19 +377,19 @@ const Emails = () => {
     isLoading,
     mutate: mutateDynamicEmails,
   } = useSWR(
-    '/api/matching/emails/dynamic_templates/?page_size=150',
+    canDynamic ? '/api/matching/emails/dynamic_templates/?page_size=150' : null,
     dataFetcher,
     {},
   );
 
   const { data: autoEmailFlags } = useSWR<AutoEmailFlags>(
-    '/api/matching/emails/auto_email_flags/',
+    canAutomated ? '/api/matching/emails/auto_email_flags/' : null,
     dataFetcher,
     {},
   );
 
   const { data: autoEmailMetadata } = useSWR<AutoEmailMetadata>(
-    '/api/matching/emails/auto_email_metadata/',
+    canAutomated ? '/api/matching/emails/auto_email_metadata/' : null,
     dataFetcher,
     {},
   );
@@ -423,102 +432,112 @@ const Emails = () => {
     <Container>
       <Tabs value={tab} onValueChange={onTabChange}>
         <TabsList>
-          <TabsTrigger value="automated">Automated</TabsTrigger>
-          <TabsTrigger value="dynamic">Dynamic</TabsTrigger>
-          <TabsTrigger value="log">Email Log</TabsTrigger>
+          {canAutomated && (
+            <TabsTrigger value="automated">Automated</TabsTrigger>
+          )}
+          {canDynamic && <TabsTrigger value="dynamic">Dynamic</TabsTrigger>}
+          {canAutomated && <TabsTrigger value="log">Email Log</TabsTrigger>}
         </TabsList>
-        <TabsContent value="automated">
-          <TabPanel>
-            <TopBar>
-              <Text type={TextTypes.Heading4}>Backend Templates</Text>
-              <Button
-                appearance={ButtonAppearance.Secondary}
-                onClick={onSyncBackendEmails}
-              >
-                [DEVELOPMENT] Sync Emails
-              </Button>
-            </TopBar>
-            <Text type={TextTypes.Body4}>
-              These are automated backend emails that must be updated in the
-              backend. You may edit all of them in emails.json.
-            </Text>
-            <Text type={TextTypes.Body6}>
-              The status shows whether an automatic email is actually delivered:
-              &quot;Live&quot; emails are sent, &quot;Emulated&quot; emails are
-              logged but never delivered, and &quot;Off&quot; emails are
-              disabled entirely. &quot;Always on&quot; emails have no setting
-              and are sent whenever their event happens; &quot;Unused&quot;
-              emails are not sent anywhere.
-            </Text>
-            <div>
-              <Link to={JOURNEY_OVERVIEW_ROUTE}>
-                View User &amp; Match Journey
-              </Link>
-            </div>
-            <Accordion
-              ContentWrapper={EmailGrouping}
-              items={map(GROUPED_TEMPLATES, (item, header) => {
-                const rows: BackendTemplateRow[] = sortBy(
-                  item as { id: string; label: string }[],
-                  'label',
-                ).map(template => ({
-                  id: template.id,
-                  label: template.label,
-                  status: autoEmailFlags?.[template.id]?.status,
-                  trigger: autoEmailMetadata?.[template.id]?.trigger,
-                  audience: autoEmailMetadata?.[template.id]?.audience,
-                }));
-                // Only env-gated automatic emails have a delivery status
-                const withStatus = rows.some(row => row.status);
-                return {
-                  header,
-                  content: (
-                    <DataTable
-                      columns={buildTemplateColumns(withStatus)}
-                      data={rows}
-                    />
-                  ),
-                };
-              })}
-            />
-          </TabPanel>
-        </TabsContent>
-        <TabsContent value="dynamic">
-          <TabPanel>
-            <TopBar>
-              <Text type={TextTypes.Heading4}>Dynamic Templates</Text>
-              <Link
-                buttonSize={ButtonSizes.Small}
-                buttonAppearance={ButtonAppearance.Primary}
-                to={CREATE_NEW_EMAIL_ROUTE}
-                style={{ maxWidth: '200px' }}
-              >
-                Create New
-              </Link>
-            </TopBar>
-            {isLoading ? (
-              <LoadingSpinner />
-            ) : (
-              <DataTable
-                columns={buildDynamicTemplateColumns({
-                  deleteColor: theme.color.status.error,
-                  deleting,
-                  onDelete: template => {
-                    setDeleteError(null);
-                    setTemplateToDelete(template);
-                  },
+        {canAutomated && (
+          <TabsContent value="automated">
+            <TabPanel>
+              <TopBar>
+                <Text type={TextTypes.Heading4}>Backend Templates</Text>
+                <Button
+                  appearance={ButtonAppearance.Secondary}
+                  onClick={onSyncBackendEmails}
+                >
+                  [DEVELOPMENT] Sync Emails
+                </Button>
+              </TopBar>
+              <Text type={TextTypes.Body4}>
+                These are automated backend emails that must be updated in the
+                backend. You may edit all of them in emails.json.
+              </Text>
+              <Text type={TextTypes.Body6}>
+                The status shows whether an automatic email is actually
+                delivered: &quot;Live&quot; emails are sent,
+                &quot;Emulated&quot; emails are logged but never delivered, and
+                &quot;Off&quot; emails are disabled entirely. &quot;Always
+                on&quot; emails have no setting and are sent whenever their
+                event happens; &quot;Unused&quot; emails are not sent anywhere.
+              </Text>
+              {can('documentation') && (
+                <div>
+                  <Link to={JOURNEY_OVERVIEW_ROUTE}>
+                    View User &amp; Match Journey
+                  </Link>
+                </div>
+              )}
+              <Accordion
+                ContentWrapper={EmailGrouping}
+                items={map(GROUPED_TEMPLATES, (item, header) => {
+                  const rows: BackendTemplateRow[] = sortBy(
+                    item as { id: string; label: string }[],
+                    'label',
+                  ).map(template => ({
+                    id: template.id,
+                    label: template.label,
+                    status: autoEmailFlags?.[template.id]?.status,
+                    trigger: autoEmailMetadata?.[template.id]?.trigger,
+                    audience: autoEmailMetadata?.[template.id]?.audience,
+                  }));
+                  // Only env-gated automatic emails have a delivery status
+                  const withStatus = rows.some(row => row.status);
+                  return {
+                    header,
+                    content: (
+                      <DataTable
+                        columns={buildTemplateColumns(withStatus)}
+                        data={rows}
+                      />
+                    ),
+                  };
                 })}
-                data={sortBy(dynamicEmails?.results ?? [], 'template_name')}
               />
-            )}
-          </TabPanel>
-        </TabsContent>
-        <TabsContent value="log">
-          <TabPanel>
-            <Text type={TextTypes.Heading4}>Email Log</Text>
-            <EmailLogTab />
-          </TabPanel>
-        </TabsContent>
+            </TabPanel>
+          </TabsContent>
+        )}
+        {canDynamic && (
+          <TabsContent value="dynamic">
+            <TabPanel>
+              <TopBar>
+                <Text type={TextTypes.Heading4}>Dynamic Templates</Text>
+                <Link
+                  buttonSize={ButtonSizes.Small}
+                  buttonAppearance={ButtonAppearance.Primary}
+                  to={CREATE_NEW_EMAIL_ROUTE}
+                  style={{ maxWidth: '200px' }}
+                >
+                  Create New
+                </Link>
+              </TopBar>
+              {isLoading ? (
+                <LoadingSpinner />
+              ) : (
+                <DataTable
+                  columns={buildDynamicTemplateColumns({
+                    deleteColor: theme.color.status.error,
+                    deleting,
+                    onDelete: template => {
+                      setDeleteError(null);
+                      setTemplateToDelete(template);
+                    },
+                  })}
+                  data={sortBy(dynamicEmails?.results ?? [], 'template_name')}
+                />
+              )}
+            </TabPanel>
+          </TabsContent>
+        )}
+        {canAutomated && (
+          <TabsContent value="log">
+            <TabPanel>
+              <Text type={TextTypes.Heading4}>Email Log</Text>
+              <EmailLogTab />
+            </TabPanel>
+          </TabsContent>
+        )}
       </Tabs>
 
       <Modal open={Boolean(templateToDelete)} onClose={closeDeleteModal}>

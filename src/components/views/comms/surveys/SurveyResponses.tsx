@@ -30,6 +30,7 @@ import {
 } from '../../../../api/surveys';
 import { formatBerlinDateTime } from '../../../../helpers/berlinDates';
 import { downloadCsv } from '../../../../helpers/csv';
+import { usePanelCapabilities } from '../../../../helpers/panelCapabilities';
 import {
   DateRangePicker,
   formatLocalDateYmd,
@@ -120,6 +121,11 @@ function SurveyResponses() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
+  const can = usePanelCapabilities();
+  const canExport = can('export');
+  const canViewUsers = can('users');
+  // Searching by email would reveal it, so the backend ignores the search without this.
+  const canSearchByEmail = can('personal_details');
 
   const search = searchParams.get('search') || '';
   const campaign = searchParams.get('campaign') || 'all';
@@ -216,14 +222,14 @@ function SurveyResponses() {
   return (
     <PageContainer>
       <FiltersToolbar
-        showSearchBar
+        showSearchBar={canSearchByEmail}
         searchPlaceholder="Search by email"
         searchDefaultValue={search}
         onSearchSubmit={(value: string) => updateSearchParam('search', value)}
         paginationList={data}
         isLoading={isLoading}
         loadingText="Loading survey responses..."
-        showDownloadButton
+        showDownloadButton={canExport}
         downloadDisabled={
           isDownloading || isLoading || !data || data.results_total === 0
         }
@@ -328,12 +334,16 @@ function SurveyResponses() {
                   >
                     <TableCell>{row.campaign_name}</TableCell>
                     <TableCell>
-                      <Link
-                        to={`/user/${row.user_id}`}
-                        onClick={event => event.stopPropagation()}
-                      >
-                        {row.user_email || `User #${row.user_id}`}
-                      </Link>
+                      {canViewUsers ? (
+                        <Link
+                          to={`/user/${row.user_id}`}
+                          onClick={event => event.stopPropagation()}
+                        >
+                          {row.user_email || `User #${row.user_id}`}
+                        </Link>
+                      ) : (
+                        row.user_email || `User #${row.user_id}`
+                      )}
                     </TableCell>
                     <TableCell>
                       <Tag appearance={STATUS_APPEARANCE[row.status]}>
