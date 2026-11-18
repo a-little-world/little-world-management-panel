@@ -1312,7 +1312,7 @@ export type TeamMembersList = {
   results: TeamMember[];
   can_edit_management_permissions: boolean;
   /** Whether the viewer may grant the admin-only permissions (see `ADMIN_ONLY_PERMISSIONS`). */
-  can_grant_apply_management_permissions: boolean;
+  can_grant_admin_only_permissions: boolean;
 };
 
 export type MatchingPanelUser = {
@@ -1323,15 +1323,12 @@ export type MatchingPanelUser = {
   last_name: string;
   is_staff: boolean;
   is_superuser: boolean;
-  is_matching_user: boolean;
   can_edit_management_permissions: boolean;
-  can_grant_apply_management_permissions: boolean;
+  /** Whether the viewer may grant the admin-only permissions (see `ADMIN_ONLY_PERMISSIONS`). */
+  can_grant_admin_only_permissions: boolean;
   permissions: ManagementPermissionRow[];
-  /**
-   * Which pages/actions the panel shows this user, computed by the backend.
-   * Absent on older backends (then everything is shown); a missing key is false.
-   */
-  panel_capabilities?: Partial<Record<PanelCapability, boolean>>;
+  /** Which pages/actions the panel shows this user, computed by the backend. A missing key is false. */
+  panel_capabilities: Partial<Record<PanelCapability, boolean>>;
 };
 
 export type PanelCapability =
@@ -1361,7 +1358,9 @@ export type PanelCapability =
   | 'edit_matches'
   | 'export'
   // without it the backend hides email, last name, phone, postal code and photos
-  | 'personal_details';
+  | 'personal_details'
+  // send a user a push notification from the user page
+  | 'send_notifications';
 
 export const fetchMatchingPanelUser = () =>
   apiFetch<MatchingPanelUser>('/api/matching/me/', { method: 'GET' });

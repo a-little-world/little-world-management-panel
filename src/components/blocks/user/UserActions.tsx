@@ -44,15 +44,14 @@ import {
   setForceMatchEligible,
   setNewsletterSubscribed,
   setUserCompany,
-  setUserManagementPermission,
   setUserSearching,
   setUserSignupCampaign,
   setUserUnresponsive,
   updateUserProfileFields,
 } from '../../../api/index';
 import { formatCountryOfResidenceOptions } from '../../../helpers/countryOfResidenceOptions';
-import { permissionCheckboxState } from '../../../helpers/managementPermissions';
 import { usePanelCapability } from '../../../helpers/panelCapabilities';
+import ManagementPermissionList from '../ManagementPermissionList';
 import {
   registerInput,
   useFilterOptions,
@@ -132,33 +131,6 @@ function ManagementPermissionsSection({
   permissionsLoading: boolean;
   permissionsMutate: () => Promise<any>;
 }) {
-  const [pendingPermission, setPendingPermission] = useState<string | null>(
-    null,
-  );
-  const [actionError, setActionError] = useState<string | null>(null);
-
-  const rows = permissionsData?.permissions ?? [];
-
-  const onToggle = (permission: string, nextEnabled: boolean) => {
-    setActionError(null);
-    setPendingPermission(permission);
-    setUserManagementPermission({
-      userId,
-      action: nextEnabled ? 'add' : 'remove',
-      permission,
-      onSuccess: async () => {
-        await permissionsMutate();
-        onUserUpdated();
-        setPendingPermission(null);
-      },
-      onError: (e: any) => {
-        setActionError(e?.message || 'Could not update permission.');
-        setPendingPermission(null);
-        permissionsMutate();
-      },
-    });
-  };
-
   if (permissionsLoading) {
     return <Loading />;
   }
@@ -170,36 +142,17 @@ function ManagementPermissionsSection({
   }
 
   return (
-    <div className="flex flex-col gap-3 pt-2">
-      {actionError && (
-        <StatusMessage type={StatusTypes.Error} visible>
-          {actionError}
-        </StatusMessage>
-      )}
-      {rows.map(row => {
-        const { locked, label } = permissionCheckboxState(
-          row,
-          canGrantAdminOnlyPermissions,
-        );
-
-        return (
-          <div key={row.permission} className="flex flex-col gap-1">
-            <Checkbox
-              disabled={pendingPermission !== null}
-              readOnly={locked}
-              id={`mgmt-perm-${row.codename}`}
-              label={label}
-              checked={row.enabled}
-              onCheckedChange={(val: boolean) => {
-                if (!locked && val !== row.enabled) {
-                  onToggle(row.permission, val);
-                }
-              }}
-              required={false}
-            />
-          </div>
-        );
-      })}
+    <div className="pt-2">
+      <ManagementPermissionList
+        userId={userId}
+        permissions={permissionsData?.permissions ?? []}
+        canGrantAdminOnlyPermissions={canGrantAdminOnlyPermissions}
+        idPrefix="mgmt-perm"
+        onChanged={async () => {
+          await permissionsMutate();
+          onUserUpdated();
+        }}
+      />
     </div>
   );
 }
@@ -706,6 +659,7 @@ const UserActions = ({
   const { apiOptions, apiTranslations } = useGlobalState();
   // Delete, migrate and permissions keep their own gating below.
   const canEditUsers = usePanelCapability('edit_users');
+  const canSendNotifications = usePanelCapability('send_notifications');
   const [deleteUserModalOpen, setDeleteUserModalOpen] = useState(false);
   const [deleteUserError, setDeleteUserError] = useState<string | null>(null);
   const [migrateUserModalOpen, setMigrateUserModalOpen] = useState(false);
@@ -857,14 +811,16 @@ const UserActions = ({
   const showManagementPermissionsSection =
     Boolean(permissionsData) ||
     (Boolean(permissionsError) && permissionsStatus !== 403);
-  const canUpdateMatchingProfileFields = Boolean(currentUser?.is_matching_user);
+  // User type and company are saved through Edit users endpoints.
+  const canUpdateMatchingProfileFields = canEditUsers;
   const canDeleteUser = Boolean(currentUser?.can_edit_management_permissions);
   const canMigrateUser = canDeleteUser;
   const canGrantAdminOnlyPermissions = Boolean(
-    currentUser?.can_grant_apply_management_permissions,
+    currentUser?.can_grant_admin_only_permissions,
   );
+  // The backend refuses to delete or migrate admins and team members.
   const targetIsProtected = Boolean(
-    user.is_staff || user.is_superuser || user.is_matching_user,
+    user.is_staff || user.is_superuser || user.is_team_member,
   );
   const deleteDisabled =
     isSubmitting ||
@@ -884,14 +840,21 @@ const UserActions = ({
     <div className="w-full">
       <Accordion
         items={[
-          ...(canEditUsers
+          ...(canEditUsers || canSendNotifications
             ? [
                 {
-                  header: 'SMS / Push',
+                  header: [
+                    canEditUsers && 'SMS',
+                    canSendNotifications && 'Push',
+                  ]
+                    .filter(Boolean)
+                    .join(' / '),
                   content: (
                     <div className="pt-2">
-                      <SendSms userId={user.id} />
-                      <SendPushNotification userId={user.id} />
+                      {canEditUsers && <SendSms userId={user.id} />}
+                      {canSendNotifications && (
+                        <SendPushNotification userId={user.id} />
+                      )}
                     </div>
                   ),
                 },
@@ -1248,7 +1211,7 @@ const UserActions = ({
             >
               {deleteUserError ||
                 (targetIsProtected
-                  ? 'Admins and matching users cannot be deleted from this view.'
+                  ? 'Admins and team members cannot be deleted from this view.'
                   : `You do not have the required permissions to delete this user.`)}
             </StatusMessage>
           </CardContent>
@@ -1311,7 +1274,7 @@ const UserActions = ({
             >
               {migrateUserError ||
                 (targetIsProtected
-                  ? 'Admins and matching users cannot be migrated from this view.'
+                  ? 'Admins and team members cannot be migrated from this view.'
                   : `You do not have the required permissions to migrate this user.`)}
             </StatusMessage>
           </CardContent>

@@ -26,12 +26,9 @@ import {
 } from 'lucide-react';
 
 import type { MatchingPanelUser } from '../api/index';
-import { MANAGEMENT_PERMISSION_OPEN_CHAT_ACCESS } from '../constants/managementPermissions';
-import { hasManagementPermission } from '../helpers/managementPermissions';
 import {
   EMAILS_CAPABILITIES,
   type PanelPageCapability,
-  hasPanelCapabilities,
   hasPanelCapability,
   usePanelUser,
 } from '../helpers/panelCapabilities';
@@ -272,7 +269,6 @@ export const PANEL_NAVIGATION = [
     capability: 'open_chat',
     icon: <ChatBubbleLeftRightIcon className={tileIconClass} />,
     isActive: (pathname: string) => pathname.startsWith(OPEN_CHAT_ROUTE),
-    legacyPermission: MANAGEMENT_PERMISSION_OPEN_CHAT_ACCESS,
   },
   {
     name: 'Companies',
@@ -291,8 +287,6 @@ export type PanelNavigationEntry = {
   icon: React.ReactNode;
   /** Whether the Menu highlights this entry on the current page. */
   isActive: (pathname: string) => boolean;
-  /** Checked instead of the capability when an older backend sends no capabilities. */
-  legacyPermission?: string;
 };
 
 // Every page must be reachable from Home and the Menu, directly or through a hub's tiles. A page
@@ -308,9 +302,6 @@ export function canSeeNavigationEntry(
   user: MatchingPanelUser | undefined,
   entry: PanelNavigationEntry,
 ): boolean {
-  if (!hasPanelCapabilities(user) && entry.legacyPermission) {
-    return hasManagementPermission(user, entry.legacyPermission);
-  }
   return hasPanelCapability(user, entry.capability);
 }
 
