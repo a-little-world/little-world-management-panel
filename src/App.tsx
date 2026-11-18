@@ -50,6 +50,7 @@ import Communications from './components/views/comms/Communications';
 import Banners from './components/views/comms/banners/Banners';
 import EditBanner from './components/views/comms/banners/EditBanner';
 import Events from './components/views/comms/events/Events';
+import Feedback from './components/views/comms/Feedback';
 import QuestionCards from './components/views/comms/questionCards/QuestionCards';
 import ShortLinks from './components/views/comms/shortLinks/ShortLinks';
 import EditSurvey from './components/views/comms/surveys/EditSurvey';
@@ -94,6 +95,7 @@ import {
   EMAIL_HTML_ROUTE,
   EMAIL_ROUTE,
   EVENTS_ROUTE,
+  FEEDBACK_ROUTE,
   JOURNEY_OVERVIEW_DOCUMENTATION_ROUTE,
   JOURNEY_OVERVIEW_ROUTE,
   MATCHES_LIST_ROUTE,
@@ -539,6 +541,15 @@ const router = createBrowserRouter(
           ...routeTitle(({ campaignId }) =>
             campaignId === 'new' ? 'New survey' : 'Edit survey',
           ),
+        },
+        {
+          path: FEEDBACK_ROUTE,
+          element: (
+            <RequireCapability capability={'support_tasks'}>
+              <Feedback />
+            </RequireCapability>
+          ),
+          ...routeTitle('Feedback'),
         },
         {
           path: SUPPORT_TASKS_ROUTE,

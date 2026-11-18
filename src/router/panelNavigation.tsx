@@ -22,6 +22,7 @@ import {
   Link as LinkIcon,
   Mail,
   Megaphone,
+  MessageSquareWarning,
   MessagesSquare,
 } from 'lucide-react';
 
@@ -44,6 +45,7 @@ import {
   DYNAMIC_USER_LISTS_ROUTE,
   EMAILS_ROUTE,
   EVENTS_ROUTE,
+  FEEDBACK_ROUTE,
   JOURNEY_OVERVIEW_ROUTE,
   MATCHES_LIST_ROUTE,
   MATCHING_HUB_ROUTE,
@@ -174,6 +176,12 @@ export const COMMUNICATIONS_HUB_TILES = [
     capability: 'surveys',
     icon: <ClipboardList className={tileIconClass} />,
   },
+  {
+    name: 'Feedback',
+    path: FEEDBACK_ROUTE,
+    capability: 'support_tasks',
+    icon: <MessageSquareWarning className={tileIconClass} />,
+  },
 ] as const satisfies readonly HubTile[];
 
 export const MATCHING_HUB_CAPABILITIES = capabilitiesOf(MATCHING_HUB_TILES);
@@ -233,7 +241,8 @@ export const PANEL_NAVIGATION = [
       pathname.startsWith('/events/') ||
       pathname.startsWith('/short-links/') ||
       pathname.startsWith(QUESTION_CARDS_ROUTE) ||
-      pathname.startsWith(SURVEYS_ROUTE),
+      pathname.startsWith(SURVEYS_ROUTE) ||
+      pathname.startsWith(FEEDBACK_ROUTE),
   },
   {
     name: 'Stats',
