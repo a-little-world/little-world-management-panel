@@ -1283,6 +1283,36 @@ export type ManagementPermissionRow = {
   codename: string;
   label?: string;
   enabled: boolean;
+  /**
+   * False for a team-only permission on an address outside the team domain: the backend refuses to
+   * grant it, though it can still be removed. Absent on older backends.
+   */
+  grantable?: boolean;
+};
+
+/** A row of the Team members page (`/api/matching/matching_users/`). */
+export type TeamMember = {
+  id: number;
+  email: string | null;
+  date_joined: string;
+  last_login: string | null;
+  outside_team_domain: boolean;
+  profile: {
+    first_name: string;
+    second_name: string | null;
+    image?: string | null;
+    image_type?: string;
+    avatar_config?: unknown;
+  };
+  permissions: ManagementPermissionRow[];
+};
+
+export type TeamMembersList = {
+  count: number;
+  results: TeamMember[];
+  can_edit_management_permissions: boolean;
+  /** Whether the viewer may grant the admin-only permissions (see `ADMIN_ONLY_PERMISSIONS`). */
+  can_grant_apply_management_permissions: boolean;
 };
 
 export type MatchingPanelUser = {
@@ -1297,7 +1327,41 @@ export type MatchingPanelUser = {
   can_edit_management_permissions: boolean;
   can_grant_apply_management_permissions: boolean;
   permissions: ManagementPermissionRow[];
+  /**
+   * Which pages/actions the panel shows this user, computed by the backend.
+   * Absent on older backends (then everything is shown); a missing key is false.
+   */
+  panel_capabilities?: Partial<Record<PanelCapability, boolean>>;
 };
+
+export type PanelCapability =
+  | 'scores'
+  | 'support_tasks'
+  | 'users'
+  | 'dynamic_user_lists'
+  | 'matches'
+  | 'video_calls'
+  | 'appointments'
+  | 'banners'
+  | 'events'
+  | 'dynamic_emails'
+  | 'automated_emails'
+  | 'short_links'
+  | 'surveys'
+  | 'question_cards'
+  | 'courses'
+  | 'random_calls'
+  | 'statistics'
+  | 'documentation'
+  | 'companies'
+  | 'open_chat'
+  | 'team_members'
+  // actions, not pages
+  | 'edit_users'
+  | 'edit_matches'
+  | 'export'
+  // without it the backend hides email, last name, phone, postal code and photos
+  | 'personal_details';
 
 export const fetchMatchingPanelUser = () =>
   apiFetch<MatchingPanelUser>('/api/matching/me/', { method: 'GET' });

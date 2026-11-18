@@ -1,60 +1,11 @@
 import React from 'react';
 
-import {
-  CalendarCog,
-  ClipboardList,
-  Link,
-  Mail,
-  Megaphone,
-  MessagesSquare,
-} from 'lucide-react';
-import {
-  BANNERS_ROUTE,
-  EMAILS_ROUTE,
-  EVENTS_ROUTE,
-  QUESTION_CARDS_ROUTE,
-  SHORT_LINKS_ROUTE,
-  SURVEYS_ROUTE,
-} from '../../../router/routes';
-
-import NavigationTiles, { NavigationTile } from '../../blocks/NavigationTiles';
-
-const COMMUNICATIONS_ITEMS: NavigationTile[] = [
-  {
-    name: 'Banners',
-    path: BANNERS_ROUTE,
-    icon: <Megaphone className="h-16 w-16 text-white mb-2" />,
-  },
-  {
-    name: 'Emails',
-    path: EMAILS_ROUTE,
-    icon: <Mail className="h-16 w-16 text-white mb-2" />,
-  },
-  {
-    name: 'Events',
-    path: EVENTS_ROUTE,
-    icon: <CalendarCog className="h-16 w-16 text-white mb-2" />,
-  },
-  {
-    name: 'Short Links',
-    path: SHORT_LINKS_ROUTE,
-    icon: <Link className="h-16 w-16 text-white mb-2" />,
-  },
-  {
-    name: 'Question Cards',
-    path: QUESTION_CARDS_ROUTE,
-    icon: <MessagesSquare className="h-16 w-16 text-white mb-2" />,
-  },
-  {
-    name: 'Surveys',
-    path: SURVEYS_ROUTE,
-    icon: <ClipboardList className="h-16 w-16 text-white mb-2" />,
-  },
-];
+import { COMMUNICATIONS_HUB_TILES } from '../../../router/panelNavigation';
+import NavigationTiles from '../../blocks/NavigationTiles';
 
 function Communications() {
   return (
-    <NavigationTiles title="Communications" items={COMMUNICATIONS_ITEMS} />
+    <NavigationTiles title="Communications" items={COMMUNICATIONS_HUB_TILES} />
   );
 }
 

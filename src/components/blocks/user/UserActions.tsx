@@ -31,6 +31,7 @@ import {
   formatCompanyLabel,
 } from '../../../api/companies';
 import {
+  type ManagementPermissionRow,
   deleteUser,
   fetchMatchingPanelUser,
   fetchUserManagementPermissions,
@@ -50,6 +51,8 @@ import {
   updateUserProfileFields,
 } from '../../../api/index';
 import { formatCountryOfResidenceOptions } from '../../../helpers/countryOfResidenceOptions';
+import { permissionCheckboxState } from '../../../helpers/managementPermissions';
+import { usePanelCapability } from '../../../helpers/panelCapabilities';
 import {
   registerInput,
   useFilterOptions,
@@ -112,13 +115,10 @@ const flagOverrideOptions = (inherited: boolean | undefined) => [
 /** Form keys whose value is a `FlagOverride` and must be converted before sending. */
 const FLAG_OVERRIDE_KEYS = ['priority', 'forceMatchEligible'];
 
-/** Only staff can grant/revoke `management.apply_management_permissions`. */
-const APPLY_MANAGEMENT_PERMISSIONS = 'management.apply_management_permissions';
-
 function ManagementPermissionsSection({
   onUserUpdated,
   userId,
-  canGrantApplyManagementPermissions,
+  canGrantAdminOnlyPermissions,
   permissionsData,
   permissionsError,
   permissionsLoading,
@@ -126,8 +126,8 @@ function ManagementPermissionsSection({
 }: {
   onUserUpdated: () => void;
   userId: string;
-  canGrantApplyManagementPermissions: boolean;
-  permissionsData?: { permissions: any[] };
+  canGrantAdminOnlyPermissions: boolean;
+  permissionsData?: { permissions: ManagementPermissionRow[] };
   permissionsError?: unknown;
   permissionsLoading: boolean;
   permissionsMutate: () => Promise<any>;
@@ -140,12 +140,6 @@ function ManagementPermissionsSection({
   const rows = permissionsData?.permissions ?? [];
 
   const onToggle = (permission: string, nextEnabled: boolean) => {
-    if (
-      permission === APPLY_MANAGEMENT_PERMISSIONS &&
-      !canGrantApplyManagementPermissions
-    ) {
-      return;
-    }
     setActionError(null);
     setPendingPermission(permission);
     setUserManagementPermission({
@@ -183,24 +177,21 @@ function ManagementPermissionsSection({
         </StatusMessage>
       )}
       {rows.map(row => {
-        const isApplyPermissionReadOnly =
-          row.permission === APPLY_MANAGEMENT_PERMISSIONS &&
-          !canGrantApplyManagementPermissions;
+        const { locked, label } = permissionCheckboxState(
+          row,
+          canGrantAdminOnlyPermissions,
+        );
 
         return (
           <div key={row.permission} className="flex flex-col gap-1">
             <Checkbox
               disabled={pendingPermission !== null}
-              readOnly={isApplyPermissionReadOnly}
+              readOnly={locked}
               id={`mgmt-perm-${row.codename}`}
-              label={
-                isApplyPermissionReadOnly
-                  ? `${row.label} [STAFF ONLY]`
-                  : (row.label ?? row.codename)
-              }
+              label={label}
               checked={row.enabled}
               onCheckedChange={(val: boolean) => {
-                if (val !== row.enabled) {
+                if (!locked && val !== row.enabled) {
                   onToggle(row.permission, val);
                 }
               }}
@@ -713,6 +704,8 @@ const UserActions = ({
 }) => {
   const theme = useTheme();
   const { apiOptions, apiTranslations } = useGlobalState();
+  // Delete, migrate and permissions keep their own gating below.
+  const canEditUsers = usePanelCapability('edit_users');
   const [deleteUserModalOpen, setDeleteUserModalOpen] = useState(false);
   const [deleteUserError, setDeleteUserError] = useState<string | null>(null);
   const [migrateUserModalOpen, setMigrateUserModalOpen] = useState(false);
@@ -739,7 +732,7 @@ const UserActions = ({
   );
 
   const { data: companies, isLoading: companiesLoading } = useSWR(
-    ADMIN_COMPANIES_ENDPOINT,
+    canEditUsers ? ADMIN_COMPANIES_ENDPOINT : null,
     fetchCompanies,
     { revalidateOnFocus: false },
   );
@@ -867,7 +860,7 @@ const UserActions = ({
   const canUpdateMatchingProfileFields = Boolean(currentUser?.is_matching_user);
   const canDeleteUser = Boolean(currentUser?.can_edit_management_permissions);
   const canMigrateUser = canDeleteUser;
-  const canGrantApplyManagementPermissions = Boolean(
+  const canGrantAdminOnlyPermissions = Boolean(
     currentUser?.can_grant_apply_management_permissions,
   );
   const targetIsProtected = Boolean(
@@ -891,15 +884,19 @@ const UserActions = ({
     <div className="w-full">
       <Accordion
         items={[
-          {
-            header: 'SMS / Push',
-            content: (
-              <div className="pt-2">
-                <SendSms userId={user.id} />
-                <SendPushNotification userId={user.id} />
-              </div>
-            ),
-          },
+          ...(canEditUsers
+            ? [
+                {
+                  header: 'SMS / Push',
+                  content: (
+                    <div className="pt-2">
+                      <SendSms userId={user.id} />
+                      <SendPushNotification userId={user.id} />
+                    </div>
+                  ),
+                },
+              ]
+            : []),
           ...(showManagementPermissionsSection
             ? [
                 {
@@ -907,8 +904,8 @@ const UserActions = ({
                   content: (
                     <ManagementPermissionsSection
                       userId={user.id}
-                      canGrantApplyManagementPermissions={
-                        canGrantApplyManagementPermissions
+                      canGrantAdminOnlyPermissions={
+                        canGrantAdminOnlyPermissions
                       }
                       onUserUpdated={onUpdate}
                       permissionsData={permissionsData}
@@ -920,267 +917,278 @@ const UserActions = ({
                 },
               ]
             : []),
-          {
-            header: 'Support User Actions',
-            content: (
-              <div className="pt-2">
-                <form
-                  className="mb-4"
-                  onSubmit={handleSubmit(saveChanges)}
-                  onChange={() => setChangesSaved(false)}
-                >
-                  <Controller
-                    defaultValue={user.state.user_support}
-                    name="support_user"
-                    control={control}
-                    render={({
-                      field: { onChange, onBlur, value, name, ref },
-                      fieldState: { error },
-                    }) => (
-                      <Select
-                        id="support_user"
-                        name={name}
-                        inputRef={ref}
-                        onCheckedChange={val =>
-                          onChange({ target: { value: val } })
-                        }
-                        onBlur={onBlur}
-                        value={value}
-                        defaultChecked={value}
-                        error={error?.message}
-                        label="Change support user"
-                        options={SUPPORT_USERS}
-                      />
-                    )}
-                  />
-                  {canUpdateMatchingProfileFields && (
-                    <>
-                      <Controller
-                        defaultValue={user.profile.user_type}
-                        name="user_type"
-                        control={control}
-                        render={({
-                          field: { onChange, value },
-                          fieldState: { error },
-                        }) => (
-                          <Select
-                            id="user_type"
-                            onValueChange={val =>
-                              onChange({ target: { value: val } })
-                            }
-                            value={value}
-                            error={error?.message}
-                            label="User type"
-                            options={USER_TYPE_OPTIONS}
-                            placeholder="Select a user type"
-                          />
+          ...(canEditUsers
+            ? [
+                {
+                  header: 'Support User Actions',
+                  content: (
+                    <div className="pt-2">
+                      <form
+                        className="mb-4"
+                        onSubmit={handleSubmit(saveChanges)}
+                        onChange={() => setChangesSaved(false)}
+                      >
+                        <Controller
+                          defaultValue={user.state.user_support}
+                          name="support_user"
+                          control={control}
+                          render={({
+                            field: { onChange, onBlur, value, name, ref },
+                            fieldState: { error },
+                          }) => (
+                            <Select
+                              id="support_user"
+                              name={name}
+                              inputRef={ref}
+                              onCheckedChange={val =>
+                                onChange({ target: { value: val } })
+                              }
+                              onBlur={onBlur}
+                              value={value}
+                              defaultChecked={value}
+                              error={error?.message}
+                              label="Change support user"
+                              options={SUPPORT_USERS}
+                            />
+                          )}
+                        />
+                        {canUpdateMatchingProfileFields && (
+                          <>
+                            <Controller
+                              defaultValue={user.profile.user_type}
+                              name="user_type"
+                              control={control}
+                              render={({
+                                field: { onChange, value },
+                                fieldState: { error },
+                              }) => (
+                                <Select
+                                  id="user_type"
+                                  onValueChange={val =>
+                                    onChange({ target: { value: val } })
+                                  }
+                                  value={value}
+                                  error={error?.message}
+                                  label="User type"
+                                  options={USER_TYPE_OPTIONS}
+                                  placeholder="Select a user type"
+                                />
+                              )}
+                            />
+                            <Controller
+                              defaultValue={user.profile.country_of_residence}
+                              name="country_of_residence"
+                              control={control}
+                              render={({
+                                field: { onChange, value },
+                                fieldState: { error },
+                              }) => (
+                                <Select
+                                  id="country_of_residence"
+                                  onValueChange={val =>
+                                    onChange({ target: { value: val } })
+                                  }
+                                  value={value}
+                                  error={error?.message}
+                                  label="Country of residence"
+                                  options={countryOptions}
+                                  placeholder="Select a country"
+                                />
+                              )}
+                            />
+                          </>
                         )}
-                      />
-                      <Controller
-                        defaultValue={user.profile.country_of_residence}
-                        name="country_of_residence"
-                        control={control}
-                        render={({
-                          field: { onChange, value },
-                          fieldState: { error },
-                        }) => (
-                          <Select
-                            id="country_of_residence"
-                            onValueChange={val =>
-                              onChange({ target: { value: val } })
-                            }
-                            value={value}
-                            error={error?.message}
-                            label="Country of residence"
-                            options={countryOptions}
-                            placeholder="Select a country"
-                          />
-                        )}
-                      />
-                    </>
-                  )}
-                  <Controller
-                    defaultValue={user.profile.newsletter_subscribed}
-                    name="newsletter"
-                    control={control}
-                    render={({
-                      field: { onChange, onBlur, value, name, ref },
-                      fieldState: { error },
-                    }) => (
-                      <Checkbox
-                        id="newsletter"
-                        name={name}
-                        inputRef={ref}
-                        onCheckedChange={val =>
-                          onChange({ target: { value: val } })
-                        }
-                        onBlur={onBlur}
-                        value={value}
-                        defaultChecked={value}
-                        error={error?.message}
-                        label="Subscribed to newsletter"
-                        required={false}
-                      />
-                    )}
-                  />
-                  <Controller
-                    defaultValue={user.state.had_prematching_call}
-                    name="completed"
-                    control={control}
-                    render={({
-                      field: { onChange, onBlur, value, name, ref },
-                      fieldState: { error },
-                    }) => (
-                      <Checkbox
-                        id="completed"
-                        name={name}
-                        inputRef={ref}
-                        onCheckedChange={val =>
-                          onChange({ target: { value: val } })
-                        }
-                        onBlur={onBlur}
-                        value={value}
-                        defaultChecked={value}
-                        error={error?.message}
-                        label={'User has completed Pre-matching call'}
-                        required={false}
-                      />
-                    )}
-                  />
-                  <Controller
-                    defaultValue={user.state.unresponsive}
-                    name="unresponsive"
-                    control={control}
-                    render={({
-                      field: { onChange, onBlur, value, name, ref },
-                      fieldState: { error },
-                    }) => (
-                      <Checkbox
-                        id="unresponsive"
-                        name={name}
-                        inputRef={ref}
-                        onCheckedChange={val =>
-                          onChange({ target: { value: val } })
-                        }
-                        onBlur={onBlur}
-                        value={value}
-                        defaultChecked={value}
-                        error={error?.message}
-                        label="This user is no longer responsive?"
-                        required={false}
-                      />
-                    )}
-                  />
-                  <Controller
-                    defaultValue={user.state.searching_state === 'searching'}
-                    name="searching"
-                    control={control}
-                    render={({
-                      field: { onChange, onBlur, value, name, ref },
-                      fieldState: { error },
-                    }) => (
-                      <Checkbox
-                        id="searching"
-                        name={name}
-                        inputRef={ref}
-                        checked={Boolean(value)}
-                        onCheckedChange={onChange}
-                        onBlur={onBlur}
-                        error={error?.message}
-                        label={'Is user searching for another match?'}
-                        required={false}
-                      />
-                    )}
-                  />
-                  <Controller
-                    defaultValue={toFlagOverride(
-                      user.state.match_priority_override,
-                    )}
-                    name="priority"
-                    control={control}
-                    render={({
-                      field: { onChange, value },
-                      fieldState: { error },
-                    }) => (
-                      <Select
-                        id="priority"
-                        onValueChange={onChange}
-                        value={value}
-                        error={error?.message}
-                        label="Match priority"
-                        labelTooltip="Prioritised in matching. Default follows the user's company or a priority signup campaign. International SMS follows the company or campaign only and is not changed by this setting."
-                        options={flagOverrideOptions(
-                          user.state.match_priority_default,
-                        )}
-                        placeholder="Select match priority"
-                      />
-                    )}
-                  />
-                  <Controller
-                    defaultValue={toFlagOverride(
-                      user.state.force_match_eligible_override,
-                    )}
-                    name="forceMatchEligible"
-                    control={control}
-                    render={({
-                      field: { onChange, value },
-                      fieldState: { error },
-                    }) => (
-                      <Select
-                        id="forceMatchEligible"
-                        onValueChange={onChange}
-                        value={value}
-                        error={error?.message}
-                        label="Force match eligible"
-                        labelTooltip="Bypasses the A0 language level and outside-Germany checks. Default follows the user's company."
-                        options={flagOverrideOptions(
-                          user.state.force_match_eligible_default,
-                        )}
-                        placeholder="Select force match eligibility"
-                      />
-                    )}
-                  />
+                        <Controller
+                          defaultValue={user.profile.newsletter_subscribed}
+                          name="newsletter"
+                          control={control}
+                          render={({
+                            field: { onChange, onBlur, value, name, ref },
+                            fieldState: { error },
+                          }) => (
+                            <Checkbox
+                              id="newsletter"
+                              name={name}
+                              inputRef={ref}
+                              onCheckedChange={val =>
+                                onChange({ target: { value: val } })
+                              }
+                              onBlur={onBlur}
+                              value={value}
+                              defaultChecked={value}
+                              error={error?.message}
+                              label="Subscribed to newsletter"
+                              required={false}
+                            />
+                          )}
+                        />
+                        <Controller
+                          defaultValue={user.state.had_prematching_call}
+                          name="completed"
+                          control={control}
+                          render={({
+                            field: { onChange, onBlur, value, name, ref },
+                            fieldState: { error },
+                          }) => (
+                            <Checkbox
+                              id="completed"
+                              name={name}
+                              inputRef={ref}
+                              onCheckedChange={val =>
+                                onChange({ target: { value: val } })
+                              }
+                              onBlur={onBlur}
+                              value={value}
+                              defaultChecked={value}
+                              error={error?.message}
+                              label={'User has completed Pre-matching call'}
+                              required={false}
+                            />
+                          )}
+                        />
+                        <Controller
+                          defaultValue={user.state.unresponsive}
+                          name="unresponsive"
+                          control={control}
+                          render={({
+                            field: { onChange, onBlur, value, name, ref },
+                            fieldState: { error },
+                          }) => (
+                            <Checkbox
+                              id="unresponsive"
+                              name={name}
+                              inputRef={ref}
+                              onCheckedChange={val =>
+                                onChange({ target: { value: val } })
+                              }
+                              onBlur={onBlur}
+                              value={value}
+                              defaultChecked={value}
+                              error={error?.message}
+                              label="This user is no longer responsive?"
+                              required={false}
+                            />
+                          )}
+                        />
+                        <Controller
+                          defaultValue={
+                            user.state.searching_state === 'searching'
+                          }
+                          name="searching"
+                          control={control}
+                          render={({
+                            field: { onChange, onBlur, value, name, ref },
+                            fieldState: { error },
+                          }) => (
+                            <Checkbox
+                              id="searching"
+                              name={name}
+                              inputRef={ref}
+                              checked={Boolean(value)}
+                              onCheckedChange={onChange}
+                              onBlur={onBlur}
+                              error={error?.message}
+                              label={'Is user searching for another match?'}
+                              required={false}
+                            />
+                          )}
+                        />
+                        <Controller
+                          defaultValue={toFlagOverride(
+                            user.state.match_priority_override,
+                          )}
+                          name="priority"
+                          control={control}
+                          render={({
+                            field: { onChange, value },
+                            fieldState: { error },
+                          }) => (
+                            <Select
+                              id="priority"
+                              onValueChange={onChange}
+                              value={value}
+                              error={error?.message}
+                              label="Match priority"
+                              labelTooltip="Prioritised in matching. Default follows the user's company or a priority signup campaign. International SMS follows the company or campaign only and is not changed by this setting."
+                              options={flagOverrideOptions(
+                                user.state.match_priority_default,
+                              )}
+                              placeholder="Select match priority"
+                            />
+                          )}
+                        />
+                        <Controller
+                          defaultValue={toFlagOverride(
+                            user.state.force_match_eligible_override,
+                          )}
+                          name="forceMatchEligible"
+                          control={control}
+                          render={({
+                            field: { onChange, value },
+                            fieldState: { error },
+                          }) => (
+                            <Select
+                              id="forceMatchEligible"
+                              onValueChange={onChange}
+                              value={value}
+                              error={error?.message}
+                              label="Force match eligible"
+                              labelTooltip="Bypasses the A0 language level and outside-Germany checks. Default follows the user's company."
+                              options={flagOverrideOptions(
+                                user.state.force_match_eligible_default,
+                              )}
+                              placeholder="Select force match eligibility"
+                            />
+                          )}
+                        />
 
-                  <StatusMessage
-                    visible={changesSaved || !!errors?.root?.serverError}
-                    type={
-                      changesSaved ? StatusTypes.Success : StatusTypes.Error
-                    }
-                  >
-                    {changesSaved
-                      ? 'Changes updated successfully'
-                      : errors?.root?.serverError?.message}
-                  </StatusMessage>
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting || isEmpty(dirtyFields)}
-                  >
-                    Save Changes
-                  </Button>
-                </form>
-                {/* Its own form and save, so it sits after the profile form rather than in it. */}
-                {canUpdateMatchingProfileFields && (
-                  <>
-                    <CompanySection
-                      user={user}
-                      companies={companies}
-                      companiesLoading={companiesLoading}
-                      onUpdate={onUpdate}
-                    />
-                    <SignupCampaignSection user={user} onUpdate={onUpdate} />
-                  </>
-                )}
-              </div>
-            ),
-          },
-          {
-            header: 'Developer Actions',
-            content: (
-              <div className="pt-2">
-                <InviteNativeAppTester user={user} />
-              </div>
-            ),
-          },
+                        <StatusMessage
+                          visible={changesSaved || !!errors?.root?.serverError}
+                          type={
+                            changesSaved
+                              ? StatusTypes.Success
+                              : StatusTypes.Error
+                          }
+                        >
+                          {changesSaved
+                            ? 'Changes updated successfully'
+                            : errors?.root?.serverError?.message}
+                        </StatusMessage>
+                        <Button
+                          type="submit"
+                          disabled={isSubmitting || isEmpty(dirtyFields)}
+                        >
+                          Save Changes
+                        </Button>
+                      </form>
+                      {/* Its own form and save, so it sits after the profile form rather than in it. */}
+                      {canUpdateMatchingProfileFields && (
+                        <>
+                          <CompanySection
+                            user={user}
+                            companies={companies}
+                            companiesLoading={companiesLoading}
+                            onUpdate={onUpdate}
+                          />
+                          <SignupCampaignSection
+                            user={user}
+                            onUpdate={onUpdate}
+                          />
+                        </>
+                      )}
+                    </div>
+                  ),
+                },
+                {
+                  header: 'Developer Actions',
+                  content: (
+                    <div className="pt-2">
+                      <InviteNativeAppTester user={user} />
+                    </div>
+                  ),
+                },
+              ]
+            : []),
           {
             header: 'Danger Zone',
             content: (
@@ -1240,7 +1248,7 @@ const UserActions = ({
             >
               {deleteUserError ||
                 (targetIsProtected
-                  ? 'Staff, superusers, and matching users cannot be deleted from this view.'
+                  ? 'Admins and matching users cannot be deleted from this view.'
                   : `You do not have the required permissions to delete this user.`)}
             </StatusMessage>
           </CardContent>
@@ -1303,7 +1311,7 @@ const UserActions = ({
             >
               {migrateUserError ||
                 (targetIsProtected
-                  ? 'Staff, superusers, and matching users cannot be migrated from this view.'
+                  ? 'Admins and matching users cannot be migrated from this view.'
                   : `You do not have the required permissions to migrate this user.`)}
             </StatusMessage>
           </CardContent>
