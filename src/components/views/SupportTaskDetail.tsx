@@ -40,7 +40,7 @@ import {
   patchSupportTask,
   patchSupportTaskNote,
 } from '../../api/supportTasks';
-import { BLUE_40, ORANGE_40 } from '../../constants';
+import { BLUE_40 } from '../../constants';
 import { resolveAttachmentWidgetText } from '../../helpers/chat';
 import { formatTimeDistance } from '../../helpers/date';
 import { usePanelCapability } from '../../helpers/panelCapabilities';
@@ -56,6 +56,7 @@ import { PageContainer } from '../atoms/PageLayout';
 import UserImage from '../atoms/UserImage';
 import { usePageHeader } from '../blocks/LayoutHeaderContext';
 import ObjectHistoryList, { ObjectHistory } from '../blocks/ObjectHistory';
+import RelatedUserSummary, { MetaLabel } from '../blocks/RelatedUserSummary';
 import SupportTaskActionCard from '../blocks/SupportTaskActionCard';
 import SupportTaskAssigneePicker from '../blocks/SupportTaskAssigneePicker';
 import SupportTaskNotes from '../blocks/SupportTaskNotes';
@@ -66,7 +67,6 @@ import {
   UserJourneyStatus,
   UserMatchesSummary,
 } from '../blocks/user/UserProfileSummary';
-import PersonalValue from '../atoms/PersonalValue';
 
 // ─── Select options ─────────────────────────────────────────────────────────
 
@@ -168,16 +168,6 @@ const MetaField = styled.div`
   min-width: 0;
 `;
 
-const MetaLabel = styled(Text).attrs({
-  type: TextTypes.Body7,
-  tag: 'span' as const,
-})`
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: ${({ theme }) => theme.color.text.tertiary};
-  font-weight: 600;
-`;
-
 const OverviewLabelSpacer = styled(MetaLabel)`
   visibility: hidden;
   user-select: none;
@@ -250,30 +240,6 @@ const SentMessageQuote = styled.blockquote`
   max-height: 16rem;
   overflow-y: auto;
 `;
-const UserInfoRow = styled.div`
-  display: flex;
-  gap: ${({ theme }) => theme.spacing.small};
-  align-items: center;
-  margin-bottom: ${({ theme }) => theme.spacing.small};
-`;
-
-const StatGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: ${({ theme }) => theme.spacing.xsmall};
-  margin-bottom: ${({ theme }) => theme.spacing.xsmall};
-`;
-
-const StatBox = styled.div<{ $full_width?: boolean }>`
-  background: ${({ theme }) => theme.color.surface.secondary};
-  border-radius: ${({ theme }) => theme.radius.medium};
-  padding: ${({ theme }) => theme.spacing.xsmall};
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xxxsmall};
-  grid-column: ${({ $full_width }) => ($full_width ? '1 / -1' : 'inherit')};
-`;
-
 const CollapsibleHeader = styled(CardHeader)`
   flex-direction: row;
   align-items: center;
@@ -309,10 +275,6 @@ const ProfileLink = styled(Link)`
   &:hover {
     text-decoration: underline;
   }
-`;
-
-const CardProfileLink = styled(ProfileLink)`
-  margin-top: ${({ theme }) => theme.spacing.xsmall};
 `;
 
 const ContextGroup = styled(Card)`
@@ -502,18 +464,6 @@ export default function SupportTaskDetail() {
   const relatedUser = task.related_user_profile;
   const createdBy = task.created_by_profile;
   const now = new Date();
-
-  function formatLastActive(iso: string | null): string {
-    if (!iso) return 'Never';
-    const date = parseISO(iso);
-    const diffDays = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24),
-    );
-    const timeStr = format(date, 'h:mmaaa');
-    if (diffDays === 0) return `Today, ${timeStr}`;
-    if (diffDays === 1) return `Yesterday, ${timeStr}`;
-    return format(date, 'MMM d, yyyy');
-  }
 
   const description = task.description;
 
@@ -903,71 +853,10 @@ export default function SupportTaskDetail() {
                 </CollapsibleHeader>
                 {relatedUserOpen && (
                   <CardContent>
-                    <UserInfoRow>
-                      <UserImage
-                        alt={`${relatedUser.first_name} ${relatedUser.second_name}`}
-                        user={relatedUser}
-                        dimensions={{ width: 56, height: 56 }}
-                      />
-                      <MetaField>
-                        <Text bold color={ORANGE_40} tag="div">
-                          {relatedUser.first_name} {relatedUser.second_name}
-                        </Text>
-                        <Text type={TextTypes.Body5} tag="div">
-                          {relatedUser.user_type}
-                        </Text>
-                        <Text type={TextTypes.Body5} tag="div">
-                          <PersonalValue value={relatedUser.email} />
-                        </Text>
-                      </MetaField>
-                    </UserInfoRow>
-                    <StatGrid>
-                      {(relatedUserDetail?.bucket_label ??
-                        relatedUserDetail?.bucket) && (
-                        <StatBox $full_width>
-                          <MetaLabel>Bucket</MetaLabel>
-                          <Text bold tag="div">
-                            {relatedUserDetail?.bucket_label ??
-                              relatedUserDetail?.bucket}
-                          </Text>
-                        </StatBox>
-                      )}
-                      <StatBox>
-                        <MetaLabel>Member since</MetaLabel>
-                        <Text bold tag="div">
-                          {format(
-                            parseISO(relatedUser.date_joined),
-                            'MMM yyyy',
-                          )}
-                        </Text>
-                      </StatBox>
-                      <StatBox>
-                        <MetaLabel>Past tickets</MetaLabel>
-                        <Text bold tag="div">
-                          {relatedUser.past_tickets}
-                        </Text>
-                      </StatBox>
-                    </StatGrid>
-                    <MetaGrid>
-                      <MetaField>
-                        <MetaLabel>Last active</MetaLabel>
-                        <Text type={TextTypes.Body6} tag="div">
-                          {formatLastActive(relatedUser.last_active)}
-                        </Text>
-                      </MetaField>
-                      <MetaField>
-                        <MetaLabel>Residence</MetaLabel>
-                        <Text type={TextTypes.Body6} tag="div">
-                          {relatedUserDetail?.profile?.country_of_residence ||
-                            '-'}
-                        </Text>
-                      </MetaField>
-                    </MetaGrid>
-                    {canViewUsers && (
-                      <CardProfileLink to={`/user/${relatedUser.id}`}>
-                        Open full profile →
-                      </CardProfileLink>
-                    )}
+                    <RelatedUserSummary
+                      user={relatedUser}
+                      detail={relatedUserDetail}
+                    />
                   </CardContent>
                 )}
               </Card>
