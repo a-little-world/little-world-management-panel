@@ -10,15 +10,8 @@ import {
   Text,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
-import { ArrowsUpDownIcon } from '@heroicons/react/20/solid';
 import { ColumnDef, createColumnHelper } from '@tanstack/react-table';
-import {
-  ActivityIcon,
-  CheckIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
-  ClockIcon,
-} from 'lucide-react';
+import { ActivityIcon, CheckIcon, ClockIcon } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
@@ -59,6 +52,7 @@ import { getSupportTaskDetailRoute } from '../../router/routes';
 import { useCurrentUserId } from '../../store';
 import { Button } from '../atoms/Button';
 import SelectBox from '../atoms/SelectBox';
+import { SortIcon } from '../atoms/SortIcon';
 import UserImage from '../atoms/UserImage';
 import CreateSupportTaskModal from '../blocks/CreateSupportTaskModal';
 import { DataTable } from '../blocks/DataTable';
@@ -269,23 +263,6 @@ function pruneSelectedRows(
 // ─── Column definitions ───────────────────────────────────────────────────────
 
 const columnHelper = createColumnHelper<SupportTaskListItem>();
-
-function SortIcon({
-  field,
-  sortBy,
-  sortOrder,
-}: {
-  field: string;
-  sortBy: string;
-  sortOrder: 'asc' | 'desc';
-}) {
-  if (sortBy !== field) return <ArrowsUpDownIcon className="ml-2 h-4 w-4" />;
-  return sortOrder === 'asc' ? (
-    <ChevronUpIcon size={14} className="ml-2" />
-  ) : (
-    <ChevronDownIcon size={14} className="ml-2" />
-  );
-}
 
 function buildColumns(
   sortBy: string,
