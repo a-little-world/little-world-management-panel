@@ -1,6 +1,7 @@
 import React from 'react';
 import useSWR from 'swr';
 
+import { SIGNUP_FUNNEL_FILTERS } from '../../../constants/signupFunnel';
 import { cratePostFetcher } from '../../../store';
 import { DatePicker } from '../../atoms/DatePicker';
 import LoadingSpinner from '../../atoms/LoadingSpinner';
@@ -63,28 +64,10 @@ export function UserSignUpLossStatisticBase({
   setEndDate,
   title = 'User Sign-Up Loss Statistics',
 }) {
-  const requiredCounts = [
-    'journey_v2__user_created',
-    'journey_v2__email_verified',
-    'journey_v2__user_form_completed',
-    'journey_v2__booked_onboarding_call',
-    'journey_v2__self_onboarding_started',
-    'journey_v2__first_search',
-    'journey_v2__user_deleted',
-    'journey_v2__no_show',
-    'all',
-  ];
-
-  const signupLossCounts = [
-    'journey_v2__user_created',
-    'journey_v2__email_verified',
-    'journey_v2__user_form_completed',
-    'journey_v2__booked_onboarding_call',
-    'journey_v2__self_onboarding_started',
-    'journey_v2__first_search',
-    'journey_v2__user_deleted',
-    'journey_v2__no_show',
-  ];
+  const requiredCounts = SIGNUP_FUNNEL_FILTERS;
+  const signupLossCounts = SIGNUP_FUNNEL_FILTERS.filter(
+    id => id !== 'funnel__all',
+  );
 
   const random = React.useRef(Date.now() + Math.random());
   const { data: userListCounts, mutate } = useSWR(
@@ -101,7 +84,7 @@ export function UserSignUpLossStatisticBase({
   if (!userListCounts) return <LoadingSpinner />;
 
   const totalUserCount = userListCounts?.buckets.find(
-    item => item.name === 'all',
+    item => item.name === 'funnel__all',
   )?.count;
 
   const allUserCount = userListCounts?.buckets.reduce((acc, curr) => {
@@ -130,9 +113,7 @@ export function UserSignUpLossStatisticBase({
     return { tag: bucket, count, fill: colors[index] };
   });
 
-  const totalCounts = chartData.reduce((acc, curr) => acc + curr.count, 0);
-
-  const becameActiveUsers = totalUserCount - totalCounts;
+  const becameActiveUsers = allUserCount['funnel__onboarded'] ?? 0;
 
   // chat that becameActiveUsers is a number
   if (!becameActiveUsers) return <LoadingSpinner />;
@@ -156,25 +137,15 @@ export function UserSignUpLossStatisticBase({
     };
   });
 
-  console.log(
-    'CHARTDATA',
-    chartConfig,
-    totalCounts,
-    becameActiveUsers,
-    totalUserCount,
-  );
+  console.log('CHARTDATA', chartConfig, becameActiveUsers, totalUserCount);
 
   const percentageUsersBecomeActive =
     (becameActiveUsers / totalUserCount) * 100;
-  const onboardingStartedBooked =
-    allUserCount['journey_v2__booked_onboarding_call'] ?? 0;
-  const onboardingStartedSelf =
-    allUserCount['journey_v2__self_onboarding_started'] ?? 0;
   const onboardingStartedTotal =
-    onboardingStartedBooked + onboardingStartedSelf;
+    allUserCount['funnel__onboarding_started'] ?? 0;
 
   const percentageUsersCompleFormButDontStartOnboarding =
-    ((allUserCount['journey_v2__user_form_completed'] - onboardingStartedTotal) /
+    ((allUserCount['funnel__form_completed'] - onboardingStartedTotal) /
       totalUserCount) *
     100;
 
@@ -182,7 +153,7 @@ export function UserSignUpLossStatisticBase({
     2,
   )}% of all users.`;
   const text2 = `Out of ${totalUserCount} users, ${
-    allUserCount['journey_v2__user_form_completed'] - onboardingStartedTotal
+    allUserCount['funnel__form_completed'] - onboardingStartedTotal
   } users completed the form but did not start onboarding (no booked call and no in-progress self-service). This is ${percentageUsersCompleFormButDontStartOnboarding.toFixed(
     2,
   )}% of all users.`;

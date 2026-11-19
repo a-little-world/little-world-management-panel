@@ -137,6 +137,8 @@ interface FiltersProps {
 
 enum FilterKeys {
   Company = 'state__company',
+  CompanyCohort = 'state__company_cohort',
+  SignupCampaign = 'state__signup_campaign',
   CountryOfResidence = 'profile__country_of_residence',
   EmailAuthenticated = 'state__email_authenticated',
   JobSearch = 'profile__job_search',
@@ -200,6 +202,24 @@ const Filters: React.FC<FiltersProps> = ({
   const companyChoices = find(
     filterOptions?.filters,
     element => element.name === FilterKeys.Company,
+  )?.choices;
+  const cohortChoices = find(
+    filterOptions?.filters,
+    element => element.name === FilterKeys.CompanyCohort,
+  )?.choices;
+  // Cohort values are `company/cohort`, so a chosen company narrows the list to its own
+  // cohorts. "No Cohort" (`null`) stays available either way.
+  const selectedCompany = filters[FilterKeys.Company];
+  const visibleCohortChoices = (cohortChoices ?? []).filter(
+    ({ value }: { value: string }) =>
+      !selectedCompany ||
+      selectedCompany === 'null' ||
+      value === 'null' ||
+      value.startsWith(`${selectedCompany}/`),
+  );
+  const signupCampaignChoices = find(
+    filterOptions?.filters,
+    element => element.name === FilterKeys.SignupCampaign,
   )?.choices;
 
   const countryChoices = find(
@@ -326,6 +346,57 @@ const Filters: React.FC<FiltersProps> = ({
               />
             </DropdownItem>
 
+            <DropdownItem>
+              <Select
+                id={FilterKeys.CompanyCohort}
+                key={
+                  FilterKeys.CompanyCohort + filters[FilterKeys.CompanyCohort]
+                }
+                onValueChange={val => {
+                  onUpdateFilters(FilterKeys.CompanyCohort, val);
+                }}
+                value={filters[FilterKeys.CompanyCohort]}
+                label={'Company cohort'}
+                placeholder="Select a cohort"
+                disabled={filtersLoading}
+                options={visibleCohortChoices.map(
+                  ({ tag, value }: { tag: string; value: string }) => ({
+                    label: tag,
+                    value: value,
+                  }),
+                )}
+                inModal
+              />
+            </DropdownItem>
+          </DropdownRow>
+
+          <DropdownRow>
+            <DropdownItem>
+              <Select
+                id={FilterKeys.SignupCampaign}
+                key={
+                  FilterKeys.SignupCampaign + filters[FilterKeys.SignupCampaign]
+                }
+                onValueChange={val => {
+                  onUpdateFilters(FilterKeys.SignupCampaign, val);
+                }}
+                value={filters[FilterKeys.SignupCampaign]}
+                label={'Signup campaign'}
+                placeholder="Select a signup campaign"
+                disabled={filtersLoading}
+                options={
+                  isEmpty(signupCampaignChoices)
+                    ? []
+                    : signupCampaignChoices.map(
+                        ({ tag, value }: { tag: string; value: string }) => ({
+                          label: tag,
+                          value: value,
+                        }),
+                      )
+                }
+                inModal
+              />
+            </DropdownItem>
             <DropdownItem>
               <Select
                 id={FilterKeys.CountryOfResidence}

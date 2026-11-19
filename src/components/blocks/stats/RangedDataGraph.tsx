@@ -1,10 +1,18 @@
-import { Select } from '@a-little-world/little-world-design-system';
+import {
+  Select,
+  Text,
+  TextTypes,
+} from '@a-little-world/little-world-design-system';
 import React from 'react';
+import type { DateRange } from 'react-day-picker';
 import styled from 'styled-components';
 import useSWR from 'swr';
 
-import { cratePostFetcher } from '../../../store';
-import { DatePicker } from '../../atoms/DatePicker';
+import { apiFetch } from '../../../api/helpers';
+import {
+  DateRangePicker,
+  formatLocalDateYmd,
+} from '../../atoms/DateRangePicker';
 import DataGraph from '../DataGraph';
 
 const StyledDropdown = styled(Select)`
@@ -14,155 +22,230 @@ const StyledDropdown = styled(Select)`
   width: 100%;
 `;
 
-export const graphEndpoints = [
-  {
-    endpoint: '/api/matching/users/statistics/video_calls/',
-    title: 'User Video Calls',
-    description: 'The amount of video calls made in a given time period.',
-  },
-  {
-    endpoint: '/api/matching/users/statistics/signups/',
-    title: 'User Signups',
-    description: 'The amount of users that signed up in a given time period.',
-  },
-  {
-    endpoint: '/api/matching/email_send_statistics/',
-    title: 'Emails Sent',
-    description: 'The amount of emails sent in a given time period.',
-  },
-  {
-    endpoint: '/api/matching/email_send_statistics/?dynamic_only=true',
-    title: 'Dynamic Emails Sent',
-    description: 'The amount of dynamic emails sent in a given time period.',
-  },
-  {
-    endpoint: '/api/matching/users/statistics/sessions/',
-    title: 'User Sessions',
-    description: 'The amount of user sessions created in a given time period.',
-  },
-  {
-    endpoint: '/api/matching/users/statistics/signups/?cumulative=true',
-    title: 'cummulative user signups',
-    description:
-      'the total amount of users that where registered up to a given time period.',
-  },
-  {
-    endpoint: '/api/matching/users/statistics/messages_send/',
-    title: 'User Messages',
-    description: 'The amount of messages sent in a given time period.',
-  },
-  {
-    endpoint:
-      '/api/matching/users/statistics/video_calls/?aggregation=total_time',
-    title: 'Summed Minutes Spent in Video Calls',
-    description:
-      'The total amount of minutes spent in video calls in a given time period.',
-  },
-  {
-    endpoint:
-      '/api/matching/users/statistics/video_calls/?aggregation=average_time',
-    title: 'Average Time Per Video Call in Minutes',
-    description:
-      'The average time spent in video calls in a given time period.',
-  },
-];
+const GRAPH_ENDPOINT = '/api/matching/statistics/time-series/';
+
+const GraphLayout = styled.div`
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.small};
+  width: 100%;
+`;
+
+const Controls = styled.div`
+  align-items: flex-end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${({ theme }) => theme.spacing.small};
+  justify-content: center;
+  width: 100%;
+`;
+
+const Control = styled.div`
+  min-width: 180px;
+`;
+
+type MetricUnit = 'count' | 'duration_seconds';
+
+type CallType = 'all' | 'standard' | 'random';
+
+type Metric = {
+  id: string;
+  display_name: string;
+  description: string;
+  unit: MetricUnit;
+  supports_call_type: boolean;
+};
+
+type TimeSeriesPoint = {
+  date: string;
+  period_value: number;
+  cumulative_value: number;
+};
+
+type TimeSeriesResponse = {
+  metric: Metric;
+  points: TimeSeriesPoint[];
+};
+
+const formatDuration = (seconds: number) => {
+  const totalMinutes = Math.round(seconds / 60);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  if (hours === 0) return `${minutes}m`;
+  return `${hours}h ${minutes}m`;
+};
 
 export function RangedDataGraph() {
-  const random = React.useRef(Date.now() + Math.random());
-
-  const [endpoint, setEndpoint] = React.useState(graphEndpoints[0]);
-
-  const [startDate, setStartDate] = React.useState('2024-01-01');
-  const today = new Date();
-  const [endDate, setEndDate] = React.useState(
-    today.toISOString().split('T')[0],
+  const [metricId, setMetricId] = React.useState('video_calls');
+  const [dateRange, setDateRange] = React.useState<DateRange | undefined>({
+    from: new Date(2024, 0, 1),
+    to: new Date(),
+  });
+  const [dayRange, setDayRange] = React.useState(1);
+  const [displayMode, setDisplayMode] = React.useState<'period' | 'cumulative'>(
+    'period',
   );
-  const [dayRange, setDayRange] = React.useState(1); // supports only 1 or 7 atm
+  const [callType, setCallType] = React.useState<CallType>('all');
 
-  const appendEndpoint =
-    (endpoint.endpoint.endsWith('/') ? '?random=' : '&random=') +
-    random.current;
+  const {
+    data: metrics,
+    error: metricsError,
+    isLoading: metricsLoading,
+  } = useSWR<Metric[]>(GRAPH_ENDPOINT, (url: string) =>
+    apiFetch<Metric[]>(url),
+  );
+  const selectedMetric = metrics?.find(metric => metric.id === metricId);
+  const requestStartDate = dateRange?.from
+    ? formatLocalDateYmd(dateRange.from)
+    : null;
+  const requestEndDate = dateRange?.to
+    ? formatLocalDateYmd(dateRange.to)
+    : null;
+  const dateRangeIsValid =
+    requestStartDate !== null &&
+    requestEndDate !== null &&
+    requestStartDate <= requestEndDate;
+  // Only call metrics take a call type; leaving it out elsewhere keeps one cache
+  // entry per metric instead of one per hidden filter value.
+  const requestCallType = selectedMetric?.supports_call_type
+    ? callType
+    : undefined;
 
-  const { mutate, error, data, isLoading } = useSWR(
-    endpoint.endpoint + appendEndpoint,
-    cratePostFetcher({
-      start_date: startDate,
-      end_date: endDate,
-      bucket_size: dayRange,
-    }),
-    {},
+  const {
+    data,
+    error: dataError,
+    isLoading: dataLoading,
+  } = useSWR<TimeSeriesResponse>(
+    selectedMetric && dateRangeIsValid
+      ? ([
+          GRAPH_ENDPOINT,
+          metricId,
+          requestStartDate,
+          requestEndDate,
+          dayRange,
+          requestCallType,
+        ] as const)
+      : null,
+    ([url]) =>
+      apiFetch<TimeSeriesResponse>(url, {
+        method: 'POST',
+        body: {
+          metric_id: metricId,
+          start_date: requestStartDate,
+          end_date: requestEndDate,
+          bucket_size: dayRange,
+          ...(requestCallType && { call_type: requestCallType }),
+        },
+      }),
+    // Keep the current chart on screen while the next range or metric loads.
+    { keepPreviousData: true },
   );
 
-  if (isLoading) return <div>Loading...</div>;
-  if (!data) return <div>Error: {error}</div>;
+  if (metricsLoading) return <div>Loading...</div>;
+  if (!metrics) return <div>Error: {String(metricsError)}</div>;
+
+  const chartData =
+    data?.points.map(point => ({
+      date: point.date,
+      count:
+        displayMode === 'cumulative'
+          ? point.cumulative_value
+          : point.period_value,
+    })) ?? [];
+  // Format by the metric the data belongs to, which can lag the selection while
+  // keepPreviousData shows the old chart.
+  const valueFormatter =
+    data?.metric.unit === 'duration_seconds'
+      ? formatDuration
+      : (value: number) => value.toLocaleString();
 
   return (
-    <div className="flex flex-col justify-center items-center">
-      <h2>{endpoint.endpoint}</h2>
+    <GraphLayout>
+      <Text type={TextTypes.Body3} bold tag="h2">
+        {selectedMetric?.display_name}
+      </Text>
       <StyledDropdown
-        value={endpoint.endpoint}
-        options={graphEndpoints.map(({ endpoint, title, description }) => ({
-          value: endpoint,
-          label: description,
+        value={metricId}
+        options={metrics.map(metric => ({
+          value: metric.id,
+          label: metric.display_name,
         }))}
-        onValueChange={val => {
-          setEndpoint(
-            graphEndpoints.find(({ endpoint }) => endpoint === val) ||
-              graphEndpoints[0],
-          );
-        }}
-        placeholder="Select a user list..."
+        onValueChange={setMetricId}
+        placeholder="Select a metric..."
         cannotError
       />
-      <span>
-        NOTE: Any statistics are filtered down to the users the current matching
-        user has access too
-      </span>
-      <div className="w-full flex flex-row items-center content-center justify-center">
-        <div className="flex flex-col items-center content-center justify-center">
-          <div className="flex w-full items-start">Start Date:</div>
-          <DatePicker
-            date={startDate}
-            setDate={date => {
-              setStartDate(date);
-              setTimeout(() => {
-                mutate();
-              }, 500);
-            }}
-          />
-        </div>
-        <div className="flex flex-col items-center content-center justify-center">
-          <div className="flex w-full items-start">End Date</div>
-          <DatePicker
-            date={endDate}
-            setDate={date => {
-              setEndDate(date);
-              setTimeout(() => {
-                mutate();
-              }, 500);
-            }}
-          />
-        </div>
-        <div className="flex flex-col items-center content-center justify-center">
-          <div className="flex w-full items-start">Day Range:</div>
+      <Text type={TextTypes.Body6}>{selectedMetric?.description}</Text>
+      <Text type={TextTypes.Body6}>
+        Statistics are limited to users the current matching user can access.
+      </Text>
+      <Controls>
+        <DateRangePicker
+          label="Date range"
+          range={dateRange}
+          setRange={setDateRange}
+        />
+        <Control>
           <StyledDropdown
+            label="Period"
             value={dayRange.toString()}
             options={[1, 7, 30].map(val => ({
               value: val.toString(),
               label: val === 1 ? 'Daily' : val === 7 ? 'Weekly' : 'Monthly',
             }))}
-            onValueChange={val => {
-              setDayRange(parseInt(val));
-              setTimeout(() => {
-                mutate();
-              }, 500);
-            }}
-            placeholder="Select a user list..."
+            onValueChange={val => setDayRange(parseInt(val, 10))}
+            placeholder="Select a period..."
             cannotError
           />
-        </div>
-      </div>
-      <DataGraph data={data} dataLabel={`${endpoint.title}: `} />
-    </div>
+        </Control>
+        <Control>
+          <StyledDropdown
+            label="Value"
+            value={displayMode}
+            options={[
+              { value: 'period', label: 'Per period' },
+              { value: 'cumulative', label: 'Cumulative in range' },
+            ]}
+            onValueChange={value =>
+              setDisplayMode(value as 'period' | 'cumulative')
+            }
+            placeholder="Select a value..."
+            cannotError
+          />
+        </Control>
+        {selectedMetric?.supports_call_type && (
+          <Control>
+            <StyledDropdown
+              label="Call type"
+              value={callType}
+              options={[
+                { value: 'all', label: 'All calls' },
+                { value: 'standard', label: 'Standard calls' },
+                { value: 'random', label: 'Random calls' },
+              ]}
+              onValueChange={value => setCallType(value as CallType)}
+              placeholder="Select a call type..."
+              cannotError
+            />
+          </Control>
+        )}
+      </Controls>
+      {!dateRangeIsValid && (
+        <Text type={TextTypes.Body6}>
+          Select both a start and an end date, with the end on or after the
+          start.
+        </Text>
+      )}
+      {dataLoading && <div>Loading graph...</div>}
+      {dataError && <div>Error: {String(dataError)}</div>}
+      {data && dateRangeIsValid && (
+        <DataGraph
+          data={chartData}
+          dataLabel={`${data.metric.display_name}: `}
+          valueFormatter={valueFormatter}
+        />
+      )}
+    </GraphLayout>
   );
 }

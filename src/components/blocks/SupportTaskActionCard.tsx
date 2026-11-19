@@ -212,7 +212,11 @@ export default function SupportTaskActionCard({
   }
   const customContent = renderContent();
   const suggestionContent = renderSuggestion();
-  const primaryLabel = isSuggestion ? suggestionCfg.label : 'Execute';
+  const primaryLabel = isSuggestion
+    ? suggestionCfg.label
+    : action.action_type === 'manual'
+      ? 'Complete'
+      : 'Execute';
   const primaryAction = suggestedAction === 'keep_open' ? 'keep_open' : 'execute';
 
   return (

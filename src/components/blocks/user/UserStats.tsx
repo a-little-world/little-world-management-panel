@@ -8,6 +8,7 @@ import {
   Link,
 } from '@a-little-world/little-world-design-system';
 import { formatRoundedDuration } from '../../../helpers/date';
+import { usePanelCapability } from '../../../helpers/panelCapabilities';
 import { VIDEO_CALLS_ROUTE } from '../../../router/routes';
 import { dataFetcher } from '../../../store';
 
@@ -50,6 +51,7 @@ const Message = styled.div<{ $error?: boolean }>`
 `;
 
 const UserStats = ({ user }: { user: { id: number } }) => {
+  const canViewVideoCalls = usePanelCapability('video_calls');
   const { data, error, isLoading } = useSWR<{
     total_video_calls: number;
     total_video_time_hours: number;
@@ -78,13 +80,15 @@ const UserStats = ({ user }: { user: { id: number } }) => {
           </StatValue>
         </StatCard>
       </StatsContainer>
-      <Link
-        buttonAppearance={ButtonAppearance.Primary}
-        buttonSize={ButtonSizes.Medium}
-        to={VIDEO_CALLS_ROUTE + '?user_id=' + user.id}
-      >
-        View list of video calls
-      </Link>
+      {canViewVideoCalls && (
+        <Link
+          buttonAppearance={ButtonAppearance.Primary}
+          buttonSize={ButtonSizes.Medium}
+          to={VIDEO_CALLS_ROUTE + '?user_id=' + user.id}
+        >
+          View list of video calls
+        </Link>
+      )}
     </Wrapper>
   );
 };

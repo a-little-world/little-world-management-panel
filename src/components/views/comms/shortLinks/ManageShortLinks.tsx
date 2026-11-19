@@ -9,7 +9,6 @@ import {
   CardFooter,
   CardHeader,
   CardSizes,
-  CopyIcon,
   Loading,
   LoadingSizes,
   Modal,
@@ -23,7 +22,8 @@ import {
   TextTypes,
   Toast,
 } from '@a-little-world/little-world-design-system';
-import React, { useDeferredValue, useMemo, useState } from 'react';
+import React, { useDeferredValue, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import useSWR, { mutate } from 'swr';
 
 import styled, { useTheme } from 'styled-components';
@@ -33,8 +33,10 @@ import {
   archiveAdminShortLink,
   createAdminShortLink,
   fetchAdminShortLinks,
+  shortLinkUrl,
   updateAdminShortLink,
 } from '../../../../api/shortLinks';
+import { CopyableLink, copyResultToast } from '../../../atoms/CopyableLink';
 import {
   Description,
   ListPanel,
@@ -52,27 +54,6 @@ import {
 } from '../../../atoms/Table';
 import { usePageHeader } from '../../../blocks/LayoutHeaderContext';
 import LinkForm, { LinkFormValues } from './EditShortLink';
-
-/**
- * The public URL a short link redirects from. Built here rather than read off the
- * record: the backend stores only the tag, and `links/<tag>/` is the route the
- * redirect view is registered at. The admin panel is served by that same Django app,
- * so its origin is the right host in every environment.
- */
-const shortLinkUrl = (tag: string) => `${window.location.origin}/links/${tag}/`;
-
-const LinkCell = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.xxsmall};
-`;
-
-const ShortLinkAnchor = styled.a`
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: ${({ theme }) => theme.color.text.accent};
-`;
 
 const getDefaultFormValues = (): LinkFormValues => ({
   tag: '',
@@ -148,6 +129,22 @@ function Links() {
     setFormModalOpen(true);
   };
 
+  // `?edit=<id>` (e.g. from a company's sign-up link) opens that link's edit modal once the
+  // list has loaded, then drops the param so closing the modal doesn't reopen it.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const editParam = searchParams.get('edit');
+  useEffect(() => {
+    if (!editParam || !data) return;
+    const link = data.find(
+      (candidate: AdminShortLink) => String(candidate.id) === editParam,
+    );
+    if (link) openEditModal(link);
+    searchParams.delete('edit');
+    setSearchParams(searchParams, { replace: true });
+    // openEditModal only sets state; re-running on its identity would loop.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editParam, data]);
+
   const closeFormModal = () => {
     if (saving) return;
     setFormModalOpen(false);
@@ -198,27 +195,6 @@ function Links() {
       });
     } finally {
       setSaving(false);
-    }
-  };
-
-  const copyShortLink = async (tag: string) => {
-    const url = shortLinkUrl(tag);
-    try {
-      await navigator.clipboard.writeText(url);
-      setLinksToast({
-        id: Date.now(),
-        headline: 'Copied',
-        title: url,
-      });
-    } catch {
-      // Clipboard access needs a secure context, and `navigator.clipboard` is simply
-      // absent without one — the link is on screen either way, so say so.
-      setLinksToast({
-        id: Date.now(),
-        headline: 'Error',
-        title:
-          'Could not reach the clipboard. Select the link and copy it manually.',
-      });
     }
   };
 
@@ -341,29 +317,13 @@ function Links() {
                   <TableRow key={link.id}>
                     <TableCell className="font-medium">{link.tag}</TableCell>
                     <TableCell className="max-w-[20rem]">
-                      <LinkCell>
-                        <ShortLinkAnchor
-                          href={shortLinkUrl(link.tag)}
-                          title={shortLinkUrl(link.tag)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {shortLinkUrl(link.tag)}
-                        </ShortLinkAnchor>
-                        <Button
-                          variation={ButtonVariations.Circle}
-                          appearance={ButtonAppearance.Secondary}
-                          size={ButtonSizes.Small}
-                          onClick={() => copyShortLink(link.tag)}
-                          title={`Copy the link for “${link.tag}”`}
-                        >
-                          <CopyIcon
-                            label={`copy link for ${link.tag}`}
-                            width={16}
-                            height={16}
-                          />
-                        </Button>
-                      </LinkCell>
+                      <CopyableLink
+                        url={shortLinkUrl(link.tag)}
+                        label={link.tag}
+                        onCopied={result =>
+                          setLinksToast(copyResultToast(result))
+                        }
+                      />
                     </TableCell>
                     <TableCell
                       className="max-w-[18rem] truncate"

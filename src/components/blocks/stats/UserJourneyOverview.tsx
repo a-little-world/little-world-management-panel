@@ -7,7 +7,6 @@ import {
   Sections,
   useMatchSuccessPageHeader,
 } from './JourneyStyles';
-import UserJourneyBuckets from './UserJourneyBuckets';
 import UserJourneyV5Buckets from './UserJourneyV5Buckets';
 
 export function UserJourneyOverview() {
@@ -21,7 +20,6 @@ export function UserJourneyOverview() {
         {`All the numbers in these overviews <bold>are live statistics</bold> and are <bold>filtered down to the current users access</bold>.`}
       </Description>
       <Sections>
-        <UserJourneyBuckets />
         <UserJourneyV5Buckets />
       </Sections>
     </Container>

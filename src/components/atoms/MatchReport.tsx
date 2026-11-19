@@ -1,4 +1,5 @@
 import { Text } from '@a-little-world/little-world-design-system';
+import { isValid } from 'date-fns';
 import { capitalize } from 'lodash';
 import React from 'react';
 import styled from 'styled-components';
@@ -21,6 +22,13 @@ const Reporter = styled(Text)`
   text-align: left;
 `;
 
+// The latest close, not the first: a match that was reactivated and closed again has
+// several entries. `reactivated` entries record the reopening, not a close.
+const getClosingEntry = (reportUnmatch: any[] | undefined) =>
+  [...(reportUnmatch ?? [])]
+    .reverse()
+    .find(entry => entry?.kind && entry.kind !== 'reactivated');
+
 export const getMatchReportProps = (
   match: any,
   isProposed: boolean,
@@ -33,7 +41,7 @@ export const getMatchReportProps = (
   showUnmatcher: boolean;
 } => {
   const reportUnmatch =
-    match.report_unmatch?.[0] ||
+    getClosingEntry(match.report_unmatch) ||
     (match.partner?.isDeleted
       ? { kind: 'user_deleted', reason: 'User account was deleted' }
       : {});
@@ -41,13 +49,15 @@ export const getMatchReportProps = (
     ? match.rejected
       ? 'Proposal Rejected by Learner'
       : 'Proposal Expired'
-    : capitalize(
-        `${reportUnmatch.kind}${match.partner?.isDeleted ? '' : 'ed'}`,
-      );
+    : match.partner?.isDeleted
+      ? 'Account deleted'
+      : capitalize(
+          `${reportUnmatch.kind}${reportUnmatch.kind?.endsWith('ed') ? '' : 'ed'}`,
+        );
 
   const date = isProposed
     ? (match.rejected_at ?? match.expires_at)
-    : match.reoportUnmatch?.time;
+    : reportUnmatch?.time;
 
   const reason =
     (isProposed ? match.rejected_reason : reportUnmatch?.reason) || UNAVAILABLE;
@@ -87,11 +97,16 @@ const MatchReport: React.FC<MatchReportProps> = ({
   unmatcherType,
   showUnmatcher,
 }) => {
+  // The time comes from free-form JSON history. An unparseable value (old rows, censored
+  // dev data) would make date-fns throw and take the whole page down, so it is dropped.
+  const parsedDate = date ? new Date(date) : null;
+  const hasValidDate = !!parsedDate && isValid(parsedDate);
+
   return (
     <MatchReportContainer className={className}>
       <Text bold center>{`${inactiveCause}${
-        date
-          ? ` on ${formatDate(new Date(date), 'dd.LL.yyyy', LANGUAGES.en)}`
+        hasValidDate
+          ? ` on ${formatDate(parsedDate, 'dd.LL.yyyy', LANGUAGES.en)}`
           : ''
       }`}</Text>
       {reason && <Reason>{`<bold>Reason</bold>: ${reason}`}</Reason>}

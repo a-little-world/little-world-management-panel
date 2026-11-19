@@ -2,19 +2,32 @@ import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../atoms/Tabs';
+import ExternalSessions from './ExternalSessions';
 import RandomCallAnalytics from './RandomCallAnalytics';
 import RandomCallHistory from './RandomCallHistory';
 import RandomCallManagement from './RandomCallManagement';
 import RandomCallSchedule from './RandomCallSchedule';
 import RandomCallTrends from './RandomCallTrends';
 
+const EXTERNAL_TAB_ALIASES = new Set(['external', 'registrations', 'create-session']);
+
 function RandomCalls() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const tab = searchParams.get('tab') || 'manage';
+  const rawTab = searchParams.get('tab') || 'manage';
+  const tab = EXTERNAL_TAB_ALIASES.has(rawTab) ? 'external' : rawTab;
 
   const onTabChange = (value: string) => {
-    searchParams.set('tab', value);
-    setSearchParams(searchParams);
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.set('tab', value);
+    if (value === 'external') {
+      if (!nextParams.get('section')) {
+        nextParams.set('section', 'registrations');
+      }
+    } else {
+      nextParams.delete('section');
+      nextParams.delete('appointment_starts_at');
+    }
+    setSearchParams(nextParams);
   };
 
   return (
@@ -25,6 +38,7 @@ function RandomCalls() {
         <TabsTrigger value="analytics">Session Stats</TabsTrigger>
         <TabsTrigger value="trends">Trends</TabsTrigger>
         <TabsTrigger value="history">History</TabsTrigger>
+        <TabsTrigger value="external">External Sessions</TabsTrigger>
       </TabsList>
       {tab === 'manage' && (
         <TabsContent value="manage">
@@ -49,6 +63,11 @@ function RandomCalls() {
       {tab === 'history' && (
         <TabsContent value="history">
           <RandomCallHistory />
+        </TabsContent>
+      )}
+      {tab === 'external' && (
+        <TabsContent value="external">
+          <ExternalSessions />
         </TabsContent>
       )}
     </Tabs>

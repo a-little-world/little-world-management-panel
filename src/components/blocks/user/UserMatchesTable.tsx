@@ -11,6 +11,7 @@ import styled from 'styled-components';
 
 import { LANGUAGES, MATCH_STATUS } from '../../../constants';
 import { formatDate, formatTimeDistance } from '../../../helpers/date';
+import { usePanelCapability } from '../../../helpers/panelCapabilities';
 import { useGlobalState } from '../../../store';
 import MatchReport, { getMatchReportProps } from '../../atoms/MatchReport';
 import {
@@ -62,6 +63,7 @@ const UserMatchesTable = ({
   isProposed = false,
 }: UserMatchesTableProps) => {
   const { updateCurrentUser } = useGlobalState();
+  const canViewMatches = usePanelCapability('matches');
   const [removeMatchId, setRemoveMatchId] = useState<string | null>(null);
   const removeMatch = matches.find(match => match.id === removeMatchId);
 
@@ -107,23 +109,32 @@ const UserMatchesTable = ({
                   {match.partner?.censored ? (
                     <Text>Account no longer exists</Text>
                   ) : (
-                    <Link to={`/match/${match.id}`} textDecoration={false}>
-                      <PartnerInfo>
-                        <UserImage
-                          hasPriority={match.partner.has_match_priority}
-                          alt="match profile pic"
-                          user={match.partner}
-                          dimensions={{
-                            height: 32,
-                            width: 32,
-                          }}
-                        />
-                        <Text center bold>
-                          {match.partner.first_name} (
-                          {capitalize(match.partner.user_type)})
-                        </Text>
-                      </PartnerInfo>
-                    </Link>
+                    (() => {
+                      const partnerInfo = (
+                        <PartnerInfo>
+                          <UserImage
+                            hasPriority={match.partner.has_match_priority}
+                            alt="match profile pic"
+                            user={match.partner}
+                            dimensions={{
+                              height: 32,
+                              width: 32,
+                            }}
+                          />
+                          <Text center bold>
+                            {match.partner.first_name} (
+                            {capitalize(match.partner.user_type)})
+                          </Text>
+                        </PartnerInfo>
+                      );
+                      return canViewMatches ? (
+                        <Link to={`/match/${match.id}`} textDecoration={false}>
+                          {partnerInfo}
+                        </Link>
+                      ) : (
+                        partnerInfo
+                      );
+                    })()
                   )}
                 </TableCell>
                 <TableCell>
@@ -175,7 +186,9 @@ const UserMatchesTable = ({
                 {!isProposed && (
                   <TableCell>
                     <ActionsCell>
-                      <Link to={`/match/${match.id}`}>View Match</Link>
+                      {canViewMatches && (
+                        <Link to={`/match/${match.id}`}>View Match</Link>
+                      )}
                     </ActionsCell>
                   </TableCell>
                 )}

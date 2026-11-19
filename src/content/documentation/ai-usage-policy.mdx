@@ -1,0 +1,46 @@
+# AI Usage Policy
+
+Little World builds and maintains this platform together with AI agents and AI
+coding assistants. Using AI is allowed — the rules below keep AI-assisted work
+reviewable and trustworthy. They apply to every repository in the Little World
+stack, including this management panel.
+
+## Rules
+
+### AI usage is documented
+
+Our approach to AI usage lives in our documentation. When AI is involved in a
+change, make that visible in the issue or pull request so reviewers know what to
+look at.
+
+### Always read the code diff
+
+Before you approve, merge or otherwise accept any AI-assisted change, read the
+complete diff yourself — every changed file and every changed frontend. Never
+merge code you have not read.
+
+### Always test on a frontend
+
+Test every feature at least once on a frontend, either locally or on a deployed
+environment, in addition to the automated test suite. Passing tests alone are
+not enough.
+
+## How we work with AI agents
+
+- AI agents work on feature branches and open pull requests. A human stays
+  responsible for the change, its review and its merge — see the
+  [Development Process](/documentation/development-process/) page.
+- Agent instructions are kept up to date so agents follow the same development
+  process, use our design system, and test against a real frontend.
+- When an AI-assisted change spans repositories (backend, frontend, design
+  system), the pull request lists every dependency.
+
+## Where we are heading
+
+We are continuing to improve how AI is used on the project:
+
+- A test agent that inspects a change, plans a browser walk-through of the
+  feature, records it, and posts the recording on the pull request.
+- Easier Open-Chat access and a consolidated Little World development process.
+- Extending the agents' knowledge: maintained agent instructions, a connection
+  to our Figma design system, and links to temporary environment deployments.

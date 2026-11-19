@@ -90,6 +90,7 @@ interface ReportDownloadSectionProps {
   /** When dropdown is used: builds endpoint from selected value (e.g. company in URL path) */
   apiEndpointBuilder?: (selectedOption: string) => string;
   apiParams?: Record<string, any>;
+  apiParamsBuilder?: (selectedOption: string) => Record<string, any>;
   downloadFilename:
     | string
     | ((
@@ -112,6 +113,7 @@ const ReportDownloadSection: React.FC<ReportDownloadSectionProps> = ({
   apiEndpoint: apiEndpointProp,
   apiEndpointBuilder,
   apiParams,
+  apiParamsBuilder,
   downloadFilename,
   downloadMimeType = 'application/json',
   showDateRange = false,
@@ -141,16 +143,33 @@ const ReportDownloadSection: React.FC<ReportDownloadSectionProps> = ({
   }, [apiEndpointBuilder, apiEndpointProp, selectedDropdownValue]);
 
   const fetcherParams = useMemo(() => {
-    const params: Record<string, any> = { ...apiParams };
+    const params: Record<string, any> = {
+      ...apiParams,
+      ...(apiParamsBuilder && selectedDropdownValue
+        ? apiParamsBuilder(selectedDropdownValue)
+        : {}),
+    };
     if (showDateRange) {
       params.start_date = startDateString;
       params.end_date = endDateString;
     }
     return params;
-  }, [startDateString, endDateString, apiParams, showDateRange]);
+  }, [
+    startDateString,
+    endDateString,
+    apiParams,
+    apiParamsBuilder,
+    selectedDropdownValue,
+    showDateRange,
+  ]);
 
   const swrKey = effectiveEndpoint
-    ? [effectiveEndpoint, startDateString, endDateString]
+    ? [
+        effectiveEndpoint,
+        startDateString,
+        endDateString,
+        selectedDropdownValue,
+      ]
     : null;
 
   const fetcher = useCallback(

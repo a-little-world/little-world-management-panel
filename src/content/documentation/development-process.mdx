@@ -1,0 +1,127 @@
+This page mirrors the shared development process guide kept in the backend docs
+(`dev/docs/development_process.md`). It describes how we work across the Little World
+repositories: who reviews what, how a pull request moves from draft to ready, how our CI
+labels work, and in which order dependent changes across repos have to be merged. When the
+source guide changes, update this copy too.
+
+## Repository ownership & review responsibilities
+
+Reviews are required by default. **Self-review is allowed** — when you are the responsible
+reviewer for a repo you may approve and merge your own PR. The point of the matrix is that
+someone owns the change, not that a second person is always forced in.
+
+| Repository | Checkout path | Responsible reviewer | Policy |
+| --- | --- | --- | --- |
+| `little-world-backend` | `back/` (parent) | Tim ([@tbscode](https://github.com/tbscode)) | review required |
+| `little-world-management-panel` (this panel) | `front/apps/admin_panel_frontend` | Sean ([@Simba14](https://github.com/Simba14)), Jannis ([@JannisToelle](https://github.com/JannisToelle)), Tim | **optional** — get a review if you want one |
+| `little-world-frontend` | `front/apps/main_frontend` | Sean | review required |
+| `little-world-design-system` | external package | Sean | review required |
+| `little-world-native` | external | Jannis | review required |
+| helpers: `little-world-cookie-banner`, `little-world-cookie-consent`, `little-world-patenmatch-frontend`, `little-world-e2e-tests`, `little-world-backend-docs`, `little-world-backend-scripts` | submodules | as committed | best effort |
+
+When you are unsure who owns something, ask in the PR and default to the backend owner for
+the parent repo.
+
+## PR creation process
+
+1. Branch off the latest `main` and open the PR as a **draft** while you are still working
+   on it.
+2. Add the applicable CI labels when you open the PR (see below). Labels are what actually
+   kick off CI — a PR with no labels just gets a guidance comment and a failing check.
+3. Turn the PR **ready for review only when the change is actually done and the tests pass**.
+   A draft that is green but still being edited should stay a draft.
+
+## CI labels
+
+The backend workflow
+([`build_test_e2e_deploy.yaml`](https://github.com/a-little-world/little-world-backend/blob/main/.github/workflows/build_test_e2e_deploy.yaml))
+is label-driven. Add the labels you need at creation time:
+
+| Label | Effect |
+| --- | --- |
+| `test` | runs the Django backend test suite (sharded) |
+| `e2e` | runs the end-to-end simulation suite |
+| `deploy` | deploys an ephemeral environment for the branch |
+| `android` | triggers an Android release build via `little-world-native` |
+| `staging` | auto-added when the PR title starts with `staging-` (see below) |
+
+**`test` and `e2e` are both required for a passing run.** Even if only one label is set,
+the `finalize` job fails unless both were present and passed. For backend code changes, add
+`test` and `e2e`. Add `deploy` and `android` only when you specifically need them.
+
+When labels are changed the workflow re-runs, so adding a label later also works.
+
+## Becoming "ready to review"
+
+Once `test` and `e2e` are green:
+
+1. Mark the PR ready for review.
+2. Notify the responsible reviewer from the matrix above.
+
+Optionally, a comment containing `please review` on the PR routes it to the review bot — see
+[Open-Chat CI integration](https://github.com/a-little-world/little-world-backend-docs/blob/main/open_chat_ci.md)
+for the workflow and the exact phrase.
+
+## Cross-repo dependencies & merge order
+
+Some changes span repositories (backend + frontend, backend + native, design system, …).
+
+- **Write every repo dependency into the PR description, including links to the PRs.** If
+  your backend PR needs a frontend PR, the frontend PR needs a design system change, list
+  them all so reviewers see the whole picture.
+
+### Frontend / submodule changes
+
+Frontends are checked out as submodules of the backend repo and CI
+([`main_merge_check.yaml`](https://github.com/a-little-world/little-world-backend/blob/main/.github/workflows/main_merge_check.yaml))
+requires every `front/apps/*` submodule to be pinned to the submodule's latest `main` when
+merging into the backend `main`.
+
+Therefore:
+
+1. Merge the **submodule PR into the submodule's own `main` first**.
+2. Then bump the submodule gitlink in the parent repo and merge that.
+
+This also means a frontend branch that depends on backend work which has not landed yet
+**cannot reach `main` first**. Land the backend change, then the frontend change, then the
+gitlink bump.
+
+### Keeping branches up to date
+
+`main_merge_check` also requires your branch to contain all of `main` (`HEAD..main` must be
+empty). When `main` advances:
+
+```bash
+git fetch origin
+git merge origin/main   # or rebase, then force-push your branch
+```
+
+Because the CI workflow listens for `synchronize` (pushes to the PR branch), this **re-runs
+`test` and `e2e`** on the updated code.
+
+Worked example:
+
+- `feat-1` merges into `main`.
+- `feat-2` is behind. Merge `main` into `feat-2` (`main → feat-2`).
+- The push re-triggers `test`/`e2e` on `feat-2`; only merge once they are green again.
+
+You can use the `deploy` label to stand up an ephemeral backend environment so a dependent
+frontend branch can point at it while the backend PR is still open.
+
+## Staging & production flow
+
+- Merging into `main` **automatically triggers a staging deployment**
+  ([`trigger_staging_deployment_request.yaml`](https://github.com/a-little-world/little-world-backend/blob/main/.github/workflows/trigger_staging_deployment_request.yaml)).
+- A PR whose title starts with `staging-` automatically gets the `staging` label
+  ([`auto_label_staging.yaml`](https://github.com/a-little-world/little-world-backend/blob/main/.github/workflows/auto_label_staging.yaml)).
+- Each push to `main` also creates/refreshes the automated `main → prod` release PR
+  ([`main_to_prod_pr.yaml`](https://github.com/a-little-world/little-world-backend/blob/main/.github/workflows/main_to_prod_pr.yaml));
+  `prod` PRs are built and tested by
+  [`main_build_test.yaml`](https://github.com/a-little-world/little-world-backend/blob/main/.github/workflows/main_build_test.yaml).
+
+Follow the maintainer's instructions about what goes to staging vs. production.
+
+## Future improvements (out of scope for now)
+
+- GitHub ↔ Slack integration for review/deploy notifications.
+- Optional `CODEOWNERS` per repo to machine-enforce the review matrix above.

@@ -37,46 +37,6 @@ const chartCategories: Array<{
     funnelMergeGroups: SIGNUP_FUNNEL_MERGE_GROUPS,
     funnelMode: SIGNUP_FUNNEL_MODE,
   },
-  {
-    id: 'in-reg',
-    title: 'Users still in Registration Process',
-    filters: [
-      'journey_v2__user_created',
-      'journey_v2__email_verified',
-      'journey_v2__user_form_completed',
-      'journey_v2__booked_onboarding_call',
-      'journey_v2__self_onboarding_started',
-      'journey_v2__no_show',
-    ],
-    funnelMergeGroups: [
-      {
-        buckets: [
-          'journey_v2__booked_onboarding_call',
-          'journey_v2__self_onboarding_started',
-        ],
-        label: 'Onboarding started',
-      },
-    ],
-  },
-  {
-    id: 'await-match',
-    title: 'Users awaiting match',
-    filters: [
-      'journey_v2__first_search',
-      'journey_v2__user_searching',
-      'journey_v2__pre_matching',
-    ],
-  },
-  {
-    id: 'match-take-off',
-    title: 'Users in Matching Process',
-    filters: ['journey_v2__match_takeoff', 'journey_v2__ghoster'],
-  },
-  {
-    id: 'active-users',
-    title: 'Active Users',
-    filters: ['active_match'],
-  },
 ];
 
 function getMonthDateRange(

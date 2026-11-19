@@ -14,6 +14,7 @@ import React, {
 import styled from 'styled-components';
 
 import { ExportDownloadFormat } from './DownloadSettingsModal';
+import { buildCsv, csvBlob } from '../../helpers/csv';
 import { Button } from '../atoms/Button';
 
 type ExportStatus = 'idle' | 'loading' | 'ready' | 'error';
@@ -42,7 +43,8 @@ const StatusWrapper = styled.div`
   display: flex;
   align-items: flex-start;
   gap: ${({ theme }) => theme.spacing.small};
-  padding: 0 ${({ theme }) => theme.spacing.small} ${({ theme }) => theme.spacing.small};
+  padding: 0 ${({ theme }) => theme.spacing.small}
+    ${({ theme }) => theme.spacing.small};
 `;
 
 const StatusCard = styled.div`
@@ -132,25 +134,6 @@ const resolveValueByHeader = (row: Record<string, any>, header: string) => {
   }
 };
 
-const toCsvValue = (value: unknown) => {
-  if (value === null || value === undefined) {
-    return '';
-  }
-
-  const normalizedValue =
-    typeof value === 'object' ? JSON.stringify(value) : String(value);
-
-  if (
-    normalizedValue.includes(',') ||
-    normalizedValue.includes('"') ||
-    normalizedValue.includes('\n')
-  ) {
-    return `"${normalizedValue.replace(/"/g, '""')}"`;
-  }
-
-  return normalizedValue;
-};
-
 const triggerBrowserDownload = (url: string, fileName: string) => {
   const a = document.createElement('a');
   a.href = url;
@@ -222,7 +205,9 @@ export const PaginatedCsvDownloader = forwardRef(
     const prepareCsv = useCallback(async () => {
       if (selectedHeaders.length === 0) {
         setStatus('error');
-        setErrorMessage('Select at least one column before preparing the export.');
+        setErrorMessage(
+          'Select at least one column before preparing the export.',
+        );
         return;
       }
 
@@ -265,20 +250,15 @@ export const PaginatedCsvDownloader = forwardRef(
                   type: 'application/json;charset=utf-8;',
                 },
               )
-            : new Blob(
-                [
-                  [
-                    selectedHeaders.join(','),
-                    ...allRows.map(row =>
-                      selectedHeaders
-                        .map(header => toCsvValue(resolveValueByHeader(row, header)))
-                        .join(','),
+            : csvBlob(
+                buildCsv(
+                  selectedHeaders,
+                  allRows.map(row =>
+                    selectedHeaders.map(header =>
+                      resolveValueByHeader(row, header),
                     ),
-                  ].join('\n'),
-                ],
-                {
-                  type: 'text/csv;charset=utf-8;',
-                },
+                  ),
+                ),
               );
         const preparedDownloadUrl = URL.createObjectURL(blob);
         setDownloadUrl(preparedDownloadUrl);
@@ -292,7 +272,14 @@ export const PaginatedCsvDownloader = forwardRef(
         setErrorMessage(message);
         onError?.(error);
       }
-    }, [downloadFormat, fetchMeta, fetchPage, onError, resetState, selectedHeaders]);
+    }, [
+      downloadFormat,
+      fetchMeta,
+      fetchPage,
+      onError,
+      resetState,
+      selectedHeaders,
+    ]);
 
     useImperativeHandle(
       ref,
@@ -366,12 +353,11 @@ export const PaginatedCsvDownloader = forwardRef(
 
           {status === 'error' && (
             <>
-              <ErrorText>{errorMessage || 'Failed to prepare export.'}</ErrorText>
+              <ErrorText>
+                {errorMessage || 'Failed to prepare export.'}
+              </ErrorText>
               <ActionsRow>
-                <Button
-                  variant="secondary"
-                  onClick={prepareCsv}
-                >
+                <Button variant="secondary" onClick={prepareCsv}>
                   Retry
                 </Button>
               </ActionsRow>

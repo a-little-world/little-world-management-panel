@@ -59,7 +59,9 @@ export const formatApiError = (responseBody: any, response: Response) => {
     const detail =
       typeof responseBody.detail === 'string' ? responseBody.detail : undefined;
     const message =
-      typeof responseBody.message === 'string' ? responseBody.message : undefined;
+      typeof responseBody.message === 'string'
+        ? responseBody.message
+        : undefined;
     const msg =
       typeof responseBody.msg === 'string' ? responseBody.msg : undefined;
 
@@ -141,4 +143,14 @@ export async function apiFetch<T = any>(
     console.error(`API Fetch Error (${endpoint}):`, error);
     throw error;
   }
+}
+
+/** GET a text body (e.g. a CSV export). Errors are JSON and formatted like `apiFetch`'s. */
+export async function apiFetchText(endpoint: string): Promise<string> {
+  const response = await fetch(endpoint, { credentials: 'same-origin' });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw formatApiError(errorData, response);
+  }
+  return response.text();
 }

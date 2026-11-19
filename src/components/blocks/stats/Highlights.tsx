@@ -1,16 +1,15 @@
-import {
-  Select,
-  Text,
-  TextTypes,
-} from '@a-little-world/little-world-design-system';
+import { Text, TextTypes } from '@a-little-world/little-world-design-system';
 import React from 'react';
+import type { DateRange } from 'react-day-picker';
 import styled from 'styled-components';
 import useSWR from 'swr';
 
 import { apiFetch } from '../../../api/helpers';
+import {
+  DateRangePicker,
+  formatLocalDateYmd,
+} from '../../atoms/DateRangePicker';
 import Stat, { StatCards } from '../../atoms/stats/Stat';
-
-type HighlightsPeriod = 'daily' | 'weekly' | 'monthly' | 'yearly';
 
 interface HighlightsResponse {
   start_date: string;
@@ -22,10 +21,10 @@ interface HighlightsResponse {
   onboarded_learners: number;
   match_proposals_made: number;
   new_matches: number;
-  ongoing_matches: number;
-  completed_matches: number;
-  video_calls_both_active: number;
-  video_call_duration_minutes_both_active: number;
+  in_flight_matches: number;
+  successful_matches: number;
+  completed_video_calls_both_active: number;
+  video_call_duration_seconds_both_active: number;
   messages_sent_excluding_support: number;
 }
 
@@ -39,13 +38,6 @@ interface HighlightBreakdownItem {
 interface HighlightCard extends HighlightBreakdownItem {
   breakdown?: HighlightBreakdownItem[];
 }
-
-const PERIOD_OPTIONS: { label: string; value: HighlightsPeriod }[] = [
-  { label: 'Daily', value: 'daily' },
-  { label: 'Weekly', value: 'weekly' },
-  { label: 'Monthly', value: 'monthly' },
-  { label: 'Yearly', value: 'yearly' },
-];
 
 const Container = styled.div`
   display: flex;
@@ -68,16 +60,6 @@ const HeaderText = styled.div`
   gap: ${({ theme }) => theme.spacing.xxsmall};
 `;
 
-const FilterGroup = styled.div`
-  min-width: 220px;
-`;
-
-const StyledDropdown = styled(Select)`
-  div[data-radix-popper-content-wrapper] {
-    z-index: 20 !important;
-  }
-`;
-
 const MutedText = styled(Text)`
   color: ${({ theme }) => theme.color.text.secondary};
 `;
@@ -88,34 +70,6 @@ const ErrorCard = styled.div`
   border-radius: ${({ theme }) => theme.radius.small};
   padding: ${({ theme }) => theme.spacing.medium};
 `;
-
-const formatDate = (date: Date) => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-
-  return `${year}-${month}-${day}`;
-};
-
-const getDateRange = (period: HighlightsPeriod) => {
-  const endDate = new Date();
-  const startDate = new Date(endDate);
-
-  if (period === 'daily') {
-    startDate.setDate(startDate.getDate() - 1);
-  } else if (period === 'weekly') {
-    startDate.setDate(startDate.getDate() - 7);
-  } else if (period === 'monthly') {
-    startDate.setMonth(startDate.getMonth() - 1);
-  } else {
-    startDate.setFullYear(startDate.getFullYear() - 1);
-  }
-
-  return {
-    startDate: formatDate(startDate),
-    endDate: formatDate(endDate),
-  };
-};
 
 const formatNumber = (value: number | undefined, suffix = '') => {
   if (value === undefined) {
@@ -133,12 +87,12 @@ const formatNumber = (value: number | undefined, suffix = '') => {
   return suffix ? `${formatted} ${suffix}` : formatted;
 };
 
-const formatDuration = (minutes: number | undefined) => {
-  if (minutes === undefined) {
+const formatDuration = (seconds: number | undefined) => {
+  if (seconds === undefined) {
     return '-';
   }
 
-  const roundedMinutes = Math.round(minutes);
+  const roundedMinutes = Math.round(seconds / 60);
   const hours = Math.floor(roundedMinutes / 60);
   const remainingMinutes = roundedMinutes % 60;
 
@@ -161,14 +115,14 @@ const getPercentage = (
 };
 
 const getAverageDuration = (
-  totalMinutes: number | undefined,
+  totalSeconds: number | undefined,
   totalCalls: number | undefined,
 ) => {
-  if (totalMinutes === undefined || totalCalls === undefined) {
+  if (totalSeconds === undefined || totalCalls === undefined) {
     return undefined;
   }
 
-  return totalCalls > 0 ? totalMinutes / totalCalls : 0;
+  return totalCalls > 0 ? totalSeconds / totalCalls : 0;
 };
 
 const formatCardValue = (card: HighlightCard) =>
@@ -197,7 +151,7 @@ const buildCards = (data: HighlightsResponse | undefined): HighlightCard[] => {
       ],
     },
     {
-      label: 'Onboarded users',
+      label: 'Currently onboarded users',
       value: onboardedUsers,
       breakdown: [
         { label: 'Learners', value: data?.onboarded_learners },
@@ -229,22 +183,22 @@ const buildCards = (data: HighlightsResponse | undefined): HighlightCard[] => {
     },
     { label: 'Match proposals made', value: data?.match_proposals_made },
     { label: 'New matches', value: data?.new_matches },
-    { label: 'Ongoing matches', value: data?.ongoing_matches },
-    { label: 'Completed matches', value: data?.completed_matches },
+    { label: 'In-flight matches', value: data?.in_flight_matches },
+    { label: 'Successful matches', value: data?.successful_matches },
     {
-      label: 'Video calls, both users active',
-      value: data?.video_calls_both_active,
+      label: 'Completed video calls, both users active',
+      value: data?.completed_video_calls_both_active,
       breakdown: [
         {
           label: 'Total duration',
-          value: data?.video_call_duration_minutes_both_active,
+          value: data?.video_call_duration_seconds_both_active,
           formatter: formatDuration,
         },
         {
           label: 'Average duration',
           value: getAverageDuration(
-            data?.video_call_duration_minutes_both_active,
-            data?.video_calls_both_active,
+            data?.video_call_duration_seconds_both_active,
+            data?.completed_video_calls_both_active,
           ),
           formatter: formatDuration,
         },
@@ -258,20 +212,28 @@ const buildCards = (data: HighlightsResponse | undefined): HighlightCard[] => {
 };
 
 function Highlights() {
-  const [period, setPeriod] = React.useState<HighlightsPeriod>('monthly');
-  const { startDate, endDate } = React.useMemo(
-    () => getDateRange(period),
-    [period],
+  const [dateRange, setDateRange] = React.useState<DateRange | undefined>(
+    () => {
+      const from = new Date();
+      from.setMonth(from.getMonth() - 1);
+      return { from, to: new Date() };
+    },
   );
-  const highlightsKey = React.useMemo(
-    () =>
-      [
+  const startDateValue = dateRange?.from
+    ? formatLocalDateYmd(dateRange.from)
+    : null;
+  const endDateValue = dateRange?.to ? formatLocalDateYmd(dateRange.to) : null;
+  const dateRangeIsValid =
+    startDateValue !== null &&
+    endDateValue !== null &&
+    startDateValue <= endDateValue;
+  const highlightsKey = dateRangeIsValid
+    ? ([
         '/api/matching/users/statistics/highlights/',
-        startDate,
-        endDate,
-      ] as const,
-    [startDate, endDate],
-  );
+        startDateValue,
+        endDateValue,
+      ] as const)
+    : null;
 
   const { data, error, isLoading } = useSWR(
     highlightsKey,
@@ -295,22 +257,25 @@ function Highlights() {
             Key Statistics Highlights
           </Text>
           <MutedText type={TextTypes.Body6}>
-            Live statistics filtered to the current user access from {startDate}{' '}
-            to {endDate}.
+            Live statistics filtered to the current user access from{' '}
+            {startDateValue ?? '-'} to {endDateValue ?? '-'}.
           </MutedText>
         </HeaderText>
-        <FilterGroup>
-          <StyledDropdown
-            id="statistics-highlights-period"
-            label="Time period"
-            value={period}
-            options={PERIOD_OPTIONS}
-            onValueChange={value => setPeriod(value as HighlightsPeriod)}
-            placeholder="Select a time period"
-            cannotError
-          />
-        </FilterGroup>
+        <DateRangePicker
+          label="Date range"
+          range={dateRange}
+          setRange={setDateRange}
+        />
       </Header>
+
+      {!dateRangeIsValid && (
+        <ErrorCard>
+          <Text type={TextTypes.Body6}>
+            Select both a start and an end date, with the end on or after the
+            start.
+          </Text>
+        </ErrorCard>
+      )}
 
       {error && (
         <ErrorCard>
@@ -326,12 +291,10 @@ function Highlights() {
             key={card.label}
             label={card.label}
             stat={isLoading ? '-' : formatCardValue(card)}
-            breakdown={
-              card.breakdown?.map(item => ({
-                label: item.label,
-                value: isLoading ? '-' : formatBreakdownValue(item),
-              }))
-            }
+            breakdown={card.breakdown?.map(item => ({
+              label: item.label,
+              value: isLoading ? '-' : formatBreakdownValue(item),
+            }))}
           />
         ))}
       </StatCards>

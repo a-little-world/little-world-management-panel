@@ -14,10 +14,16 @@ import { capitalize } from 'lodash';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import type { MatchingPanelUser } from '../../../api/index';
+import { formatCompanyLabel } from '../../../api/companies';
+import type { CompanyRef, MatchingPanelUser } from '../../../api/index';
 import { MANAGEMENT_PERMISSION_IS_MAIN_SUPPORT_ACCOUNT } from '../../../constants/managementPermissions';
-import { formatDate, formatDateTime, formatTimeDistance } from '../../../helpers/date';
+import {
+  formatDate,
+  formatDateTime,
+  formatTimeDistance,
+} from '../../../helpers/date';
 import { hasManagementPermission } from '../../../helpers/managementPermissions';
+import { usePanelCapabilities } from '../../../helpers/panelCapabilities';
 import { MATCHING_ROUTE } from '../../../router/routes';
 import { useGlobalState } from '../../../store';
 import DataField from '../../atoms/DataField';
@@ -63,7 +69,7 @@ interface UserProfile {
   first_name: string;
   second_name: string;
   country_of_residence?: string | null;
-  phone_mobile: string;
+  phone_mobile: string | null;
   target_group: string;
   target_groups?: string[];
   partner_gender: string;
@@ -77,7 +83,9 @@ interface UserProfile {
 }
 
 interface UserState {
-  company?: string;
+  company?: CompanyRef | null;
+  company_cohort?: CompanyRef | null;
+  signup_campaign?: string | null;
   searching_state: 'idle' | 'searching';
   searching_state_last_updated?: string | null;
   email_authenticated: boolean;
@@ -86,14 +94,22 @@ interface UserState {
   is_onboarded: boolean;
   self_onboarding_step_id?: string | null;
   unresponsive: boolean;
+  /** Effective value: the per-user override, else the company default. */
   has_match_priority?: boolean;
+  force_match_eligible?: boolean;
+  /** `null` means the company default applies. */
+  match_priority_override?: boolean | null;
+  force_match_eligible_override?: boolean | null;
+  /** What the user gets with the override cleared (backend-computed). */
+  match_priority_default?: boolean;
+  force_match_eligible_default?: boolean;
 }
 
 interface User {
   id: string;
   uuid?: string;
   hash?: string;
-  email: string;
+  email: string | null;
   date_joined: string;
   last_seen?: string | null;
   profile: UserProfile;
@@ -146,15 +162,30 @@ const UserDetailsFull: React.FC<{
           value={formatDateTime(user.state.searching_state_last_updated, 'en')}
         />
         <DataField title="Id" value={user.id} />
-        <DataField title="Email" value={user.email} />
-        <DataField title="Company" value={user.state.company || '-'} />
+        {/* null = hidden by the backend (no personal details permission) */}
+        <DataField title="Email" value={user.email ?? 'Hidden'} />
+        <DataField
+          title="Company"
+          value={
+            formatCompanyLabel(user.state.company, user.state.company_cohort) ||
+            'None'
+          }
+        />
+        <DataField
+          title="Signup Campaign"
+          value={user.state.signup_campaign || 'None'}
+        />
         <DataField
           title="Residence"
           value={user.profile.country_of_residence || '-'}
         />
         <DataField
           title="Phone Number"
-          value={`${user.profile.phone_mobile} (Notify via ${user.profile.phone_mobile})`}
+          value={
+            user.profile.phone_mobile === null
+              ? 'Hidden'
+              : `${user.profile.phone_mobile} (Notify via ${user.profile.phone_mobile})`
+          }
         />
         <DataField
           title={isVolunteer ? 'Target Group' : 'Group'}
@@ -242,11 +273,17 @@ export const UserCard: React.FC<UserCardProps> = ({
 }) => {
   const navigate = useNavigate();
   const { addUserToMatching, panelUser } = useGlobalState();
+  const can = usePanelCapabilities();
 
-  const canViewProfile = hasManagementPermission(
-    panelUser as MatchingPanelUser | undefined,
-    MANAGEMENT_PERMISSION_IS_MAIN_SUPPORT_ACCOUNT,
-  );
+  // The app profile shows everything about the user, so it also needs personal details.
+  const canViewProfile =
+    hasManagementPermission(
+      panelUser as MatchingPanelUser | undefined,
+      MANAGEMENT_PERMISSION_IS_MAIN_SUPPORT_ACCOUNT,
+    ) && can('personal_details');
+
+  const canViewUsers = can('users');
+  const canMatch = can('scores');
 
   if (!user) return <div>Undefined User</div>;
 
@@ -421,15 +458,23 @@ export const UserCard: React.FC<UserCardProps> = ({
             label="Proposed"
             matches={user?.matches.proposed?.results}
           />
+          <MatchesIcons
+            label="Inactive"
+            matches={user?.matches.inactive?.results ?? []}
+          />
         </MatchesContainer>
       </UserInfoContainer>
 
       <ActionContainer $horizontal={horizontal}>
-        <Link to={`/user/${user.id}`}>View profile</Link>
-        <Link to={`/user/${user.id}?tab=chat`} state={{ openTab: 'chat' }}>
-          Open chat
-        </Link>
-        {!horizontal && (
+        {canViewUsers && (
+          <>
+            <Link to={`/user/${user.id}`}>View profile</Link>
+            <Link to={`/user/${user.id}?tab=chat`} state={{ openTab: 'chat' }}>
+              Open chat
+            </Link>
+          </>
+        )}
+        {!horizontal && canMatch && (
           <Button variation={ButtonVariations.Inline} onClick={onAddToMatching}>
             Match
           </Button>

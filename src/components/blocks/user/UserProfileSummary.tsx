@@ -34,6 +34,7 @@ export interface UserMatches {
   confirmed: { results: any[] };
   unconfirmed: { results: any[] };
   proposed: { results: any[] };
+  inactive?: { results: any[] };
 }
 
 export const UserJourneyStatus: React.FC<{ journey?: UserJourney }> = ({
@@ -107,6 +108,10 @@ export const UserMatchesSummary: React.FC<{ matches?: UserMatches }> = ({
       <MatchesIcons
         label="Proposed"
         matches={matches?.proposed?.results ?? []}
+      />
+      <MatchesIcons
+        label="Inactive"
+        matches={matches?.inactive?.results ?? []}
       />
     </MatchesContainer>
   </SidebarSection>

@@ -29,7 +29,7 @@ import { format, parseISO } from 'date-fns';
 import {
   STATUS_CONFIG,
   SupportReplyParameters,
-  SupportTask,
+  SupportTaskListItem,
   TaskPriority,
   TaskStatus,
   buildSupportTaskListParams,
@@ -43,6 +43,7 @@ import {
 import { BLUE_40, ORANGE_40 } from '../../constants';
 import { resolveAttachmentWidgetText } from '../../helpers/chat';
 import { formatTimeDistance } from '../../helpers/date';
+import { usePanelCapability } from '../../helpers/panelCapabilities';
 import { useTaskPriorityList } from '../../hooks/useTaskPriorities';
 import {
   SUPPORT_TASKS_ROUTE,
@@ -212,12 +213,16 @@ const ContentGrid = styled.div`
   display: grid;
   grid-template-columns: minmax(0, 1fr) 360px;
   gap: ${({ theme }) => theme.spacing.medium};
+  height: 100%;
+  overflow: hidden;
 `;
 
 const MainColumn = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.medium};
+  height: 100%;
+  overflow-y: auto;
 `;
 
 const SideColumn = styled.aside`
@@ -225,6 +230,8 @@ const SideColumn = styled.aside`
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.medium};
   min-width: 0;
+  height: 100%;
+  overflow-y: auto;
 `;
 
 const SentMessageQuote = styled.blockquote`
@@ -290,16 +297,21 @@ const ChatWrapper = styled.div`
   display: flex;
   flex-direction: column;
   padding: ${({ theme }) => theme.spacing.medium};
+  position: relative;
+  z-index: 0;
 `;
 
 const ProfileLink = styled(Link)`
   display: block;
   text-align: center;
   color: ${({ theme }) => theme.color.text.link};
-  padding-top: ${({ theme }) => theme.spacing.xsmall};
   &:hover {
     text-decoration: underline;
   }
+`;
+
+const CardProfileLink = styled(ProfileLink)`
+  margin-top: ${({ theme }) => theme.spacing.xsmall};
 `;
 
 const ContextGroup = styled(Card)`
@@ -347,6 +359,7 @@ export default function SupportTaskDetail() {
   const id = Number(taskId);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const canViewUsers = usePanelCapability('users');
   const [chatOpen, setChatOpen] = useState(true);
   const [relatedUserOpen, setRelatedUserOpen] = useState(true);
   const [profileDetailsOpen, setProfileDetailsOpen] = useState(true);
@@ -409,7 +422,7 @@ export default function SupportTaskDetail() {
       : nextPageList?.results[0];
 
   const goToNeighbouringTask = (
-    neighbour: SupportTask,
+    neighbour: SupportTaskListItem,
     page?: number | null,
   ) => {
     const search = new URLSearchParams(searchParams);
@@ -587,6 +600,28 @@ export default function SupportTaskDetail() {
                     <Text type={TextTypes.Body6}>#{task.id}</Text>
                   </MetaValue>
                 </MetaField>
+
+                {relatedUser && (
+                  <MetaField>
+                    <MetaLabel>Related user</MetaLabel>
+                    <UserCell>
+                      <UserImage
+                        alt={`${relatedUser.first_name} ${relatedUser.second_name}`}
+                        user={relatedUser}
+                        dimensions={{ width: 28, height: 28 }}
+                      />
+                      {canViewUsers ? (
+                        <ProfileLink to={`/user/${relatedUser.id}`}>
+                          {relatedUser.first_name} {relatedUser.second_name}
+                        </ProfileLink>
+                      ) : (
+                        <Text type={TextTypes.Body6} tag="span">
+                          {relatedUser.first_name} {relatedUser.second_name}
+                        </Text>
+                      )}
+                    </UserCell>
+                  </MetaField>
+                )}
 
                 <MetaField>
                   <Select
@@ -848,6 +883,13 @@ export default function SupportTaskDetail() {
           </MainColumn>
 
           <SideColumn>
+            <SupportTaskNotes
+              taskId={id}
+              notes={task.notes}
+              collapseIfEmpty
+              onChanged={mutate}
+              onToggleCompleted={toggleNoteCompleted}
+            />
             {relatedUser && (
               <Card center={false}>
                 <CollapsibleHeader onClick={() => setRelatedUserOpen(o => !o)}>
@@ -920,9 +962,11 @@ export default function SupportTaskDetail() {
                         </Text>
                       </MetaField>
                     </MetaGrid>
-                    <ProfileLink to={`/user/${relatedUser.id}`}>
-                      Open full profile →
-                    </ProfileLink>
+                    {canViewUsers && (
+                      <CardProfileLink to={`/user/${relatedUser.id}`}>
+                        Open full profile →
+                      </CardProfileLink>
+                    )}
                   </CardContent>
                 )}
               </Card>
@@ -948,11 +992,11 @@ export default function SupportTaskDetail() {
                           <SectionLabel>Match eligibility</SectionLabel>
                           <MatchEligibility userId={String(relatedUser.id)} />
                         </SidebarSection>
-                        <UserJourneyStatus
-                          journey={relatedUserDetail?.journey}
-                        />
                         <UserMatchesSummary
                           matches={relatedUserDetail?.matches}
+                        />
+                        <UserJourneyStatus
+                          journey={relatedUserDetail?.journey}
                         />
                       </>
                     ) : (
@@ -975,13 +1019,6 @@ export default function SupportTaskDetail() {
                 }}
               />
             )}
-
-            <SupportTaskNotes
-              taskId={id}
-              notes={task.notes}
-              onChanged={mutate}
-              onToggleCompleted={toggleNoteCompleted}
-            />
           </SideColumn>
         </ContentGrid>
       </DetailBody>

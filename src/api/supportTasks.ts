@@ -90,8 +90,22 @@ export interface AssigneeUser {
   last_name: string;
 }
 
+export interface SupportTaskListItem {
+  id: number;
+  title: string;
+  description: string;
+  status: TaskStatus;
+  priority: TaskPriority;
+  action_type: string;
+  related_user_profile: UserProfile | null;
+  assignee_profiles: UserProfile[];
+  created_by_profile: UserProfile | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface PaginatedSupportTaskList {
-  results: SupportTask[];
+  results: SupportTaskListItem[];
   count: number;
   page: number;
   page_size: number;
@@ -298,6 +312,7 @@ export const ACTION_TYPE_CONFIG: Record<
   { label: string; color: string }
 > = {
   support_reply: { label: 'Support reply', color: BLUE_40 },
+  manual: { label: 'Task', color: GRAY_40 },
   message_action_remove_match: { label: 'Remove match', color: CRIMSON_40 },
   profile_change_action_country_of_residence: {
     label: 'Country change',

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 
+import { usePanelCapability } from '../../helpers/panelCapabilities';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../atoms/Tabs';
 import AvailabilityOverview from '../blocks/stats/AvailabilityOverview';
 import Highlights from '../blocks/stats/Highlights';
@@ -14,7 +15,10 @@ import { UserJourneyOverview } from '../blocks/stats/UserJourneyOverview';
 
 function Stats() {
   let [searchParams, setSearchParams] = useSearchParams();
-  const tab = searchParams.get('tab') || 'kpis';
+  const canExport = usePanelCapability('export');
+  const requestedTab = searchParams.get('tab') || 'kpis';
+  // The Reports tab is nothing but downloads.
+  const tab = requestedTab === 'reports' && !canExport ? 'kpis' : requestedTab;
 
   const onTabChange = (value: string) => {
     searchParams.set('tab', value);
@@ -31,7 +35,7 @@ function Stats() {
         <TabsTrigger value="user-journey">User Journey</TabsTrigger>
         <TabsTrigger value="match-journey">Match Journey</TabsTrigger>
         <TabsTrigger value="graphs">Graphs</TabsTrigger>
-        <TabsTrigger value="reports">Reports</TabsTrigger>
+        {canExport && <TabsTrigger value="reports">Reports</TabsTrigger>}
         <TabsTrigger value="availability">Availability</TabsTrigger>
       </TabsList>
       {tab === 'kpis' && (
@@ -65,10 +69,7 @@ function Stats() {
         </TabsContent>
       )}
       {tab === 'graphs' && (
-        <TabsContent
-          value="graphs"
-          className="flex flex-col content-center justify-center items-center flex-grow"
-        >
+        <TabsContent value="graphs">
           <RangedDataGraph />
         </TabsContent>
       )}

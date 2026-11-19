@@ -8,6 +8,7 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import useSWR from 'swr';
 
+import { usePanelCapability } from '../../helpers/panelCapabilities';
 import { dataFetcher } from '../../store';
 import {
   Section,
@@ -21,6 +22,7 @@ import MatchActions from '../blocks/match/MatchActions';
 import MatchCalls from '../blocks/match/MatchCalls';
 import MatchCard from '../blocks/match/MatchCard';
 import MatchJourney from '../blocks/match/MatchJourney';
+import MatchLog from '../blocks/match/MatchLog';
 import UserNotes from '../blocks/user/UserNotes';
 
 const HeaderTitleGroup = styled.div`
@@ -41,6 +43,7 @@ const MATCH_TABS = [
   { key: 'journey', label: 'Journey' },
   { key: 'calls', label: 'Calls' },
   { key: 'notes', label: 'Notes' },
+  { key: 'log', label: 'Log' },
   { key: 'actions', label: 'Actions' },
 ];
 
@@ -51,7 +54,7 @@ const MatchPanelContent = ({
 }: {
   tab: string;
   match: any;
-  onUpdate: () => void;
+  onUpdate: () => void | Promise<unknown>;
 }) => {
   if (tab === 'overview') return <MatchCard match={match} />;
 
@@ -64,6 +67,8 @@ const MatchPanelContent = ({
       <UserNotes notes={match?.notes} modelId={match.uuid} model="match" />
     );
 
+  if (tab === 'log') return <MatchLog events={match?.match_log} />;
+
   if (tab === 'actions')
     return <MatchActions match={match} onUpdate={onUpdate} />;
 
@@ -74,6 +79,14 @@ const MatchPanel = () => {
   const { matchId } = useParams();
 
   let [searchParams, setSearchParams] = useSearchParams();
+  const canEditMatches = usePanelCapability('edit_matches');
+  const visibleTabs = MATCH_TABS.filter(
+    tab => tab.key !== 'actions' || canEditMatches,
+  );
+  const requestedTab = searchParams.get('tab');
+  const defaultTab = visibleTabs.some(tab => tab.key === requestedTab)
+    ? (requestedTab as string)
+    : visibleTabs[0].key;
 
   const {
     data: match,
@@ -92,9 +105,9 @@ const MatchPanel = () => {
     );
 
   return (
-    <Tabs defaultValue={searchParams.get('tab') ?? MATCH_TABS[0].key}>
+    <Tabs defaultValue={defaultTab}>
       <TabsList className="grid w-full grid-cols-6">
-        {MATCH_TABS.map(tab => (
+        {visibleTabs.map(tab => (
           <TabsTrigger
             key={'header' + tab.key}
             value={tab.key}
@@ -106,7 +119,7 @@ const MatchPanel = () => {
           </TabsTrigger>
         ))}
       </TabsList>
-      {MATCH_TABS.map(tab => (
+      {visibleTabs.map(tab => (
         <TabsContent key={'content' + tab.key} value={tab.key}>
           <Section>
             <SectionHeader>

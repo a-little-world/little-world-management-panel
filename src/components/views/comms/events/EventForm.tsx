@@ -75,10 +75,12 @@ function EventForm({
     control,
     handleSubmit,
     reset,
+    watch,
     formState: { errors },
   } = useForm<EventFormValues>({
     defaultValues: initialValues,
   });
+  const isRecurring = watch('frequency') !== 'once';
 
   useEffect(() => {
     reset(initialValues);
@@ -159,6 +161,14 @@ function EventForm({
             />
 
             <EventModalScheduleRow>
+              {/* Recurring Zoom meetings (Gruppengespräche, Einführungsgespräch) have a fixed time
+                in Zoom; if it drifts from the event time, participants can't enter the meeting. */}
+              {isRecurring && (
+                <StatusMessage type={StatusTypes.Warning} visible withBorder>
+                  Changing the date or time? Update the meeting in our Zoom
+                  account to match, or participants won&apos;t be able to enter.
+                </StatusMessage>
+              )}
               <FormField>
                 <FormLabel>Event date</FormLabel>
                 <Controller

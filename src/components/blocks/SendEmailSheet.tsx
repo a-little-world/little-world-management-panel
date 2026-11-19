@@ -13,6 +13,7 @@ import styled from 'styled-components';
 
 import { sendBulkEmail } from '../../api/index';
 import { toListSelectOptions } from '../../helpers/filterLists';
+import { usePanelCapability } from '../../helpers/panelCapabilities';
 import { onFormError, useFilterOptions, useUserListData } from '../../store';
 import {
   Sheet,
@@ -55,8 +56,11 @@ export function SendEmailSheet({
     setError,
     watch,
   } = useForm();
+  // The users list only feeds the recipient-count preview, and reading it
+  // needs `users`. Sending works from the list dropdown alone.
+  const canViewUsers = usePanelCapability('users');
   const { userList, isLoading: userListLoading } = useUserListData(
-    watch('user_list') ? `list=${watch('user_list')}` : '',
+    canViewUsers && watch('user_list') ? `list=${watch('user_list')}` : '',
   );
 
   const recipients = userList?.count ?? 0;
@@ -135,10 +139,12 @@ export function SendEmailSheet({
                 )}
               </>
             )}
-            <Recipients>
-              Number of recipients:{' '}
-              {userListLoading ? <Loading inline /> : recipients}
-            </Recipients>
+            {canViewUsers && (
+              <Recipients>
+                Number of recipients:{' '}
+                {userListLoading ? <Loading inline /> : recipients}
+              </Recipients>
+            )}
             <StatusMessage
               visible={emailSent || !!errors?.root?.serverError}
               type={emailSent ? StatusTypes.Success : StatusTypes.Error}

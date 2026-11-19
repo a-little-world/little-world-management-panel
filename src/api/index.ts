@@ -92,6 +92,79 @@ export interface PaginatedListMeta {
   items_total?: number;
 }
 
+/** Mirrors `UserTableProfileSerializer` — only the profile fields the table renders. */
+export interface UserTableProfile {
+  first_name: string;
+  second_name: string;
+  user_type: 'learner' | 'volunteer';
+  country_of_residence: string | null;
+  target_groups: string[];
+  image_type: 'image' | 'avatar';
+  avatar_config: Record<string, unknown>;
+  image: string | null;
+}
+
+/** `{slug, name}` reference the backend serializes for a user's company or cohort. */
+export interface CompanyRef {
+  slug: string;
+  name: string;
+}
+
+export interface UserTableState {
+  company: CompanyRef | null;
+  company_cohort: CompanyRef | null;
+  signup_campaign: string | null;
+  has_match_priority: boolean;
+}
+
+/** Mirrors `MatchPreviewProfileSerializer` plus the partner id fields. */
+export interface UserMatchPreviewPartner {
+  id: number;
+  first_name: string;
+  has_match_priority: boolean;
+  isDeleted: boolean;
+  image_type: 'image' | 'avatar';
+  avatar_config: Record<string, unknown>;
+  image: string | null;
+}
+
+export interface UserMatchPreview {
+  /** The partner's uuid, as a string. */
+  id: string;
+  partner: UserMatchPreviewPartner;
+}
+
+export interface UserMatchPreviews {
+  confirmed: { results: UserMatchPreview[] };
+  unconfirmed: { results: UserMatchPreview[] };
+  proposed: { results: UserMatchPreview[] };
+  inactive: { results: UserMatchPreview[] };
+}
+
+export interface UserWaitingTime {
+  number_of_days: number | null;
+  waiting_time_string: string;
+  first_search: boolean | null;
+}
+
+/** Row shape of `GET /api/matching/users/` (`UserTableSerializer` + the page batch maps). */
+export interface UserTableRow {
+  id: number;
+  uuid: string;
+  email: string;
+  date_joined: string;
+  last_login: string | null;
+  last_seen: string | null;
+  profile: UserTableProfile;
+  state: UserTableState;
+  waiting_time: UserWaitingTime;
+  matches: UserMatchPreviews;
+}
+
+export interface PaginatedUserTableList extends PaginatedListMeta {
+  results: UserTableRow[];
+}
+
 export const getUsersListPaginationMeta = async ({
   searchParams,
   pageSize,
@@ -330,11 +403,14 @@ export const sendSupportMessageReply = async ({
         })()
       : { message: text };
 
-    const result = await apiFetch(`/api/matching/users/${userId}/message_reply/`, {
-      method: 'POST',
-      ...(file ? { useTagsOnly: true } : {}),
-      body,
-    });
+    const result = await apiFetch(
+      `/api/matching/users/${userId}/message_reply/`,
+      {
+        method: 'POST',
+        ...(file ? { useTagsOnly: true } : {}),
+        body,
+      },
+    );
     onSuccess(result);
   } catch (error) {
     onError(error);
@@ -586,6 +662,12 @@ export const sendBulkEmail = async ({
   }
 };
 
+export const deleteDynamicTemplate = (templateName: string) =>
+  apiFetch<void>(
+    `/api/matching/emails/dynamic_templates/${encodeURIComponent(templateName)}/`,
+    { method: 'DELETE' },
+  );
+
 export const setHadPrematchingCall = async ({
   userId,
   completed,
@@ -663,6 +745,129 @@ export const deleteUser = async ({
   }
 };
 
+export const changeUserEmail = async ({
+  id,
+  email,
+  sendVerificationEmail = false,
+  onError,
+  onSuccess,
+}: {
+  id: string | number;
+  email: string;
+  sendVerificationEmail?: boolean;
+  onError: (error: any) => void;
+  onSuccess: (result: any) => void;
+}) => {
+  try {
+    const result = await apiFetch(`/api/matching/users/${id}/change_email/`, {
+      method: 'POST',
+      body: {
+        email,
+        send_verification_email: sendVerificationEmail,
+      },
+    });
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
+  }
+};
+
+export interface SetUserCompanyResult {
+  msg: string;
+  company: CompanyRef | null;
+  company_cohort: CompanyRef | null;
+}
+
+/** Company and cohort are slugs; `null` clears them. A cohort needs its company. */
+export const setUserCompany = async ({
+  id,
+  company,
+  cohort = null,
+  onError,
+  onSuccess,
+}: {
+  id: string | number;
+  company: string | null;
+  cohort?: string | null;
+  onError: (error: any) => void;
+  onSuccess: (result: SetUserCompanyResult) => void;
+}) => {
+  try {
+    const result = await apiFetch<SetUserCompanyResult>(
+      `/api/matching/users/${id}/set_company/`,
+      {
+        method: 'POST',
+        body: {
+          company,
+          cohort,
+        },
+      },
+    );
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
+  }
+};
+
+/** Must be a campaign some user already has; `null` clears it. */
+export const setUserSignupCampaign = async ({
+  id,
+  signupCampaign,
+  onError,
+  onSuccess,
+}: {
+  id: string | number;
+  signupCampaign: string | null;
+  onError: (error: any) => void;
+  onSuccess: (result: { msg: string; signup_campaign: string | null }) => void;
+}) => {
+  try {
+    const result = await apiFetch<{
+      msg: string;
+      signup_campaign: string | null;
+    }>(`/api/matching/users/${id}/set_signup_campaign/`, {
+      method: 'POST',
+      body: { signup_campaign: signupCampaign },
+    });
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
+  }
+};
+
+export const migrateUser = async ({
+  id,
+  newEmail,
+  removeCompany = false,
+  censor = true,
+  sendDeletionEmail = false,
+  onError,
+  onSuccess,
+}: {
+  id: string | number;
+  newEmail?: string | null;
+  removeCompany?: boolean;
+  censor?: boolean;
+  sendDeletionEmail?: boolean;
+  onError: (error: any) => void;
+  onSuccess: (result: any) => void;
+}) => {
+  try {
+    const result = await apiFetch(`/api/matching/users/${id}/migrate_user/`, {
+      method: 'POST',
+      body: {
+        new_email: newEmail || null,
+        remove_company: removeCompany,
+        censor,
+        send_deletion_email: sendDeletionEmail,
+      },
+    });
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
+  }
+};
+
 export const burstUpdateMatchingScores = async ({
   parallel_tasks,
   scoring_list = 'default',
@@ -724,6 +929,30 @@ export const removeMatch = async ({
 }) => {
   try {
     const result = await apiFetch(`/api/matching/matches/${id}/resolve/`, {
+      method: 'POST',
+      body: {
+        reason,
+      },
+    });
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
+  }
+};
+
+export const reactivateMatch = async ({
+  id,
+  reason,
+  onError,
+  onSuccess,
+}: {
+  id: string;
+  reason: string;
+  onError: (error: any) => void;
+  onSuccess: (result: any) => void;
+}) => {
+  try {
+    const result = await apiFetch(`/api/matching/matches/${id}/reactivate/`, {
       method: 'POST',
       body: {
         reason,
@@ -853,7 +1082,8 @@ export const updateDynamicTemplate = async ({
 }) => {
   try {
     const result = await apiFetch(
-      `/api/matching/emails/dynamic_templates/${existingTemplate ? `${templateName}/` : ''
+      `/api/matching/emails/dynamic_templates/${
+        existingTemplate ? `${templateName}/` : ''
       }`,
       {
         method: existingTemplate ? 'PATCH' : 'POST',
@@ -943,7 +1173,8 @@ export const setHasMatchPriority = async ({
   userId: string;
   onError: (error: any) => void;
   onSuccess: (result: any) => void;
-  priority: boolean;
+  /** `null` drops the per-user override, so the company default applies again. */
+  priority: boolean | null;
 }) => {
   try {
     const result = await apiFetch(
@@ -952,6 +1183,34 @@ export const setHasMatchPriority = async ({
         method: 'POST',
         body: {
           has_match_priority: priority,
+        },
+      },
+    );
+    onSuccess(result);
+  } catch (error) {
+    onError(error);
+  }
+};
+
+export const setForceMatchEligible = async ({
+  userId,
+  onError,
+  onSuccess,
+  forceMatchEligible,
+}: {
+  userId: string;
+  onError: (error: any) => void;
+  onSuccess: (result: any) => void;
+  /** `null` drops the per-user override, so the company default applies again. */
+  forceMatchEligible: boolean | null;
+}) => {
+  try {
+    const result = await apiFetch(
+      `/api/matching/users/${userId}/set_force_match_eligible/`,
+      {
+        method: 'POST',
+        body: {
+          force_match_eligible: forceMatchEligible,
         },
       },
     );
@@ -1024,6 +1283,36 @@ export type ManagementPermissionRow = {
   codename: string;
   label?: string;
   enabled: boolean;
+  /**
+   * False for a team-only permission on an address outside the team domain: the backend refuses to
+   * grant it, though it can still be removed. Absent on older backends.
+   */
+  grantable?: boolean;
+};
+
+/** A row of the Team members page (`/api/matching/matching_users/`). */
+export type TeamMember = {
+  id: number;
+  email: string | null;
+  date_joined: string;
+  last_login: string | null;
+  outside_team_domain: boolean;
+  profile: {
+    first_name: string;
+    second_name: string | null;
+    image?: string | null;
+    image_type?: string;
+    avatar_config?: unknown;
+  };
+  permissions: ManagementPermissionRow[];
+};
+
+export type TeamMembersList = {
+  count: number;
+  results: TeamMember[];
+  can_edit_management_permissions: boolean;
+  /** Whether the viewer may grant the admin-only permissions (see `ADMIN_ONLY_PERMISSIONS`). */
+  can_grant_apply_management_permissions: boolean;
 };
 
 export type MatchingPanelUser = {
@@ -1038,7 +1327,41 @@ export type MatchingPanelUser = {
   can_edit_management_permissions: boolean;
   can_grant_apply_management_permissions: boolean;
   permissions: ManagementPermissionRow[];
+  /**
+   * Which pages/actions the panel shows this user, computed by the backend.
+   * Absent on older backends (then everything is shown); a missing key is false.
+   */
+  panel_capabilities?: Partial<Record<PanelCapability, boolean>>;
 };
+
+export type PanelCapability =
+  | 'scores'
+  | 'support_tasks'
+  | 'users'
+  | 'dynamic_user_lists'
+  | 'matches'
+  | 'video_calls'
+  | 'appointments'
+  | 'banners'
+  | 'events'
+  | 'dynamic_emails'
+  | 'automated_emails'
+  | 'short_links'
+  | 'surveys'
+  | 'question_cards'
+  | 'courses'
+  | 'random_calls'
+  | 'statistics'
+  | 'documentation'
+  | 'companies'
+  | 'open_chat'
+  | 'team_members'
+  // actions, not pages
+  | 'edit_users'
+  | 'edit_matches'
+  | 'export'
+  // without it the backend hides email, last name, phone, postal code and photos
+  | 'personal_details';
 
 export const fetchMatchingPanelUser = () =>
   apiFetch<MatchingPanelUser>('/api/matching/me/', { method: 'GET' });

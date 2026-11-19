@@ -8,6 +8,7 @@ import {
   getMatchesListPaginationMeta,
 } from '../../api/index';
 import { toListSelectOptions } from '../../helpers/filterLists';
+import { usePanelCapability } from '../../helpers/panelCapabilities';
 import { useMatchListData, useMatchesFilterOptions } from '../../store';
 import {
   DownloadSettingsModal,
@@ -83,6 +84,7 @@ const MATCH_EXPORT_HEADERS = [
 ];
 
 export function Matches() {
+  const canExport = usePanelCapability('export');
   let [searchParams, setSearchParams] = useSearchParams();
   const orderBy = searchParams.get('order_by') || '-created_at';
   const matchType = searchParams.get('match_type') ?? '';
@@ -140,10 +142,10 @@ export function Matches() {
     <>
       <FiltersToolbar
         bundleDownloadAndSettings
-        showDownloadButton
+        showDownloadButton={canExport}
         downloadDisabled={!list || selectedHeaders.length === 0}
         onDownloadClick={handleDownload}
-        showSettingsButton
+        showSettingsButton={canExport}
         settingsDisabled={false}
         onSettingsClick={() => setDownloadSettingsOpen(true)}
         showPagination

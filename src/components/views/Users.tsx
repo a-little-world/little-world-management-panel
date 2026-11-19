@@ -4,18 +4,22 @@ import {
   TagSizes,
 } from '@a-little-world/little-world-design-system';
 import { ArrowsUpDownIcon } from '@heroicons/react/20/solid';
-import { createColumnHelper } from '@tanstack/react-table';
+import { ColumnDef, createColumnHelper } from '@tanstack/react-table';
 import { capitalize, isNumber } from 'lodash';
-import React, { useMemo, useRef, useEffect, useState } from 'react';
-import { Link, createSearchParams, useSearchParams } from 'react-router-dom';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createSearchParams, Link, useSearchParams } from 'react-router-dom';
 
 import {
   getUserDetails,
   getUsersExportColumns,
   getUsersExportPage,
   getUsersListPaginationMeta,
+  PaginatedUserTableList,
+  UserTableRow,
 } from '../../api/index';
+import { formatCompanyLabel } from '../../api/companies';
 import { formatDate, formatTimeDistance } from '../../helpers/date';
+import { usePanelCapability } from '../../helpers/panelCapabilities';
 import { useGlobalState, useUserListData } from '../../store';
 import { Button } from '../atoms/Button';
 import MatchesIcons from '../atoms/MatchesIcons';
@@ -35,32 +39,43 @@ import {
 } from '../blocks/PaginatedCsvDownloader';
 import { SelectedUsersSheet } from '../blocks/SelectedUsersSheet';
 
-const columnHelper = createColumnHelper();
+const columnHelper = createColumnHelper<UserTableRow>();
 
-const userColumns = [
+type UsersTableMeta = {
+  selectedUsers: Record<string, unknown>;
+  selectUser: (user: UserTableRow) => void;
+  deselectUser: (userId: string) => void;
+};
+
+const formatRowDate = (value: string | null) =>
+  value === null
+    ? '—'
+    : `${formatDate(new Date(value))} (${formatTimeDistance(
+        new Date(value),
+        new Date(),
+      )})`;
+
+const userColumns: ColumnDef<UserTableRow, any>[] = [
   columnHelper.display({
     id: 'select',
     header: 'Selected',
-    cell: ({ table, row }) => (
-      <SelectBox
-        checked={Object.keys(table.options.meta.selectedUsers).includes(
-          row.original.uuid ?? row.original.hash,
-        )}
-        onChange={() => {
-          if (
-            Object.keys(table.options.meta.selectedUsers).includes(
-              row.original.uuid ?? row.original.hash,
-            )
-          ) {
-            table.options.meta.deselectUser(
-              row.original.uuid ?? row.original.hash,
-            );
-          } else {
-            table.options.meta.selectUser(row.original);
-          }
-        }}
-      />
-    ),
+    cell: ({ table, row }) => {
+      const meta = table.options.meta as UsersTableMeta | undefined;
+      const isSelected = Boolean(meta?.selectedUsers?.[row.original.uuid]);
+
+      return (
+        <SelectBox
+          checked={isSelected}
+          onChange={() => {
+            if (isSelected) {
+              meta?.deselectUser?.(row.original.uuid);
+            } else {
+              meta?.selectUser?.(row.original);
+            }
+          }}
+        />
+      );
+    },
   }),
   columnHelper.accessor('profile.image', {
     header: 'Image',
@@ -142,19 +157,38 @@ const userColumns = [
           : row.original.waiting_time?.waiting_time_string
       }`,
   }),
-  columnHelper.accessor('state.company', {
+  // Sorts by the label shown rather than the `{slug, name}` objects.
+  columnHelper.accessor(
+    row => formatCompanyLabel(row.state.company, row.state.company_cohort),
+    {
+      id: 'state.company',
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          >
+            Company
+            <ArrowsUpDownIcon className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ getValue }) => getValue(),
+    },
+  ),
+  columnHelper.accessor('state.signup_campaign', {
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
-          Company
+          Signup Campaign
           <ArrowsUpDownIcon className="ml-2 h-4 w-4" />
         </Button>
       );
     },
-    cell: ({ row }) => row.original.state.company,
+    cell: ({ row }) => row.original.state.signup_campaign,
   }),
   columnHelper.accessor('profile.country_of_residence', {
     header: ({ column }) => {
@@ -204,6 +238,12 @@ const userColumns = [
       <MatchesIcons matches={row.original.matches.proposed.results} />
     ),
   }),
+  columnHelper.accessor('matches.inactive', {
+    header: 'Inactive',
+    cell: ({ row }) => (
+      <MatchesIcons matches={row.original.matches.inactive?.results ?? []} />
+    ),
+  }),
   columnHelper.accessor('date_joined', {
     header: ({ column }) => {
       return (
@@ -216,11 +256,7 @@ const userColumns = [
         </Button>
       );
     },
-    cell: ({ row }) =>
-      `${formatDate(new Date(row.original.date_joined))} (${formatTimeDistance(
-        new Date(row.original.date_joined),
-        new Date(),
-      )})`,
+    cell: ({ row }) => formatRowDate(row.original.date_joined),
   }),
   columnHelper.accessor('last_login', {
     header: ({ column }) => {
@@ -234,11 +270,7 @@ const userColumns = [
         </Button>
       );
     },
-    cell: ({ row }) =>
-      `${formatDate(new Date(row.original.last_login))} (${formatTimeDistance(
-        new Date(row.original.last_login),
-        new Date(),
-      )})`,
+    cell: ({ row }) => formatRowDate(row.original.last_login),
   }),
 ];
 
@@ -246,17 +278,22 @@ export function UsersTable({
   userList,
   onSelectUser,
 }: {
-  userList: any;
-  onSelectUser: (user: Record<string, any>) => Promise<void>;
+  userList?: PaginatedUserTableList;
+  onSelectUser: (user: UserTableRow) => Promise<void>;
 }) {
   const { selectedUsers, deselectUser } = useGlobalState();
+  const tableMeta: UsersTableMeta = {
+    selectedUsers,
+    deselectUser,
+    selectUser: onSelectUser,
+  };
 
   return (
     <>
       <DataTable
         columns={userColumns}
-        data={userList?.results}
-        tableMeta={{ selectedUsers, deselectUser, selectUser: onSelectUser }}
+        data={userList?.results ?? []}
+        tableMeta={tableMeta}
       />
       <SelectedUsersSheet />
     </>
@@ -286,6 +323,8 @@ type Filters = { [key: string]: string | string[] };
 
 export function Users() {
   const { selectUser } = useGlobalState();
+  const canExport = usePanelCapability('export');
+  const canViewPersonalDetails = usePanelCapability('personal_details');
   let [searchParams, setSearchParams] = useSearchParams({
     order_by: '-date_joined',
     page_size: '50',
@@ -412,16 +451,20 @@ export function Users() {
       <FiltersToolbar
         bundleDownloadAndSettings
         showSearchBar
-        searchPlaceholder="Search by name or email"
+        searchPlaceholder={
+          canViewPersonalDetails
+            ? 'Search by name or email'
+            : 'Search by first name'
+        }
         searchDefaultValue={filters?.search as string}
         onSearchSubmit={search => updateSearchParams('search', search)}
         showFiltersButton
         filtersActive={containsFilterKey(filters)}
         onFiltersClick={() => setFiltersOpen(true)}
-        showDownloadButton
+        showDownloadButton={canExport}
         downloadDisabled={!list || usersLoading || selectedHeaders.length === 0}
         onDownloadClick={handleDownload}
-        showSettingsButton
+        showSettingsButton={canExport}
         settingsDisabled={false}
         onSettingsClick={handleSettingsOpen}
         paginationList={userList}
@@ -475,11 +518,9 @@ export function Users() {
           {!usersLoading && !error && (
             <UsersTable
               userList={userList}
-              onSelectUser={async (user: Record<string, any>) => {
+              onSelectUser={async (user: UserTableRow) => {
                 try {
-                  const fullUser = await getUserDetails(
-                    String(user.uuid ?? user.id),
-                  );
+                  const fullUser = await getUserDetails(user.uuid);
                   selectUser(fullUser);
                 } catch (error) {
                   console.log({ error });

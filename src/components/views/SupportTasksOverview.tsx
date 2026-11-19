@@ -29,7 +29,7 @@ import {
   DEFAULT_STATUS_FILTERS,
   PaginatedSupportTaskList,
   STATUS_CONFIG,
-  SupportTask,
+  SupportTaskListItem,
   TaskFilterKeys,
   TaskPriority,
   TaskStatus,
@@ -49,6 +49,7 @@ import {
   ORANGE_40,
 } from '../../constants';
 import { resolveAttachmentWidgetText } from '../../helpers/chat';
+import { buildCsv, csvBlob } from '../../helpers/csv';
 import { formatTimeDistance } from '../../helpers/date';
 import {
   PriorityConfig,
@@ -246,9 +247,12 @@ const DEFAULT_EXPORT_HEADERS = [
   'created_at',
 ];
 
-const EMPTY_TASKS: SupportTask[] = [];
+const EMPTY_TASKS: SupportTaskListItem[] = [];
 
-function pruneSelectedRows(current: number[], tasks: SupportTask[]): number[] {
+function pruneSelectedRows(
+  current: number[],
+  tasks: SupportTaskListItem[],
+): number[] {
   if (!current.length || !tasks.length) {
     return current.length ? [] : current;
   }
@@ -264,7 +268,7 @@ function pruneSelectedRows(current: number[], tasks: SupportTask[]): number[] {
 
 // ─── Column definitions ───────────────────────────────────────────────────────
 
-const columnHelper = createColumnHelper<SupportTask>();
+const columnHelper = createColumnHelper<SupportTaskListItem>();
 
 function SortIcon({
   field,
@@ -290,7 +294,7 @@ function buildColumns(
   priorityConfig: Record<TaskPriority, PriorityConfig>,
   selectedRows: number[],
   onToggleRow: (id: number) => void,
-): ColumnDef<SupportTask, any>[] {
+): ColumnDef<SupportTaskListItem, any>[] {
   return [
     columnHelper.display({
       id: 'select',
@@ -373,7 +377,7 @@ function buildColumns(
       id: 'type',
       header: 'Type',
       cell: ({ row }) => {
-        const cfg = getActionTypeConfig(row.original.action?.action_type ?? '');
+        const cfg = getActionTypeConfig(row.original.action_type ?? '');
         return (
           <Tag
             bold
@@ -733,21 +737,8 @@ export default function SupportTasksOverview() {
       );
       a.download = `support-tasks-${new Date().toLocaleDateString('de')}.json`;
     } else {
-      const rows = tasks.map(task =>
-        headers
-          .map(h => {
-            const val = (task as any)[h];
-            const str = val === null || val === undefined ? '' : String(val);
-            return str.includes(',') || str.includes('"')
-              ? `"${str.replace(/"/g, '""')}"`
-              : str;
-          })
-          .join(','),
-      );
-      const csv = [headers.join(','), ...rows].join('\n');
-      a.href = URL.createObjectURL(
-        new Blob([csv], { type: 'text/csv;charset=utf-8;' }),
-      );
+      const rows = tasks.map(task => headers.map(h => (task as any)[h]));
+      a.href = URL.createObjectURL(csvBlob(buildCsv(headers, rows)));
       a.download = `support-tasks-${new Date().toLocaleDateString('de')}.csv`;
     }
     a.click();
@@ -819,7 +810,7 @@ export default function SupportTasksOverview() {
 
       <FiltersToolbar
         showSearchBar
-        searchPlaceholder="Search by title or task ID…"
+        searchPlaceholder="Search by title, task ID, or related user name…"
         searchDefaultValue={search}
         onSearchSubmit={s => updateSearchParam('search', s)}
         showFiltersButton

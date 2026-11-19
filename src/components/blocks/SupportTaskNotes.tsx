@@ -151,12 +151,14 @@ function NoteComposer({
           />
         )}
       />
-      <StatusMessage
-        visible={!!errors?.root?.serverError}
-        type={StatusTypes.Error}
-      >
-        {errors?.root?.serverError?.message}
-      </StatusMessage>
+      {errors?.root?.serverError && (
+        <StatusMessage
+          visible={!!errors?.root?.serverError}
+          type={StatusTypes.Error}
+        >
+          {errors?.root?.serverError?.message}
+        </StatusMessage>
+      )}
       <FormActions>
         <Button type="submit" size={ButtonSizes.Small} loading={isSubmitting}>
           Add note
@@ -198,12 +200,14 @@ function NoteEditor({
           />
         )}
       />
-      <StatusMessage
-        visible={!!errors?.root?.serverError}
-        type={StatusTypes.Error}
-      >
-        {errors?.root?.serverError?.message}
-      </StatusMessage>
+      {errors?.root?.serverError && (
+        <StatusMessage
+          visible={!!errors?.root?.serverError}
+          type={StatusTypes.Error}
+        >
+          {errors?.root?.serverError?.message}
+        </StatusMessage>
+      )}
       <FormActions>
         <Button type="submit" size={ButtonSizes.Small} loading={isSubmitting}>
           Save
@@ -224,6 +228,7 @@ function NoteEditor({
 interface SupportTaskNotesProps {
   taskId: number;
   notes?: SupportTaskNote[];
+  collapseIfEmpty?: boolean;
   onChanged: () => void | Promise<unknown>;
   onToggleCompleted: (
     noteId: number,
@@ -234,10 +239,13 @@ interface SupportTaskNotesProps {
 export default function SupportTaskNotes({
   taskId,
   notes,
+  collapseIfEmpty,
   onChanged,
   onToggleCompleted,
 }: SupportTaskNotesProps) {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(
+    !(collapseIfEmpty && (notes?.length ?? 0) === 0),
+  );
   const [editingId, setEditingId] = useState<number | null>(null);
 
   const addNote = async (text: string) => {

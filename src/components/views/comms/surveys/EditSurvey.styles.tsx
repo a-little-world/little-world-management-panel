@@ -39,3 +39,50 @@ export const LoadingWrap = styled.div`
   display: flex;
   justify-content: center;
 `;
+
+export const LinkPreview = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xxsmall};
+`;
+
+export const LinkPreviewRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.small};
+  flex-wrap: wrap;
+`;
+
+export const LinkPath = styled.span`
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8125rem;
+  color: ${({ theme }) => theme.color.text.secondary};
+`;
+
+export const OptionList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.small};
+`;
+
+export const OptionCard = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xsmall};
+  padding: ${({ theme }) => theme.spacing.small};
+  border: 1px solid ${({ theme }) => theme.color.border.subtle};
+  border-radius: ${({ theme }) => theme.radius.small};
+`;
+
+export const OptionHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.xsmall};
+`;
+
+export const OptionTitle = styled.span`
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: ${({ theme }) => theme.color.text.secondary};
+`;

@@ -7,7 +7,6 @@ import {
   Sections,
   useMatchSuccessPageHeader,
 } from './JourneyStyles';
-import MatchJourneyBuckets from './MatchJourneyBuckets';
 import MatchJourneyV5Buckets from './MatchJourneyV5Buckets';
 
 export function MatchJourneyOverview() {
@@ -21,7 +20,6 @@ export function MatchJourneyOverview() {
         {`All the numbers in these overviews <bold>are live statistics</bold> and are <bold>filtered down to the current users access</bold>.`}
       </Description>
       <Sections>
-        <MatchJourneyBuckets />
         <MatchJourneyV5Buckets />
       </Sections>
     </Container>

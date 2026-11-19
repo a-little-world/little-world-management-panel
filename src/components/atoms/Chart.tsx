@@ -101,6 +101,9 @@ const ChartTooltip = RechartsPrimitive.Tooltip;
 const ChartTooltipContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
+    // Recharts 3 reads these from context, so they are not Tooltip props any more;
+    // they are injected when Recharts clones the tooltip content.
+    Partial<Pick<RechartsPrimitive.TooltipContentProps, 'payload' | 'label'>> &
     React.ComponentProps<'div'> & {
       hideLabel?: boolean;
       hideIndicator?: boolean;
@@ -188,7 +191,7 @@ const ChartTooltipContent = React.forwardRef<
 
             return (
               <div
-                key={item.dataKey}
+                key={key}
                 className={cn(
                   'flex w-full items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-neutral-500 dark:[&>svg]:text-neutral-400',
                   indicator === 'dot' && 'items-center',
@@ -257,7 +260,12 @@ const ChartLegend = RechartsPrimitive.Legend;
 const ChartLegendContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<'div'> &
-    Pick<RechartsPrimitive.LegendProps, 'payload' | 'verticalAlign'> & {
+    // Recharts 3 dropped `payload` from LegendProps; it lives on the content props
+    // and is injected when Recharts clones the legend content.
+    Pick<
+      RechartsPrimitive.DefaultLegendContentProps,
+      'payload' | 'verticalAlign'
+    > & {
       hideIcon?: boolean;
       nameKey?: string;
     }

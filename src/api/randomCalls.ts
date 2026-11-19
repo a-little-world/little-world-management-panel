@@ -2,6 +2,9 @@ import { apiFetch } from './helpers';
 
 const DEFAULT_LOBBY_NAME = 'default';
 
+export type LobbyFrequency = 'once' | 'weekly' | 'fortnightly' | 'monthly';
+export type LobbyMutationScope = 'single' | 'future';
+
 export interface MatchProposal {
   uuid: string;
   u1_uuid: string;
@@ -47,6 +50,9 @@ export interface LobbyListItem {
   name: string;
   start_time: string;
   end_time: string;
+  match_proposal_timeout: number;
+  frequency: LobbyFrequency;
+  recurrence_group: string | null;
   status: boolean;
   active_users_count: number;
 }
@@ -374,6 +380,7 @@ export const createLobby = async ({
   startTime,
   endTime,
   matchProposalTimeout = 60,
+  frequency = 'once',
   onError,
   onSuccess,
 }: {
@@ -381,6 +388,7 @@ export const createLobby = async ({
   startTime: string;
   endTime: string;
   matchProposalTimeout?: number;
+  frequency?: LobbyFrequency;
   onError: (error: unknown) => void;
   onSuccess: (result: {
     success: boolean;
@@ -399,6 +407,7 @@ export const createLobby = async ({
         start_time: startTime,
         end_time: endTime,
         match_proposal_timeout: matchProposalTimeout,
+        frequency,
       },
     });
     onSuccess(result);
@@ -406,6 +415,45 @@ export const createLobby = async ({
     onError(error);
   }
 };
+
+export const updateLobby = async ({
+  lobbyUuid,
+  startTime,
+  endTime,
+  matchProposalTimeout,
+  frequency,
+  scope = 'single',
+}: {
+  lobbyUuid: string;
+  startTime: string;
+  endTime: string;
+  matchProposalTimeout: number;
+  frequency: LobbyFrequency;
+  scope?: LobbyMutationScope;
+}) =>
+  apiFetch<{ success: boolean; message: string; lobby: LobbyListItem }>(
+    `/api/random_calls/lobby/${lobbyUuid}/management?scope=${scope}`,
+    {
+      method: 'PATCH',
+      body: {
+        start_time: startTime,
+        end_time: endTime,
+        match_proposal_timeout: matchProposalTimeout,
+        frequency,
+      },
+    },
+  );
+
+export const deleteLobby = async (
+  lobbyUuid: string,
+  scope: LobbyMutationScope = 'single',
+) =>
+  apiFetch<{ success: boolean; deleted_count: number }>(
+    `/api/random_calls/lobby/${lobbyUuid}/management?scope=${scope}`,
+    {
+      method: 'DELETE',
+    },
+  );
 
 export const endLobby = async ({
   lobbyName = DEFAULT_LOBBY_NAME,

@@ -1,114 +1,23 @@
 import {
+  Accordion,
   Tag,
   TagSizes,
   Text,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
-import {
-  AcademicCapIcon,
-  ChartBarIcon,
-  ChatBubbleLeftRightIcon,
-  DocumentTextIcon,
-  RectangleStackIcon,
-  UserGroupIcon,
-  VideoCameraIcon,
-} from '@heroicons/react/20/solid';
 import React from 'react';
 import useSWR from 'swr';
-
-import { ClipboardCheckIcon, HeadsetIcon, HeartHandshake } from 'lucide-react';
 
 import type { MatchingPanelUser } from '../../api/index';
 import {
   fetchOpenAssignedTaskCount,
   openAssignedTaskCountEndpoint,
 } from '../../api/supportTasks';
-import { MANAGEMENT_PERMISSION_OPEN_CHAT_ACCESS } from '../../constants/managementPermissions';
-import { hasManagementPermission } from '../../helpers/managementPermissions';
-import {
-  COMMUNICATIONS_ROUTE,
-  COURSES_ROUTE,
-  DOCUMENTATION_ROUTE,
-  DYNAMIC_USER_LISTS_ROUTE,
-  MATCHING_HUB_ROUTE,
-  MATCHING_USERS_ROUTE,
-  OPEN_CHAT_ROUTE,
-  RANDOM_CALLS_ROUTE,
-  STATS_ROUTE,
-  SUPPORT_TASKS_ROUTE,
-  USERS_ROUTE,
-  VIDEO_CALLS_ROUTE,
-} from '../../router/routes';
+import { hasPanelCapability } from '../../helpers/panelCapabilities';
+import { useVisiblePanelNavigation } from '../../router/panelNavigation';
+import { SUPPORT_TASKS_ROUTE } from '../../router/routes';
 import { useGlobalState } from '../../store';
-import NavigationTiles, { NavigationTile } from '../blocks/NavigationTiles';
-
-type HomeNavigationTile = NavigationTile & {
-  requiredPermission?: string;
-};
-
-const TABS: HomeNavigationTile[] = [
-  {
-    name: 'Matching',
-    path: MATCHING_HUB_ROUTE,
-    icon: <HeartHandshake className="h-16 w-16 text-white mb-2" />,
-  },
-  {
-    name: 'Users',
-    path: USERS_ROUTE,
-    icon: <UserGroupIcon className="h-16 w-16 text-white mb-2" />,
-  },
-  {
-    name: 'Support Tasks',
-    path: SUPPORT_TASKS_ROUTE,
-    icon: <ClipboardCheckIcon className="h-16 w-16 text-white mb-2" />,
-  },
-  {
-    name: 'Matching users',
-    path: MATCHING_USERS_ROUTE,
-    icon: <UserGroupIcon className="h-16 w-16 text-white mb-2" />,
-  },
-  {
-    name: 'Communications',
-    path: COMMUNICATIONS_ROUTE,
-    icon: <ChatBubbleLeftRightIcon className="h-16 w-16 text-white mb-2" />,
-  },
-  {
-    name: 'Stats',
-    path: STATS_ROUTE,
-    icon: <ChartBarIcon className="h-16 w-16 text-white mb-2" />,
-  },
-  {
-    name: 'Dynamic User Lists',
-    path: DYNAMIC_USER_LISTS_ROUTE,
-    icon: <RectangleStackIcon className="h-16 w-16 text-white mb-2" />,
-  },
-  {
-    name: 'Video Calls',
-    path: VIDEO_CALLS_ROUTE,
-    icon: <VideoCameraIcon className="h-16 w-16 text-white mb-2" />,
-  },
-  {
-    name: 'Documentation',
-    path: DOCUMENTATION_ROUTE,
-    icon: <DocumentTextIcon className="h-16 w-16 text-white mb-2" />,
-  },
-  {
-    name: 'Random Calls',
-    path: RANDOM_CALLS_ROUTE,
-    icon: <HeadsetIcon className="h-16 w-16 text-white mb-2" />,
-  },
-  {
-    name: 'Courses',
-    path: COURSES_ROUTE,
-    icon: <AcademicCapIcon className="h-16 w-16 text-white mb-2" />,
-  },
-  {
-    name: 'Open Chat Access',
-    path: OPEN_CHAT_ROUTE,
-    icon: <ChatBubbleLeftRightIcon className="h-16 w-16 text-white mb-2" />,
-    requiredPermission: MANAGEMENT_PERMISSION_OPEN_CHAT_ACCESS,
-  },
-];
+import NavigationTiles from '../blocks/NavigationTiles';
 
 function PanelUserPermissionsOverview({ user }: { user: MatchingPanelUser }) {
   const enabledPermissions = (user.permissions ?? []).filter(
@@ -120,22 +29,24 @@ function PanelUserPermissionsOverview({ user }: { user: MatchingPanelUser }) {
   }
 
   return (
-    <div className="flex flex-col items-center gap-3 w-full max-w-2xl">
-      <Text type={TextTypes.Body4} tag="p" center>
-        Your permissions
-      </Text>
-      <div className="flex flex-wrap justify-center gap-2">
-        {user.is_staff && (
-          <Tag bold size={TagSizes.small} color="#7c3aed">
-            Staff
-          </Tag>
-        )}
-        {enabledPermissions.map(row => (
-          <Tag key={row.permission} bold size={TagSizes.small} color="#2563eb">
-            {row.label ?? row.codename}
-          </Tag>
-        ))}
-      </div>
+    <div className="flex flex-col p-8 w-full max-w-4xl m-auto">
+      <Accordion
+        items={[
+          {
+            header: 'Your Permissions',
+            content: enabledPermissions.map(row => (
+              <Tag
+                key={row.permission}
+                bold
+                size={TagSizes.small}
+                color="#2563eb"
+              >
+                {row.label ?? row.codename}
+              </Tag>
+            )),
+          },
+        ]}
+      />
     </div>
   );
 }
@@ -147,32 +58,40 @@ const Home = () => {
   const hasPermissions =
     user?.is_staff || (user?.permissions ?? []).some(row => row.enabled);
   const { data: myOpenTasks } = useSWR(
-    openAssignedTaskCountEndpoint(),
+    hasPanelCapability(user, 'support_tasks')
+      ? openAssignedTaskCountEndpoint()
+      : null,
     fetchOpenAssignedTaskCount,
   );
-  const visibleTabs = TABS.filter(
-    tab =>
-      !tab.requiredPermission ||
-      hasManagementPermission(user, tab.requiredPermission),
-  ).map(tab =>
-    tab.path === SUPPORT_TASKS_ROUTE
-      ? { ...tab, badge: myOpenTasks?.count }
-      : tab,
-  );
+  const visibleTabs = useVisiblePanelNavigation().map(entry => ({
+    ...entry,
+    badge: entry.path === SUPPORT_TASKS_ROUTE ? myOpenTasks?.count : undefined,
+  }));
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 overflow-auto">
-      {(hasName || hasPermissions) && (
+    <div className="w-full overflow-auto">
+      {hasName && (
         <section className="flex flex-col items-center text-center gap-4 px-6 pt-10 pb-4 shrink-0 w-full">
           {hasName && (
             <Text type={TextTypes.Heading4} tag="h1" center>
               Welcome, {user.first_name} {user.last_name}
             </Text>
           )}
-          {hasPermissions && <PanelUserPermissionsOverview user={user} />}
         </section>
       )}
-      <NavigationTiles items={visibleTabs} />
+      {visibleTabs.length > 0 ? (
+        <NavigationTiles items={visibleTabs} />
+      ) : (
+        <section className="flex flex-col items-center gap-2 px-6 py-6">
+          <Text type={TextTypes.Body5} center>
+            You don&apos;t have access to any pages yet.
+          </Text>
+          <Text type={TextTypes.Body6} center>
+            Ask an admin if you think you should.
+          </Text>
+        </section>
+      )}
+      {hasPermissions && <PanelUserPermissionsOverview user={user} />}
     </div>
   );
 };

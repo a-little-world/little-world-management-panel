@@ -183,8 +183,7 @@ export function modifyDataToPercentages(data: RawBucket[]) {
     //console.log("ITEM", item);
     if (
       item.name !== 'all' &&
-      item.name !== 'funnel__all' &&
-      item.name !== 'match_journey_v2__all'
+      item.name !== 'funnel__all'
     ) {
       modifiedData.push({
         name: item.name,

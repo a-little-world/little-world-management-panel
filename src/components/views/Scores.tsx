@@ -23,10 +23,8 @@ import {
 } from '../../api/index';
 import { LANGUAGES } from '../../constants';
 import { formatDate, formatTime } from '../../helpers/date';
-import { toListSelectOptions } from '../../helpers/filterLists';
 import {
   dataFetcher,
-  useFilterOptions,
   useGlobalState,
   useScoresFilterOptions,
   useScoresListData,
@@ -43,6 +41,11 @@ interface BurstMatchingState {
 interface BurstCalculationTask {
   state: string;
   info?: TaskProgressInfo | TaskResultInfo;
+}
+
+interface ScoringListOption {
+  value: string;
+  label: string;
 }
 
 /** Running task: Celery sends progress under info.progress */
@@ -122,6 +125,13 @@ function useBurstCalculation() {
     progressPercent: getBurstProgressPercent(data?.tasks),
     revalidateBurst: mutate,
   };
+}
+
+function useScoringLists() {
+  return useSWR<ScoringListOption[]>(
+    '/api/matching/scoring_lists/',
+    dataFetcher,
+  );
 }
 
 const StyledDropdown = styled(Select)`
@@ -313,7 +323,21 @@ export function Scores() {
   const [isForceClearing, setIsForceClearing] = useState(false);
 
   const { isLoading: filtersLoading } = useScoresFilterOptions();
-  const { filterOptions: userFilterOptions } = useFilterOptions();
+  const {
+    data: scoringListOptions,
+    error: scoringListsError,
+    isLoading: scoringListsLoading,
+  } = useScoringLists();
+
+  // Fall back to the first list if the selected one no longer exists on the backend.
+  useEffect(() => {
+    if (
+      scoringListOptions?.length &&
+      !scoringListOptions.some(option => option.value === scoringList)
+    ) {
+      setScoringList(scoringListOptions[0].value);
+    }
+  }, [scoringListOptions, scoringList]);
 
   const {
     scoresList,
@@ -399,7 +423,7 @@ export function Scores() {
         }}
       />
       <ScoresToolbarWrapper>
-        {filtersLoading ? (
+        {filtersLoading || scoringListsLoading ? (
           'Loading filters...'
         ) : (
           <ScoresToolbarInner>
@@ -407,14 +431,17 @@ export function Scores() {
               <StyledDropdown
                 label="User list"
                 value={scoringList}
-                options={[
-                  { label: 'Default', value: 'default' },
-                  ...toListSelectOptions(userFilterOptions?.lists),
-                ]}
+                options={scoringListOptions ?? []}
                 onValueChange={setScoringList}
                 placeholder="Select a scoring list..."
+                disabled={!!scoringListsError}
                 cannotError
               />
+              {scoringListsError && (
+                <StatusMessage type={StatusTypes.Error} visible>
+                  Failed to load scoring lists. Reload the page to try again.
+                </StatusMessage>
+              )}
               <StyledDropdown
                 label="Score type"
                 value={currentDropdownValue}

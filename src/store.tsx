@@ -3,6 +3,7 @@ import React, { createContext, useCallback, useState } from 'react';
 import { MultipleFieldErrors } from 'react-hook-form';
 import useSWR from 'swr';
 
+import type { PaginatedUserTableList } from './api';
 import { getCookiesAsObject } from './lib/utils';
 
 export const registerInput = ({
@@ -197,7 +198,7 @@ export const useDynamicUserListData = message_list_id => {
 };
 
 export const useUserListData = (searchParams: string) => {
-  const { data, error, mutate, isLoading } = useSWR(
+  const { data, error, mutate, isLoading } = useSWR<PaginatedUserTableList>(
     searchParams ? `/api/matching/users/?${searchParams}` : null,
     dataFetcher,
   );

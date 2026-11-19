@@ -206,7 +206,7 @@ const KPIs: React.FC = () => {
             },
           ],
         ]}
-        footnote="Without too low german level. †Volunteers, is_onboarded, user_form_completed_at after 6 Apr 2026. Each user counted once: if both paths apply, bucket is whichever of self_onboarding_completed_at vs onboarding_call_completed_at is earlier"
+        footnote="Share of registered users with onboarding completed (funnel__onboarded). †Volunteers, is_onboarded, user_form_completed_at after 6 Apr 2026. Each user counted once: if both paths apply, bucket is whichever of self_onboarding_completed_at vs onboarding_call_completed_at is earlier"
         color="#48BB78"
       />
       <KPI
@@ -272,7 +272,7 @@ const KPIs: React.FC = () => {
           ],
         }}
         color="#4299E1"
-        footnote="Exludes users searching that have open proposals"
+        footnote="V5 current state. First search is searching for a first match with nothing in flight. Another match is searching again after a match, with no open proposal."
       />
     </KPIsContainer>
   );

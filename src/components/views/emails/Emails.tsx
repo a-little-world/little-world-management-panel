@@ -4,16 +4,33 @@ import {
   Button,
   ButtonAppearance,
   ButtonSizes,
+  ButtonVariations,
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardSizes,
   Link,
+  Modal,
+  StatusMessage,
+  StatusTypes,
+  Tag,
+  TagAppearance,
+  TagSizes,
   Text,
   TextTypes,
+  Toast,
+  TrashIcon,
 } from '@a-little-world/little-world-design-system';
 import { render as renderEmail } from '@react-email/render';
+import { ColumnDef, createColumnHelper } from '@tanstack/react-table';
 import { map, sortBy } from 'lodash';
-import React from 'react';
-import styled from 'styled-components';
+import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import styled, { css, useTheme } from 'styled-components';
 import useSWR from 'swr';
 
+import { deleteDynamicTemplate } from '../../../api';
 import EmailBuilder from '../../../emails/Builder';
 import emailData from '../../../emails/data';
 import automatedEmails, {
@@ -21,23 +38,71 @@ import automatedEmails, {
 } from '../../../emails/data/automated';
 import marketingEmails from '../../../emails/data/marketing';
 import partnershipsEmails from '../../../emails/data/partnerships';
-import { getUnsubscribeUrl } from '../../../emails/shared/constants';
+import {
+  EmailCategories,
+  getUnsubscribeUrl,
+} from '../../../emails/shared/constants';
 import { getCookiesAsObject } from '../../../lib/utils';
 import {
   CREATE_NEW_EMAIL_ROUTE,
+  JOURNEY_OVERVIEW_ROUTE,
   SEND_DYNAMIC_EMAIL_ROUTE,
 } from '../../../router/routes';
 import { dataFetcher } from '../../../store';
+import AutoEmailStatusTag, {
+  AutoEmailStatus,
+} from '../../atoms/AutoEmailStatusTag';
 import LoadingSpinner from '../../atoms/LoadingSpinner';
+import { usePanelCapabilities } from '../../../helpers/panelCapabilities';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../atoms/Tabs';
+import { DataTable } from '../../blocks/DataTable';
+import EmailLogTab, { EMAIL_LOG_PARAMS } from './EmailLogTab';
+
+interface AutoEmailFlags {
+  [templateId: string]: {
+    group: string | null;
+    status: AutoEmailStatus;
+  };
+}
+
+interface AutoEmailMetadata {
+  [templateId: string]: {
+    trigger: string;
+    audience: 'Volunteer' | 'Learner' | 'All';
+  };
+}
+
+interface DynamicTemplateRow {
+  template_name: string;
+  subject: string;
+}
+
+interface BackendTemplateRow {
+  id: string;
+  label: string;
+  status?: AutoEmailStatus;
+  trigger?: string;
+  audience?: AutoEmailMetadata[string]['audience'];
+}
 
 const Container = styled.div`
-  padding: ${({ theme }) => theme.spacing.small};
+  height: 100%;
+`;
+
+const TabPanel = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.small};
-  overflow: scroll;
-  height: 100%;
+  padding: ${({ theme }) => theme.spacing.small};
+
+  ${({ theme }) => css`
+    @media (min-width: ${theme.breakpoints.medium}) {
+      padding: ${theme.spacing.medium};
+    }
+  `}
 `;
+
+type EmailsTab = 'automated' | 'dynamic' | 'log';
 
 const TopBar = styled.div`
   display: flex;
@@ -47,36 +112,157 @@ const TopBar = styled.div`
   flex-wrap: wrap;
 `;
 
-const Template = styled(Link)`
-  background: ${({ theme }) => theme.color.surface.primary};
-  border: 1px solid ${({ theme }) => theme.color.border.bold};
-  border-radius: ${({ theme }) => theme.radius.xxsmall};
-  color: ${({ theme }) => theme.color.text.heading};
-  padding: ${({ theme }) => theme.spacing.xsmall};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: fit-content;
-`;
-
 const EmailGrouping = styled(AccordionContent)`
-  flex-direction: row;
-  flex-wrap: wrap;
-`;
-
-const DynamicEmails = styled.div`
-  display: flex;
-  flex-direction: row;
-  gap: ${({ theme }) => theme.spacing.xxsmall};
-  flex-wrap: wrap;
+  flex-direction: column;
+  background: ${({ theme }) => theme.color.surface.primary};
+  padding: 0;
 `;
 
 const GROUPED_TEMPLATES = {
-  Automated: map(automatedEmails),
+  Automated: map(automatedEmails).filter(
+    email => email.category_id !== EmailCategories.AutomatedPatenmatch,
+  ),
   Marketing: map(marketingEmails),
   Partnerships: map(partnershipsEmails),
   AutomatedPatenmatch: map(getAutomatedPatentmatchEmails()),
 };
+
+const columnHelper = createColumnHelper<BackendTemplateRow>();
+
+function buildTemplateColumns(
+  withStatus: boolean,
+): ColumnDef<BackendTemplateRow, any>[] {
+  return [
+    columnHelper.accessor('label', {
+      header: 'Email',
+      cell: ({ getValue }) => (
+        <Text type={TextTypes.Body6} tag="span">
+          {getValue()}
+        </Text>
+      ),
+    }),
+    ...(withStatus
+      ? [
+          columnHelper.accessor('status', {
+            header: 'Status',
+            cell: ({ getValue }) => {
+              const status = getValue();
+              return status ? (
+                <AutoEmailStatusTag status={status} />
+              ) : (
+                <Text type={TextTypes.Body6} tag="span">
+                  —
+                </Text>
+              );
+            },
+          }),
+        ]
+      : []),
+    columnHelper.accessor('trigger', {
+      header: 'Trigger',
+      cell: ({ getValue }) => (
+        <Text type={TextTypes.Body6} tag="span">
+          {getValue() ?? '—'}
+        </Text>
+      ),
+    }),
+    columnHelper.accessor('audience', {
+      header: 'Audience',
+      cell: ({ getValue }) => {
+        const audience = getValue();
+        return audience ? (
+          <Tag appearance={TagAppearance.outline} size={TagSizes.small}>
+            {audience}
+          </Tag>
+        ) : (
+          <Text type={TextTypes.Body6} tag="span">
+            —
+          </Text>
+        );
+      },
+    }),
+    columnHelper.display({
+      id: 'view',
+      header: '',
+      cell: ({ row }) => <Link to={row.original.id}>View template</Link>,
+    }),
+    columnHelper.display({
+      id: 'view-logs',
+      header: '',
+      cell: ({ row }) => (
+        <Link to={`?tab=log&template=${encodeURIComponent(row.original.id)}`}>
+          View logs
+        </Link>
+      ),
+    }),
+  ];
+}
+
+const dynamicColumnHelper = createColumnHelper<DynamicTemplateRow>();
+
+function buildDynamicTemplateColumns({
+  deleteColor,
+  deleting,
+  onDelete,
+}: {
+  deleteColor: string;
+  deleting: boolean;
+  onDelete: (template: DynamicTemplateRow) => void;
+}): ColumnDef<DynamicTemplateRow, any>[] {
+  return [
+    dynamicColumnHelper.accessor('template_name', {
+      header: 'Template',
+      cell: ({ getValue }) => (
+        <Text type={TextTypes.Body6} tag="span">
+          {getValue()}
+        </Text>
+      ),
+    }),
+    dynamicColumnHelper.accessor('subject', {
+      header: 'Subject',
+      cell: ({ getValue }) => (
+        <Text type={TextTypes.Body6} tag="span">
+          {getValue()}
+        </Text>
+      ),
+    }),
+    dynamicColumnHelper.display({
+      id: 'view',
+      header: '',
+      cell: ({ row }) => (
+        <Link
+          to={SEND_DYNAMIC_EMAIL_ROUTE.replace(
+            ':emailTemplateName',
+            row.original.template_name,
+          )}
+        >
+          View
+        </Link>
+      ),
+    }),
+    dynamicColumnHelper.display({
+      id: 'delete',
+      header: '',
+      cell: ({ row }) => (
+        <Button
+          type="button"
+          variation={ButtonVariations.Icon}
+          size={ButtonSizes.Small}
+          disabled={deleting}
+          title={`Delete ${row.original.template_name}`}
+          onClick={() => onDelete(row.original)}
+        >
+          <TrashIcon
+            label={`delete ${row.original.template_name}`}
+            width={16}
+            height={16}
+            color={deleteColor}
+          />
+        </Button>
+      ),
+    }),
+  ];
+}
 
 async function developmentUpdateBackendEmailTemplatesAndConfiguration({
   backendEmailConfig,
@@ -148,17 +334,90 @@ async function developmentUpdateBackendEmailTemplatesAndConfiguration({
 }
 
 const Emails = () => {
+  const can = usePanelCapabilities();
+  const canAutomated = can('automated_emails');
+  const canDynamic = can('dynamic_emails');
+  const visibleTabs: EmailsTab[] = [
+    ...(canAutomated ? (['automated'] as const) : []),
+    ...(canDynamic ? (['dynamic'] as const) : []),
+    ...(canAutomated ? (['log'] as const) : []),
+  ];
+
   const { data: backendEmailConfiguration } = useSWR(
-    '/api/matching/emails/config/',
+    canAutomated ? '/api/matching/emails/config/' : null,
     dataFetcher,
     {},
   );
 
-  const { data: dynamicEmails, isLoading } = useSWR(
-    '/api/matching/emails/dynamic_templates/?page_size=150',
+  const theme = useTheme();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedTab = searchParams.get('tab');
+  const tab: EmailsTab = visibleTabs.includes(requestedTab as EmailsTab)
+    ? (requestedTab as EmailsTab)
+    : (visibleTabs[0] ?? 'automated');
+  const onTabChange = (value: string) => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set('tab', value);
+    // Log filters only apply to the log tab; don't carry them over to the others
+    if (value !== 'log') {
+      EMAIL_LOG_PARAMS.forEach(key => newParams.delete(key));
+    }
+    setSearchParams(newParams, { replace: true });
+  };
+  const [templateToDelete, setTemplateToDelete] =
+    useState<DynamicTemplateRow | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ id: number; title: string } | null>(
+    null,
+  );
+
+  const {
+    data: dynamicEmails,
+    isLoading,
+    mutate: mutateDynamicEmails,
+  } = useSWR(
+    canDynamic ? '/api/matching/emails/dynamic_templates/?page_size=150' : null,
     dataFetcher,
     {},
   );
+
+  const { data: autoEmailFlags } = useSWR<AutoEmailFlags>(
+    canAutomated ? '/api/matching/emails/auto_email_flags/' : null,
+    dataFetcher,
+    {},
+  );
+
+  const { data: autoEmailMetadata } = useSWR<AutoEmailMetadata>(
+    canAutomated ? '/api/matching/emails/auto_email_metadata/' : null,
+    dataFetcher,
+    {},
+  );
+
+  const closeDeleteModal = () => {
+    if (deleting) return;
+    setTemplateToDelete(null);
+    setDeleteError(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!templateToDelete) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await deleteDynamicTemplate(templateToDelete.template_name);
+      await mutateDynamicEmails();
+      setToast({
+        id: Date.now(),
+        title: `Template “${templateToDelete.template_name}” deleted.`,
+      });
+      setTemplateToDelete(null);
+    } catch (e: any) {
+      setDeleteError(e?.message || 'Failed to delete template.');
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const onSyncBackendEmails = async () => {
     // 1 - fetches the current email confirguration from the backend
@@ -171,72 +430,164 @@ const Emails = () => {
 
   return (
     <Container>
-      <TopBar>
-        <Text type={TextTypes.Heading4}>Backend Templates</Text>
-        <Button
-          appearance={ButtonAppearance.Secondary}
-          onClick={onSyncBackendEmails}
-        >
-          [DEVELOPMENT] Sync Emails
-        </Button>
-      </TopBar>
-      <Text type={TextTypes.Body4}>
-        These are automated backend emails that must be updated in the backend.
-        You may edit all of them in emails.json.
-      </Text>
-      <Accordion
-        ContentWrapper={EmailGrouping}
-        items={map(GROUPED_TEMPLATES, (item, header) => {
-          return {
-            header,
-            content: sortBy(
-              item as { id: string; label: string }[],
-              'label',
-            ).map(template => (
-              <Template
-                key={template.id}
-                to={template.id}
-                textDecoration={false}
-              >
-                <Text>{template.label}</Text>
-              </Template>
-            )),
-          };
-        })}
-      />
-      <TopBar>
-        <Text type={TextTypes.Heading4}>Dynamic Templates</Text>
-        <Link
-          buttonSize={ButtonSizes.Small}
-          buttonAppearance={ButtonAppearance.Primary}
-          to={CREATE_NEW_EMAIL_ROUTE}
-          style={{ maxWidth: '200px' }}
-        >
-          Create New
-        </Link>
-      </TopBar>
-      <Text type={TextTypes.Body4}>
-        These are automated backend emails that must be updated in the backend.
-        You may edit all of them in emails.json.
-      </Text>
-      <DynamicEmails>
-        {isLoading ? (
-          <LoadingSpinner />
-        ) : (
-          sortBy(dynamicEmails?.results, 'template_name')?.map(template => (
-            <Template
-              key={template.template_name}
-              to={SEND_DYNAMIC_EMAIL_ROUTE.replace(
-                ':emailTemplateName',
-                template.template_name,
+      <Tabs value={tab} onValueChange={onTabChange}>
+        <TabsList>
+          {canAutomated && (
+            <TabsTrigger value="automated">Automated</TabsTrigger>
+          )}
+          {canDynamic && <TabsTrigger value="dynamic">Dynamic</TabsTrigger>}
+          {canAutomated && <TabsTrigger value="log">Email Log</TabsTrigger>}
+        </TabsList>
+        {canAutomated && (
+          <TabsContent value="automated">
+            <TabPanel>
+              <TopBar>
+                <Text type={TextTypes.Heading4}>Backend Templates</Text>
+                <Button
+                  appearance={ButtonAppearance.Secondary}
+                  onClick={onSyncBackendEmails}
+                >
+                  [DEVELOPMENT] Sync Emails
+                </Button>
+              </TopBar>
+              <Text type={TextTypes.Body4}>
+                These are automated backend emails that must be updated in the
+                backend. You may edit all of them in emails.json.
+              </Text>
+              <Text type={TextTypes.Body6}>
+                The status shows whether an automatic email is actually
+                delivered: &quot;Live&quot; emails are sent,
+                &quot;Emulated&quot; emails are logged but never delivered, and
+                &quot;Off&quot; emails are disabled entirely. &quot;Always
+                on&quot; emails have no setting and are sent whenever their
+                event happens; &quot;Unused&quot; emails are not sent anywhere.
+              </Text>
+              {can('documentation') && (
+                <div>
+                  <Link to={JOURNEY_OVERVIEW_ROUTE}>
+                    View User &amp; Match Journey
+                  </Link>
+                </div>
               )}
-              textDecoration={false}
-            >
-              <Text>{template.template_name}</Text>
-            </Template>
-          ))
+              <Accordion
+                ContentWrapper={EmailGrouping}
+                items={map(GROUPED_TEMPLATES, (item, header) => {
+                  const rows: BackendTemplateRow[] = sortBy(
+                    item as { id: string; label: string }[],
+                    'label',
+                  ).map(template => ({
+                    id: template.id,
+                    label: template.label,
+                    status: autoEmailFlags?.[template.id]?.status,
+                    trigger: autoEmailMetadata?.[template.id]?.trigger,
+                    audience: autoEmailMetadata?.[template.id]?.audience,
+                  }));
+                  // Only env-gated automatic emails have a delivery status
+                  const withStatus = rows.some(row => row.status);
+                  return {
+                    header,
+                    content: (
+                      <DataTable
+                        columns={buildTemplateColumns(withStatus)}
+                        data={rows}
+                      />
+                    ),
+                  };
+                })}
+              />
+            </TabPanel>
+          </TabsContent>
         )}
-      </DynamicEmails>
+        {canDynamic && (
+          <TabsContent value="dynamic">
+            <TabPanel>
+              <TopBar>
+                <Text type={TextTypes.Heading4}>Dynamic Templates</Text>
+                <Link
+                  buttonSize={ButtonSizes.Small}
+                  buttonAppearance={ButtonAppearance.Primary}
+                  to={CREATE_NEW_EMAIL_ROUTE}
+                  style={{ maxWidth: '200px' }}
+                >
+                  Create New
+                </Link>
+              </TopBar>
+              {isLoading ? (
+                <LoadingSpinner />
+              ) : (
+                <DataTable
+                  columns={buildDynamicTemplateColumns({
+                    deleteColor: theme.color.status.error,
+                    deleting,
+                    onDelete: template => {
+                      setDeleteError(null);
+                      setTemplateToDelete(template);
+                    },
+                  })}
+                  data={sortBy(dynamicEmails?.results ?? [], 'template_name')}
+                />
+              )}
+            </TabPanel>
+          </TabsContent>
+        )}
+        {canAutomated && (
+          <TabsContent value="log">
+            <TabPanel>
+              <Text type={TextTypes.Heading4}>Email Log</Text>
+              <EmailLogTab />
+            </TabPanel>
+          </TabsContent>
+        )}
+      </Tabs>
+
+      <Modal open={Boolean(templateToDelete)} onClose={closeDeleteModal}>
+        <Card width={CardSizes.Medium}>
+          <CardHeader>Delete template permanently?</CardHeader>
+          <CardContent>
+            <Text>
+              This will permanently delete
+              {templateToDelete
+                ? ` “${templateToDelete.template_name}”`
+                : ' this template'}
+              . This cannot be undone.
+            </Text>
+            <StatusMessage
+              type={StatusTypes.Error}
+              visible={Boolean(deleteError)}
+            >
+              {deleteError}
+            </StatusMessage>
+          </CardContent>
+          <CardFooter align="space-between">
+            <Button
+              appearance={ButtonAppearance.Secondary}
+              size={ButtonSizes.Small}
+              onClick={closeDeleteModal}
+              disabled={deleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              size={ButtonSizes.Small}
+              backgroundColor={theme.color.status.error}
+              onClick={handleConfirmDelete}
+              disabled={deleting}
+              loading={deleting}
+            >
+              Delete permanently
+            </Button>
+          </CardFooter>
+        </Card>
+      </Modal>
+
+      {toast && (
+        <Toast
+          key={toast.id}
+          headline="Success"
+          title={toast.title}
+          onClose={() => setToast(null)}
+        />
+      )}
     </Container>
   );
 };

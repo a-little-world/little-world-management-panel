@@ -1,4 +1,4 @@
-import { apiFetch } from './helpers';
+import { apiFetch, apiFetchText } from './helpers';
 
 /**
  * Survey campaigns are configuration: audience, window, cadence, questions and copy all live
@@ -13,7 +13,7 @@ export type LocalizedText = {
   en?: string;
 };
 
-export type SurveyQuestionType = 'rating' | 'text' | 'choice';
+export type SurveyQuestionType = 'rating' | 'text' | 'choice' | 'multiselect';
 
 export interface SurveyChoiceOption {
   value: string;
@@ -21,12 +21,15 @@ export interface SurveyChoiceOption {
 }
 
 export interface SurveyQuestion {
-  id: string;
+  /** Assigned on save. Omit on new questions; send back whatever the campaign already has. */
+  id?: string;
   type: SurveyQuestionType;
   required: boolean;
   label: LocalizedText;
   placeholder?: LocalizedText;
   options?: SurveyChoiceOption[];
+  /** Stars for this rating question. Falls back to the campaign scale on older rows. */
+  scale?: number;
 }
 
 export interface SurveyCampaignCopy {
@@ -43,12 +46,20 @@ export type SurveyAudienceType = 'all' | 'company' | 'filter';
 export type SurveyTrigger =
   | 'on_session'
   | 'event:call_ended'
-  | 'event:qualifying_call_ended';
+  | 'event:qualifying_call_ended'
+  | 'none';
+
+/** Public path on the main app. Staff can open it when `available_via_link` is on. */
+export const surveyPublicPath = (slug: string) => `/app/surveys/${slug}`;
+
+export const surveyPublicUrl = (slug: string) =>
+  `${typeof window === 'undefined' ? '' : window.location.origin}${surveyPublicPath(slug)}`;
 export type SurveyEligibleAfterEvent =
   | ''
   | 'onboarded'
   | 'first_qualifying_call'
   | 'match_created'
+  | 'halfway_match_success'
   | 'match_success';
 export type SurveyRepeatScope = 'user' | 'context';
 export type SurveyContextType = '' | 'live_session' | 'match';
@@ -74,7 +85,6 @@ export interface SurveyCampaignPayload {
   slug: string;
   name: string;
   copy: SurveyCampaignCopy;
-  scale: number;
   questions: SurveyQuestion[];
   audience_type: SurveyAudienceType;
   audience_value: string;
@@ -87,10 +97,13 @@ export interface SurveyCampaignPayload {
   starts_at: string | null;
   ends_at: string | null;
   max_shows: number;
+  available_via_link: boolean;
 }
 
 export interface SurveyCampaign extends SurveyCampaignPayload {
   id: number;
+  /** Read-only fallback stars for rating questions saved without a scale of their own. */
+  scale: number;
   created_at: string;
   updated_at: string;
   /** Offers created. */
@@ -99,13 +112,10 @@ export interface SurveyCampaign extends SurveyCampaignPayload {
   answered: number;
   /** Offers the client confirmed it displayed — flat at 0 means delivery is broken. */
   rendered: number;
-  mean_rating: number | null;
   /** What still blocks activation. Empty means the campaign can go live. */
   missing_copy: string[];
   /** Question ids with answers: their id and type are frozen. */
   locked_questions?: string[];
-  /** True once a rating has been submitted — scale must not change. */
-  scale_locked?: boolean;
   audience_label?: string;
 }
 
@@ -141,6 +151,8 @@ export const updateSurveyCampaign = (
   });
 
 export const ADMIN_SURVEY_RESPONSES_ENDPOINT = '/api/admin/survey_responses/';
+export const ADMIN_SURVEY_RESPONSES_EXPORT_ENDPOINT =
+  '/api/admin/survey_responses/export/';
 
 export interface SurveyFilterOption {
   label: string;
@@ -153,6 +165,24 @@ export type SurveyResponseStatus =
   | 'dismissed'
   | 'expired';
 
+export type SurveyDeliveryChannel = 'pending' | 'link';
+
+export type SurveyAnswerValue = number | string | string[];
+
+export interface SurveyRatingMean {
+  id: string;
+  label: string;
+  scale: number;
+  mean: number | null;
+  n: number;
+}
+
+export interface SurveyResponseSummary {
+  offered: number;
+  answered: number;
+  rating_means: SurveyRatingMean[];
+}
+
 export interface AdminSurveyResponse {
   id: number;
   campaign_id: number;
@@ -160,9 +190,11 @@ export interface AdminSurveyResponse {
   user_id: number;
   user_email: string;
   status: SurveyResponseStatus;
-  rating: number | null;
-  comment: string;
+  delivery_channel: SurveyDeliveryChannel;
   shown_count: number;
+  opened_at: string | null;
+  answers: Record<string, SurveyAnswerValue>;
+  questions: SurveyQuestion[];
   created_at: string;
   submitted_at: string | null;
 }
@@ -183,6 +215,7 @@ export interface AdminSurveyResponseList {
   results_total: number;
   campaign_options: SurveyFilterOption[];
   status_options: SurveyFilterOption[];
+  summary: SurveyResponseSummary | null;
 }
 
 export const fetchSurveyResponses = (queryString: string) =>
@@ -191,4 +224,12 @@ export const fetchSurveyResponses = (queryString: string) =>
       ? `${ADMIN_SURVEY_RESPONSES_ENDPOINT}?${queryString}`
       : ADMIN_SURVEY_RESPONSES_ENDPOINT,
     { method: 'GET' },
+  );
+
+/** Same filters as the table, including the email search; the CSV never contains emails. */
+export const fetchSurveyResponsesCsv = (queryString: string) =>
+  apiFetchText(
+    queryString
+      ? `${ADMIN_SURVEY_RESPONSES_EXPORT_ENDPOINT}?${queryString}`
+      : ADMIN_SURVEY_RESPONSES_EXPORT_ENDPOINT,
   );

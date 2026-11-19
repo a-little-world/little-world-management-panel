@@ -15,13 +15,15 @@ import {
   TextInput,
   TextTypes,
 } from '@a-little-world/little-world-design-system';
-import React, { FormEvent, useMemo, useState } from 'react';
+import React, { FormEvent, useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
 import {
   AssigneeUser,
   TaskPriority,
+  UserSearchResult,
   createManualSupportTask,
+  searchUsers,
 } from '../../api/supportTasks';
 import { RED_40 } from '../../constants';
 import { useTaskPriorityList } from '../../hooks/useTaskPriorities';
@@ -134,6 +136,46 @@ const EmptyAssignees = styled(Text).attrs({
   text-align: center;
 `;
 
+const RelatedUserRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.small};
+  padding: ${({ theme }) => theme.spacing.xxsmall};
+  border: 1px solid ${({ theme }) => theme.color.border.subtle};
+  border-radius: ${({ theme }) => theme.radius.xxsmall};
+  background: ${({ theme }) => theme.color.surface.secondary};
+`;
+
+const SearchResults = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xxxsmall};
+  max-height: 12rem;
+  overflow-y: auto;
+  border: 1px solid ${({ theme }) => theme.color.border.subtle};
+  border-radius: ${({ theme }) => theme.radius.xxsmall};
+  padding: ${({ theme }) => theme.spacing.xxsmall};
+  background: ${({ theme }) => theme.color.surface.secondary};
+`;
+
+const SearchResultRow = styled.button`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xxxsmall};
+  width: 100%;
+  text-align: left;
+  padding: ${({ theme }) => theme.spacing.xxsmall};
+  border: none;
+  border-radius: ${({ theme }) => theme.radius.xxxsmall};
+  background: transparent;
+  cursor: pointer;
+
+  &:hover {
+    background: ${({ theme }) => theme.color.surface.primary};
+  }
+`;
+
 interface Props {
   open: boolean;
   onClose: () => void;
@@ -153,6 +195,10 @@ function CreateSupportTaskForm({
   const [priority, setPriority] = useState<TaskPriority>('MEDIUM');
   const [assigneeIds, setAssigneeIds] = useState<number[]>([]);
   const [assigneeSearch, setAssigneeSearch] = useState('');
+  const [relatedUser, setRelatedUser] = useState<UserSearchResult | null>(null);
+  const [userQuery, setUserQuery] = useState('');
+  const [userResults, setUserResults] = useState<UserSearchResult[]>([]);
+  const [userSearching, setUserSearching] = useState(false);
   const priorityOptions = useTaskPriorityList().map(({ priority, label }) => ({
     value: priority,
     label,
@@ -170,13 +216,55 @@ function CreateSupportTaskForm({
     );
   }, [assigneeSearch, assigneeUsers]);
 
+  useEffect(() => {
+    const query = userQuery.trim();
+    if (!query || relatedUser) {
+      setUserResults([]);
+      setUserSearching(false);
+      return;
+    }
+    let active = true;
+    setUserSearching(true);
+    const timer = setTimeout(() => {
+      searchUsers(query)
+        .then(results => {
+          if (active) setUserResults(results);
+        })
+        .catch(() => {
+          if (active) setUserResults([]);
+        })
+        .finally(() => {
+          if (active) setUserSearching(false);
+        });
+    }, 250);
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [userQuery, relatedUser]);
+
   const resetForm = () => {
     setTitle('');
     setDescription('');
     setPriority('MEDIUM');
     setAssigneeIds([]);
     setAssigneeSearch('');
+    setRelatedUser(null);
+    setUserQuery('');
+    setUserResults([]);
     setError(null);
+  };
+
+  const selectRelatedUser = (user: UserSearchResult) => {
+    setRelatedUser(user);
+    setUserQuery('');
+    setUserResults([]);
+  };
+
+  const clearRelatedUser = () => {
+    setRelatedUser(null);
+    setUserQuery('');
+    setUserResults([]);
   };
 
   const handleClose = () => {
@@ -203,6 +291,7 @@ function CreateSupportTaskForm({
         title: title.trim(),
         description: description.trim(),
         priority,
+        related_user_id: relatedUser?.id ?? null,
         assignee_ids: assigneeIds,
       });
       onCreated();
@@ -251,6 +340,58 @@ function CreateSupportTaskForm({
             onChange={event => setDescription(event.target.value)}
             placeholder="Add context or instructions for the assignees"
           />
+        </Field>
+
+        <Field>
+          <Label htmlFor="task-related-user">Related user (optional)</Label>
+          {relatedUser ? (
+            <RelatedUserRow>
+              <Text type={TextTypes.Body6} tag="span">
+                {relatedUser.first_name} {relatedUser.second_name} ·{' '}
+                {relatedUser.email}
+              </Text>
+              <Button
+                type="button"
+                variation={ButtonVariations.Inline}
+                onClick={clearRelatedUser}
+              >
+                Clear
+              </Button>
+            </RelatedUserRow>
+          ) : (
+            <>
+              <TextInput
+                id="task-related-user"
+                name="related-user"
+                value={userQuery}
+                onChange={event => setUserQuery(event.target.value)}
+                placeholder="Search users by name or email"
+                inline
+              />
+              {userQuery.trim() && (
+                <SearchResults>
+                  {userSearching ? (
+                    <EmptyAssignees>Searching…</EmptyAssignees>
+                  ) : userResults.length ? (
+                    userResults.map(user => (
+                      <SearchResultRow
+                        key={user.id}
+                        type="button"
+                        onClick={() => selectRelatedUser(user)}
+                      >
+                        <Text type={TextTypes.Body6} bold tag="span">
+                          {user.first_name} {user.second_name}
+                        </Text>
+                        <AssigneeEmail>{user.email}</AssigneeEmail>
+                      </SearchResultRow>
+                    ))
+                  ) : (
+                    <EmptyAssignees>No users found.</EmptyAssignees>
+                  )}
+                </SearchResults>
+              )}
+            </>
+          )}
         </Field>
 
         <MetaGrid>
