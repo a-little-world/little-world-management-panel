@@ -52,6 +52,7 @@ export const BANNER_EDIT_ROUTE = '/banners/:bannerId/';
 export const COMMUNICATIONS_ROUTE = '/communications/';
 export const QUESTION_CARDS_ROUTE = '/question-cards/';
 export const SURVEYS_ROUTE = '/surveys/';
+export const FEEDBACK_ROUTE = '/feedback/';
 export const SURVEY_EDIT_ROUTE = '/surveys/:campaignId/';
 
 export const getSurveyEditRoute = (id: number | 'new') => `/surveys/${id}/`;
