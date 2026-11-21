@@ -11,7 +11,7 @@ export function hasManagementPermission(
 
 /**
  * Only admins can grant or revoke these, even with Apply management permissions.
- * Mirrors `STAFF_ONLY_GRANTABLE_PERMISSIONS` in the backend, which enforces it.
+ * Mirrors `ADMIN_ONLY_GRANTABLE_PERMISSIONS` in the backend, which enforces it.
  */
 export const ADMIN_ONLY_PERMISSIONS: ReadonlySet<string> = new Set([
   'management.apply_management_permissions',
@@ -19,9 +19,11 @@ export const ADMIN_ONLY_PERMISSIONS: ReadonlySet<string> = new Set([
 ]);
 
 export type PermissionCheckboxState = {
-  /** The checkbox cannot be changed by this viewer. */
+  /** The checkbox cannot be changed by this viewer; render it disabled. */
   locked: boolean;
   label: string;
+  /** Why it is locked, shown under the checkbox. Null when it isn't. */
+  reason: string | null;
 };
 
 /**
@@ -40,10 +42,19 @@ export function permissionCheckboxState(
     ADMIN_ONLY_PERMISSIONS.has(row.permission) &&
     !canGrantAdminOnlyPermissions
   ) {
-    return { locked: true, label: `${label} [ADMIN ONLY]` };
+    return {
+      locked: true,
+      label,
+      reason: 'Only admins can grant or remove this permission.',
+    };
   }
   if (row.grantable === false && !row.enabled) {
-    return { locked: true, label: `${label} [TEAM ADDRESSES ONLY]` };
+    return {
+      locked: true,
+      label,
+      reason:
+        'Only team email addresses can get this permission. Ask the person to sign up with their team address.',
+    };
   }
-  return { locked: false, label };
+  return { locked: false, label, reason: null };
 }

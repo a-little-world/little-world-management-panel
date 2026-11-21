@@ -4,7 +4,7 @@ import styled from 'styled-components';
 
 interface DataFieldProps {
   title: string;
-  value: string | number;
+  value: React.ReactNode;
 }
 
 const Container = styled.div`

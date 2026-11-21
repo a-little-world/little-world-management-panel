@@ -35,6 +35,7 @@ import {
   SidebarPanel,
   SidebarScroll,
 } from './OpenChatWorkspace.styles';
+import PersonalValue from '../../atoms/PersonalValue';
 
 type OpenChatSidebarProps = Pick<
   OpenChatWorkspaceState,
@@ -98,9 +99,9 @@ export function OpenChatSidebar({
             <Text type={TextTypes.Body6} bold tag="span">
               {actorDisplayName}
             </Text>
-            {selectedUser?.email && (
+            {selectedUser && (
               <Text type={TextTypes.Body7} tag="span">
-                {selectedUser.email}
+                <PersonalValue value={selectedUser.email} />
               </Text>
             )}
           </ActorMeta>
@@ -109,19 +110,28 @@ export function OpenChatSidebar({
         {showMissingTargetUserUuid && (
           <Description type={TextTypes.Body7} tag="p">
             No matching partner found. Set up matching on{' '}
-            <Link to={buildOpenChatTabUrl(OPEN_CHAT_TAB_HOME, { userUuid: openChatUserUuid })}>
+            <Link
+              to={buildOpenChatTabUrl(OPEN_CHAT_TAB_HOME, {
+                userUuid: openChatUserUuid,
+              })}
+            >
               Open Chat home
-            </Link>.
+            </Link>
+            .
           </Description>
         )}
 
         <Tabs
           value={selectedTab}
-          onValueChange={(value: string) => handleSelectTab(value as OpenChatTab)}
+          onValueChange={(value: string) =>
+            handleSelectTab(value as OpenChatTab)
+          }
         >
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value={OPEN_CHAT_TAB_CHAT}>Chats</TabsTrigger>
-            <TabsTrigger value={OPEN_CHAT_TAB_INTERACTIONS}>Interactions</TabsTrigger>
+            <TabsTrigger value={OPEN_CHAT_TAB_INTERACTIONS}>
+              Interactions
+            </TabsTrigger>
             <TabsTrigger value={OPEN_CHAT_TAB_HOME}>Home</TabsTrigger>
           </TabsList>
         </Tabs>
@@ -137,7 +147,9 @@ export function OpenChatSidebar({
             type="button"
             appearance={ButtonAppearance.Primary}
             size={ButtonSizes.Small}
-            disabled={!targetUserId || isCreatingChat || showMissingTargetUserUuid}
+            disabled={
+              !targetUserId || isCreatingChat || showMissingTargetUserUuid
+            }
             onClick={() => {
               void handleCreateChat();
             }}
@@ -192,8 +204,12 @@ export function OpenChatSidebar({
                   <OpenChatInteractionRow
                     key={interaction.interaction_id}
                     interaction={interaction}
-                    active={selectedInteractionUuid === interaction.interaction_id}
-                    onSelect={() => navigateToInteraction(interaction.interaction_id)}
+                    active={
+                      selectedInteractionUuid === interaction.interaction_id
+                    }
+                    onSelect={() =>
+                      navigateToInteraction(interaction.interaction_id)
+                    }
                   />
                 ))
               ) : (
@@ -207,11 +223,13 @@ export function OpenChatSidebar({
             {selectedTab === OPEN_CHAT_TAB_HOME && (
               <EmptySidebarState>
                 <Text type={TextTypes.Body6} tag="p">
-                  Connection settings and automation tools are in the main panel.
+                  Connection settings and automation tools are in the main
+                  panel.
                 </Text>
                 {!openChatUserUuid && (
                   <Text type={TextTypes.Body7} tag="p">
-                    Configure matching on the Home tab to enable chats and interactions.
+                    Configure matching on the Home tab to enable chats and
+                    interactions.
                   </Text>
                 )}
               </EmptySidebarState>

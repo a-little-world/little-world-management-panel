@@ -6,13 +6,10 @@ import {
   CardFooter,
   CardHeader,
   CardSizes,
-  Checkbox,
   Button as DsButton,
   Modal,
   PencilIcon,
   Select,
-  StatusMessage,
-  StatusTypes,
   Tag,
   TagSizes,
   Text,
@@ -28,16 +25,16 @@ import {
   type ManagementPermissionRow,
   type TeamMember,
   type TeamMembersList,
-  setUserManagementPermission,
 } from '../../api/index';
 import { BLUE_40, RED_40 } from '../../constants';
 import { formatDate, formatTimeDistance } from '../../helpers/date';
-import { permissionCheckboxState } from '../../helpers/managementPermissions';
 import { useMatchingUsersListData } from '../../store';
 import { Button } from '../atoms/Button';
 import UserImage from '../atoms/UserImage';
 import { DataTable } from '../blocks/DataTable';
 import FiltersToolbar from '../blocks/FiltersToolbar';
+import ManagementPermissionList from '../blocks/ManagementPermissionList';
+import PersonalValue from '../atoms/PersonalValue';
 
 const EmailCell = styled.div`
   display: flex;
@@ -71,11 +68,7 @@ const NoneLabel = styled(Text).attrs({
   color: ${({ theme }) => theme.color.text.tertiary};
 `;
 
-const PermissionList = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: ${({ theme }) => theme.spacing.xsmall};
+const PermissionScroll = styled.div`
   max-height: 60vh;
   overflow: auto;
 `;
@@ -117,71 +110,6 @@ function EnabledPermissionTags({
   );
 }
 
-function PermissionEditor({
-  userId,
-  permissions,
-  canGrantAdminOnlyPermissions,
-  onUpdated,
-  onActionError,
-}: {
-  userId: number;
-  permissions: ManagementPermissionRow[];
-  canGrantAdminOnlyPermissions: boolean;
-  onUpdated: () => void;
-  onActionError: (message: string | null) => void;
-}) {
-  const [pendingPermission, setPendingPermission] = useState<string | null>(
-    null,
-  );
-
-  const onToggle = (permission: string, nextEnabled: boolean) => {
-    onActionError(null);
-    setPendingPermission(permission);
-    setUserManagementPermission({
-      userId: String(userId),
-      action: nextEnabled ? 'add' : 'remove',
-      permission,
-      onSuccess: () => {
-        setPendingPermission(null);
-        onUpdated();
-      },
-      onError: (e: { message?: string }) => {
-        onActionError(e?.message || 'Could not update permission.');
-        setPendingPermission(null);
-        onUpdated();
-      },
-    });
-  };
-
-  return (
-    <PermissionList>
-      {permissions.map(row => {
-        const { locked, label } = permissionCheckboxState(
-          row,
-          canGrantAdminOnlyPermissions,
-        );
-
-        return (
-          <Checkbox
-            key={row.permission}
-            disabled={pendingPermission !== null}
-            readOnly={locked}
-            id={`team-member-${userId}-perm-${row.codename}`}
-            label={label}
-            checked={row.enabled}
-            onCheckedChange={(val: boolean) => {
-              if (!locked && val !== row.enabled) {
-                onToggle(row.permission, val);
-              }
-            }}
-            required={false}
-          />
-        );
-      })}
-    </PermissionList>
-  );
-}
-
 const orderingOptions = [
   { value: 'date_joined', label: '(Asc) By date joined' },
   { value: '-date_joined', label: '(Desc) By date joined' },
@@ -210,18 +138,14 @@ export function TeamMembers() {
 
   const canEdit = Boolean(teamMembersList?.can_edit_management_permissions);
   const canGrantAdminOnlyPermissions = Boolean(
-    teamMembersList?.can_grant_apply_management_permissions,
+    teamMembersList?.can_grant_admin_only_permissions,
   );
   // Kept apart from the list: revoking someone's last permission drops them from it.
   const [editing, setEditing] = useState<{ id: number; name: string } | null>(
     null,
   );
-  const [permissionError, setPermissionError] = useState<string | null>(null);
   const editingMember = members.find(member => member.id === editing?.id);
-  const closeEditor = () => {
-    setPermissionError(null);
-    setEditing(null);
-  };
+  const closeEditor = () => setEditing(null);
 
   const columns = useMemo<ColumnDef<TeamMember, any>[]>(
     () => [
@@ -266,7 +190,7 @@ export function TeamMembers() {
         cell: ({ row }) => (
           <EmailCell>
             <Text type={TextTypes.Body6} tag="span">
-              {row.original.email}
+              <PersonalValue value={row.original.email} />
             </Text>
             {row.original.outside_team_domain && (
               <Tag bold size={TagSizes.small} color={RED_40}>
@@ -290,10 +214,7 @@ export function TeamMembers() {
                   variation={ButtonVariations.Icon}
                   size={ButtonSizes.Small}
                   title={`Edit permissions for ${name}`}
-                  onClick={() => {
-                    setPermissionError(null);
-                    setEditing({ id: row.original.id, name });
-                  }}
+                  onClick={() => setEditing({ id: row.original.id, name })}
                 >
                   <PencilIcon
                     width={16}
@@ -395,13 +316,15 @@ export function TeamMembers() {
           </CardHeader>
           <CardContent align="flex-start">
             {editingMember ? (
-              <PermissionEditor
-                userId={editingMember.id}
-                permissions={editingMember.permissions ?? []}
-                canGrantAdminOnlyPermissions={canGrantAdminOnlyPermissions}
-                onUpdated={() => mutate()}
-                onActionError={setPermissionError}
-              />
+              <PermissionScroll>
+                <ManagementPermissionList
+                  userId={editingMember.id}
+                  permissions={editingMember.permissions ?? []}
+                  canGrantAdminOnlyPermissions={canGrantAdminOnlyPermissions}
+                  idPrefix={`team-member-${editingMember.id}-perm`}
+                  onChanged={() => mutate()}
+                />
+              </PermissionScroll>
             ) : (
               editing && (
                 <Text type={TextTypes.Body6}>
@@ -416,12 +339,6 @@ export function TeamMembers() {
               )
             )}
           </CardContent>
-          <StatusMessage
-            type={StatusTypes.Error}
-            visible={Boolean(permissionError)}
-          >
-            {permissionError}
-          </StatusMessage>
           <CardFooter align="flex-end">
             <DsButton size={ButtonSizes.Small} onClick={closeEditor}>
               Done

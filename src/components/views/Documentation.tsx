@@ -57,6 +57,7 @@ import {
   TableRow,
 } from '../atoms/Table';
 import ManagementUserInlineLink from '../atoms/ManagementUserInlineLink';
+import PersonalValue from '../atoms/PersonalValue';
 
 interface DocumentationLink {
   id: string;
@@ -678,10 +679,12 @@ function PreMatchingLiveSelectorDemo() {
     usePrematchAppointmentsListData(query);
 
   const listOptions =
-    filterOptions?.lists?.map((item: { name: string; description: string }) => ({
-      value: item.name,
-      label: item.description,
-    })) ?? [];
+    filterOptions?.lists?.map(
+      (item: { name: string; description: string }) => ({
+        value: item.name,
+        label: item.description,
+      }),
+    ) ?? [];
 
   const appointments = prematchAppointmentsList?.results ?? [];
 
@@ -737,7 +740,9 @@ function PreMatchingLiveSelectorDemo() {
                   {appointment.user?.profile?.first_name}{' '}
                   {appointment.user?.profile?.second_name}
                 </TableCell>
-                <TableCell>{appointment.user?.email}</TableCell>
+                <TableCell>
+                  <PersonalValue value={appointment.user?.email} />
+                </TableCell>
                 <TableCell>{appointment.start_time}</TableCell>
               </TableRow>
             ))}
@@ -1236,7 +1241,6 @@ export const ReportingBugsAndIssuesDocumentation: React.FC = () => {
             maxWidth="860px"
             minHeight="260px"
           />
-
         </ReportingPagePanel>
       </DocumentationPageContent>
     </DocumentationContainer>

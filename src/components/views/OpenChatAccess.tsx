@@ -76,6 +76,7 @@ import {
   PageHeader,
   Title,
 } from '../atoms/PageLayout';
+import PersonalValue from '../atoms/PersonalValue';
 
 const Form = styled.form`
   display: flex;
@@ -487,7 +488,7 @@ function OpenChatAccessUsersPanel() {
         }),
         columnHelper.accessor('email', {
           header: 'Email',
-          cell: ({ row }) => row.original.email,
+          cell: ({ row }) => <PersonalValue value={row.original.email} />,
         }),
         columnHelper.accessor('configuration', {
           header: 'Status',

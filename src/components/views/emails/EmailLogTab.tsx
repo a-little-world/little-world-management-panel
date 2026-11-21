@@ -25,6 +25,7 @@ import {
 import FiltersToolbar from '../../blocks/FiltersToolbar';
 import { DataTable } from '../../blocks/DataTable';
 import { formatDateTime } from '../../../helpers/date';
+import PersonalValue from '../../atoms/PersonalValue';
 
 interface EmailLogReceiver {
   // null when the address has no user account (e.g. Patenmatch emails)
@@ -100,11 +101,15 @@ function buildColumns(
       cell: ({ getValue }) => {
         const receiver = getValue();
         if (receiver?.id) {
-          return <Link to={`/user/${receiver.id}`}>{receiver.email}</Link>;
+          return (
+            <Link to={`/user/${receiver.id}`}>
+              <PersonalValue value={receiver.email} />
+            </Link>
+          );
         }
         return (
           <Text type={TextTypes.Body6} tag="span">
-            {receiver?.email ?? '—'}
+            {receiver ? <PersonalValue value={receiver.email} /> : '—'}
           </Text>
         );
       },

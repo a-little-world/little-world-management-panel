@@ -19,6 +19,7 @@ import {
   TableRow,
 } from '../../atoms/Table';
 import UserImage from '../../atoms/UserImage';
+import PersonalValue from '../../atoms/PersonalValue';
 
 const PREMATCH_APPOINTMENT_FIELDS = [
   { key: 'is_onboarded', label: 'Is Onboarded' },
@@ -67,7 +68,9 @@ export function PrematchingAppointmentsTable({ appointments, list }) {
                       if (
                         Object.keys(
                           selectedPrematchingAppointmentUsers,
-                        ).includes(appointment.user.uuid ?? appointment.user.hash)
+                        ).includes(
+                          appointment.user.uuid ?? appointment.user.hash,
+                        )
                       ) {
                         deselectPrematchingAppointmentUser(
                           appointment.user.uuid ?? appointment.user.hash,
@@ -131,7 +134,7 @@ export function PrematchingAppointmentsTable({ appointments, list }) {
                   if (key === 'email') {
                     return (
                       <TableCell key={appointment.uuid + key}>
-                        {appointment.user.email}
+                        <PersonalValue value={appointment.user.email} />
                       </TableCell>
                     );
                   }

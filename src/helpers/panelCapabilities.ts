@@ -11,7 +11,8 @@ export type PanelActionCapability =
   | 'edit_users'
   | 'edit_matches'
   | 'export'
-  | 'personal_details';
+  | 'personal_details'
+  | 'send_notifications';
 
 /** Capabilities that each open a page of the panel. */
 export type PanelPageCapability = Exclude<
@@ -20,25 +21,15 @@ export type PanelPageCapability = Exclude<
 >;
 
 /**
- * Whether the backend sent `panel_capabilities` at all. Older backends do
- * not, and then the panel shows everything, as it did before.
- */
-export function hasPanelCapabilities(
-  user: MatchingPanelUser | undefined,
-): boolean {
-  return Boolean(user?.panel_capabilities);
-}
-
-/**
  * The backend decides capabilities; never re-derive them from permissions.
- * Missing key → false. Missing `panel_capabilities` → true (old backend).
+ * Missing key (or no panel user yet) → false.
  */
 export function hasPanelCapability(
   user: MatchingPanelUser | undefined,
   requirement: CapabilityRequirement,
 ): boolean {
   const capabilities = user?.panel_capabilities;
-  if (!capabilities) return true;
+  if (!capabilities) return false;
   const keys: readonly PanelCapability[] =
     typeof requirement === 'string' ? [requirement] : requirement;
   return keys.some(key => capabilities[key] === true);

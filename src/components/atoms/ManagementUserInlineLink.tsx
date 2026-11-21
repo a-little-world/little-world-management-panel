@@ -7,6 +7,7 @@ import useSWR from 'swr';
 import { usePanelCapability } from '../../helpers/panelCapabilities';
 import { dataFetcher } from '../../store';
 import UserImage from './UserImage';
+import { personalValueText } from './PersonalValue';
 
 type InlineManagementUser = {
   id: number;
@@ -80,7 +81,7 @@ export const ManagementUserInlineLink = ({
     return <FallbackLabel>@{email}</FallbackLabel>;
   }
 
-  const fullName = getFullName(data) || data.email;
+  const fullName = getFullName(data) || data.email || 'Unnamed user';
   const to = tab ? `/user/${data.id}?tab=${tab}` : `/user/${data.id}`;
 
   return (
@@ -90,7 +91,7 @@ export const ManagementUserInlineLink = ({
           alt={fullName}
           user={data}
           dimensions={{ height: 16, width: 16 }}
-          tooltipText={data.email}
+          tooltipText={personalValueText(data.email)}
         />
       </UserAvatar>
       <UserName>{fullName}</UserName>
