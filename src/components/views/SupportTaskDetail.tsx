@@ -66,6 +66,7 @@ import {
   UserJourneyStatus,
   UserMatchesSummary,
 } from '../blocks/user/UserProfileSummary';
+import PersonalValue from '../atoms/PersonalValue';
 
 // ─── Select options ─────────────────────────────────────────────────────────
 
@@ -916,7 +917,7 @@ export default function SupportTaskDetail() {
                           {relatedUser.user_type}
                         </Text>
                         <Text type={TextTypes.Body5} tag="div">
-                          {relatedUser.email}
+                          <PersonalValue value={relatedUser.email} />
                         </Text>
                       </MetaField>
                     </UserInfoRow>

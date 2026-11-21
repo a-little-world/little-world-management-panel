@@ -64,6 +64,7 @@ import {
   UserMatchesSummary,
 } from './UserProfileSummary';
 import type { UserJourney, UserMatches } from './UserProfileSummary';
+import PersonalValue from '../../atoms/PersonalValue';
 
 interface UserProfile {
   first_name: string;
@@ -162,8 +163,7 @@ const UserDetailsFull: React.FC<{
           value={formatDateTime(user.state.searching_state_last_updated, 'en')}
         />
         <DataField title="Id" value={user.id} />
-        {/* null = hidden by the backend (no personal details permission) */}
-        <DataField title="Email" value={user.email ?? 'Hidden'} />
+        <DataField title="Email" value={<PersonalValue value={user.email} />} />
         <DataField
           title="Company"
           value={

@@ -28,6 +28,7 @@ import {
 import { RED_40 } from '../../constants';
 import { useTaskPriorityList } from '../../hooks/useTaskPriorities';
 import UserImage from '../atoms/UserImage';
+import PersonalValue from '../atoms/PersonalValue';
 
 const Form = styled.form`
   width: 100%;
@@ -348,7 +349,7 @@ function CreateSupportTaskForm({
             <RelatedUserRow>
               <Text type={TextTypes.Body6} tag="span">
                 {relatedUser.first_name} {relatedUser.second_name} ·{' '}
-                {relatedUser.email}
+                <PersonalValue value={relatedUser.email} />
               </Text>
               <Button
                 type="button"
@@ -382,7 +383,9 @@ function CreateSupportTaskForm({
                         <Text type={TextTypes.Body6} bold tag="span">
                           {user.first_name} {user.second_name}
                         </Text>
-                        <AssigneeEmail>{user.email}</AssigneeEmail>
+                        <AssigneeEmail>
+                          <PersonalValue value={user.email} />
+                        </AssigneeEmail>
                       </SearchResultRow>
                     ))
                   ) : (
@@ -477,7 +480,9 @@ function CreateSupportTaskForm({
                     <Text type={TextTypes.Body6} bold tag="span">
                       {user.first_name} {user.last_name}
                     </Text>
-                    <AssigneeEmail>{user.email}</AssigneeEmail>
+                    <AssigneeEmail>
+                      <PersonalValue value={user.email} />
+                    </AssigneeEmail>
                   </AssigneeDetails>
                 </AssigneeRow>
               ))

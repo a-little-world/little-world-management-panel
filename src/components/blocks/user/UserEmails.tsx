@@ -23,6 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from '../../atoms/Table';
+import PersonalValue from '../../atoms/PersonalValue';
 
 const fields = [
   { key: 'receiver', label: 'Reciever' },
@@ -114,7 +115,7 @@ const UserEmails = ({ user }) => {
                       if (key === 'receiver') {
                         return (
                           <TableCell key={email + key}>
-                            {email.receiver.email}
+                            <PersonalValue value={email.receiver.email} />
                           </TableCell>
                         );
                       }

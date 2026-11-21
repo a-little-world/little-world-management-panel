@@ -18,6 +18,7 @@ import { formatDate } from '../../helpers/date';
 import { useDynamicUserListData, useGlobalState } from '../../store';
 import SelectBox from '../atoms/SelectBox';
 import { DataTable } from '../blocks/DataTable';
+import PersonalValue from '../atoms/PersonalValue';
 
 interface DynamicUserList {
   id: number;
@@ -107,8 +108,13 @@ function CreateListModal({ open, onClose, onSubmit }: CreateListModalProps) {
             <Text bold>Selected Users:</Text>
             <div className="max-h-40 overflow-y-auto border rounded p-2">
               {Object.values(selectedUsers).map(user => (
-                <div key={user.uuid ?? user.hash} className="flex items-center gap-2 py-1">
-                  <Text>{user.email}</Text>
+                <div
+                  key={user.uuid ?? user.hash}
+                  className="flex items-center gap-2 py-1"
+                >
+                  <Text>
+                    <PersonalValue value={user.email} />
+                  </Text>
                 </div>
               ))}
               {Object.keys(selectedUsers).length === 0 && (
@@ -185,8 +191,13 @@ function ModifyListModal({
             </Text>
             <div className="max-h-40 overflow-y-auto border rounded p-2">
               {Object.values(selectedUsers).map(user => (
-                <div key={user.uuid ?? user.hash} className="flex items-center gap-2 py-1">
-                  <Text variant="body-small">{user.email}</Text>
+                <div
+                  key={user.uuid ?? user.hash}
+                  className="flex items-center gap-2 py-1"
+                >
+                  <Text variant="body-small">
+                    <PersonalValue value={user.email} />
+                  </Text>
                 </div>
               ))}
               {Object.keys(selectedUsers).length === 0 && (
@@ -336,7 +347,9 @@ function ViewUsersModal({ open, onClose, list }: ViewUsersModalProps) {
                       key={user.id}
                       className="flex items-center justify-between py-1 px-2 bg-gray-50 rounded"
                     >
-                      <Text variant="body-small">{user.email}</Text>
+                      <Text variant="body-small">
+                        <PersonalValue value={user.email} />
+                      </Text>
                       <Text variant="body-small" className="text-gray-500">
                         ID: {user.id}
                       </Text>

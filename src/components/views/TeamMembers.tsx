@@ -34,6 +34,7 @@ import UserImage from '../atoms/UserImage';
 import { DataTable } from '../blocks/DataTable';
 import FiltersToolbar from '../blocks/FiltersToolbar';
 import ManagementPermissionList from '../blocks/ManagementPermissionList';
+import PersonalValue from '../atoms/PersonalValue';
 
 const EmailCell = styled.div`
   display: flex;
@@ -189,7 +190,7 @@ export function TeamMembers() {
         cell: ({ row }) => (
           <EmailCell>
             <Text type={TextTypes.Body6} tag="span">
-              {row.original.email}
+              <PersonalValue value={row.original.email} />
             </Text>
             {row.original.outside_team_domain && (
               <Tag bold size={TagSizes.small} color={RED_40}>

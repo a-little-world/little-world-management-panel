@@ -29,6 +29,7 @@ import {
 } from '../../atoms/PageLayout';
 import { DataTable } from '../../blocks/DataTable';
 import { FiltersToolbar } from '../../blocks/FiltersToolbar';
+import PersonalValue from '../../atoms/PersonalValue';
 
 const ALL_TIMES = 'ALL';
 
@@ -49,7 +50,7 @@ const columns: ColumnDef<PartnerEventRegistration, any>[] = [
     header: 'Email',
     cell: ({ getValue }) => (
       <Text type={TextTypes.Body6} tag="span" bold>
-        {getValue()}
+        <PersonalValue value={getValue()} />
       </Text>
     ),
   }),
