@@ -421,12 +421,14 @@ function FeedbackSheet({
             <dd>{feedbackContext(feedback)}</dd>
           </DetailList>
         </Section>
-        {Object.keys(feedback.device).length > 0 && (
-          <Section>
-            <MetaLabel>Device</MetaLabel>
+        <Section>
+          <MetaLabel>Device</MetaLabel>
+          {Object.keys(feedback.device).length > 0 ? (
             <DeviceDetails device={feedback.device} />
-          </Section>
-        )}
+          ) : (
+            <Text type={TextTypes.Body6}>Not shared</Text>
+          )}
+        </Section>
         {profile && (
           <Section>
             <MetaLabel>Reported by</MetaLabel>
