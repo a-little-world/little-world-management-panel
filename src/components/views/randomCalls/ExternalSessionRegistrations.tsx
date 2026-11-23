@@ -45,12 +45,23 @@ const StyledDropdown = styled(Select)`
 
 const columnHelper = createColumnHelper<PartnerEventRegistration>();
 
+const userTypeLabel = (role: PartnerEventRegistration['role']) =>
+  role === 'learner' ? 'Learner' : 'External';
+
 const columns: ColumnDef<PartnerEventRegistration, any>[] = [
   columnHelper.accessor('email', {
     header: 'Email',
     cell: ({ getValue }) => (
       <Text type={TextTypes.Body6} tag="span" bold>
         <PersonalValue value={getValue()} />
+      </Text>
+    ),
+  }),
+  columnHelper.accessor('role', {
+    header: 'User type',
+    cell: ({ getValue }) => (
+      <Text type={TextTypes.Body6} tag="span">
+        {userTypeLabel(getValue())}
       </Text>
     ),
   }),
@@ -148,8 +159,8 @@ function ExternalSessionRegistrations() {
     <PageContainer>
       <PageHeader>
         <Description>
-          Emails registered on external-session landings. Filter by the
-          appointment times already stored in the database.
+          External sign-ups and learner bookings for external sessions. Filter
+          by the appointment times already stored in the database.
         </Description>
       </PageHeader>
 

@@ -5,12 +5,15 @@ export const ADMIN_PARTNER_EVENT_REGISTRATIONS_ENDPOINT =
   '/api/admin/partner-event-registrations/';
 export const ADMIN_EXTERNAL_SESSIONS_ENDPOINT = '/api/admin/external-sessions/';
 
+export type RegistrationRole = 'partner' | 'learner';
+
 export interface PartnerEventRegistration {
   id: number;
   email: string;
+  role: RegistrationRole;
   company: CompanyRef | null;
   lobby_name: string | null;
-  appointment_starts_at: string;
+  appointment_starts_at: string | null;
   newsletter_subscribed: boolean;
   registered_at: string;
 }
@@ -37,6 +40,7 @@ export interface ExternalSession {
   send_registration_confirmation: boolean;
   landing_path: string;
   registration_count: number;
+  learner_registration_count: number;
 }
 
 export interface ExternalSessionList {
