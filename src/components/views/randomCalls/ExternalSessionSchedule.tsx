@@ -250,7 +250,15 @@ function ExternalSessionSchedule() {
         ),
       }),
       columnHelper.accessor('registration_count', {
-        header: 'Registrations',
+        header: 'External registrations',
+        cell: ({ getValue }) => (
+          <Text type={TextTypes.Body6} tag="span">
+            {getValue()}
+          </Text>
+        ),
+      }),
+      columnHelper.accessor('learner_registration_count', {
+        header: 'Learner registrations',
         cell: ({ getValue }) => (
           <Text type={TextTypes.Body6} tag="span">
             {getValue()}
