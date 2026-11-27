@@ -40,7 +40,6 @@ export type ExternalSessionFormValues = {
   startTime: string;
   endTime: string;
   enforceEmailDomain: boolean;
-  sendRegistrationConfirmation: boolean;
 };
 
 type ExternalSessionFormProps = {
@@ -125,20 +124,6 @@ function ExternalSessionForm({
                 onValueChange={onChange}
                 cannotError
                 inModal
-              />
-            )}
-          />
-          <Controller
-            name="sendRegistrationConfirmation"
-            control={control}
-            render={({ field: { value, onChange } }) => (
-              <Switch
-                label="Send confirmation email"
-                labelInline
-                checked={value}
-                onCheckedChange={onChange}
-                cannotError
-                disabled={saving}
               />
             )}
           />

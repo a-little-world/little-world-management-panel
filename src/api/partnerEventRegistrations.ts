@@ -16,6 +16,8 @@ export interface PartnerEventRegistration {
   appointment_starts_at: string | null;
   newsletter_subscribed: boolean;
   registered_at: string;
+  /** A landing signup whose confirmation mail was opened. Learner bookings are always confirmed. */
+  confirmed: boolean;
 }
 
 export interface PartnerEventRegistrationList {
@@ -37,9 +39,11 @@ export interface ExternalSession {
   start_time: string;
   end_time: string;
   enforce_email_domain: boolean;
-  send_registration_confirmation: boolean;
   landing_path: string;
+  /** Confirmed landing signups: the ones that add learner seats. */
   registration_count: number;
+  /** Landing signups whose confirmation mail was never opened. A record only. */
+  unconfirmed_registration_count: number;
   learner_registration_count: number;
 }
 
@@ -54,7 +58,6 @@ export interface ExternalSessionWrite {
   start_time: string;
   end_time: string;
   enforce_email_domain: boolean;
-  send_registration_confirmation: boolean;
 }
 
 /** Landing pages are served by the main frontend on the same origin. */
