@@ -2624,6 +2624,228 @@ const automatedEmails = {
       },
     ],
   },
+  // GRC: external sessions (Adventsgespräche). A landing signup is confirmed by mail (GRC01, or
+  // GRC02 when the address has an account), then the access link is sent (GRC03).
+  'automatic-emails-grc01': {
+    id: 'automatic-emails-grc01',
+    label: 'GRC01 - External Session Sign-up: Confirm Email',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['automatic-emails-grc01.preview'],
+    subject: automatedText['automatic-emails-grc01.subject'],
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: automatedText['automatic-emails-grc01.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-grc01.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-grc01.block-3'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-grc01.block-4'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['automatic-emails-grc01.block-5'],
+        href: BackendVars.partnerEventVerifyUrl,
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-grc01.block-6'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-grc01.block-7'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-grc01.block-8'],
+      },
+    ],
+  },
+  'automatic-emails-grc02': {
+    id: 'automatic-emails-grc02',
+    label: 'GRC02 - External Session Sign-up: Confirm Participation (Account)',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['automatic-emails-grc02.preview'],
+    subject: automatedText['automatic-emails-grc02.subject'],
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: automatedText['automatic-emails-grc02.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-grc02.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-grc02.block-3'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-grc02.block-4'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['automatic-emails-grc02.block-5'],
+        href: BackendVars.partnerEventVerifyUrl,
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-grc02.block-6'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-grc02.block-7'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-grc02.block-8'],
+      },
+    ],
+  },
+  'automatic-emails-grc03': {
+    id: 'automatic-emails-grc03',
+    label: 'GRC03 - External Session Access Link',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['automatic-emails-grc03.preview'],
+    subject: automatedText['automatic-emails-grc03.subject'],
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: automatedText['automatic-emails-grc03.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-grc03.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-grc03.block-3'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-grc03.block-4'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['automatic-emails-grc03.block-5'],
+        href: BackendVars.partnerEventAccessUrl,
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-grc03.block-6'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-grc03.block-7'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-grc03.block-8'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-grc03.block-9'],
+      },
+    ],
+  },
+  // GRC reminders, 24 hours and 1 hour before the session, with the access link: a landing
+  // signup's opens the partner page (GRC04), a learner booking's the session in the app (GRC05).
+  'automatic-emails-grc04': {
+    id: 'automatic-emails-grc04',
+    label: 'GRC04 - External Session Reminder (Partner)',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['automatic-emails-grc04.preview'],
+    subject: automatedText['automatic-emails-grc04.subject'],
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: automatedText['automatic-emails-grc04.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-grc04.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-grc04.block-3'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-grc04.block-4'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['automatic-emails-grc04.block-5'],
+        href: BackendVars.partnerEventAccessUrl,
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-grc04.block-6'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-grc04.block-7'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-grc04.block-8'],
+      },
+    ],
+  },
+  'automatic-emails-grc05': {
+    id: 'automatic-emails-grc05',
+    label: 'GRC05 - External Session Reminder (Learner)',
+    category_id: EmailCategories.Automated,
+    preview: automatedText['automatic-emails-grc05.preview'],
+    subject: automatedText['automatic-emails-grc05.subject'],
+    content: [
+      {
+        type: ContentTypes.Title,
+        text: automatedText['automatic-emails-grc05.block-1'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-grc05.block-2'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-grc05.block-3'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-grc05.block-4'],
+      },
+      {
+        type: ContentTypes.Button,
+        text: automatedText['automatic-emails-grc05.block-5'],
+        href: BackendVars.partnerEventAccessUrl,
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-grc05.block-6'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-grc05.block-7'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-grc05.block-8'],
+      },
+      {
+        type: ContentTypes.Paragraph,
+        text: automatedText['automatic-emails-grc05.block-9'],
+      },
+    ],
+  },
 };
 
 export function getAutomatedPatentmatchEmails() {

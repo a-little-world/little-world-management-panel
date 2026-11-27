@@ -98,6 +98,14 @@ const columns: ColumnDef<PartnerEventRegistration, any>[] = [
       </Text>
     ),
   }),
+  columnHelper.accessor('confirmed', {
+    header: 'Confirmed',
+    cell: ({ getValue }) => (
+      <Text type={TextTypes.Body6} tag="span">
+        {getValue() ? 'Yes' : 'No'}
+      </Text>
+    ),
+  }),
   columnHelper.accessor('registered_at', {
     header: 'Registered',
     cell: ({ getValue }) => (

@@ -88,7 +88,6 @@ const emptyForm = (): ExternalSessionFormValues => {
     startTime: timeValue(now),
     endTime: timeValue(end),
     enforceEmailDomain: false,
-    sendRegistrationConfirmation: true,
   };
 };
 
@@ -102,7 +101,6 @@ const formFromSession = (
   startTime: timeFromIso(session.start_time),
   endTime: timeFromIso(session.end_time),
   enforceEmailDomain: session.enforce_email_domain,
-  sendRegistrationConfirmation: session.send_registration_confirmation,
 });
 
 function ExternalSessionSchedule() {
@@ -166,7 +164,6 @@ function ExternalSessionSchedule() {
         start_time: start,
         end_time: end,
         enforce_email_domain: form.enforceEmailDomain,
-        send_registration_confirmation: form.sendRegistrationConfirmation,
       };
       const saved = editing
         ? await updateExternalSession(editing.uuid, body)
@@ -250,7 +247,15 @@ function ExternalSessionSchedule() {
         ),
       }),
       columnHelper.accessor('registration_count', {
-        header: 'External registrations',
+        header: 'External registrations (confirmed)',
+        cell: ({ getValue }) => (
+          <Text type={TextTypes.Body6} tag="span">
+            {getValue()}
+          </Text>
+        ),
+      }),
+      columnHelper.accessor('unconfirmed_registration_count', {
+        header: 'Unconfirmed',
         cell: ({ getValue }) => (
           <Text type={TextTypes.Body6} tag="span">
             {getValue()}

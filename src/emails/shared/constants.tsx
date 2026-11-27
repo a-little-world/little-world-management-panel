@@ -32,6 +32,9 @@ export const BackendVars = {
     '{{ intercultural_communication_training_url }}',
   groupConversationsUrl: '{{ group_conversations_url }}',
   donateUrl: '{{ donate_url }}',
+  // external sessions (Adventsgespräche): the confirmation link and the access link
+  partnerEventVerifyUrl: '{{ verify_url }}',
+  partnerEventAccessUrl: '{{ sign_in_url }}',
 };
 
 export const THEMES = {
