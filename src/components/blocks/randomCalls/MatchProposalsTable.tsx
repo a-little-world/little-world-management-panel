@@ -9,6 +9,10 @@ import React from 'react';
 
 import { MatchProposal } from '../../../api/randomCalls';
 import {
+  AudienceSegment,
+  participantKindLabel,
+} from '../../../helpers/randomCallStats';
+import {
   Table,
   TableBody,
   TableCell,
@@ -21,13 +25,18 @@ interface MatchProposalsTableProps {
   matches: MatchProposal[];
   showCompletedColumn?: boolean;
   emptyMessage?: string;
+  segment?: AudienceSegment;
 }
 
-function getUserLabel(match: MatchProposal, userNumber: 1 | 2): string {
+function getUserLabel(
+  match: MatchProposal,
+  userNumber: 1 | 2,
+  segment: AudienceSegment,
+): string {
   const name = userNumber === 1 ? match.u1_name : match.u2_name;
   const type = userNumber === 1 ? match.u1_user_type : match.u2_user_type;
   const userUuid = userNumber === 1 ? match.u1_uuid : match.u2_uuid;
-  return `${name} - ${type ?? '—'} (${userUuid})`;
+  return `${name} - ${participantKindLabel(type, segment)} (${userUuid})`;
 }
 
 function getStatusTagAppearance(status: string | undefined): TagAppearance {
@@ -52,6 +61,7 @@ export default function MatchProposalsTable({
   matches,
   showCompletedColumn = false,
   emptyMessage = 'No matches in this category.',
+  segment = 'standard',
 }: MatchProposalsTableProps) {
   if (isEmpty(matches)) {
     return (
@@ -81,8 +91,8 @@ export default function MatchProposalsTable({
         {matches.map(match => (
           <TableRow key={match.uuid}>
             {<TableCell>{match.uuid}</TableCell>}
-            <TableCell>{getUserLabel(match, 1)}</TableCell>
-            <TableCell>{getUserLabel(match, 2)}</TableCell>
+            <TableCell>{getUserLabel(match, 1, segment)}</TableCell>
+            <TableCell>{getUserLabel(match, 2, segment)}</TableCell>
             <TableCell>
               {match.created_at
                 ? new Date(match.created_at).toLocaleString()

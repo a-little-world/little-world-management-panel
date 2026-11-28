@@ -26,6 +26,7 @@ function RandomCalls() {
     } else {
       nextParams.delete('section');
       nextParams.delete('appointment_starts_at');
+      nextParams.delete('session');
     }
     setSearchParams(nextParams);
   };

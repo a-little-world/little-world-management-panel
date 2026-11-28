@@ -24,6 +24,7 @@ import {
 } from '../../../helpers/date';
 import { hasManagementPermission } from '../../../helpers/managementPermissions';
 import { usePanelCapabilities } from '../../../helpers/panelCapabilities';
+import { displayUserName } from '../../../helpers/userName';
 import { MATCHING_ROUTE } from '../../../router/routes';
 import { useGlobalState } from '../../../store';
 import DataField from '../../atoms/DataField';
@@ -51,6 +52,7 @@ import {
   SectionLabel,
   SidebarColumn,
   SidebarSection,
+  StatusContainer,
   StyledCard,
   UnresponsiveWarning,
   UserInfoContainer,
@@ -113,6 +115,8 @@ interface User {
   email: string | null;
   date_joined: string;
   last_seen?: string | null;
+  /** Guest account for an external session. No name is stored. */
+  is_temporary?: boolean;
   profile: UserProfile;
   state: UserState;
   matches: UserMatches;
@@ -257,7 +261,14 @@ const UserDetailsFull: React.FC<{
         <MatchEligibility userId={user.id} />
       </SidebarSection>
 
-      <UserJourneyStatus journey={user.journey} />
+      {user.is_temporary ? (
+        <StatusContainer>
+          <SectionLabel>Current status</SectionLabel>
+          <Text>Guest accounts are not part of User Journey v5.</Text>
+        </StatusContainer>
+      ) : (
+        <UserJourneyStatus journey={user.journey} />
+      )}
 
       <UserMatchesSummary matches={user.matches} />
     </SidebarColumn>
@@ -329,9 +340,7 @@ export const UserCard: React.FC<UserCardProps> = ({
             dimensions={{ height: 120, width: 120 }}
           />
           <ProfileIdentity>
-            <FullName>
-              {user.profile.first_name} {user.profile.second_name}
-            </FullName>
+            <FullName>{displayUserName(user)}</FullName>
             <DataField
               title="Joined"
               value={formatDate(new Date(user.date_joined), 'dd.MM.yy', 'en')}
@@ -417,7 +426,7 @@ export const UserCard: React.FC<UserCardProps> = ({
 
       <UserInfoContainer $partial={partial}>
         <UserNameContainer $tiny={tiny}>
-          {user.profile.first_name} {user.profile.second_name}
+          {displayUserName(user)}
         </UserNameContainer>
         <InfoRowWrap>
           <MetaFieldGroup>

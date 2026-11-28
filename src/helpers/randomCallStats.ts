@@ -185,6 +185,20 @@ export function formatTrendFirstTimeReturningRatio(
   return `${first / divisor} : ${returningCount / divisor}`;
 }
 
+/** External sessions pair learners with partner guests, who are stored as volunteers. */
+export type AudienceSegment = 'standard' | 'external';
+
+export function participantKindLabel(
+  userType: string | null | undefined,
+  segment: AudienceSegment = 'standard',
+): string {
+  if (!userType) return '—';
+  if (segment === 'external' && userType === 'volunteer') {
+    return 'External participant';
+  }
+  return userType;
+}
+
 /**
  * Who a bucket's proposals paired, as rows for a `Stat` breakdown.
  *
@@ -196,11 +210,16 @@ export function formatTrendFirstTimeReturningRatio(
 export function proposalPairBreakdown(
   stats: LobbyProposalStatistics,
   bucket: ProposalOutcomeBucket,
+  segment: AudienceSegment = 'standard',
 ): { label: string; value: string }[] {
   const total = stats[`${bucket}_count`];
   const learnerLearner = stats[`${bucket}_learner_learner_count`];
   const learnerVolunteer = stats[`${bucket}_learner_volunteer_count`];
   const other = stats[`${bucket}_other_count`];
+  const crossLabel =
+    segment === 'external'
+      ? 'Learner–external participant'
+      : 'Learner–volunteer';
 
   const row = (label: string, count: number) => ({
     label,
@@ -211,7 +230,7 @@ export function proposalPairBreakdown(
 
   return [
     row('Learner–learner', learnerLearner),
-    row('Learner–volunteer', learnerVolunteer),
+    row(crossLabel, learnerVolunteer),
     ...(other > 0 ? [row('Other pairing', other)] : []),
   ];
 }

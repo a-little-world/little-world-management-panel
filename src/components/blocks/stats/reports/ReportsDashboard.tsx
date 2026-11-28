@@ -16,7 +16,7 @@ export function UserLossStatisticDownloadBlock() {
   return (
     <ReportDownloadSection
       title="User Sign-Up Loss Statistics"
-      description="The signup funnel for users who joined in the date range: how many reached each step, and how many stopped at the step before."
+      description="The signup funnel for users who joined in the date range: how many reached each step, and how many stopped at the step before. Guest accounts are not included."
       apiEndpoint="/api/matching/users/statistics/user_signup_loss/"
       downloadFilename="user_signup_loss.json"
       downloadMimeType="application/json"

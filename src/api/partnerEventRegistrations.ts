@@ -39,6 +39,7 @@ export interface ExternalSession {
   start_time: string;
   end_time: string;
   enforce_email_domain: boolean;
+  live_support_url: string;
   landing_path: string;
   /** Confirmed landing signups: the ones that add learner seats. */
   registration_count: number;
@@ -58,6 +59,7 @@ export interface ExternalSessionWrite {
   start_time: string;
   end_time: string;
   enforce_email_domain: boolean;
+  live_support_url: string;
 }
 
 /** Landing pages are served by the main frontend on the same origin. */

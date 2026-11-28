@@ -82,6 +82,9 @@ export interface LobbyInstanceSnapshot {
   bucket_mismatch: number;
   /** False while lobby end_time is still in the future — persisted buckets may lag operational counts. */
   proposals_are_final: boolean;
+  is_external_session: boolean;
+  session_type: string;
+  company_name: string | null;
 }
 
 type SnapshotProposalBucketFields = Pick<
@@ -129,6 +132,9 @@ export interface LobbyInstanceData {
     end_time: string | null;
     active_users_count: number;
     total_users_count: number;
+    is_external_session?: boolean;
+    session_type?: string;
+    company_name?: string | null;
   };
   active_users: Array<{
     uuid: string;
@@ -243,11 +249,24 @@ export const RANDOM_CALL_LOBBY_ANALYTICS_ENDPOINT =
 export const RANDOM_CALL_LOBBY_TRENDS_ENDPOINT =
   '/api/random_calls/analytics/lobbies/trends';
 
+export const RANDOM_CALL_LOBBY_HISTORY_ENDPOINT =
+  '/api/random_calls/analytics/history';
+
+export interface LobbyHistoryItem {
+  uuid: string;
+  name: string;
+  start_time: string | null;
+  end_time: string | null;
+  is_external_session: boolean;
+  session_type: string;
+  company_name: string | null;
+}
+
 export const getLobbyInstanceEndpoint = (
   lobbyName = DEFAULT_LOBBY_NAME,
   lobbyUuid?: string,
 ) => {
-  const base = `/api/random_calls/analytics/lobby/${lobbyName}/instance`;
+  const base = `/api/random_calls/analytics/lobby/${encodeURIComponent(lobbyName)}/instance`;
   if (!lobbyUuid) return base;
   return `${base}?lobby_uuid=${encodeURIComponent(lobbyUuid)}`;
 };
@@ -366,7 +385,7 @@ export const resetLobby = async ({
 }) => {
   try {
     const result = await apiFetch<{ success: boolean; message: string }>(
-      `/api/random_calls/lobby/${lobbyName}/management/reset`,
+      `/api/random_calls/lobby/${encodeURIComponent(lobbyName)}/management/reset`,
       { method: 'POST' },
     );
     onSuccess(result);
@@ -466,7 +485,7 @@ export const endLobby = async ({
 }) => {
   try {
     const result = await apiFetch<{ success: boolean; message: string }>(
-      `/api/random_calls/lobby/${lobbyName}/management/end`,
+      `/api/random_calls/lobby/${encodeURIComponent(lobbyName)}/management/end`,
       { method: 'POST' },
     );
     onSuccess(result);
@@ -497,10 +516,13 @@ export const clearUserRandomCallProposals = async ({
       message: string;
       updated_count: number;
       user_uuid: string;
-    }>(`/api/random_calls/lobby/${lobbyName}/management/clear-user-proposals`, {
-      method: 'POST',
-      body: { user_uuid: userUuid },
-    });
+    }>(
+      `/api/random_calls/lobby/${encodeURIComponent(lobbyName)}/management/clear-user-proposals`,
+      {
+        method: 'POST',
+        body: { user_uuid: userUuid },
+      },
+    );
     onSuccess(result);
   } catch (error) {
     onError(error);
@@ -526,7 +548,7 @@ export const clearDanglingRandomCallMatches = async ({
       message: string;
       updated_count: number;
     }>(
-      `/api/random_calls/lobby/${lobbyName}/management/clear-dangling-proposals`,
+      `/api/random_calls/lobby/${encodeURIComponent(lobbyName)}/management/clear-dangling-proposals`,
       { method: 'POST' },
     );
     onSuccess(result);

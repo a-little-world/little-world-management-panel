@@ -82,7 +82,14 @@ function RandomCallAnalytics() {
 
   const { data, error, isLoading } = useSWR(
     [RANDOM_CALL_LOBBY_ANALYTICS_ENDPOINT, searchParams.toString()] as const,
-    ([, queryString]) => fetchLobbyAnalytics(queryString),
+    ([, queryString]) => {
+      const query = new URLSearchParams(queryString);
+      // Ended sessions only, standard and external: a running or upcoming
+      // session has no final numbers yet.
+      query.set('include_external', '1');
+      query.set('completed_only', '1');
+      return fetchLobbyAnalytics(query.toString());
+    },
     { revalidateOnFocus: true, revalidateOnMount: true },
   );
 
@@ -165,6 +172,8 @@ function RandomCallAnalytics() {
                     <TableHead>Date</TableHead>
                     <TableHead>Day</TableHead>
                     <TableHead>Time</TableHead>
+                    <TableHead>Session Type</TableHead>
+                    <TableHead>Company</TableHead>
                     <TableHead>Users</TableHead>
                     <TableHead>First / returning</TableHead>
                     <TableHead>Proposals</TableHead>
@@ -186,6 +195,8 @@ function RandomCallAnalytics() {
                       <TableCell>
                         {formatTimeRange(row.start_time, row.end_time)}
                       </TableCell>
+                      <TableCell>{row.session_type}</TableCell>
+                      <TableCell>{row.company_name ?? '—'}</TableCell>
                       <TableCell>{row.total_users}</TableCell>
                       <TableCell>
                         {row.first_time_users} / {row.returning_users}
