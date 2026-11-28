@@ -11,6 +11,10 @@ import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { LobbyParticipant } from '../../../api/randomCalls';
+import {
+  AudienceSegment,
+  participantKindLabel,
+} from '../../../helpers/randomCallStats';
 import { formatDateTime, formatDurationSeconds } from '../../../helpers/date';
 import UserImage from '../../atoms/UserImage';
 import {
@@ -32,12 +36,14 @@ interface LobbyParticipantsTableProps {
   participants: LobbyParticipant[];
   showStatus?: boolean;
   emptyMessage?: string;
+  segment?: AudienceSegment;
 }
 
 export default function LobbyParticipantsTable({
   participants,
   showStatus = true,
   emptyMessage = 'No participants in this lobby.',
+  segment = 'standard',
 }: LobbyParticipantsTableProps) {
   if (isEmpty(participants)) {
     return (
@@ -80,7 +86,9 @@ export default function LobbyParticipantsTable({
                 </Text>
               </UserLink>
             </TableCell>
-            <TableCell>{participant.user_type ?? '—'}</TableCell>
+            <TableCell>
+              {participantKindLabel(participant.user_type, segment)}
+            </TableCell>
             {showStatus && (
               <TableCell>
                 <Tag

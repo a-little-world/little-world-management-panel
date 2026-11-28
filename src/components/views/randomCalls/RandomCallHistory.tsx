@@ -1,36 +1,43 @@
 import {
   Loading,
   LoadingSizes,
-  Select,
   Text,
 } from '@a-little-world/little-world-design-system';
-import { isEmpty } from 'lodash';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useSearchParams } from 'react-router-dom';
+import styled from 'styled-components';
 import useSWR from 'swr';
 
 import {
-  getAllLobbies,
   getLobbyInstanceEndpoint,
+  LobbyHistoryItem,
   LobbyInstanceData,
-  LobbyListItem,
+  RANDOM_CALL_LOBBY_HISTORY_ENDPOINT,
   TasksData,
 } from '../../../api/randomCalls';
 import { formatDate, formatEventTime } from '../../../helpers/date';
 import {
+  AudienceSegment,
   formatSuccessfulCallUserPct,
   proposalPairBreakdown,
   usersWithoutSuccessfulCall,
 } from '../../../helpers/randomCallStats';
 import { dataFetcher } from '../../../store';
-import { PageContainer } from '../../atoms/PageLayout';
+import { ListScroll, PageContainer } from '../../atoms/PageLayout';
 import Stat, { StatCards } from '../../atoms/stats/Stat';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '../../atoms/Table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../atoms/Tabs';
 import LobbyParticipantsTable from '../../blocks/randomCalls/LobbyParticipantsTable';
 import MatchProposalsTable from '../../blocks/randomCalls/MatchProposalsTable';
 import {
   Description,
-  DropdownContainer,
   ProvisionalBucketStats,
   Section,
   SectionTitle,
@@ -38,43 +45,43 @@ import {
   Title,
 } from './RandomCalls.styles';
 
+const HistoryList = styled(ListScroll)`
+  max-height: 22rem;
+  overflow: auto;
+  margin-bottom: ${({ theme }) => theme.spacing.medium};
+`;
+
+const ViewButton = styled.button`
+  background: none;
+  border: none;
+  color: ${({ theme }) => theme.color.text.link};
+  cursor: pointer;
+  font-weight: 500;
+  padding: 0;
+  white-space: nowrap;
+
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
 function RandomCallHistory() {
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedLobbyUuid = searchParams.get('lobby_uuid');
-  const [allLobbies, setAllLobbies] = useState<LobbyListItem[]>([]);
-  const [selectedLobbyName, setSelectedLobbyName] = useState<string | null>(
-    null,
+
+  const { data: allLobbies, error: listError } = useSWR<LobbyHistoryItem[]>(
+    RANDOM_CALL_LOBBY_HISTORY_ENDPOINT,
+    dataFetcher,
   );
 
-  // Fetch all lobbies on mount
-  useEffect(() => {
-    getAllLobbies({
-      onSuccess: lobbies => {
-        // Sort by start_time descending (most recent first)
-        const sorted = [...lobbies].sort((a, b) => {
-          const dateA = new Date(a.start_time).getTime();
-          const dateB = new Date(b.start_time).getTime();
-          return dateB - dateA;
-        });
-        setAllLobbies(sorted);
-      },
-      onError: error => {
-        console.error('Error fetching lobbies:', error);
-      },
-    });
-  }, []);
-
-  // Get lobby name from UUID
-  useEffect(() => {
-    if (!selectedLobbyUuid) {
-      setSelectedLobbyName(null);
-      return;
-    }
-    const lobby = allLobbies.find(l => l.uuid === selectedLobbyUuid);
-    setSelectedLobbyName(lobby?.name ?? null);
-  }, [selectedLobbyUuid, allLobbies]);
-
   // Fetch lobby overview data when a lobby is selected
+  const selectedLobby =
+    allLobbies?.find(lobby => lobby.uuid === selectedLobbyUuid) ?? null;
+  const selectedLobbyName = selectedLobby?.name ?? null;
+  const segment: AudienceSegment = selectedLobby?.is_external_session
+    ? 'external'
+    : 'standard';
+
   const { data: lobbyData, error: lobbyError } = useSWR<LobbyInstanceData>(
     selectedLobbyName && selectedLobbyUuid
       ? getLobbyInstanceEndpoint(selectedLobbyName, selectedLobbyUuid)
@@ -85,7 +92,7 @@ function RandomCallHistory() {
   // Fetch tasks for this specific lobby instance (pass lobby_uuid to scope tasks)
   const { data: tasksData } = useSWR<TasksData>(
     selectedLobbyName && selectedLobbyUuid
-      ? `/api/random_calls/lobby/${selectedLobbyName}/management/tasks?lobby_uuid=${selectedLobbyUuid}`
+      ? `/api/random_calls/lobby/${encodeURIComponent(selectedLobbyName)}/management/tasks?lobby_uuid=${encodeURIComponent(selectedLobbyUuid)}`
       : null,
     dataFetcher,
   );
@@ -101,18 +108,6 @@ function RandomCallHistory() {
     setSearchParams(nextParams);
   };
 
-  if (isEmpty(allLobbies)) {
-    return (
-      <PageContainer>
-        <Title>Random Call History</Title>
-        <Description>
-          View historical data and statistics for previous random call lobbies.
-        </Description>
-        <Text>Loading lobbies...</Text>
-      </PageContainer>
-    );
-  }
-
   const { lobby, snapshot, proposal_statistics } = lobbyData || {};
   const proposalsAreFinal = snapshot?.proposals_are_final ?? !lobby?.is_active;
   const match_proposals = lobbyData?.match_proposals || {
@@ -123,37 +118,72 @@ function RandomCallHistory() {
   };
   const lobby_participants = lobbyData?.lobby_participants || [];
 
-  const lobbyOptions = allLobbies.map(lobbyItem => {
-    const startDate = new Date(lobbyItem.start_time);
-    const formattedDate = formatDate(startDate, 'EEEE, d MMMM yyyy', 'de');
-    const formattedTime = formatEventTime(
-      startDate,
-      new Date(lobbyItem.end_time),
-    );
-    const label = `${formattedDate} - ${formattedTime}`;
-    return { value: lobbyItem.uuid, label };
-  });
-
   return (
     <PageContainer>
       <Title>Random Call History</Title>
       <Description>
-        View historical data and statistics for previous random call lobbies.
-        Select a lobby from the dropdown below to view its details.
+        Sessions that have ended, standard and external. Open a row to see its
+        details.
       </Description>
 
-      <DropdownContainer>
-        <Select
-          placeholder="Select a lobby..."
-          value={selectedLobbyUuid || ''}
-          onValueChange={handleLobbyChange}
-          options={lobbyOptions}
-        />
-      </DropdownContainer>
+      {listError && <Text color="error">Could not load the session list.</Text>}
+      {!allLobbies && !listError && <Loading size={LoadingSizes.Medium} />}
+      {allLobbies && allLobbies.length === 0 && (
+        <Text color="secondary">No sessions yet.</Text>
+      )}
+      {allLobbies && allLobbies.length > 0 && (
+        <HistoryList>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Date</TableHead>
+                <TableHead>Time</TableHead>
+                <TableHead>Session Type</TableHead>
+                <TableHead>Company</TableHead>
+                <TableHead />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {allLobbies.map(lobbyItem => {
+                const start = lobbyItem.start_time
+                  ? new Date(lobbyItem.start_time)
+                  : null;
+                const end = lobbyItem.end_time
+                  ? new Date(lobbyItem.end_time)
+                  : start;
+                return (
+                  <TableRow key={lobbyItem.uuid}>
+                    <TableCell>
+                      {start
+                        ? formatDate(start, 'EEEE, d MMMM yyyy', 'de')
+                        : '—'}
+                    </TableCell>
+                    <TableCell>
+                      {start && end ? formatEventTime(start, end) : '—'}
+                    </TableCell>
+                    <TableCell>{lobbyItem.session_type}</TableCell>
+                    <TableCell>{lobbyItem.company_name ?? '—'}</TableCell>
+                    <TableCell>
+                      <ViewButton
+                        type="button"
+                        onClick={() => handleLobbyChange(lobbyItem.uuid)}
+                      >
+                        {lobbyItem.uuid === selectedLobbyUuid
+                          ? 'Viewing'
+                          : 'View'}
+                      </ViewButton>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </HistoryList>
+      )}
 
-      {!selectedLobbyUuid && (
+      {!selectedLobbyUuid && allLobbies && allLobbies.length > 0 && (
         <Text color="secondary">
-          Please select a lobby from the dropdown above to view its details.
+          Select a session from the list to view its details.
         </Text>
       )}
 
@@ -187,6 +217,19 @@ function RandomCallHistory() {
                     },
                   ]}
                 />
+                {segment === 'external' && (
+                  <Stat
+                    label="Participants"
+                    stat={snapshot.learner_count + snapshot.volunteer_count}
+                    breakdown={[
+                      { label: 'Learners', value: snapshot.learner_count },
+                      {
+                        label: 'External participants',
+                        value: snapshot.volunteer_count,
+                      },
+                    ]}
+                  />
+                )}
                 <Stat label="Total Calls" stat={snapshot.completed_calls} />
                 <Stat
                   label="Users with successful call"
@@ -238,6 +281,7 @@ function RandomCallHistory() {
                   breakdown={proposalPairBreakdown(
                     proposal_statistics,
                     'accepted',
+                    segment,
                   )}
                 />
                 <Stat
@@ -246,6 +290,7 @@ function RandomCallHistory() {
                   breakdown={proposalPairBreakdown(
                     proposal_statistics,
                     'rejected',
+                    segment,
                   )}
                 />
                 <Stat
@@ -254,6 +299,7 @@ function RandomCallHistory() {
                   breakdown={proposalPairBreakdown(
                     proposal_statistics,
                     'expired',
+                    segment,
                   )}
                 />
               </StatCards>
@@ -266,6 +312,7 @@ function RandomCallHistory() {
             <LobbyParticipantsTable
               participants={lobby_participants}
               showStatus={false}
+              segment={segment}
             />
           </Section>
 
@@ -289,13 +336,20 @@ function RandomCallHistory() {
                 <MatchProposalsTable
                   matches={match_proposals.accepted}
                   showCompletedColumn
+                  segment={segment}
                 />
               </TabsContent>
               <TabsContent value="rejected">
-                <MatchProposalsTable matches={match_proposals.rejected} />
+                <MatchProposalsTable
+                  matches={match_proposals.rejected}
+                  segment={segment}
+                />
               </TabsContent>
               <TabsContent value="expired">
-                <MatchProposalsTable matches={match_proposals.expired} />
+                <MatchProposalsTable
+                  matches={match_proposals.expired}
+                  segment={segment}
+                />
               </TabsContent>
             </Tabs>
           </Section>

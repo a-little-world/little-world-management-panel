@@ -88,6 +88,7 @@ const emptyForm = (): ExternalSessionFormValues => {
     startTime: timeValue(now),
     endTime: timeValue(end),
     enforceEmailDomain: false,
+    liveSupportUrl: '',
   };
 };
 
@@ -101,6 +102,7 @@ const formFromSession = (
   startTime: timeFromIso(session.start_time),
   endTime: timeFromIso(session.end_time),
   enforceEmailDomain: session.enforce_email_domain,
+  liveSupportUrl: session.live_support_url ?? '',
 });
 
 function ExternalSessionSchedule() {
@@ -164,6 +166,7 @@ function ExternalSessionSchedule() {
         start_time: start,
         end_time: end,
         enforce_email_domain: form.enforceEmailDomain,
+        live_support_url: form.liveSupportUrl.trim(),
       };
       const saved = editing
         ? await updateExternalSession(editing.uuid, body)

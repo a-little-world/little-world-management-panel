@@ -13,6 +13,7 @@ import type { MatchingPanelUser, PanelCapability } from '../../../api';
 import { fetchSupportTasks } from '../../../api/supportTasks';
 import { hasManagementPermission } from '../../../helpers/managementPermissions';
 import { usePanelCapabilities } from '../../../helpers/panelCapabilities';
+import { displayUserName } from '../../../helpers/userName';
 import { MATCHING_ROUTE } from '../../../router/routes';
 import { dataFetcher, useGlobalState } from '../../../store';
 import Badge from '../../atoms/Badge';
@@ -166,9 +167,7 @@ const UserPanel = () => {
     visibleTabs.find(tab => tab.key === searchParams.get('tab')) ??
     visibleTabs[0];
   const selectedTabKey = selectedTab.key;
-  const userName = user
-    ? `${user.profile.first_name} ${user.profile.second_name}`
-    : 'User';
+  const userName = user ? displayUserName(user) || 'User' : 'User';
   // Replying as support needs the support_tasks capability on top of the
   // existing reply permission.
   const canSendSupportReplies =

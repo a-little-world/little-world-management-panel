@@ -2,8 +2,9 @@ import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../atoms/Tabs';
-import ExternalSessionSchedule from './ExternalSessionSchedule';
+import ExternalSessionActive from './ExternalSessionActive';
 import ExternalSessionRegistrations from './ExternalSessionRegistrations';
+import ExternalSessionSchedule from './ExternalSessionSchedule';
 
 function ExternalSessions() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -19,15 +20,24 @@ function ExternalSessions() {
     if (value !== 'registrations') {
       nextParams.delete('appointment_starts_at');
     }
+    if (value !== 'active') {
+      nextParams.delete('session');
+    }
     setSearchParams(nextParams);
   };
 
   return (
     <Tabs value={section} onValueChange={onSectionChange}>
       <TabsList>
+        <TabsTrigger value="active">Active</TabsTrigger>
         <TabsTrigger value="registrations">Registrations</TabsTrigger>
         <TabsTrigger value="scheduled">Scheduled</TabsTrigger>
       </TabsList>
+      {section === 'active' && (
+        <TabsContent value="active">
+          <ExternalSessionActive />
+        </TabsContent>
+      )}
       {section === 'registrations' && (
         <TabsContent value="registrations">
           <ExternalSessionRegistrations />

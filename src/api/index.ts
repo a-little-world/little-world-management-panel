@@ -155,6 +155,8 @@ export interface UserTableRow {
   date_joined: string;
   last_login: string | null;
   last_seen: string | null;
+  /** Guest account for an external session. No name is stored. */
+  is_temporary?: boolean;
   profile: UserTableProfile;
   state: UserTableState;
   waiting_time: UserWaitingTime;

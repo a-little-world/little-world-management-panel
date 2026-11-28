@@ -20,6 +20,7 @@ import {
 import { formatCompanyLabel } from '../../api/companies';
 import { formatDate, formatTimeDistance } from '../../helpers/date';
 import { usePanelCapability } from '../../helpers/panelCapabilities';
+import { displayUserName } from '../../helpers/userName';
 import { useGlobalState, useUserListData } from '../../store';
 import { Button } from '../atoms/Button';
 import MatchesIcons from '../atoms/MatchesIcons';
@@ -110,9 +111,7 @@ const userColumns: ColumnDef<UserTableRow, any>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => {
-      return `${row?.original.profile.first_name} ${row?.original.profile.second_name}`;
-    },
+    cell: ({ row }) => displayUserName(row.original),
   }),
   columnHelper.accessor('profile.user_type', {
     header: ({ column }) => {

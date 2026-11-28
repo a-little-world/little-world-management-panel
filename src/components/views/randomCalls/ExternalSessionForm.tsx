@@ -11,7 +11,9 @@ import {
   StatusMessage,
   StatusTypes,
   Switch,
+  Text,
   TextInput,
+  TextTypes,
 } from '@a-little-world/little-world-design-system';
 import React, { useEffect, useMemo } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -40,6 +42,7 @@ export type ExternalSessionFormValues = {
   startTime: string;
   endTime: string;
   enforceEmailDomain: boolean;
+  liveSupportUrl: string;
 };
 
 type ExternalSessionFormProps = {
@@ -141,6 +144,27 @@ function ExternalSessionForm({
               />
             )}
           />
+          <TextInput
+            id="external-session-live-support"
+            label="Live Support"
+            placeholder="https://zoom.us/j/…"
+            error={errors?.liveSupportUrl?.message}
+            {...registerInput({
+              register,
+              name: 'liveSupportUrl',
+              options: {
+                validate: value =>
+                  !value?.trim() ||
+                  value.trim().startsWith('http://') ||
+                  value.trim().startsWith('https://') ||
+                  'Enter a link starting with http:// or https://.',
+              },
+            })}
+          />
+          <Text type={TextTypes.Body6}>
+            Optional meeting link. Partners who are stuck can open it and talk
+            to the team. Learners do not see it.
+          </Text>
           <Controller
             name="startDate"
             control={control}

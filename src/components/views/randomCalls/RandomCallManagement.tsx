@@ -35,7 +35,9 @@ import {
 } from '../../../api/randomCalls';
 import { formatDate, formatEventTime } from '../../../helpers/date';
 import {
+  AudienceSegment,
   formatSuccessfulCallUserPct,
+  participantKindLabel,
   proposalPairBreakdown,
   usersWithoutSuccessfulCall,
 } from '../../../helpers/randomCallStats';
@@ -84,6 +86,7 @@ interface LobbyData {
     end_time: string | null;
     active_users_count: number;
     total_users_count: number;
+    company_name?: string | null;
   };
   active_users: Array<{
     uuid: string;
@@ -159,9 +162,11 @@ function formatTimeAgo(dateString: string | null): string {
 function ActiveUsersTable({
   users,
   onClearProposals,
+  segment = 'standard',
 }: {
   users: LobbyData['active_users'];
   onClearProposals: (userUuid: string) => Promise<number>;
+  segment?: AudienceSegment;
 }) {
   const [loadingUserIds, setLoadingUserIds] = useState<Record<string, boolean>>(
     {},
@@ -202,7 +207,9 @@ function ActiveUsersTable({
           <TableRow key={user.uuid}>
             <TableCell>{user.user_uuid}</TableCell>
             <TableCell>{user.user_name}</TableCell>
-            <TableCell>{user.user_type}</TableCell>
+            <TableCell>
+              {participantKindLabel(user.user_type, segment)}
+            </TableCell>
             <TableCell>
               <Tag
                 appearance={
@@ -380,11 +387,18 @@ function TasksTable({ tasks }: { tasks: TaskData[] }) {
   );
 }
 
-function DanglingMatchesTable({ matches }: { matches: MatchProposal[] }) {
+function DanglingMatchesTable({
+  matches,
+  segment = 'standard',
+}: {
+  matches: MatchProposal[];
+  segment?: AudienceSegment;
+}) {
   return (
     <MatchProposalsTable
       matches={matches}
       emptyMessage="No dangling match proposals."
+      segment={segment}
     />
   );
 }
@@ -402,7 +416,17 @@ const isDevelopmentOrStaging = () => {
   );
 };
 
-function RandomCallManagement() {
+function RandomCallManagement({
+  lobbyName = 'default',
+  lobbyUuid,
+  segment = 'standard',
+  allowReset = true,
+}: {
+  lobbyName?: string;
+  lobbyUuid?: string;
+  segment?: AudienceSegment;
+  allowReset?: boolean;
+} = {}) {
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
@@ -414,12 +438,16 @@ function RandomCallManagement() {
     id: number;
     title: string;
   } | null>(null);
-  const showResetButton = isDevelopmentOrStaging();
+  const showResetButton = allowReset && isDevelopmentOrStaging();
+  const instanceEndpoint = getLobbyInstanceEndpoint(lobbyName, lobbyUuid);
+  const tasksEndpoint = lobbyUuid
+    ? `/api/random_calls/lobby/${encodeURIComponent(lobbyName)}/management/tasks?lobby_uuid=${encodeURIComponent(lobbyUuid)}`
+    : `/api/random_calls/lobby/${encodeURIComponent(lobbyName)}/management/tasks`;
 
   const shouldPoll = autoRefresh;
 
   const { data, error, isValidating } = useSWR<LobbyData>(
-    getLobbyInstanceEndpoint(),
+    instanceEndpoint,
     dataFetcher,
     {
       refreshInterval: shouldPoll ? 3000 : 0,
@@ -432,15 +460,11 @@ function RandomCallManagement() {
     data: tasksData,
     error: tasksError,
     isValidating: tasksValidating,
-  } = useSWR<TasksData>(
-    `/api/random_calls/lobby/default/management/tasks`,
-    dataFetcher,
-    {
-      refreshInterval: shouldPoll ? 5000 : 0,
-      revalidateOnFocus: true,
-      revalidateOnMount: true,
-    },
-  );
+  } = useSWR<TasksData>(tasksEndpoint, dataFetcher, {
+    refreshInterval: shouldPoll ? 5000 : 0,
+    revalidateOnFocus: true,
+    revalidateOnMount: true,
+  });
 
   // When current lobby is not active, fetch next upcoming lobby for display
   const { data: upcomingLobbies } = useSWR<
@@ -453,7 +477,9 @@ function RandomCallManagement() {
       active_users_count: number;
     }>
   >(
-    data && !data.lobby.is_active ? getUpcomingLobbiesEndpoint() : null,
+    data && !data.lobby.is_active
+      ? getUpcomingLobbiesEndpoint(lobbyName)
+      : null,
     dataFetcher,
     { revalidateOnFocus: true, revalidateOnMount: true },
   );
@@ -462,9 +488,10 @@ function RandomCallManagement() {
   const handleResetLobby = async () => {
     setIsResetting(true);
     resetLobby({
+      lobbyName,
       onSuccess: () => {
         // Refresh the data
-        mutate(getLobbyInstanceEndpoint());
+        mutate(instanceEndpoint);
         setShowResetConfirm(false);
         setIsResetting(false);
       },
@@ -483,9 +510,10 @@ function RandomCallManagement() {
   const handleEndLobby = async () => {
     setIsEndingLobby(true);
     endLobby({
+      lobbyName,
       onSuccess: () => {
-        mutate(getLobbyInstanceEndpoint());
-        mutate(getUpcomingLobbiesEndpoint());
+        mutate(instanceEndpoint);
+        mutate(getUpcomingLobbiesEndpoint(lobbyName));
         setShowEndConfirm(false);
         alert('Lobby ended successfully!');
         setIsEndingLobby(false);
@@ -506,8 +534,9 @@ function RandomCallManagement() {
     return new Promise<number>((resolve, reject) => {
       clearUserRandomCallProposals({
         userUuid,
+        lobbyName,
         onSuccess: result => {
-          mutate(getLobbyInstanceEndpoint());
+          mutate(instanceEndpoint);
           setClearMatchesToast({
             id: Date.now(),
             title:
@@ -533,8 +562,9 @@ function RandomCallManagement() {
   const handleClearAllDangling = () => {
     setIsClearingDangling(true);
     clearDanglingRandomCallMatches({
+      lobbyName,
       onSuccess: result => {
-        mutate(getLobbyInstanceEndpoint());
+        mutate(instanceEndpoint);
         setClearMatchesToast({
           id: Date.now(),
           title:
@@ -594,7 +624,8 @@ function RandomCallManagement() {
       <PageContainer>
         <Header>
           <Title>
-            Current Lobby
+            {segment === 'external' ? 'Current session' : 'Current Lobby'}
+            {lobby.company_name ? ` · ${lobby.company_name}` : ''}
             <Tag
               appearance={
                 lobby.is_active ? TagAppearance.success : TagAppearance.error
@@ -645,7 +676,8 @@ function RandomCallManagement() {
             <CardHeader>Reset Random Call Lobby</CardHeader>
             <CardContent>
               <Text>
-                Are you sure you want to reset the "default" lobby? This will:
+                Are you sure you want to reset the &quot;{lobbyName}&quot;
+                lobby? This will:
               </Text>
               <ul
                 style={{
@@ -688,7 +720,8 @@ function RandomCallManagement() {
             <CardHeader>End Random Call Lobby</CardHeader>
             <CardContent>
               <Text>
-                Are you sure you want to end the "default" lobby? This will:
+                Are you sure you want to end the &quot;{lobbyName}&quot;{' '}
+                {segment === 'external' ? 'session' : 'lobby'}? This will:
               </Text>
               <ul
                 style={{
@@ -729,7 +762,11 @@ function RandomCallManagement() {
         {/* Next upcoming lobby (only when current lobby is not active) */}
         {!lobby.is_active && nextUpcomingLobby && (
           <Section>
-            <SectionTitle>Next upcoming lobby</SectionTitle>
+            <SectionTitle>
+              {segment === 'external'
+                ? 'Next upcoming session'
+                : 'Next upcoming lobby'}
+            </SectionTitle>
             <ScheduleItem>
               <ScheduleItemInfo>
                 <ScheduleDate>
@@ -786,6 +823,19 @@ function RandomCallManagement() {
                   : undefined
               }
             />
+            {segment === 'external' && snapshot && (
+              <Stat
+                label="Participants"
+                stat={snapshot.learner_count + snapshot.volunteer_count}
+                breakdown={[
+                  { label: 'Learners', value: snapshot.learner_count },
+                  {
+                    label: 'External participants',
+                    value: snapshot.volunteer_count,
+                  },
+                ]}
+              />
+            )}
             <Stat
               label="Accepted Proposals"
               stat={
@@ -837,6 +887,7 @@ function RandomCallManagement() {
                 breakdown={proposalPairBreakdown(
                   proposal_statistics,
                   'accepted',
+                  segment,
                 )}
               />
               <Stat
@@ -845,6 +896,7 @@ function RandomCallManagement() {
                 breakdown={proposalPairBreakdown(
                   proposal_statistics,
                   'rejected',
+                  segment,
                 )}
               />
               <Stat
@@ -853,6 +905,7 @@ function RandomCallManagement() {
                 breakdown={proposalPairBreakdown(
                   proposal_statistics,
                   'expired',
+                  segment,
                 )}
               />
               <Stat label="Dangling proposals" stat={danglingCount} />
@@ -866,6 +919,7 @@ function RandomCallManagement() {
           <ActiveUsersTable
             users={active_users}
             onClearProposals={handleClearProposals}
+            segment={segment}
           />
         </Section>
 
@@ -883,7 +937,7 @@ function RandomCallManagement() {
               {isClearingDangling ? 'Clearing…' : 'Clear all dangling'}
             </Button>
           </SectionHeaderRow>
-          <DanglingMatchesTable matches={danglingMatches} />
+          <DanglingMatchesTable matches={danglingMatches} segment={segment} />
         </Section>
 
         {/* Proposals */}
@@ -905,26 +959,39 @@ function RandomCallManagement() {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="pending">
-              <MatchProposalsTable matches={match_proposals.pending} />
+              <MatchProposalsTable
+                matches={match_proposals.pending}
+                segment={segment}
+              />
             </TabsContent>
             <TabsContent value="accepted">
               <MatchProposalsTable
                 matches={match_proposals.accepted}
                 showCompletedColumn
+                segment={segment}
               />
             </TabsContent>
             <TabsContent value="rejected">
-              <MatchProposalsTable matches={match_proposals.rejected} />
+              <MatchProposalsTable
+                matches={match_proposals.rejected}
+                segment={segment}
+              />
             </TabsContent>
             <TabsContent value="expired">
-              <MatchProposalsTable matches={match_proposals.expired} />
+              <MatchProposalsTable
+                matches={match_proposals.expired}
+                segment={segment}
+              />
             </TabsContent>
           </Tabs>
         </Section>
 
         <Section>
           <SectionTitle>Lobby Participants</SectionTitle>
-          <LobbyParticipantsTable participants={lobby_participants ?? []} />
+          <LobbyParticipantsTable
+            participants={lobby_participants ?? []}
+            segment={segment}
+          />
         </Section>
 
         {/* Celery Tasks */}

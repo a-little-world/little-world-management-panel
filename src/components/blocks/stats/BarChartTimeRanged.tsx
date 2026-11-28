@@ -234,7 +234,7 @@ export function BarChartTimeRanged({
         </div>
         <p className="text-xs text-muted-foreground mt-1">
           Includes all users that created an account from {startDate} to{' '}
-          {endDate}.
+          {endDate}. Guest accounts are not included.
         </p>
         <div className="flex flex-row items-center gap-4 mt-3">
           {displayTimeSelection && (
